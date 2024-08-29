@@ -385,6 +385,10 @@ SECTIONS {
         . = 0x00005b54; gUnk_3005b54 = .;
         . = 0x00005b60; gCableLinkInfo = .;
 
+        . = 0x00006000; gChaosRng = .;
+        . = 0x00006004; gActiveChaosEffects = .;
+        . = 0x00006008; gChaosEffects = .;
+
 
         . = 0x00007e60; sp_sys = .;
         . = 0x00007fa0; sp_irq = .;
@@ -584,6 +588,8 @@ SECTIONS {
         src/libgcc/fp-bit-base.o(.text);
         src/libgcc/float.o(.text);
         src/libgcc/libgcc.o(.text);
+
+        src/chaos.o(.text);
     } >rom
 
     .rodata : ALIGN(2) {

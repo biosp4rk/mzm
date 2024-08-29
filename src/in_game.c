@@ -12,6 +12,7 @@
 #include "init_helpers.h"
 #include "hud_generic.h"
 #include "display.h"
+#include "chaos.h"
 
 #include "data/hud_data.h"
 
@@ -69,6 +70,8 @@ u32 InGameMainLoop(void)
 
             if (gGameModeSub1 == SUB_GAME_MODE_PLAYING)
             {
+                ChaosUpdate();
+
                 gPreviousXPosition = gSamusData.xPosition;
                 gPreviousYPosition = gSamusData.yPosition;
 
