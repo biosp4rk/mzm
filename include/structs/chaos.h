@@ -14,6 +14,7 @@ struct ChaosEffect {
 
 extern u32 gChaosRng;
 extern u32 gActiveChaosEffects;
+extern u8 gPrevOneTimeChaosEffect;
 extern struct ChaosEffect gChaosEffects[MAX_NUM_CHAOS_EFFECTS];
 
 #endif /* CHAOS_STRUCT_H */

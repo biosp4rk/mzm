@@ -22,7 +22,7 @@ LD = $(TOOLCHAIN)ld
 OBJCOPY = $(TOOLCHAIN)objcopy
 OBJDUMP = $(TOOLCHAIN)objdump
 
-CC = agbcc
+CC = ~/agbcc/agbcc
 
 DIFF = diff -u
 HOSTCC = cc

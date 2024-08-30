@@ -2563,14 +2563,18 @@ void SamusUpdatePhysics(struct SamusData* pData)
 
     if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_HORI_MOVEMENT))
     {
+        pPhysics->xAcceleration /= 2;
         pPhysics->xVelocityCap /= 2;
         pPhysics->midairXVelocityCap /= 2;
+        pPhysics->midairXAcceleration /= 2;
         pPhysics->midairMorphedXVelocityCap /= 2;
     }
     else if (ChaosIsEffectActive(CHAOS_FLAG_FAST_HORI_MOVEMENT))
     {
+        pPhysics->xAcceleration = pPhysics->xAcceleration * 3 / 2;
         pPhysics->xVelocityCap = pPhysics->xVelocityCap * 3 / 2;
         pPhysics->midairXVelocityCap = pPhysics->midairXVelocityCap * 3 / 2;
+        pPhysics->midairXAcceleration = pPhysics->midairXAcceleration * 3 / 2;
         pPhysics->midairMorphedXVelocityCap = pPhysics->midairMorphedXVelocityCap * 3 / 2;
     }
 
@@ -3270,11 +3274,23 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
         // No super missiles left, select missiles
         pWeapon->missilesSelected = TRUE;
     }
-    else if (gChangedInput & KEY_SELECT)
+    else
     {
-        // Toggle
-        pWeapon->missilesSelected ^= TRUE;
-        SoundPlay(SOUND_MISSILE_TOGGLE); // Selecting missiles
+        if (ChaosIsEffectActive(CHAOS_FLAG_SWAP_MISSILES))
+        {
+            // Toggle every 8 frames
+            if ((gFrameCounter8Bit & 7) == 0)
+            {
+                pWeapon->missilesSelected ^= TRUE;
+                SoundPlay(SOUND_MISSILE_TOGGLE);
+            }
+        }
+        else if (gChangedInput & KEY_SELECT)
+        {
+            // Toggle
+            pWeapon->missilesSelected ^= TRUE;
+            SoundPlay(SOUND_MISSILE_TOGGLE); // Selecting missiles
+        }
     }
 
     switch (pData->pose)
@@ -3286,8 +3302,19 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
         case SPOSE_GETTING_HURT_IN_MORPH_BALL:
         case SPOSE_GETTING_KNOCKED_BACK_IN_MORPH_BALL:
             // Check select power bombs
-            if (gButtonInput & gButtonAssignments.armWeapon && pEquipment->currentPowerBombs != 0)
-                weaponHigh = WH_POWER_BOMB;
+            if (pEquipment->currentPowerBombs != 0)
+            {
+                if (ChaosIsEffectActive(CHAOS_FLAG_ARM_WEAPON))
+                {
+                    // Alternate every 8 frames
+                    if (gFrameCounter8Bit & 8)
+                        weaponHigh = WH_POWER_BOMB;
+                }
+                else if (gButtonInput & gButtonAssignments.armWeapon)
+                {
+                    weaponHigh = WH_POWER_BOMB;
+                }
+            }
             break;
 
         case SPOSE_HANGING_ON_LEDGE:
@@ -3307,8 +3334,24 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
             break;
 
         default:
+            if (ChaosIsEffectActive(CHAOS_FLAG_ARM_WEAPON))
+            {
+                // Alternate every 8 frames
+                if (gFrameCounter8Bit & 8)
+                {
+                    if (!pWeapon->missilesSelected)
+                    {
+                        if (pEquipment->currentMissiles != 0)
+                            weaponHigh = WH_MISSILE;
+                    }
+                    else
+                    {
+                        weaponHigh = WH_SUPER_MISSILE;
+                    }
+                }
+            }
             // Try to arm missiles or super missiles
-            if (gButtonInput & gButtonAssignments.armWeapon)
+            else if (gButtonInput & gButtonAssignments.armWeapon)
             {
                 if (!pWeapon->missilesSelected)
                 {

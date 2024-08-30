@@ -1,5 +1,6 @@
 #include "gba.h"
 #include "projectile.h"
+#include "chaos.h"
 
 #include "data/projectile_data.h"
 #include "data/sprite_data.h"
@@ -11,6 +12,7 @@
 #include "constants/sprite.h"
 #include "constants/particle.h"
 #include "constants/projectile.h"
+#include "constants/chaos.h"
 
 #include "structs/bg_clip.h"
 #include "structs/clipdata.h"
@@ -27,6 +29,8 @@
  */
 void ProjectileProcessNormalBeam(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     /*
     Movement Stage :
       0x0 = Initialization
@@ -44,7 +48,10 @@ void ProjectileProcessNormalBeam(struct ProjectileData* pProj)
         }
         else
         {
-            ProjectileMove(pProj, 0x14);
+            distance = 0x14;
+            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+                distance /= 4;
+            ProjectileMove(pProj, distance);
         }
     }
     else if (pProj->movementStage == 0x1)
@@ -105,6 +112,8 @@ void ProjectileProcessNormalBeam(struct ProjectileData* pProj)
  */
 void ProjectileProcessLongBeam(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     /*
     Movement Stage :
       0x0 = Initialization
@@ -121,8 +130,11 @@ void ProjectileProcessLongBeam(struct ProjectileData* pProj)
        }
        else
        {
-           ProjectileMove(pProj, 0x18);
-           pProj->timer++;
+            distance = 0x18;
+            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+                distance /= 4;
+            ProjectileMove(pProj, distance);
+            pProj->timer++;
        }
    }
    else if (pProj->movementStage == 0x1)
@@ -180,6 +192,8 @@ void ProjectileProcessLongBeam(struct ProjectileData* pProj)
  */
 void ProjectileProcessIceBeam(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     /*
     Movement Stage :
       0x0 = Initialization
@@ -197,7 +211,10 @@ void ProjectileProcessIceBeam(struct ProjectileData* pProj)
         }
         else
         {
-            ProjectileMove(pProj, 0x1A);
+            distance = 0x1A;
+            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+                distance /= 4;
+            ProjectileMove(pProj, distance);
             if (pProj->status & PROJ_STATUS_XFLIP)
                 ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, 0x3);
             else
@@ -376,10 +393,15 @@ u32 ProjectileCheckWaveBeamHittingBlocks(struct ProjectileData* pProj)
  */
 void ProjectileProcessWaveBeam(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     ProjectileCheckWaveBeamHittingBlocks(pProj); // Check collision
     if (pProj->movementStage == 0x2)
     {
-        ProjectileMove(pProj, 0x1C);
+        distance = 0x1C;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
         if (gEquipment.beamBombsActivation & BBF_ICE_BEAM)
         {
             if (pProj->status & PROJ_STATUS_XFLIP)
@@ -445,6 +467,7 @@ void ProjectileProcessWaveBeam(struct ProjectileData* pProj)
 void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
 {
     u8 hasWave;
+    u8 distance;
 
     hasWave = gEquipment.beamBombsActivation & BBF_WAVE_BEAM;
     if (!hasWave)
@@ -462,7 +485,10 @@ void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
 
     if (pProj->movementStage == 0x2)
     {
-        ProjectileMove(pProj, 0x20);
+        distance = 0x20;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
         if (gEquipment.beamBombsActivation & BBF_ICE_BEAM)
         {
             if (pProj->status & PROJ_STATUS_XFLIP)
@@ -556,6 +582,8 @@ void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
 */
 void ProjectileProcessPistol(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     /*
     Movement Stage :
       0x0 = Initialization
@@ -572,7 +600,10 @@ void ProjectileProcessPistol(struct ProjectileData* pProj)
         }
         else
         {
-            ProjectileMove(pProj, 0x16);
+            distance = 0x16;
+            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+                distance /= 4;
+            ProjectileMove(pProj, distance);
             pProj->timer++;
         }
     }
@@ -631,6 +662,8 @@ void ProjectileProcessPistol(struct ProjectileData* pProj)
  */
 void ProjectileProcessChargedNormalBeam(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     if (pProj->movementStage == 0x2)
     {
         gCurrentClipdataAffectingAction = CAA_BEAM;
@@ -641,7 +674,12 @@ void ProjectileProcessChargedNormalBeam(struct ProjectileData* pProj)
             return;
         }
         else
-            ProjectileMove(pProj, 0x14);
+        {
+            distance = 0x14;
+            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+                distance /= 4;
+            ProjectileMove(pProj, distance);
+        }
     }
     else if (pProj->movementStage == 0x1)
     {
@@ -705,6 +743,8 @@ void ProjectileProcessChargedNormalBeam(struct ProjectileData* pProj)
  */
 void ProjectileProcessChargedLongBeam(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     if (pProj->movementStage == 0x2)
     {
         gCurrentClipdataAffectingAction = CAA_BEAM;
@@ -715,7 +755,10 @@ void ProjectileProcessChargedLongBeam(struct ProjectileData* pProj)
             return;
         }
 
-        ProjectileMove(pProj, 0x18);
+        distance = 0x18;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
         ProjectileSetTrail(pProj, PE_CHARGED_LONG_BEAM_TRAIL, 0x7);
     }
     else if (pProj->movementStage == 0x1)
@@ -776,6 +819,8 @@ void ProjectileProcessChargedLongBeam(struct ProjectileData* pProj)
  */
 void ProjectileProcessChargedIceBeam(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     if (pProj->movementStage == 0x2)
     {
         gCurrentClipdataAffectingAction = CAA_BEAM;
@@ -786,7 +831,10 @@ void ProjectileProcessChargedIceBeam(struct ProjectileData* pProj)
             return;
         }
 
-        ProjectileMove(pProj, 0x1A);
+        distance = 0x1A;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
         if (pProj->status & PROJ_STATUS_XFLIP)
             ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, 0x3);
         else
@@ -853,11 +901,16 @@ void ProjectileProcessChargedIceBeam(struct ProjectileData* pProj)
  */
 void ProjectileProcessChargedWaveBeam(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     ProjectileCheckWaveBeamHittingBlocks(pProj);
     
     if (pProj->movementStage == 0x2)
     {
-        ProjectileMove(pProj, 0x1C);
+        distance = 0x1C;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
 
         if (gEquipment.beamBombsActivation & BBF_ICE_BEAM)
         {
@@ -929,6 +982,7 @@ void ProjectileProcessChargedWaveBeam(struct ProjectileData* pProj)
  */
 void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
 {
+    u8 distance;
     u8 hasWave;
 
     hasWave = gEquipment.beamBombsActivation & BBF_WAVE_BEAM;
@@ -948,7 +1002,10 @@ void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
 
     if (pProj->movementStage == 0x2)
     {
-        ProjectileMove(pProj, 0x20);
+        distance = 0x20;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
         if (gEquipment.beamBombsActivation & BBF_ICE_BEAM)
         {
             if (pProj->status & PROJ_STATUS_XFLIP)
@@ -1054,6 +1111,8 @@ void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
  */
 void ProjectileProcessChargedPistol(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     /*
     Movement Stage :
       0x0 = Initialization
@@ -1070,7 +1129,10 @@ void ProjectileProcessChargedPistol(struct ProjectileData* pProj)
         }
         else
         {
-            ProjectileMove(pProj, 0x16);
+            distance = 0x16;
+            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+                distance /= 4;
+            ProjectileMove(pProj, distance);
             ProjectileSetTrail(pProj, PE_CHARGED_PISTOL_TRAIL, 0x7);
             pProj->timer++;
         }
@@ -1148,6 +1210,8 @@ void ProjectileDecrementMissileCounter(struct ProjectileData* pProj)
 */
 void ProjectileProcessMissile(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     /*
     Movement Stage :
       0x0 = Initialization
@@ -1160,7 +1224,10 @@ void ProjectileProcessMissile(struct ProjectileData* pProj)
         gCurrentClipdataAffectingAction = CAA_MISSILE;
         if (ProjectileCheckVerticalCollisionAtPosition(pProj) == 0x0) // Check for collision
         {
-            ProjectileMove(pProj, pProj->timer + 0x8);
+            distance = pProj->timer + 0x8;
+            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+                distance /= 4;
+            ProjectileMove(pProj, distance);
             if (pProj->timer < 0xC)
                 pProj->timer++;
             ProjectileSetTrail(pProj, PE_MISSILE_TRAIL, 0x7);
@@ -1247,6 +1314,8 @@ void ProjectileDecrementSuperMissileCounter(struct ProjectileData* pProj)
  */
 void ProjectileProcessSuperMissile(struct ProjectileData* pProj)
 {
+    u8 distance;
+
     /*
     Movement Stage :
       0x0 = Initialization
@@ -1259,7 +1328,10 @@ void ProjectileProcessSuperMissile(struct ProjectileData* pProj)
         gCurrentClipdataAffectingAction = CAA_SUPER_MISSILE;
         if (ProjectileCheckVerticalCollisionAtPosition(pProj) == 0x0) // Check for collision
         {
-            ProjectileMove(pProj, pProj->timer + 0xC);
+            distance = pProj->timer + 0xC;
+            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+                distance /= 4;
+            ProjectileMove(pProj, distance);
             if (pProj->timer < 0x10)
                 pProj->timer++;
             ProjectileSetTrail(pProj, PE_SUPER_MISSILE_TRAIL, 0x3);

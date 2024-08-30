@@ -11,6 +11,7 @@
 #include "constants/chaos.h"
 #include "constants/power_bomb_explosion.h"
 #include "constants/projectile.h"
+#include "constants/room.h"
 #include "constants/samus.h"
 #include "constants/sprite.h"
 
@@ -18,6 +19,7 @@
 #include "structs/game_state.h"
 #include "structs/in_game_timer.h"
 #include "structs/power_bomb_explosion.h"
+#include "structs/room.h"
 #include "structs/samus.h"
 #include "structs/sprite.h"
 
@@ -69,9 +71,21 @@ void ChaosEffectEnded(struct ChaosEffect* pEffect)
 {
     switch (pEffect->id)
     {
+        case CHAOS_EFFECT_DEACTIVATE_ABILITY:
+            if ((pEffect->data >> 8) == 0)
+            {
+                gEquipment.beamBombsActivation |= (u8)pEffect->data;
+                ProjectileLoadGraphics();
+            }
+            else
+            {
+                gEquipment.suitMiscActivation |= (u8)pEffect->data;
+            }
+            break;
         case CHAOS_EFFECT_SUITLESS:
             UpdateSuitType(pEffect->data);
             ProjectileLoadGraphics();
+            gSamusWeaponInfo.chargeCounter = 0;
             break;
     }
 
@@ -125,17 +139,24 @@ void ChaosCreateEffect(void)
                 if (ChaosIsEffectActive(CHAOS_FLAG_LOW_GRAVITY))
                     continue;
                 break;
-            case CHAOS_EFFECT_DEACTIVATE_ABILITY: continue;
-            case CHAOS_EFFECT_SUITLESS:
-                if (gEquipment.suitType == SUIT_SUITLESS)
+            case CHAOS_EFFECT_DEACTIVATE_ABILITY:
+                if (!ChaosEffectDeactivateAbility(&gChaosEffects[effectIdx]))
                     continue;
-                gChaosEffects[effectIdx].data = gEquipment.suitType;
-                UpdateSuitType(SUIT_SUITLESS);
-                ProjectileLoadGraphics();
                 break;
-            case CHAOS_EFFECT_SLOW_WEAPONS: continue;
-            case CHAOS_EFFECT_ARM_MISSILES: continue;
-            case CHAOS_EFFECT_SWAP_MISSILES: continue;
+            case CHAOS_EFFECT_SUITLESS:
+                if (!ChaosEffectSuitless(&gChaosEffects[effectIdx]))
+                    continue;
+                break;
+            case CHAOS_EFFECT_SLOW_WEAPONS:
+                break; // No checks or setup required
+            case CHAOS_EFFECT_ARM_WEAPON:
+                if (gEquipment.currentMissiles == 0 && gEquipment.currentSuperMissiles == 0)
+                    continue;
+                break;
+            case CHAOS_EFFECT_SWAP_MISSILES:
+                if (gEquipment.maxMissiles == 0 || gEquipment.maxSuperMissiles == 0)
+                    continue;
+                break;
             case CHAOS_EFFECT_CHARGED_SHOTS:
                 if (ChaosIsEffectActive(CHAOS_FLAG_SHOOT_BOMBS))
                     continue;
@@ -144,9 +165,12 @@ void ChaosCreateEffect(void)
                 if (ChaosIsEffectActive(CHAOS_FLAG_CHARGED_SHOTS))
                     continue;
                 break;
-            case CHAOS_EFFECT_CHANGE_BRIGHTNESS: continue;
-            case CHAOS_EFFECT_FORWARD_CAMERA: continue;
-            case CHAOS_EFFECT_SHUFFLE_SOUNDS: continue;
+            case CHAOS_EFFECT_CHANGE_BRIGHTNESS: continue; // TODO
+            case CHAOS_EFFECT_FORWARD_CAMERA:
+                if (gCurrentRoomEntry.scrollsFlag == ROOM_SCROLLS_FLAG_HAS_SCROLLS)
+                    continue;
+                break;
+            case CHAOS_EFFECT_SHUFFLE_SOUNDS: continue; // TODO
             // One time effects
             case CHAOS_EFFECT_SPAWN_ENEMY:
                 if (!ChaosEffectSpawnEnemy())
@@ -187,6 +211,11 @@ void ChaosCreateEffect(void)
             gChaosEffects[effectIdx].exists = TRUE;
             gChaosEffects[effectIdx].id = id;
             gChaosEffects[effectIdx].timer = ChaosRandU16(CHAOS_EFFECT_FRAMES_MIN, CHAOS_EFFECT_FRAMES_MAX);
+        }
+        else
+        {
+            // Track this for the lua script
+            gPrevOneTimeChaosEffect = id;
         }
 
         break;
@@ -233,6 +262,90 @@ u16 ChaosPositionNearSamusY(void)
 }
 
 // Duration effects
+
+s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect)
+{
+    u8 beamBombsCount;
+    u8 beamBombsAct;
+    u8 suitMiscCount;
+    u8 suitMiscAct;
+    u8 itemIdx;
+
+    if (gEquipment.suitType == SUIT_SUITLESS)
+        return FALSE;
+
+    // Count active abilities
+    beamBombsCount = 0;
+    beamBombsAct = gEquipment.beamBombsActivation;
+    while (beamBombsAct != 0)
+    {
+        beamBombsCount += beamBombsAct & 1;
+        beamBombsAct >>= 1;
+    }
+
+    suitMiscCount = 0;
+    suitMiscAct = gEquipment.suitMiscActivation;
+    while (suitMiscAct != 0)
+    {
+        suitMiscCount += suitMiscAct & 1;
+        suitMiscAct >>= 1;
+    }
+
+    if (beamBombsCount + suitMiscCount == 0)
+        return FALSE;
+
+    // Get ability to deactivate
+    itemIdx = ChaosRandU16(0, beamBombsCount + suitMiscCount - 1);
+    if (itemIdx < beamBombsCount)
+    {
+        beamBombsCount = 0;
+        beamBombsAct = 1;
+        while (TRUE)
+        {
+            if (gEquipment.beamBombsActivation & beamBombsAct)
+            {
+                beamBombsCount++;
+                if (beamBombsCount == itemIdx + 1)
+                    break;
+            }
+            beamBombsAct <<= 1;
+        }
+        pEffect->data = beamBombsAct;
+        gEquipment.beamBombsActivation &= ~beamBombsAct;
+        ProjectileLoadGraphics();
+    }
+    else
+    {
+        itemIdx -= beamBombsCount;
+        suitMiscCount = 0;
+        suitMiscAct = 1;
+        while (TRUE)
+        {
+            if (gEquipment.suitMiscActivation & suitMiscAct)
+            {
+                suitMiscCount++;
+                if (suitMiscCount == itemIdx + 1)
+                    break;
+            }
+            suitMiscAct <<= 1;
+        }
+        pEffect->data = suitMiscAct | 0x100;
+        gEquipment.suitMiscActivation &= ~suitMiscAct;
+    }
+
+    return TRUE;
+}
+
+s32 ChaosEffectSuitless(struct ChaosEffect* pEffect)
+{
+    if (gEquipment.suitType == SUIT_SUITLESS)
+        return FALSE;
+
+    pEffect->data = gEquipment.suitType;
+    UpdateSuitType(SUIT_SUITLESS);
+    ProjectileLoadGraphics();
+    return TRUE;
+}
 
 // One time effects
 

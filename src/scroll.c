@@ -1,5 +1,6 @@
 #include "scroll.h"
 #include "gba.h"
+#include "chaos.h"
 
 #include "data/clipdata_data.h"
 #include "data/engine_pointers.h"
@@ -7,6 +8,7 @@
 #include "constants/game_state.h"
 #include "constants/samus.h"
 #include "constants/room.h"
+#include "constants/chaos.h"
 
 #include "structs/bg_clip.h"
 #include "structs/display.h"
@@ -591,7 +593,9 @@ void ScrollWithNoScrollsX(struct Coordinates* pCoords)
     s32 xPosition;
 
     xOffset = 0;
-    if (gLockScreen.lock == LOCK_SCREEN_TYPE_NONE && gSamusPhysics.standingStatus == STANDING_NOT_IN_CONTROL)
+    if (gLockScreen.lock == LOCK_SCREEN_TYPE_NONE &&
+        (gSamusPhysics.standingStatus == STANDING_NOT_IN_CONTROL ||
+        ChaosIsEffectActive(CHAOS_FLAG_FORWARD_CAMERA)))
     {
         if (gSamusData.direction & KEY_RIGHT)
             xOffset = SCREEN_X_BLOCK_PADDING;

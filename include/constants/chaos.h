@@ -26,7 +26,7 @@
 #define CHAOS_EFFECT_SUITLESS 7             // Makes Samus suitless
 // Weapon related
 #define CHAOS_EFFECT_SLOW_WEAPONS 8         // Makes beams and missiles move slowly
-#define CHAOS_EFFECT_ARM_MISSILES 9         // Alternates arming and unarming missiles
+#define CHAOS_EFFECT_ARM_WEAPON 9           // Alternates arming and unarming weapon
 #define CHAOS_EFFECT_SWAP_MISSILES 10       // Swaps missile types back and forth
 #define CHAOS_EFFECT_CHARGED_SHOTS 11       // Beam shots are always charged
 #define CHAOS_EFFECT_SHOOT_BOMBS 12         // Shooting a beam spawns a bomb
@@ -59,7 +59,7 @@
 #define CHAOS_FLAG_DEACTIVATE_ABILITY (1 << CHAOS_EFFECT_DEACTIVATE_ABILITY)
 #define CHAOS_FLAG_SUITLESS (1 << CHAOS_EFFECT_SUITLESS)
 #define CHAOS_FLAG_SLOW_WEAPONS (1 << CHAOS_EFFECT_SLOW_WEAPONS)
-#define CHAOS_FLAG_ARM_MISSILES (1 << CHAOS_EFFECT_ARM_MISSILES)
+#define CHAOS_FLAG_ARM_WEAPON (1 << CHAOS_EFFECT_ARM_WEAPON)
 #define CHAOS_FLAG_SWAP_MISSILES (1 << CHAOS_EFFECT_SWAP_MISSILES)
 #define CHAOS_FLAG_CHARGED_SHOTS (1 << CHAOS_EFFECT_CHARGED_SHOTS)
 #define CHAOS_FLAG_SHOOT_BOMBS (1 << CHAOS_EFFECT_SHOOT_BOMBS)

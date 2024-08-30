@@ -18,6 +18,9 @@ u16 ChaosPositionNearSamus(u16 samusPos, u16 max);
 u16 ChaosPositionNearSamusX(void);
 u16 ChaosPositionNearSamusY(void);
 
+s32 ChaosEffectSuitless(struct ChaosEffect* pEffect);
+s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect);
+
 s32 ChaosEffectSpawnEnemy(void);
 s32 ChaosEffectSpawnPB(void);
 void ChaosEffectFreezeEnemies(void);
