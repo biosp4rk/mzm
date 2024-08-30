@@ -6,7 +6,7 @@
 #define MAX_NUM_CHAOS_EFFECTS 5
 
 struct ChaosEffect {
-    u8 status;
+    u8 exists;
     u8 id;
     u16 timer;
     u16 data;

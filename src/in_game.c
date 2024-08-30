@@ -29,6 +29,7 @@
 #include "structs/room.h"
 #include "structs/sprite.h"
 #include "structs/connection.h"
+#include "structs/chaos.h"
 
 /**
  * @brief c4b4 | 244 | Main loop in game
@@ -45,6 +46,9 @@ u32 InGameMainLoop(void)
     switch (gGameModeSub1)
     {
         case 0:
+            // Set initial seed for chaos RNG
+            gChaosRng = gFrameCounter16Bit;
+
             if (gGameModeSub3 == 0)
                 DemoResetInputAndDuration();
 

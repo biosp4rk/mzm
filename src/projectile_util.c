@@ -1,6 +1,7 @@
 #include "gba.h"
 #include "projectile_util.h"
 #include "clipdata.h"
+#include "chaos.h"
 
 #include "data/projectile_data.h"
 #include "data/sprite_data.h"
@@ -13,6 +14,7 @@
 #include "constants/particle.h"
 #include "constants/projectile.h"
 #include "constants/power_bomb_explosion.h"
+#include "constants/chaos.h"
 
 #include "structs/bg_clip.h"
 #include "structs/clipdata.h"
@@ -128,6 +130,11 @@ u8 ProjectileInit(u8 type, u16 yPosition, u16 xPosition)
         pData = &gSamusData;
         if (!(pProj->status & PROJ_STATUS_EXISTS))
         {
+            if (type < PROJ_TYPE_CHARGED_BEAM && ChaosIsEffectActive(CHAOS_FLAG_CHARGED_SHOTS))
+                type += PROJ_TYPE_CHARGED_BEAM;
+            else if (type < PROJ_TYPE_MISSILE && ChaosIsEffectActive(CHAOS_FLAG_SHOOT_BOMBS))
+                type = PROJ_TYPE_BOMB;
+
             if (type > PROJ_TYPE_SUPER_MISSILE)
                 status = (PROJ_STATUS_EXISTS | PROJ_STATUS_ON_SCREEN | PROJ_STATUS_NOT_DRAWN);
             else // Bomb, power bomb

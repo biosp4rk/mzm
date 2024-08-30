@@ -4,6 +4,7 @@
 #include "clipdata.h" // Necessary
 #include "macros.h"
 #include "temp_globals.h"
+#include "chaos.h"
 
 #include "data/samus_sprites_pointers.h"
 #include "data/samus/samus_palette_data.h"
@@ -16,6 +17,7 @@
 #include "constants/game_state.h"
 #include "constants/samus.h"
 #include "constants/projectile.h"
+#include "constants/chaos.h"
 
 #include "structs/bg_clip.h"
 #include "structs/clipdata.h"
@@ -2516,6 +2518,9 @@ void SamusUpdatePhysics(struct SamusData* pData)
                 slowed++;
     }
 
+    if (ChaosIsEffectActive(CHAOS_FLAG_WATER_PHYSICS))
+        slowed = TRUE;
+
     // Set slowed
     pPhysics->slowedByLiquid = slowed;
 
@@ -2555,6 +2560,24 @@ void SamusUpdatePhysics(struct SamusData* pData)
             pPhysics->xVelocityCap = SAMUS_X_SPEEDBOOST_VELOCITY_CAP;
         }
     }
+
+    if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_HORI_MOVEMENT))
+    {
+        pPhysics->xVelocityCap /= 2;
+        pPhysics->midairXVelocityCap /= 2;
+        pPhysics->midairMorphedXVelocityCap /= 2;
+    }
+    else if (ChaosIsEffectActive(CHAOS_FLAG_FAST_HORI_MOVEMENT))
+    {
+        pPhysics->xVelocityCap = pPhysics->xVelocityCap * 3 / 2;
+        pPhysics->midairXVelocityCap = pPhysics->midairXVelocityCap * 3 / 2;
+        pPhysics->midairMorphedXVelocityCap = pPhysics->midairMorphedXVelocityCap * 3 / 2;
+    }
+
+    if (ChaosIsEffectActive(CHAOS_FLAG_LOW_GRAVITY))
+        pPhysics->yAcceleration /= 2;
+    else if (ChaosIsEffectActive(CHAOS_FLAG_HIGH_GRAVITY))
+        pPhysics->yAcceleration *= 2;
 
     if (pData->standingStatus == STANDING_MIDAIR || pData->standingStatus == STANDING_ENEMY)
     {
