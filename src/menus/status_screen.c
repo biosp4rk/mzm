@@ -118,8 +118,9 @@ void LoadPauseScreenBgPalette(void)
  * @brief 6fee4 | 68 | Updates the current suit type
  * 
  * @param newSuit New suit type
+ * @param chaos bool, changed via chaos code
  */
-void UpdateSuitType(u8 newSuit)
+void UpdateSuitType(u8 newSuit, u8 chaos)
 {
     if (gEquipment.suitType != newSuit)
         gEquipment.suitType = newSuit;
@@ -127,23 +128,32 @@ void UpdateSuitType(u8 newSuit)
     switch (gEquipment.suitType)
     {
         case SUIT_NORMAL:
-            gEquipment.currentEnergy = gEquipment.maxEnergy;
+            if (!chaos)
+                gEquipment.currentEnergy = gEquipment.maxEnergy;
             gEquipment.beamBombsActivation = gEquipment.beamBombs & ~BBF_PLASMA_BEAM;
             gEquipment.suitMiscActivation = gEquipment.suitMisc & ~(SMF_SPACE_JUMP | SMF_GRAVITY_SUIT);
             break;
 
         case SUIT_FULLY_POWERED:
-            gEquipment.currentEnergy = gEquipment.maxEnergy;
-            gEquipment.currentMissiles = gEquipment.maxMissiles;
-            gEquipment.currentSuperMissiles = gEquipment.maxSuperMissiles;
-            gEquipment.currentPowerBombs = gEquipment.maxPowerBombs;
-
-            gEquipment.beamBombsActivation = 0;
-            gEquipment.suitMiscActivation = 0;
+            if (chaos)
+            {
+                gEquipment.beamBombsActivation = gEquipment.beamBombs;
+                gEquipment.suitMiscActivation = gEquipment.suitMisc;
+            }
+            else
+            {
+                gEquipment.currentEnergy = gEquipment.maxEnergy;
+                gEquipment.currentMissiles = gEquipment.maxMissiles;
+                gEquipment.currentSuperMissiles = gEquipment.maxSuperMissiles;
+                gEquipment.currentPowerBombs = gEquipment.maxPowerBombs;
+                gEquipment.beamBombsActivation = 0;
+                gEquipment.suitMiscActivation = 0;
+            }
             break;
 
         case SUIT_SUITLESS:
-            gEquipment.currentEnergy = 99;
+            if (!chaos)
+                gEquipment.currentEnergy = 99;
             gEquipment.suitMiscActivation = SMF_POWER_GRIP;
             gEquipment.beamBombsActivation = BBF_LONG_BEAM | BBF_CHARGE_BEAM;
     }

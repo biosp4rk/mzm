@@ -5,7 +5,7 @@
 
 void UpdateMinimapAnimatedPalette(void);
 void LoadPauseScreenBgPalette(void);
-void UpdateSuitType(u8 newSuit);
+void UpdateSuitType(u8 newSuit, u8 chaos);
 u32 StatusScreenDrawItems(u8 row);
 u8 StatusScreenGetSlotForNewItem(u8 param_1, u8 item);
 void StatusScreenDraw(void);

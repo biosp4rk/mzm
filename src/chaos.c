@@ -98,7 +98,7 @@ void ChaosEffectEnded(struct ChaosEffect* pEffect)
             }
             break;
         case CHAOS_EFFECT_SUITLESS:
-            UpdateSuitType(pEffect->data);
+            UpdateSuitType(pEffect->data, TRUE);
             ProjectileLoadGraphics();
             gSamusWeaponInfo.chargeCounter = 0;
             break;
@@ -173,11 +173,13 @@ void ChaosCreateEffect(void)
             case CHAOS_EFFECT_SLOW_WEAPONS:
                 break; // No checks or setup required
             case CHAOS_EFFECT_ARM_WEAPON:
-                if (gEquipment.currentMissiles == 0 && gEquipment.currentSuperMissiles == 0)
+                if (gEquipment.suitType == SUIT_SUITLESS ||
+                    (gEquipment.currentMissiles == 0 && gEquipment.currentSuperMissiles == 0))
                     continue;
                 break;
             case CHAOS_EFFECT_SWAP_MISSILES:
-                if (gEquipment.maxMissiles == 0 || gEquipment.maxSuperMissiles == 0)
+                if (gEquipment.suitType == SUIT_SUITLESS ||
+                    gEquipment.maxMissiles == 0 || gEquipment.maxSuperMissiles == 0)
                     continue;
                 break;
             case CHAOS_EFFECT_CHARGED_SHOTS:
@@ -371,7 +373,7 @@ s32 ChaosEffectSuitless(struct ChaosEffect* pEffect)
         return FALSE;
 
     pEffect->data = gEquipment.suitType;
-    UpdateSuitType(SUIT_SUITLESS);
+    UpdateSuitType(SUIT_SUITLESS, TRUE);
     ProjectileLoadGraphics();
     return TRUE;
 }
@@ -538,6 +540,7 @@ s32 ChaosEffectSpawnEnemy(void)
             case PSPRITE_LOCK_UNLOCK_METROID_DOORS_UNUSED:
             case PSPRITE_MAYBE_SEARCHLIGHT_TRIGGER:
             case PSPRITE_DISCOVERED_IMAGO_PASSAGE_EVENT_TRIGGER:
+            case PSPRITE_FALLING_CHOZO_PILLAR:
             case PSPRITE_MECHA_RIDLEY:
             case PSPRITE_EXPLOSION_ZEBES_ESCAPE:
                 continue;
