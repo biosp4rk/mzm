@@ -19,8 +19,7 @@ void UpdateInput(void)
 
     keys = KEY_MASK & ~read16(REG_KEY_INPUT);
 
-    if (gMainGameMode == GM_INGAME && gGameModeSub1 == SUB_GAME_MODE_PLAYING &&
-        ChaosIsEffectActive(CHAOS_FLAG_INVERTED_CONTROLS))
+    if (gMainGameMode == GM_INGAME && ChaosIsEffectActive(CHAOS_FLAG_INVERTED_CONTROLS))
     {
         origKeys = keys;
         if (origKeys & KEY_RIGHT)

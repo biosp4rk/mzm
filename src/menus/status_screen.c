@@ -1,5 +1,6 @@
 #include "menus/status_screen.h"
 #include "menus/pause_screen.h"
+#include "chaos.h"
 
 #include "data/shortcut_pointers.h"
 #include "data/menus/status_screen_data.h"
@@ -14,6 +15,7 @@
 #include "constants/game_state.h"
 #include "constants/menus/pause_screen.h"
 #include "constants/menus/status_screen.h"
+#include "constants/chaos.h"
 
 #include "structs/demo.h"
 #include "structs/game_state.h"
@@ -285,7 +287,7 @@ void StatusScreenDraw(void)
 {
     u8 previousSlots[3];
 
-    if (gEquipment.suitType == SUIT_SUITLESS)
+    if (gEquipment.suitType == SUIT_SUITLESS && !ChaosIsEffectActive(CHAOS_FLAG_SUITLESS))
     {
         DmaTransfer(3, (void*)sEwramPointer + 0x8000, PAUSE_SCREEN_EWRAM.statusScreenTilemap, 0x800, 0x10);
         BitFill(3, 0, &PAUSE_SCREEN_DATA.statusScreenData, sizeof(PAUSE_SCREEN_DATA.statusScreenData), 0x20);
@@ -1624,7 +1626,7 @@ u8 StatusScreenGetCurrentEquipmentSelected(u8 statusSlot)
     if (slot > 16)
         return 0x80;
 
-    if (gEquipment.suitType != SUIT_SUITLESS)
+    if (gEquipment.suitType != SUIT_SUITLESS || ChaosIsEffectActive(CHAOS_FLAG_SUITLESS))
     {
         switch (sStatusScreenItemsData[statusSlot].group)
         {

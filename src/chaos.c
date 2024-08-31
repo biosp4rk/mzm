@@ -1,6 +1,9 @@
 #include "audio_wrappers.h"
 #include "chaos.h"
+#include "gba/memory.h"
+#include "macros.h"
 #include "menus/status_screen.h"
+#include "particle.h"
 #include "projectile.h"
 #include "projectile_util.h"
 #include "samus.h"
@@ -9,12 +12,15 @@
 #include "sprite_util.h"
 
 #include "constants/chaos.h"
+#include "constants/color_fading.h"
+#include "constants/particle.h"
 #include "constants/power_bomb_explosion.h"
 #include "constants/projectile.h"
 #include "constants/room.h"
 #include "constants/samus.h"
 #include "constants/sprite.h"
 
+#include "structs/bg_clip.h"
 #include "structs/chaos.h"
 #include "structs/game_state.h"
 #include "structs/in_game_timer.h"
@@ -61,6 +67,14 @@ void ChaosUpdateEffects(void)
         if (!gChaosEffects[i].exists)
             continue;
         
+        // Check specific effects to update
+        switch (gChaosEffects[i].id)
+        {
+            case CHAOS_EFFECT_EXPLOSIONS:
+                ChaosEffectExplosions();
+                break;
+        }
+
         gChaosEffects[i].timer--;
         if (gChaosEffects[i].timer == 0)
             ChaosEffectEnded(&gChaosEffects[i]);
@@ -106,12 +120,20 @@ void ChaosCreateEffect(void)
 
     effectIdx = ChaosEmptyEffectIndex();
     start = effectIdx != 0xFF ? 0 : CHAOS_EFFECT_ONE_TIME;
-    //start = CHAOS_EFFECT_ONE_TIME;
 
     for (tries = 0; tries < 5; tries++)
     {
-        id = ChaosRandU16(start, CHAOS_EFFECT_END - 1);
+        id = ChaosRandU16(start, CHAOS_EFFECT_END + 1);
         
+        // Extra chance for deactivate ability and spawn sprite
+        if (id >= CHAOS_EFFECT_END)
+        {
+            if (effectIdx != 0xFF && id == CHAOS_EFFECT_END)
+                id = CHAOS_EFFECT_DEACTIVATE_ABILITY;
+            else
+                id = CHAOS_EFFECT_SPAWN_ENEMY;
+        }
+
         // Try again if duration effect is already active
         if (id < CHAOS_EFFECT_ONE_TIME && ChaosIsEffectActive(1 << id))
             continue;
@@ -165,12 +187,13 @@ void ChaosCreateEffect(void)
                 if (ChaosIsEffectActive(CHAOS_FLAG_CHARGED_SHOTS))
                     continue;
                 break;
-            case CHAOS_EFFECT_CHANGE_BRIGHTNESS: continue; // TODO
             case CHAOS_EFFECT_FORWARD_CAMERA:
-                if (gCurrentRoomEntry.scrollsFlag == ROOM_SCROLLS_FLAG_HAS_SCROLLS)
+                if (gCurrentRoomEntry.scrollsFlag == ROOM_SCROLLS_FLAG_HAS_SCROLLS ||
+                    gBgPointersAndDimensions.clipdataWidth <= 19)
                     continue;
                 break;
-            case CHAOS_EFFECT_SHUFFLE_SOUNDS: continue; // TODO
+            case CHAOS_EFFECT_EXPLOSIONS:
+                break; // No checks or setup required
             // One time effects
             case CHAOS_EFFECT_SPAWN_ENEMY:
                 if (!ChaosEffectSpawnEnemy())
@@ -201,6 +224,9 @@ void ChaosCreateEffect(void)
                 break;
             case CHAOS_EFFECT_RAND_SOUND:
                 ChaosEffectRandSound();
+                break;
+            case CHAOS_EFFECT_COLOR_EFFECT:
+                ChaosEffectColorEffect();
                 break;
         }
 
@@ -347,6 +373,73 @@ s32 ChaosEffectSuitless(struct ChaosEffect* pEffect)
     return TRUE;
 }
 
+void ChaosEffectExplosions(void)
+{
+    u8 pe;
+    u16 sound;
+
+    if (ChaosRandU16(0, 11) != 0)
+        return;
+
+    switch (ChaosRandU16(0, 8))
+    {
+        case 0:
+            pe = PE_SPRITE_EXPLOSION_HUGE;
+            break;
+        case 1:
+            pe = PE_SPRITE_EXPLOSION_MEDIUM;
+            break;
+        case 2:
+            pe = PE_SPRITE_EXPLOSION_BIG;
+            break;
+        case 3:
+            pe = PE_SPRITE_EXPLOSION_SINGLE_THEN_BIG;
+            break;
+        case 4:
+            pe = PE_SCREW_ATTACK_DESTROYED;
+            break;
+        case 5:
+            pe = PE_SHINESPARK_DESTROYED;
+            break;
+        case 6:
+            pe = PE_SUDO_SCREW_DESTROYED;
+            break;
+        case 7:
+            pe = PE_SPEEDBOOSTER_DESTROYED;
+            break;
+        case 8:
+            pe = PE_MAIN_BOSS_DEATH;
+            break;
+    }
+
+    switch (ChaosRandU16(0, 4))
+    {
+        // 301-303
+        // 312
+        // 403
+        // 457: Kraid
+        // 496: Ridley death
+        case 0:
+            sound = 253;
+            break;
+        case 1:
+            sound = 630;
+            break;
+        case 2:
+            sound = 705;
+            break;
+        case 3:
+            sound = 706;
+            break;
+        case 4:
+            sound = 707;
+            break;
+    }
+
+    ParticleSet(ChaosPositionNearSamusY(), ChaosPositionNearSamusX(), pe);
+    SoundPlayNotAlreadyPlaying(sound);
+}
+
 // One time effects
 
 s32 ChaosEffectSpawnEnemy(void)
@@ -355,6 +448,7 @@ s32 ChaosEffectSpawnEnemy(void)
     struct SpriteData* pSprite;
     u8 idCount;
     u8 spritesetIdx;
+    u8 i;
     u8 spriteId;
     u8 spriteSlot;
 
@@ -382,18 +476,83 @@ s32 ChaosEffectSpawnEnemy(void)
     if (idCount == 0)
         return FALSE;
     
-    // Pick a random sprite ID to spawn
+    // Pick a random starting index
     spritesetIdx = ChaosRandU16(0, idCount - 1);
-    spriteId = gSpritesetSpritesID[spritesetIdx];
-    // TODO: Get list of sprite IDs to exclude
-    spriteSlot = SpriteSpawnPrimary(spriteId, 0, gSpritesetGfxSlots[spritesetIdx],
-        ChaosPositionNearSamusY(), ChaosPositionNearSamusX(), 0);
 
-    if (spriteSlot == 0xFF)
-        return FALSE;
-    
-    gSpriteData[spriteSlot].status &= ~SPRITE_STATUS_NOT_DRAWN;
-    return TRUE;
+    // Try each sprite ID until one can spawn
+    for (i = 0; i < idCount; i++)
+    {
+        spriteId = gSpritesetSpritesID[spritesetIdx];
+        spritesetIdx = (spritesetIdx + 1) % idCount;
+
+        // Check if this sprite ID is excluded
+        switch (spriteId)
+        {
+            case PSPRITE_ITEM_BANNER:
+            case PSPRITE_LARGE_ENERGY_DROP:
+            case PSPRITE_SMALL_ENERGY_DROP:
+            case PSPRITE_MISSILE_DROP:
+            case PSPRITE_SUPER_MISSILE_DROP:
+            case PSPRITE_POWER_BOMB_DROP:
+            case PSPRITE_CHOZO_STATUE_LONG_HINT:
+            case PSPRITE_CHOZO_STATUE_LONG:
+            case PSPRITE_CHOZO_STATUE_ICE_HINT:
+            case PSPRITE_CHOZO_STATUE_ICE:
+            case PSPRITE_CHOZO_STATUE_WAVE_HINT:
+            case PSPRITE_CHOZO_STATUE_WAVE:
+            case PSPRITE_CHOZO_STATUE_BOMB_HINT:
+            case PSPRITE_CHOZO_STATUE_BOMB:
+            case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER_HINT:
+            case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER:
+            case PSPRITE_CHOZO_STATUE_HIGH_JUMP_HINT:
+            case PSPRITE_CHOZO_STATUE_HIGH_JUMP:
+            case PSPRITE_CHOZO_STATUE_SCREW_HINT:
+            case PSPRITE_CHOZO_STATUE_SCREW:
+            case PSPRITE_CHOZO_STATUE_VARIA_HINT:
+            case PSPRITE_CHOZO_STATUE_VARIA:
+            case PSPRITE_MULTIPLE_LARGE_ENERGY:
+            case PSPRITE_DEOREM:
+            case PSPRITE_DEOREM_SECOND_LOCATION:
+            case PSPRITE_IMAGO_LARVA_RIGHT:
+            case PSPRITE_IMAGO_COCOON:
+            case PSPRITE_CHOZO_STATUE_GRAVITY:
+            case PSPRITE_CHOZO_STATUE_SPACE_JUMP:
+            case PSPRITE_RIDLEY:
+            case PSPRITE_FROZEN_METROID:
+            case PSPRITE_GEKITAI_MACHINE:
+            case PSPRITE_RUINS_TEST:
+            case PSPRITE_KRAID:
+            case PSPRITE_AREA_BANNER:
+            case PSPRITE_MOTHER_BRAIN:
+            case PSPRITE_FAKE_POWER_BOMB_EVENT_TRIGGER:
+            case PSPRITE_ACID_WORM:
+            case PSPRITE_IMAGO_LARVA_RIGHT_SIDE:
+            case PSPRITE_IMAGO:
+            case PSPRITE_CROCOMIRE:
+            case PSPRITE_IMAGO_LARVA_LEFT:
+            case PSPRITE_CHOZO_STATUE_PLASMA_BEAM:
+            case PSPRITE_LOCK_UNLOCK_METROID_DOORS_UNUSED:
+            case PSPRITE_MAYBE_SEARCHLIGHT_TRIGGER:
+            case PSPRITE_DISCOVERED_IMAGO_PASSAGE_EVENT_TRIGGER:
+            case PSPRITE_MECHA_RIDLEY:
+            case PSPRITE_EXPLOSION_ZEBES_ESCAPE:
+                continue;
+        }
+
+        // Try spawning sprite
+        spriteSlot = SpriteSpawnPrimary(spriteId, 0, gSpritesetGfxSlots[spritesetIdx],
+            ChaosPositionNearSamusY(), ChaosPositionNearSamusX(), 0);
+
+        // Spawning should always succeed, but check just in case
+        if (spriteSlot == 0xFF)
+            return FALSE;
+        
+        gSpriteData[spriteSlot].status &= ~SPRITE_STATUS_NOT_DRAWN;
+        return TRUE;
+    }
+
+    // None of the sprite IDs worked
+    return FALSE;
 }
 
 s32 ChaosEffectSpawnPB(void)
@@ -474,5 +633,60 @@ void ChaosEffectRandSound(void)
         case 2:
             SoundPlay(0x24C); // Ridley
             break;
+    }
+}
+
+void ChaosEffectColorEffect(void)
+{
+    u8 effect;
+    u16* pPalette;
+    s32 i;
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 result;
+
+    effect = ChaosRandU16(0, 2);
+    pPalette = (u16*)PALRAM_BASE;
+
+    for (i = 0; i < 256; i++, pPalette++)
+    {
+        if (i % 16 == 0)
+            continue;
+
+        r = RED(*pPalette);
+        g = GREEN(*pPalette);
+        b = BLUE(*pPalette);
+
+        switch (effect)
+        {
+            case 0:
+                // Lower brightness
+                r /= 2;
+                g /= 2;
+                b /= 2;
+                break;
+            case 1:
+                // Raise brightness
+                r = r * 3 / 2;
+                g = g * 3 / 2;
+                b = b * 3 / 2;
+                if (r > COLOR_MASK)
+                    r = COLOR_MASK;
+                if (g > COLOR_MASK)
+                    g = COLOR_MASK;
+                if (b > COLOR_MASK)
+                    b = COLOR_MASK;
+                break;
+            case 2:
+                // Monochrome
+                result = (r + g + b) / 3;
+                r = result;
+                g = result;
+                b = result;
+                break;
+        }
+
+        *pPalette = COLOR(r, g, b);
     }
 }

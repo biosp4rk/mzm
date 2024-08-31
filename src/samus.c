@@ -2581,7 +2581,7 @@ void SamusUpdatePhysics(struct SamusData* pData)
     if (ChaosIsEffectActive(CHAOS_FLAG_LOW_GRAVITY))
         pPhysics->yAcceleration /= 2;
     else if (ChaosIsEffectActive(CHAOS_FLAG_HIGH_GRAVITY))
-        pPhysics->yAcceleration *= 2;
+        pPhysics->yAcceleration = pPhysics->yAcceleration * 3 / 2;
 
     if (pData->standingStatus == STANDING_MIDAIR || pData->standingStatus == STANDING_ENEMY)
     {
@@ -3278,8 +3278,8 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
     {
         if (ChaosIsEffectActive(CHAOS_FLAG_SWAP_MISSILES))
         {
-            // Toggle every 8 frames
-            if ((gFrameCounter8Bit & 7) == 0)
+            // Toggle every 16 frames
+            if ((gFrameCounter8Bit & 0xF) == 0)
             {
                 pWeapon->missilesSelected ^= TRUE;
                 SoundPlay(SOUND_MISSILE_TOGGLE);
