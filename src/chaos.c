@@ -1,5 +1,6 @@
 #include "audio_wrappers.h"
 #include "chaos.h"
+#include "gba/keys.h"
 #include "gba/memory.h"
 #include "macros.h"
 #include "menus/status_screen.h"
@@ -210,7 +211,8 @@ void ChaosCreateEffect(void)
                 ChaosEffectScreenShake();
                 break;
             case CHAOS_EFFECT_KNOCKBACK_SAMUS:
-                SamusSetPose(SPOSE_KNOCKBACK_REQUEST);
+                if (!ChaosEffectKnockback())
+                    continue;
                 break;
             case CHAOS_EFFECT_SHINE_TIMER:
                 gSamusData.shinesparkTimer = 180;
@@ -219,8 +221,9 @@ void ChaosCreateEffect(void)
                 ChaosEffectChangeEnergyAmmo();
                 break;
             case CHAOS_EFFECT_PAUSE_GAME:
-                if (ProcessPauseButtonPress())
-                    gGameModeSub1++;
+                if (!ProcessPauseButtonPress())
+                    continue;
+                gGameModeSub1++;
                 break;
             case CHAOS_EFFECT_RAND_SOUND:
                 ChaosEffectRandSound();
@@ -447,8 +450,9 @@ s32 ChaosEffectSpawnEnemy(void)
     u8 spriteCount;
     struct SpriteData* pSprite;
     u8 idCount;
-    u8 spritesetIdx;
+    u8 spritesetStartIdx;
     u8 i;
+    u8 spritesetIdx;
     u8 spriteId;
     u8 spriteSlot;
 
@@ -477,13 +481,13 @@ s32 ChaosEffectSpawnEnemy(void)
         return FALSE;
     
     // Pick a random starting index
-    spritesetIdx = ChaosRandU16(0, idCount - 1);
+    spritesetStartIdx = ChaosRandU16(0, idCount - 1);
 
     // Try each sprite ID until one can spawn
     for (i = 0; i < idCount; i++)
     {
+        spritesetIdx = (spritesetStartIdx + i) % idCount;
         spriteId = gSpritesetSpritesID[spritesetIdx];
-        spritesetIdx = (spritesetIdx + 1) % idCount;
 
         // Check if this sprite ID is excluded
         switch (spriteId)
@@ -589,6 +593,21 @@ void ChaosEffectScreenShake(void)
         ScreenShakeStartHorizontal(240, 1);
     else
         ScreenShakeStartVertical(240, 1);
+}
+
+s32 ChaosEffectKnockback(void)
+{
+    if (gSamusData.pose == SPOSE_USING_AN_ELEVATOR)
+        return FALSE;
+
+    SamusSetPose(SPOSE_KNOCKBACK_REQUEST);
+
+    if (gSamusData.direction & KEY_RIGHT)
+        gSamusData.xVelocity = -SUB_PIXEL_TO_VELOCITY(EIGHTH_BLOCK_SIZE);
+    else
+        gSamusData.xVelocity = SUB_PIXEL_TO_VELOCITY(EIGHTH_BLOCK_SIZE);
+    
+    return TRUE;
 }
 
 void ChaosEffectChangeEnergyAmmo(void)

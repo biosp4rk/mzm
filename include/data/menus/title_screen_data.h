@@ -9,7 +9,7 @@
 extern const u16 sTitleScreenPal[15 * 16];
 extern const u16 sTitleScreenPromptPal[5 * 16];
 
-extern const u32 sTitleScreenTitleGfx[1095];
+extern const u32 sTitleScreenTitleGfx[1128];
 extern const u32 sTitleScreenSparklesGfx[256];
 extern const u32 sTitleScreenSpaceBackgroundGfx[3203];
 extern const u32 sTitleScreenSpaceBackgroundDecorationGfx[797];
