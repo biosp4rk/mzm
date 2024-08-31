@@ -283,7 +283,7 @@ u32 ProjectileCheckWaveBeamHittingBlocks(struct ProjectileData* pProj)
     u8 nbrBlocks;
     u8 caa;
     const u32 hitboxOffset = BLOCK_SIZE;
-    const u32 hitboxDiagOffset = FRACT_MUL(hitboxOffset, 7, 10) + ONE_SUB_PIXEL;
+    const u32 hitboxDiagOffset = hitboxOffset * .7f + ONE_SUB_PIXEL;
 
     nbrBlocks = 0;
     caa = CAA_BEAM;
@@ -427,10 +427,10 @@ void ProjectileProcessWaveBeam(struct ProjectileData* pProj)
                 pProj->status |= PROJ_STATUS_Y_FLIP;
             case ACD_DIAGONALLY_UP:
                 pProj->pOam = sWaveBeamOam_Diagonal;
-                pProj->hitboxTop = -FRACT_MUL(WAVE_BEAM_HITBOX_LEFT, 8, 10);
-                pProj->hitboxBottom = FRACT_MUL(WAVE_BEAM_HITBOX_RIGHT, 32, 10);
-                pProj->hitboxLeft = -FRACT_MUL(WAVE_BEAM_HITBOX_TOP, 5, 8);
-                pProj->hitboxRight = FRACT_MUL(WAVE_BEAM_HITBOX_BOTTOM, 5, 8);
+                pProj->hitboxTop = -(WAVE_BEAM_HITBOX_LEFT * .8f);
+                pProj->hitboxBottom = (WAVE_BEAM_HITBOX_RIGHT * 3.2f);
+                pProj->hitboxLeft = -(WAVE_BEAM_HITBOX_TOP * .625f);
+                pProj->hitboxRight = (WAVE_BEAM_HITBOX_BOTTOM * .625f);
                 break;
 
             case ACD_DOWN:
@@ -523,10 +523,10 @@ void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
                 if (hasWave)
                 {
                     pProj->pOam = sPlasmaBeamOam_Diagonal_Wave;
-                    pProj->hitboxTop = -FRACT_MUL(WAVE_BEAM_HITBOX_LEFT, 8, 10);
-                    pProj->hitboxBottom = FRACT_MUL(WAVE_BEAM_HITBOX_RIGHT, 32, 10);
-                    pProj->hitboxLeft = -FRACT_MUL(WAVE_BEAM_HITBOX_TOP, 3, 4);
-                    pProj->hitboxRight = FRACT_MUL(WAVE_BEAM_HITBOX_BOTTOM, 3, 4);
+                    pProj->hitboxTop = -(WAVE_BEAM_HITBOX_LEFT * .8f);
+                    pProj->hitboxBottom = WAVE_BEAM_HITBOX_RIGHT * 3.2f;
+                    pProj->hitboxLeft = -(WAVE_BEAM_HITBOX_TOP * .75f);
+                    pProj->hitboxRight = (WAVE_BEAM_HITBOX_BOTTOM * .75f);
                 }
                 else
                 {
@@ -540,8 +540,8 @@ void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
                 if (hasWave)
                 {
                     pProj->pOam = sPlasmaBeamOam_Vertical_Wave;
-                    pProj->hitboxTop = -FRACT_MUL(WAVE_BEAM_HITBOX_LEFT, 16, 10);
-                    pProj->hitboxBottom = FRACT_MUL(WAVE_BEAM_HITBOX_RIGHT, 16, 10);
+                    pProj->hitboxTop = -(WAVE_BEAM_HITBOX_LEFT * 1.6f);
+                    pProj->hitboxBottom = (WAVE_BEAM_HITBOX_RIGHT * 1.6f);
                     pProj->hitboxLeft = -WAVE_BEAM_HITBOX_TOP;
                     pProj->hitboxRight = WAVE_BEAM_HITBOX_BOTTOM;
                 }
@@ -558,8 +558,8 @@ void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
                     pProj->pOam = sPlasmaBeamOam_Horizontal_Wave;
                     pProj->hitboxTop = -WAVE_BEAM_HITBOX_TOP;
                     pProj->hitboxBottom = WAVE_BEAM_HITBOX_BOTTOM;
-                    pProj->hitboxLeft = -FRACT_MUL(WAVE_BEAM_HITBOX_LEFT, 16, 10);
-                    pProj->hitboxRight = FRACT_MUL(WAVE_BEAM_HITBOX_RIGHT, 16, 10);
+                    pProj->hitboxLeft = -(WAVE_BEAM_HITBOX_LEFT * 1.6f);
+                    pProj->hitboxRight = (WAVE_BEAM_HITBOX_RIGHT * 1.6f);
                 }
                 else
                 {
@@ -951,10 +951,10 @@ void ProjectileProcessChargedWaveBeam(struct ProjectileData* pProj)
             case ACD_DIAGONALLY_UP:
                 pProj->pOam = sChargedWaveBeamOam_Diagonal;
 
-                pProj->hitboxTop = -FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_TOP, 10, 45);
+                pProj->hitboxTop = -(CHARGED_WAVE_BEAM_HITBOX_TOP / 4.5f);
                 pProj->hitboxBottom = CHARGED_WAVE_BEAM_HITBOX_BOTTOM;
-                pProj->hitboxLeft = -FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_LEFT, 24, 10);
-                pProj->hitboxRight = FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_RIGHT, 24, 10);
+                pProj->hitboxLeft = -(CHARGED_WAVE_BEAM_HITBOX_LEFT * 2.4f);
+                pProj->hitboxRight = (CHARGED_WAVE_BEAM_HITBOX_RIGHT * 2.4f);
                 break;
 
             case ACD_DOWN:
@@ -1061,10 +1061,10 @@ void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
                 {
                     pProj->pOam = sChargedPlasmaBeamOam_Diagonal_Wave;
 
-                    pProj->hitboxTop = -FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_TOP, 10, 45);
+                    pProj->hitboxTop = -(CHARGED_WAVE_BEAM_HITBOX_TOP / 4.5f);
                     pProj->hitboxBottom = CHARGED_WAVE_BEAM_HITBOX_BOTTOM;
-                    pProj->hitboxLeft = -FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_LEFT, 28, 10);
-                    pProj->hitboxRight = FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_RIGHT, 28, 10);
+                    pProj->hitboxLeft = -(CHARGED_WAVE_BEAM_HITBOX_LEFT * 2.8f);
+                    pProj->hitboxRight = (CHARGED_WAVE_BEAM_HITBOX_RIGHT * 2.8f);
                 }
                 else
                 {
@@ -1079,8 +1079,8 @@ void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
                 {
                     pProj->pOam = sChargedPlasmaBeamOam_Vertical_Wave;
 
-                    pProj->hitboxTop = -FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_LEFT, 18, 10);
-                    pProj->hitboxBottom = FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_LEFT, 18, 10);
+                    pProj->hitboxTop = -(CHARGED_WAVE_BEAM_HITBOX_LEFT * 1.8f);
+                    pProj->hitboxBottom = (CHARGED_WAVE_BEAM_HITBOX_LEFT * 1.8f);
                     pProj->hitboxLeft = -CHARGED_WAVE_BEAM_HITBOX_TOP;
                     pProj->hitboxRight = CHARGED_WAVE_BEAM_HITBOX_BOTTOM;
                 }
@@ -1098,8 +1098,8 @@ void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
 
                     pProj->hitboxTop = -CHARGED_WAVE_BEAM_HITBOX_TOP;
                     pProj->hitboxBottom = CHARGED_WAVE_BEAM_HITBOX_BOTTOM;
-                    pProj->hitboxLeft = -FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_LEFT, 18, 10);
-                    pProj->hitboxRight = FRACT_MUL(CHARGED_WAVE_BEAM_HITBOX_LEFT, 18, 10);
+                    pProj->hitboxLeft = -(CHARGED_WAVE_BEAM_HITBOX_LEFT * 1.8f);
+                    pProj->hitboxRight = (CHARGED_WAVE_BEAM_HITBOX_LEFT * 1.8f);
                 }
                 else
                 {
