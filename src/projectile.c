@@ -31,7 +31,7 @@
 void ProjectileProcessNormalBeam(struct ProjectileData* pProj)
 {
     u8 distance;
-    
+
     if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
         gCurrentClipdataAffectingAction = CAA_BEAM;
@@ -42,13 +42,11 @@ void ProjectileProcessNormalBeam(struct ProjectileData* pProj)
             ParticleSet(pProj->yPosition, pProj->xPosition, PE_HITTING_SOMETHING_WITH_NORMAL_BEAM);
             return;
         }
-        else
-        {
-            distance = 0x14;
-            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
-                distance /= 4;
-            ProjectileMove(pProj, distance);
-        }
+
+        distance = QUARTER_BLOCK_SIZE + PIXEL_SIZE;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -114,48 +112,41 @@ void ProjectileProcessLongBeam(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    /*
-    Movement Stage :
-      0x0 = Initialization
-      0x1 = Spawn
-      0x2 = Moving
-    */
-   if (pProj->movementStage == 0x2)
-   {
-       gCurrentClipdataAffectingAction = CAA_BEAM;
-       if (ProjectileCheckVerticalCollisionAtPosition(pProj) != 0x0) // Check for collision
-       {
-           pProj->status = 0x0;
-           ParticleSet(pProj->yPosition, pProj->xPosition, PE_HITTING_SOMETHING_WITH_LONG_BEAM);
-       }
-       else
-       {
-            distance = 0x18;
-            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
-                distance /= 4;
-            ProjectileMove(pProj, distance);
-            pProj->timer++;
-       }
-   }
-   else if (pProj->movementStage == 0x1)
-   {
-       gCurrentClipdataAffectingAction = CAA_BEAM;
-       if (ProjectileCheckVerticalCollisionAtPosition(pProj) != 0x0) // Check for collision
-       {
-           pProj->status = 0x0;
-           ParticleSet(pProj->yPosition, pProj->xPosition, PE_HITTING_SOMETHING_WITH_LONG_BEAM);
-       }
-       else
-       {
-           pProj->movementStage++;
-           ProjectileMove(pProj, 0x10);
-           pProj->timer++;
-       }
-   }
-   else
-   {
-       switch (pProj->direction) // Set OAM/Flip depending on direction
-       {
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
+    {
+        gCurrentClipdataAffectingAction = CAA_BEAM;
+        // Check for collision
+        if (ProjectileCheckVerticalCollisionAtPosition(pProj) != COLLISION_AIR)
+        {
+            pProj->status = 0;
+            ParticleSet(pProj->yPosition, pProj->xPosition, PE_HITTING_SOMETHING_WITH_LONG_BEAM);
+            return;
+        }
+
+        distance = QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
+    }
+    else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
+    {
+        gCurrentClipdataAffectingAction = CAA_BEAM;
+        // Check for collision
+        if (ProjectileCheckVerticalCollisionAtPosition(pProj) != COLLISION_AIR)
+        {
+            pProj->status = 0;
+            ParticleSet(pProj->yPosition, pProj->xPosition, PE_HITTING_SOMETHING_WITH_LONG_BEAM);
+            return;
+        }
+
+        pProj->movementStage++;
+        ProjectileMove(pProj, QUARTER_BLOCK_SIZE);
+    }
+    else
+    {
+        // Set animation and flip depending on direction
+        switch (pProj->direction)
+        {
             case ACD_DIAGONALLY_DOWN:
                 pProj->status |= PROJ_STATUS_Y_FLIP;
             case ACD_DIAGONALLY_UP:
@@ -204,13 +195,7 @@ void ProjectileProcessIceBeam(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    /*
-    Movement Stage :
-      0x0 = Initialization
-      0x1 = Spawn
-      0x2 = Moving
-    */
-    if (pProj->movementStage == 0x2)
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
         gCurrentClipdataAffectingAction = CAA_BEAM;
         // Check for collision
@@ -221,20 +206,14 @@ void ProjectileProcessIceBeam(struct ProjectileData* pProj)
             return;
         }
 
-        ProjectileMove(pProj, QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE + PIXEL_SIZE / 2);
+        distance = QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE + PIXEL_SIZE / 2;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
         if (pProj->status & PROJ_STATUS_X_FLIP)
             ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f));
         else
-        {
-            distance = 0x1A;
-            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
-                distance /= 4;
-            ProjectileMove(pProj, distance);
-            if (pProj->status & PROJ_STATUS_XFLIP)
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, 0x3);
-            else
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, 0x3);
-        }
+            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f));
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -418,10 +397,11 @@ void ProjectileProcessWaveBeam(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    ProjectileCheckWaveBeamHittingBlocks(pProj); // Check collision
-    if (pProj->movementStage == 0x2)
+    // Check collision
+    ProjectileCheckWaveBeamHittingBlocks(pProj);
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
-        distance = 0x1C;
+        distance = HALF_BLOCK_SIZE - PIXEL_SIZE;
         if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
@@ -510,7 +490,12 @@ void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
     }
     else
     {
-        distance = 0x20;
+        ProjectileCheckWaveBeamHittingBlocks(pProj);
+    }
+
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
+    {
+        distance = HALF_BLOCK_SIZE;
         if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
@@ -616,13 +601,7 @@ void ProjectileProcessPistol(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    /*
-    Movement Stage :
-      0x0 = Initialization
-      0x1 = Spawn
-      0x2 = Moving
-    */
-    if (pProj->movementStage == 0x2)
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
         gCurrentClipdataAffectingAction = CAA_BOMB_PISTOL;
         // Check for collision
@@ -632,14 +611,11 @@ void ProjectileProcessPistol(struct ProjectileData* pProj)
             ParticleSet(pProj->yPosition, pProj->xPosition, PE_HITTING_SOMETHING_WITH_NORMAL_BEAM);
             return;
         }
-        else
-        {
-            distance = 0x16;
-            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
-                distance /= 4;
-            ProjectileMove(pProj, distance);
-            pProj->timer++;
-        }
+
+        distance = QUARTER_BLOCK_SIZE + PIXEL_SIZE + PIXEL_SIZE / 2;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -703,7 +679,7 @@ void ProjectileProcessChargedNormalBeam(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    if (pProj->movementStage == 0x2)
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
         gCurrentClipdataAffectingAction = CAA_BEAM;
         if (ProjectileCheckVerticalCollisionAtPosition(pProj))
@@ -712,13 +688,11 @@ void ProjectileProcessChargedNormalBeam(struct ProjectileData* pProj)
             ParticleSet(pProj->yPosition, pProj->xPosition, PE_HITTING_SOMETHING_WITH_NORMAL_BEAM);
             return;
         }
-        else
-        {
-            distance = 0x14;
-            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
-                distance /= 4;
-            ProjectileMove(pProj, distance);
-        }
+
+        distance = QUARTER_BLOCK_SIZE + PIXEL_SIZE;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -783,7 +757,7 @@ void ProjectileProcessChargedLongBeam(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    if (pProj->movementStage == 0x2)
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
         gCurrentClipdataAffectingAction = CAA_BEAM;
         if (ProjectileCheckVerticalCollisionAtPosition(pProj))
@@ -793,11 +767,11 @@ void ProjectileProcessChargedLongBeam(struct ProjectileData* pProj)
             return;
         }
 
-        distance = 0x18;
+        distance = QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE;
         if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
-        ProjectileSetTrail(pProj, PE_CHARGED_LONG_BEAM_TRAIL, 0x7);
+        ProjectileSetTrail(pProj, PE_CHARGED_LONG_BEAM_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -860,7 +834,7 @@ void ProjectileProcessChargedIceBeam(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    if (pProj->movementStage == 0x2)
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
         gCurrentClipdataAffectingAction = CAA_BEAM;
         if (ProjectileCheckVerticalCollisionAtPosition(pProj))
@@ -870,12 +844,12 @@ void ProjectileProcessChargedIceBeam(struct ProjectileData* pProj)
             return;
         }
 
-        distance = 0x1A;
+        distance = QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE + PIXEL_SIZE / 2;
         if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
-        if (pProj->status & PROJ_STATUS_XFLIP)
-            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, 0x3);
+        if (pProj->status & PROJ_STATUS_X_FLIP)
+            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f));
         else
             ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f));
 
@@ -948,7 +922,7 @@ void ProjectileProcessChargedWaveBeam(struct ProjectileData* pProj)
     
     if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
-        distance = 0x1C;
+        distance = HALF_BLOCK_SIZE - PIXEL_SIZE;
         if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
@@ -1026,8 +1000,8 @@ void ProjectileProcessChargedWaveBeam(struct ProjectileData* pProj)
  */
 void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
 {
-    u8 distance;
     u8 hasWave;
+    u8 distance;
 
     hasWave = gEquipment.beamBombsActivation & BBF_WAVE_BEAM;
 
@@ -1046,7 +1020,7 @@ void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
 
     if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
-        distance = 0x20;
+        distance = HALF_BLOCK_SIZE;
         if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
@@ -1168,13 +1142,7 @@ void ProjectileProcessChargedPistol(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    /*
-    Movement Stage :
-      0x0 = Initialization
-      0x1 = Spawn
-      0x2 = Moving
-    */
-    if (pProj->movementStage == 0x2)
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
         gCurrentClipdataAffectingAction = CAA_BOMB_PISTOL;
         // Check for collision
@@ -1184,15 +1152,12 @@ void ProjectileProcessChargedPistol(struct ProjectileData* pProj)
             ParticleSet(pProj->yPosition, pProj->xPosition, PE_HITTING_SOMETHING_WITH_LONG_BEAM);
             return;
         }
-        else
-        {
-            distance = 0x16;
-            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
-                distance /= 4;
-            ProjectileMove(pProj, distance);
-            ProjectileSetTrail(pProj, PE_CHARGED_PISTOL_TRAIL, 0x7);
-            pProj->timer++;
-        }
+
+        distance = QUARTER_BLOCK_SIZE + PIXEL_SIZE + PIXEL_SIZE / 2;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            distance /= 4;
+        ProjectileMove(pProj, distance);
+        ProjectileSetTrail(pProj, PE_CHARGED_PISTOL_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -1274,24 +1239,18 @@ void ProjectileProcessMissile(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    /*
-    Movement Stage :
-      0x0 = Initialization
-      0x1 = Spawn
-      0x2 = Moving
-      0x7 = Tumbling
-    */
-    if (pProj->movementStage == 0x2)
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
         gCurrentClipdataAffectingAction = CAA_MISSILE;
         // Check for collisions
         if (ProjectileCheckVerticalCollisionAtPosition(pProj) == COLLISION_AIR)
         {
-            distance = pProj->timer + 0x8;
+            distance = pProj->timer + EIGHTH_BLOCK_SIZE;
             if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
                 distance /= 4;
             ProjectileMove(pProj, distance);
-            if (pProj->timer < 0xC)
+
+            if (pProj->timer < CONVERT_SECONDS(.2f))
                 pProj->timer++;
 
             ProjectileSetTrail(pProj, PE_MISSILE_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
@@ -1387,26 +1346,21 @@ void ProjectileProcessSuperMissile(struct ProjectileData* pProj)
 {
     u8 distance;
 
-    /*
-    Movement Stage :
-      0x0 = Initialization
-      0x1 = Spawn
-      0x2 = Moving
-      0x7 = Tumbling
-    */
-    if (pProj->movementStage == 0x2)
+    if (pProj->movementStage == PROJECTILE_STAGE_MOVING)
     {
         gCurrentClipdataAffectingAction = CAA_SUPER_MISSILE;
         // Check for collision
         if (ProjectileCheckVerticalCollisionAtPosition(pProj) == COLLISION_AIR)
         {
-            distance = pProj->timer + 0xC;
+            distance = pProj->timer + (QUARTER_BLOCK_SIZE - PIXEL_SIZE);
             if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
                 distance /= 4;
             ProjectileMove(pProj, distance);
-            if (pProj->timer < 0x10)
-                pProj->timer++;
-            ProjectileSetTrail(pProj, PE_SUPER_MISSILE_TRAIL, 0x3);
+
+            if (pProj->timer <= CONVERT_SECONDS(.25f))
+                APPLY_DELTA_TIME_INC(pProj->timer);
+
+            ProjectileSetTrail(pProj, PE_SUPER_MISSILE_TRAIL, CONVERT_SECONDS(.05f));
         }
         else
         {
