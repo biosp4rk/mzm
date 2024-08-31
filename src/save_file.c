@@ -2,6 +2,7 @@
 #include "callbacks.h"
 #include "macros.h"
 #include "event.h"
+#include "chaos.h"
 
 #include "data/shortcut_pointers.h"
 #include "data/save_file_data.h"
@@ -610,6 +611,9 @@ u32 SramSaveFile(void)
         gHasSaved = TRUE;
         gSramOperationStage = 0;
         gUnk_3000c20 = 0;
+
+        // Restore any changed equipment
+        ChaosEndEquipmentEffects();
     }
 
     switch (gSramOperationStage)

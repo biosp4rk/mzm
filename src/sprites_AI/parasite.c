@@ -84,9 +84,9 @@ void ParasiteInit(struct SpriteData* pSprite)
 
     if (spriteId == PSPRITE_PARASITE_MULTIPLE)
     {
-        // Check lock doors
-        if (gEquipment.beamBombs & BBF_BOMBS && !EventFunction(EVENT_ACTION_CHECKING, EVENT_BUGS_KILLED))
-            LOCK_DOORS();
+        // Don't lock doors to avoid softlocking
+        // if (gEquipment.beamBombs & BBF_BOMBS && !EventFunction(EVENT_ACTION_CHECKING, EVENT_BUGS_KILLED))
+        //     LOCK_DOORS();
 
         // Check is main parasite (spawned via room data and not with SpriteSpawnPrimary since it adds the Not Drawn flag)
         if (pSprite->status & SPRITE_STATUS_NOT_DRAWN)

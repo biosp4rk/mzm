@@ -14,6 +14,7 @@
 
 #include "constants/chaos.h"
 #include "constants/color_fading.h"
+#include "constants/game_state.h"
 #include "constants/particle.h"
 #include "constants/power_bomb_explosion.h"
 #include "constants/projectile.h"
@@ -90,7 +91,8 @@ void ChaosEffectEnded(struct ChaosEffect* pEffect)
             if ((pEffect->data >> 8) == 0)
             {
                 gEquipment.beamBombsActivation |= (u8)pEffect->data;
-                ProjectileLoadGraphics();
+                if (gMainGameMode == GM_INGAME)
+                    ProjectileLoadGraphics();
             }
             else
             {
@@ -99,7 +101,8 @@ void ChaosEffectEnded(struct ChaosEffect* pEffect)
             break;
         case CHAOS_EFFECT_SUITLESS:
             UpdateSuitType(pEffect->data, TRUE);
-            ProjectileLoadGraphics();
+            if (gMainGameMode == GM_INGAME)
+                ProjectileLoadGraphics();
             gSamusWeaponInfo.chargeCounter = 0;
             break;
     }
@@ -110,6 +113,28 @@ void ChaosEffectEnded(struct ChaosEffect* pEffect)
     pEffect->id = 0;
     pEffect->timer = 0;
     pEffect->data = 0;
+}
+
+/**
+ * @brief Ends any chaos effects that modify equipment
+ */
+void ChaosEndEquipmentEffects(void)
+{
+    s32 i;
+
+    for (i = 0; i < MAX_NUM_CHAOS_EFFECTS; i++)
+    {
+        if (!gChaosEffects[i].exists)
+            continue;
+
+        switch (gChaosEffects[i].id)
+        {
+            case CHAOS_EFFECT_DEACTIVATE_ABILITY:
+            case CHAOS_EFFECT_SUITLESS:
+                ChaosEffectEnded(&gChaosEffects[i]);
+                break;
+        }
+    }
 }
 
 void ChaosCreateEffect(void)
@@ -517,6 +542,7 @@ s32 ChaosEffectSpawnEnemy(void)
             case PSPRITE_CHOZO_STATUE_VARIA_HINT:
             case PSPRITE_CHOZO_STATUE_VARIA:
             case PSPRITE_MULTIPLE_LARGE_ENERGY:
+            case PSPRITE_GUNSHIP:
             case PSPRITE_DEOREM:
             case PSPRITE_DEOREM_SECOND_LOCATION:
             case PSPRITE_IMAGO_LARVA_RIGHT:
@@ -532,6 +558,7 @@ s32 ChaosEffectSpawnEnemy(void)
             case PSPRITE_MOTHER_BRAIN:
             case PSPRITE_FAKE_POWER_BOMB_EVENT_TRIGGER:
             case PSPRITE_ACID_WORM:
+            case PSPRITE_ESCAPE_SHIP:
             case PSPRITE_IMAGO_LARVA_RIGHT_SIDE:
             case PSPRITE_IMAGO:
             case PSPRITE_CROCOMIRE:

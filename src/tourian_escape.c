@@ -3,6 +3,7 @@
 #include "fixed_point.h"
 #include "complex_oam.h"
 #include "callbacks.h"
+#include "chaos.h"
 
 #include "data/generic_data.h"
 #include "data/intro_data.h"
@@ -2411,6 +2412,9 @@ u8 TourianEscapeCallSubroutines(void)
     switch (gGameModeSub1)
     {
         case 0:
+            // Make sure Samus isn't suitless
+            ChaosEndEquipmentEffects();
+            
             TourianEscapeInit();
             gGameModeSub1++;
             break;

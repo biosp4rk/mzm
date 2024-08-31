@@ -11,6 +11,7 @@ u8 ChaosEmptyEffectIndex(void);
 void ChaosUpdate(void);
 void ChaosUpdateEffects(void);
 void ChaosEffectEnded(struct ChaosEffect* pEffect);
+void ChaosEndEquipmentEffects(void);
 void ChaosCreateEffect(void);
 void ChaosUpdateRng(void);
 u16 ChaosRandU16(u16 min, u16 max);
