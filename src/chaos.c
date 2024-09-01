@@ -204,7 +204,7 @@ void ChaosCreateEffect(void)
                 break;
             case CHAOS_EFFECT_SWAP_MISSILES:
                 if (gEquipment.suitType == SUIT_SUITLESS ||
-                    gEquipment.maxMissiles == 0 || gEquipment.maxSuperMissiles == 0)
+                    gEquipment.currentMissiles == 0 || gEquipment.currentSuperMissiles == 0)
                     continue;
                 break;
             case CHAOS_EFFECT_CHARGED_SHOTS:
