@@ -1,6 +1,7 @@
 #include "cutscenes/getting_fully_powered_suit.h"
 #include "cutscenes/cutscene_utils.h"
 #include "macros.h"
+#include "chaos.h"
 
 #include "data/shortcut_pointers.h"
 #include "data/generic_data.h"
@@ -328,6 +329,9 @@ void GettingFullyPoweredSuitUpdateSparkleGoingUp(struct CutsceneOamData* pOam, u
 u8 GettingFullyPoweredSuitInit(void)
 {
     s32 i;
+
+    // Make sure Samus isn't suitless
+    ChaosEndEquipmentEffects();
 
     unk_61f0c();
 
