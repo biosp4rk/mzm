@@ -6682,37 +6682,47 @@ void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction)
     acd = pData->armCannonDirection;
 
     // Check enable echo
-    switch (pose)
+    if (ChaosIsEffectActive(CHAOS_FLAG_LONG_ECHO))
     {
-        case SPOSE_MIDAIR:
-        case SPOSE_SPINNING:
-        case SPOSE_SPACE_JUMPING:
-        case SPOSE_SCREW_ATTACKING:
-        case SPOSE_MORPH_BALL_MIDAIR:
-            // Not slowed and Y velocity of at least 2 blocks
-            if (!pPhysics->slowedByLiquid && pData->yVelocity > SUB_PIXEL_TO_VELOCITY(EIGHTH_BLOCK_SIZE + PIXEL_SIZE / 2))
-            {
-                pEcho->active = TRUE;
-                pEcho->timer = 6;
-                pEcho->distance = 2;
-            }
-    }
-
-    if (pData->speedboostingShinesparking)
-    {
-        // Enable echo if using speedbooster
         pEcho->active = TRUE;
-        pEcho->timer = 16;
-        pEcho->distance = 4;
+        pEcho->timer = 0;
+        pEcho->distance = 15;
     }
     else
     {
-        // Update echo timer
-        if (pEcho->timer != 0)
-            pEcho->timer--;
+        switch (pose)
+        {
+            case SPOSE_MIDAIR:
+            case SPOSE_SPINNING:
+            case SPOSE_SPACE_JUMPING:
+            case SPOSE_SCREW_ATTACKING:
+            case SPOSE_MORPH_BALL_MIDAIR:
+                // Not slowed and Y velocity of at least 2 blocks
+                if (!pPhysics->slowedByLiquid && pData->yVelocity > SUB_PIXEL_TO_VELOCITY(EIGHTH_BLOCK_SIZE + PIXEL_SIZE / 2))
+                {
+                    pEcho->active = TRUE;
+                    pEcho->timer = 6;
+                    pEcho->distance = 2;
+                }
+        }
+
+        if (pData->speedboostingShinesparking)
+        {
+            // Enable echo if using speedbooster
+            pEcho->active = TRUE;
+            pEcho->timer = 16;
+            pEcho->distance = 4;
+        }
         else
-            pEcho->active = FALSE;
+        {
+            // Update echo timer
+            if (pEcho->timer != 0)
+                pEcho->timer--;
+            else
+                pEcho->active = FALSE;
+        }
     }
+
 
     // Prevent buffer overflow
     ppc = MOD_AND(pEcho->previousPositionCounter, ARRAY_SIZE(pEcho->previous64XPositions));
@@ -7971,6 +7981,7 @@ void SamusDraw(void)
     u32 yPosition;
     u16 part1;
     u16 part2;
+    u8 echoStart;
     s32 ppc;
     s32 futureSlot;
 
@@ -8176,7 +8187,8 @@ void SamusDraw(void)
     // Draw echo
     if (gSamusEcho.active)
     {
-        ppc = (s16)(gSamusEcho.previousPositionCounter - (gSamusEcho.distance * gSamusEcho.position) - 3);
+        echoStart = ChaosIsEffectActive(CHAOS_FLAG_LONG_ECHO) ? 15 : 3;
+        ppc = (s16)(gSamusEcho.previousPositionCounter - (gSamusEcho.distance * gSamusEcho.position) - echoStart);
 
         if (gSamusEcho.unknown == 0 && ppc < 0)
         {

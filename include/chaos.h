@@ -25,7 +25,7 @@ void ChaosEffectExplosions(void);
 
 s32 ChaosEffectSpawnEnemy(void);
 s32 ChaosEffectSpawnPB(void);
-void ChaosEffectFreezeEnemies(void);
+s32 ChaosEffectFreezeEnemies(void);
 s32 ChaosEffectKnockback(void);
 void ChaosEffectScreenShake(void);
 void ChaosEffectChangeEnergyAmmo(void);

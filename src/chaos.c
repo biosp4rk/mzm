@@ -168,9 +168,9 @@ void ChaosCreateEffect(void)
         {
             // Duration effects
             case CHAOS_EFFECT_INVERTED_CONTROLS:
-                break; // No checks or setup required
+                break; // No extra checks or setup required
             case CHAOS_EFFECT_WATER_PHYSICS:
-                break; // No checks or setup required
+                break; // No extra checks or setup required
             case CHAOS_EFFECT_SLOW_HORI_MOVEMENT:
                 if (ChaosIsEffectActive(CHAOS_FLAG_FAST_HORI_MOVEMENT))
                     continue;
@@ -196,7 +196,7 @@ void ChaosCreateEffect(void)
                     continue;
                 break;
             case CHAOS_EFFECT_SLOW_WEAPONS:
-                break; // No checks or setup required
+                break; // No extra checks or setup required
             case CHAOS_EFFECT_ARM_WEAPON:
                 if (gEquipment.suitType == SUIT_SUITLESS ||
                     (gEquipment.currentMissiles == 0 && gEquipment.currentSuperMissiles == 0))
@@ -221,7 +221,7 @@ void ChaosCreateEffect(void)
                     continue;
                 break;
             case CHAOS_EFFECT_EXPLOSIONS:
-                break; // No checks or setup required
+                break; // No extra checks or setup required
             // One time effects
             case CHAOS_EFFECT_SPAWN_ENEMY:
                 if (!ChaosEffectSpawnEnemy())
@@ -232,7 +232,8 @@ void ChaosCreateEffect(void)
                     continue;
                 break;
             case CHAOS_EFFECT_FREEZE_ENEMIES:
-                ChaosEffectFreezeEnemies();
+                if (!ChaosEffectFreezeEnemies())
+                    continue;
                 break;
             case CHAOS_EFFECT_SCREEN_SHAKE:
                 ChaosEffectScreenShake();
@@ -604,17 +605,25 @@ s32 ChaosEffectSpawnPB(void)
     return FALSE;
 }
 
-void ChaosEffectFreezeEnemies(void)
+s32 ChaosEffectFreezeEnemies(void)
 {
+    s32 success;
     u8 i;
+
+    success = FALSE;
 
     for (i = 0; i < MAX_AMOUNT_OF_SPRITES; i++)
     {
         if (gSpriteData[i].status & SPRITE_STATUS_EXISTS &&
             !(gSpriteData[i].properties & SP_SECONDARY_SPRITE) &&
             ProjectileGetSpriteWeakness(&gSpriteData[i]) & WEAKNESS_CAN_BE_FROZEN)
+        {
             ProjectileFreezeSprite(&gSpriteData[i], 0xF0);
+            success = TRUE;
+        }
     }
+
+    return success;
 }
 
 void ChaosEffectScreenShake(void)
