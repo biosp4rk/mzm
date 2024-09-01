@@ -15,7 +15,7 @@
 // Duration effects
 
 // Movement related
-#define CHAOS_EFFECT_INVERTED_CONTROLS 0    // Inverts up/down and left/right
+#define CHAOS_EFFECT_INVERTED_CONTROLS 0    // Inverts left/right buttons
 #define CHAOS_EFFECT_WATER_PHYSICS 1        // Sets the water movement flag
 #define CHAOS_EFFECT_SLOW_HORI_MOVEMENT 2   // Cuts horizontal movement speed in half
 #define CHAOS_EFFECT_FAST_HORI_MOVEMENT 3   // Doubles horizontal movement speed
