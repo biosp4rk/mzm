@@ -388,7 +388,8 @@ SECTIONS {
         . = 0x00006000; gChaosRng = .;
         . = 0x00006004; gActiveChaosEffects = .;
         . = 0x00006008; gPrevOneTimeChaosEffect = .;
-        . = 0x0000600C; gChaosEffects = .;
+        . = 0x0000600C; gHudPositions = .;
+        . = 0x00006018; gChaosEffects = .;
 
 
         . = 0x00007e60; sp_sys = .;

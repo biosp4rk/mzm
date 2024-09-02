@@ -19,12 +19,16 @@ u16 ChaosPositionNearSamus(u16 samusPos, u16 max);
 u16 ChaosPositionNearSamusX(void);
 u16 ChaosPositionNearSamusY(void);
 
+// Duration effects
 s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect);
 s32 ChaosEffectSuitless(struct ChaosEffect* pEffect);
+void ChaosEffectMoveHud(void);
 void ChaosEffectExplosions(void);
 
+// One time effects
 s32 ChaosEffectSpawnEnemy(void);
 s32 ChaosEffectSpawnPB(void);
+void ChaosEffectShotBlock(void);
 s32 ChaosEffectFreezeEnemies(void);
 s32 ChaosEffectKnockback(void);
 void ChaosEffectScreenShake(void);

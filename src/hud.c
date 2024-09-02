@@ -2,16 +2,19 @@
 #include "gba.h"
 #include "macros.h"
 #include "oam.h"
+#include "chaos.h"
 
 #include "data/hud_data.h"
 
 #include "constants/minimap.h"
 #include "constants/samus.h"
+#include "constants/chaos.h"
 
 #include "structs/hud.h"
 #include "structs/minimap.h"
 #include "structs/samus.h"
 #include "structs/game_state.h"
+#include "structs/chaos.h"
 
 /**
  * @brief 52308 | 35c | Updates the OAM of the HUD
@@ -19,23 +22,44 @@
  */
 void HUDUpdateOAM(void)
 {
+    u32 moveHud;
+    u8 energyX;
+    u8 energyY;
+    u8 chargeBarX;
+    u8 chargeBarY;
+    u8 minimapX;
+    u8 minimapY;
+
     u32 oamSlot;
     u16* dst;
     struct Equipment* pEquipment = &gEquipment;
-    
+
     oamSlot = 0x0;
 
     if (!gHideHud)
     {
+        moveHud = ChaosIsEffectActive(CHAOS_FLAG_MOVE_HUD);
+
         dst = (u16*)gOamData;
+
+        if (moveHud)
+        {
+            energyX = gHudPositions.energyX;
+            energyY = gHudPositions.energyY;
+        }
+        else
+        {
+            energyX = 0;
+            energyY = 2;
+        }
 
         // Left part of health bar
         *dst++ = 0x0;
-        gOamData[oamSlot].split.y = 0x2;
+        gOamData[oamSlot].split.y = energyY;
         gOamData[oamSlot].split.shape = 0x1;
 
         *dst++ = 0x0;
-        gOamData[oamSlot].split.x = 0x0;
+        gOamData[oamSlot].split.x = energyX;
         gOamData[oamSlot].split.size = 0x1;
         
         *dst++ = 0x0;
@@ -47,11 +71,11 @@ void HUDUpdateOAM(void)
 
         // Right part of health bar
         *dst++ = 0x0;
-        gOamData[oamSlot].split.y = 0x2;
+        gOamData[oamSlot].split.y = energyY;
         gOamData[oamSlot].split.shape = 0x1;
         
         *dst++ = 0x0;
-        gOamData[oamSlot].split.x = 0x20;
+        gOamData[oamSlot].split.x = energyX + 32;
         gOamData[oamSlot].split.size = 0x1;
         
         *dst++ = 0x0;
@@ -61,16 +85,26 @@ void HUDUpdateOAM(void)
         dst++;
         oamSlot++;
 
-        
         if (pEquipment->suitType == SUIT_SUITLESS)
         {
+            if (moveHud)
+            {
+                chargeBarX = gHudPositions.chargeBarX;
+                chargeBarY = gHudPositions.chargeBarY;
+            }
+            else
+            {
+                chargeBarX = 1;
+                chargeBarY = 10;
+            }
+
             // Left part of charge bar
             *dst++ = 0x0;
-            gOamData[oamSlot].split.y = 0xA;
+            gOamData[oamSlot].split.y = chargeBarY;
             gOamData[oamSlot].split.shape = 0x1;
             
             *dst++ = 0x0;
-            gOamData[oamSlot].split.x = 0x1;
+            gOamData[oamSlot].split.x = chargeBarX;
             gOamData[oamSlot].split.size = 0x1;
             
             *dst++ = 0x0;
@@ -82,11 +116,11 @@ void HUDUpdateOAM(void)
             
             // Right part of charge bar
             *dst++ = 0x0;
-            gOamData[oamSlot].split.y = 0xA;
+            gOamData[oamSlot].split.y = chargeBarY;
             gOamData[oamSlot].split.shape = 0x1;
             
             *dst++ = 0x0;
-            gOamData[oamSlot].split.x = 0x21;
+            gOamData[oamSlot].split.x = chargeBarX + 32;
             gOamData[oamSlot].split.size = 0x1;
             
             *dst++ = 0x0;
@@ -103,11 +137,11 @@ void HUDUpdateOAM(void)
                 // Missile digits
                 
                 *dst++ = 0x0;
-                gOamData[oamSlot].split.y = 0x2;
+                gOamData[oamSlot].split.y = moveHud ? gHudPositions.missileY : 2;
                 gOamData[oamSlot].split.shape = 0x1;
 
                 *dst++ = 0x0;
-                gOamData[oamSlot].split.x = 0x36;
+                gOamData[oamSlot].split.x = moveHud ? gHudPositions.missileX : 54;
                 gOamData[oamSlot].split.size = 0x1;
 
                 *dst++ = 0x0;
@@ -120,12 +154,13 @@ void HUDUpdateOAM(void)
             if (pEquipment->maxSuperMissiles != 0x0)
             {
                 // Super missile digits
+
                 *dst++ = 0x0;
-                gOamData[oamSlot].split.y = 0x2;
+                gOamData[oamSlot].split.y = moveHud ? gHudPositions.superMissileY : 2;
                 gOamData[oamSlot].split.shape = 0x1;
 
                 *dst++ = 0x0;
-                gOamData[oamSlot].split.x = 0x50;
+                gOamData[oamSlot].split.x = moveHud ? gHudPositions.superMissileX : 80;
                 gOamData[oamSlot].split.size = 0x1;
 
                 *dst++ = 0x0;
@@ -140,11 +175,11 @@ void HUDUpdateOAM(void)
                 // Power bomb digits
 
                 *dst++ = 0x0;
-                gOamData[oamSlot].split.y = 0x2;
+                gOamData[oamSlot].split.y = moveHud ? gHudPositions.powerBombY : 2;
                 gOamData[oamSlot].split.shape = 0x1;
 
                 *dst++ = 0x0;
-                gOamData[oamSlot].split.x = 0x6A;
+                gOamData[oamSlot].split.x = moveHud ? gHudPositions.powerBombX : 106;
                 gOamData[oamSlot].split.size = 0x1;
 
                 *dst++ = 0x0;
@@ -158,12 +193,23 @@ void HUDUpdateOAM(void)
 
         // Minimap white square
 
+        if (moveHud)
+        {
+            minimapX = gHudPositions.minimapX;
+            minimapY = gHudPositions.minimapY;
+        }
+        else
+        {
+            minimapX = 214;
+            minimapY = 250; // -6
+        }
+
         *dst++ = 0x0;
-        gOamData[oamSlot].split.y = 0xA;
+        gOamData[oamSlot].split.y = (minimapY + 16) & 0xFF;
         gOamData[oamSlot].split.shape = 0x0;
 
         *dst++ = 0x0;
-        gOamData[oamSlot].split.x = 0xDE;
+        gOamData[oamSlot].split.x = minimapX + 8;
         gOamData[oamSlot].split.size = 0x0;
 
         *dst++ = 0x0;
@@ -179,11 +225,11 @@ void HUDUpdateOAM(void)
 
         // Minimap
         *dst++ = 0x0;
-        gOamData[oamSlot].split.y = 0xFA;
+        gOamData[oamSlot].split.y = minimapY;
         gOamData[oamSlot].split.shape = 0x0;
 
         *dst++ = 0x0;
-        gOamData[oamSlot].split.x = 0xD6;
+        gOamData[oamSlot].split.x = minimapX;
         gOamData[oamSlot].split.size = 0x2;
 
         *dst = 0x0;

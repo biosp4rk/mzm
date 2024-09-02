@@ -1,4 +1,5 @@
 #include "audio_wrappers.h"
+#include "bg_clip.h"
 #include "chaos.h"
 #include "gba/keys.h"
 #include "gba/memory.h"
@@ -12,7 +13,9 @@
 #include "sprite.h"
 #include "sprite_util.h"
 
+#include "constants/audio.h"
 #include "constants/chaos.h"
+#include "constants/clipdata.h"
 #include "constants/color_fading.h"
 #include "constants/game_state.h"
 #include "constants/particle.h"
@@ -30,6 +33,13 @@
 #include "structs/room.h"
 #include "structs/samus.h"
 #include "structs/sprite.h"
+
+// Max positions where HUD elements can be drawn when moved
+#define HUD_MAX_X (SCREEN_SIZE_X - 24)
+#define HUD_MAX_Y (SCREEN_SIZE_Y - 8)
+// Gets a random position on screen
+#define RAND_SCREEN_X (ChaosRandU16(0, HUD_MAX_X))
+#define RAND_SCREEN_Y (ChaosRandU16(0, HUD_MAX_Y))
 
 u32 ChaosIsEffectActive(u32 flags)
 {
@@ -98,6 +108,8 @@ void ChaosEffectEnded(struct ChaosEffect* pEffect)
             {
                 gEquipment.suitMiscActivation |= (u8)pEffect->data;
             }
+            // Play "enable" sound
+            SoundPlay(SOUND_RUINS_TEST_SYMBOL_PLACED);
             break;
         case CHAOS_EFFECT_SUITLESS:
             UpdateSuitType(pEffect->data, TRUE);
@@ -215,6 +227,9 @@ void ChaosCreateEffect(void)
                 if (ChaosIsEffectActive(CHAOS_FLAG_CHARGED_SHOTS))
                     continue;
                 break;
+            case CHAOS_EFFECT_MOVE_HUD:
+                ChaosEffectMoveHud();
+                break;
             case CHAOS_EFFECT_FORWARD_CAMERA:
                 if (gCurrentRoomEntry.scrollsFlag == ROOM_SCROLLS_FLAG_HAS_SCROLLS ||
                     gBgPointersAndDimensions.clipdataWidth <= 19)
@@ -230,6 +245,9 @@ void ChaosCreateEffect(void)
             case CHAOS_EFFECT_SPAWN_PB:
                 if (!ChaosEffectSpawnPB())
                     continue;
+                break;
+            case CHAOS_EFFECT_SHOT_BLOCK:
+                ChaosEffectShotBlock();
                 break;
             case CHAOS_EFFECT_FREEZE_ENEMIES:
                 if (!ChaosEffectFreezeEnemies())
@@ -390,6 +408,8 @@ s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect)
         gEquipment.suitMiscActivation &= ~suitMiscAct;
     }
 
+    // Play "disable" sound
+    SoundPlay(SOUND_UNKNOWN_ITEM_ACQUISITION);
     return TRUE;
 }
 
@@ -402,6 +422,22 @@ s32 ChaosEffectSuitless(struct ChaosEffect* pEffect)
     UpdateSuitType(SUIT_SUITLESS, TRUE);
     ProjectileLoadGraphics();
     return TRUE;
+}
+
+void ChaosEffectMoveHud(void)
+{
+    gHudPositions.energyX = RAND_SCREEN_X;
+    gHudPositions.energyY = RAND_SCREEN_Y;
+    gHudPositions.chargeBarX = RAND_SCREEN_X;
+    gHudPositions.chargeBarY = RAND_SCREEN_Y;
+    gHudPositions.missileX = RAND_SCREEN_X;
+    gHudPositions.missileY = RAND_SCREEN_Y;
+    gHudPositions.superMissileX = RAND_SCREEN_X;
+    gHudPositions.superMissileY = RAND_SCREEN_Y;
+    gHudPositions.powerBombX = RAND_SCREEN_X;
+    gHudPositions.powerBombY = RAND_SCREEN_Y;
+    gHudPositions.minimapX = RAND_SCREEN_X;
+    gHudPositions.minimapY = RAND_SCREEN_Y;
 }
 
 void ChaosEffectExplosions(void)
@@ -603,6 +639,18 @@ s32 ChaosEffectSpawnPB(void)
     }
 
     return FALSE;
+}
+
+void ChaosEffectShotBlock(void)
+{
+    u16 xPos;
+    u16 yPos;
+
+    xPos = (ChaosPositionNearSamusX() + HALF_BLOCK_SIZE) / BLOCK_SIZE;
+    yPos = (ChaosPositionNearSamusY() + HALF_BLOCK_SIZE) / BLOCK_SIZE;
+
+    BgClipSetClipdataBlockValue(CLIPDATA_SHOT_BLOCK_REFORM, yPos, xPos);
+    BgClipSetBg1BlockValue(0x46, yPos, xPos);
 }
 
 s32 ChaosEffectFreezeEnemies(void)
