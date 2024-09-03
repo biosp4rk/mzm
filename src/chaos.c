@@ -36,7 +36,7 @@
 
 // Max positions where HUD elements can be drawn when moved
 #define HUD_MAX_X (SCREEN_SIZE_X - 24)
-#define HUD_MAX_Y (SCREEN_SIZE_Y - 8)
+#define HUD_MAX_Y (SCREEN_SIZE_Y - 12)
 // Gets a random position on screen
 #define RAND_SCREEN_X (ChaosRandU16(0, HUD_MAX_X))
 #define RAND_SCREEN_Y (ChaosRandU16(0, HUD_MAX_Y))
