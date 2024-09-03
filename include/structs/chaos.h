@@ -5,7 +5,7 @@
 
 #define MAX_NUM_CHAOS_EFFECTS 5
 
-struct ChaosEffect {
+struct ChaosEffectData {
     u8 exists;
     u8 id;
     u16 timer;
@@ -31,6 +31,6 @@ extern u32 gChaosRng;
 extern u32 gActiveChaosEffects;
 extern u8 gPrevOneTimeChaosEffect;
 extern struct HudPositions gHudPositions;
-extern struct ChaosEffect gChaosEffects[MAX_NUM_CHAOS_EFFECTS];
+extern struct ChaosEffectData gChaosEffects[MAX_NUM_CHAOS_EFFECTS];
 
 #endif /* CHAOS_STRUCT_H */

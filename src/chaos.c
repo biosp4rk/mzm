@@ -93,7 +93,7 @@ void ChaosUpdateEffects(void)
     }
 }
 
-void ChaosEffectEnded(struct ChaosEffect* pEffect)
+void ChaosEffectEnded(struct ChaosEffectData* pEffect)
 {
     u8 flag;
 
@@ -375,7 +375,7 @@ u16 ChaosPositionNearSamusY(void)
 
 // Duration effects
 
-s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect)
+s32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect)
 {
     s32 i;
     u8 beamBombsFlags[6];
@@ -461,7 +461,7 @@ s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect)
     return TRUE;
 }
 
-s32 ChaosEffectGiveAbility(struct ChaosEffect* pEffect)
+s32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect)
 {
     s32 i;
     u8 beamBombsFlags[6];
@@ -548,7 +548,7 @@ s32 ChaosEffectGiveAbility(struct ChaosEffect* pEffect)
     return TRUE;
 }
 
-s32 ChaosEffectSuitless(struct ChaosEffect* pEffect)
+s32 ChaosEffectSuitless(struct ChaosEffectData* pEffect)
 {
     if (gEquipment.suitType == SUIT_SUITLESS)
         return FALSE;

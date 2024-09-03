@@ -10,7 +10,7 @@ u32 ChaosIsEffectActive(u32 flags);
 u8 ChaosEmptyEffectIndex(void);
 void ChaosUpdate(void);
 void ChaosUpdateEffects(void);
-void ChaosEffectEnded(struct ChaosEffect* pEffect);
+void ChaosEffectEnded(struct ChaosEffectData* pEffect);
 void ChaosEndEquipmentEffects(void);
 void ChaosCreateEffect(void);
 void ChaosUpdateRng(void);
@@ -20,9 +20,9 @@ u16 ChaosPositionNearSamusX(void);
 u16 ChaosPositionNearSamusY(void);
 
 // Duration effects
-s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect);
-s32 ChaosEffectGiveAbility(struct ChaosEffect* pEffect);
-s32 ChaosEffectSuitless(struct ChaosEffect* pEffect);
+s32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect);
+s32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect);
+s32 ChaosEffectSuitless(struct ChaosEffectData* pEffect);
 void ChaosEffectMoveHud(void);
 void ChaosEffectExplosions(void);
 
