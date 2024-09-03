@@ -14,12 +14,12 @@ Source code: https://github.com/biosp4rk/mzm/tree/chaos
 
 Version history:
 WIP - 1.1.0
-- Fixed "swap missiles" activating when Samus has no missiles
-- Fixed losing fully powered suit if obtained while suitless
+- Added four new effects
 - Added sounds that play when an ability is deactivated or reactivated
-- Added three new effects
 - Slow/fast X movement affects crawling speed
 - Removed "forward camera" effect
+- Fixed "swap missiles" activating when Samus has no missiles
+- Fixed losing fully powered suit if obtained while suitless
 
 2024-09-01 - 1.0.0
 - Initial release

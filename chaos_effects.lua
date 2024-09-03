@@ -17,6 +17,7 @@ local EFFECT_NAMES = {
     "high gravity",
     "long echo",
     "deactivate ability",
+    "give ability",
     "suitless",
     "slow weapons",
     "arm missiles",
