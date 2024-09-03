@@ -426,7 +426,7 @@ void ScrollProcessGeneral(void)
 
     if (gLockScreen.lock == LOCK_SCREEN_TYPE_NONE)
     {
-        if (gSlowScrollingTimer == 0)
+        if (gSlowScrollingTimer == 0 && !ChaosIsEffectActive(CHAOS_FLAG_SLOW_SCROLLING))
         {
             // Compute new velocity caps to accomodate for samus movements
             distance = gSamusData.xPosition - gPreviousXPosition;
@@ -593,9 +593,7 @@ void ScrollWithNoScrollsX(struct Coordinates* pCoords)
     s32 xPosition;
 
     xOffset = 0;
-    if (gLockScreen.lock == LOCK_SCREEN_TYPE_NONE &&
-        (gSamusPhysics.standingStatus == STANDING_NOT_IN_CONTROL ||
-        ChaosIsEffectActive(CHAOS_FLAG_FORWARD_CAMERA)))
+    if (gLockScreen.lock == LOCK_SCREEN_TYPE_NONE && gSamusPhysics.standingStatus == STANDING_NOT_IN_CONTROL)
     {
         if (gSamusData.direction & KEY_RIGHT)
             xOffset = SCREEN_X_BLOCK_PADDING;

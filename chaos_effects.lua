@@ -24,7 +24,7 @@ local EFFECT_NAMES = {
     "charged shots",
     "shoot bombs",
     "move hud",
-    "forward camera",
+    "slow scrolling",
     "explosions",
     -- One time effects
     "spawn enemy",

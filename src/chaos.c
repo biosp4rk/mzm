@@ -230,11 +230,8 @@ void ChaosCreateEffect(void)
             case CHAOS_EFFECT_MOVE_HUD:
                 ChaosEffectMoveHud();
                 break;
-            case CHAOS_EFFECT_FORWARD_CAMERA:
-                if (gCurrentRoomEntry.scrollsFlag == ROOM_SCROLLS_FLAG_HAS_SCROLLS ||
-                    gBgPointersAndDimensions.clipdataWidth <= 19)
-                    continue;
-                break;
+            case CHAOS_EFFECT_SLOW_SCROLLING:
+                break; // No extra checks or setup required
             case CHAOS_EFFECT_EXPLOSIONS:
                 break; // No extra checks or setup required
             // One time effects
@@ -707,30 +704,31 @@ s32 ChaosEffectKnockback(void)
 void ChaosEffectChangeEnergyAmmo(void)
 {
     u8 max;
+    s32 missileIdx;
+    s32 superIdx;
+    u16 rand;
 
     max = 0;
-    if (gEquipment.maxMissiles > 0)
-        max++;
-    if (gEquipment.maxSuperMissiles > 0)
-        max++;
-    if (gEquipment.maxPowerBombs > 0)
-        max++;
+    missileIdx = -1;
+    superIdx = -1;
 
-    switch (ChaosRandU16(0, max))
-    {
-        case 0:
-            gEquipment.currentEnergy = ChaosRandU16(1, gEquipment.maxEnergy);
-            break;
-        case 1:
-            gEquipment.currentMissiles = ChaosRandU16(1, gEquipment.maxMissiles);
-            break;
-        case 2:
-            gEquipment.currentSuperMissiles = ChaosRandU16(1, gEquipment.maxSuperMissiles);
-            break;
-        case 3:
-            gEquipment.currentPowerBombs = ChaosRandU16(1, gEquipment.maxPowerBombs);
-            break;
-    }
+    if (gEquipment.maxMissiles > 0)
+        missileIdx = ++max;
+    if (gEquipment.maxSuperMissiles > 0)
+        superIdx = ++max;
+    if (gEquipment.maxPowerBombs > 0)
+        ++max;
+
+    rand = ChaosRandU16(0, max);
+
+    if (rand == 0)
+        gEquipment.currentEnergy = ChaosRandU16(1, gEquipment.maxEnergy);
+    else if (rand == missileIdx)
+        gEquipment.currentMissiles = ChaosRandU16(1, gEquipment.maxMissiles);
+    else if (rand == superIdx)
+        gEquipment.currentSuperMissiles = ChaosRandU16(1, gEquipment.maxSuperMissiles);
+    else
+        gEquipment.currentPowerBombs = ChaosRandU16(1, gEquipment.maxPowerBombs);
 }
 
 void ChaosEffectRandSound(void)

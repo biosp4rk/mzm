@@ -32,7 +32,7 @@
 #define CHAOS_EFFECT_SHOOT_BOMBS 13         // Shooting a beam spawns a bomb
 // Misc
 #define CHAOS_EFFECT_MOVE_HUD 14            // Draws HUD elements in random positions
-#define CHAOS_EFFECT_FORWARD_CAMERA 15      // Sets camera type to forward
+#define CHAOS_EFFECT_SLOW_SCROLLING 15      // Makes scrolling slow
 #define CHAOS_EFFECT_EXPLOSIONS 16          // Spawns explosion particles around Samus
 
 // -- One time effects --
@@ -66,7 +66,7 @@
 #define CHAOS_FLAG_CHARGED_SHOTS (1 << CHAOS_EFFECT_CHARGED_SHOTS)
 #define CHAOS_FLAG_SHOOT_BOMBS (1 << CHAOS_EFFECT_SHOOT_BOMBS)
 #define CHAOS_FLAG_MOVE_HUD (1 << CHAOS_EFFECT_MOVE_HUD)
-#define CHAOS_FLAG_FORWARD_CAMERA (1 << CHAOS_EFFECT_FORWARD_CAMERA)
+#define CHAOS_FLAG_SLOW_SCROLLING (1 << CHAOS_EFFECT_SLOW_SCROLLING)
 #define CHAOS_FLAG_EXPLOSIONS (1 << CHAOS_EFFECT_EXPLOSIONS)
 
 #endif // CHAOS_CONSTANTS_H
