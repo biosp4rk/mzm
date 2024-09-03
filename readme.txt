@@ -14,7 +14,7 @@ Source code: https://github.com/biosp4rk/mzm/tree/chaos
 
 Version history:
 WIP - 1.1.0
-- Added five new effects
+- Added 6 new effects
 - Added sounds that play when an ability is deactivated or reactivated
 - Slow/fast X movement affects crawling speed
 - Removed "forward camera" effect

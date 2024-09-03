@@ -1,5 +1,5 @@
 local ADDR_PREV_ONE_TIME_EFFECT = 0x3006008
-local ADDR_CHAOS_EFFECTS = 0x3006018
+local ADDR_CHAOS_EFFECTS = 0x300601C
 local MAX_NUM_CHAOS_EFFECTS = 5
 local CHAOS_EFFECT_SIZE = 8
 local OFF_CHAOS_EXISTS = 0
@@ -29,8 +29,10 @@ local EFFECT_NAMES = {
     "explosions",
     -- One time effects
     "spawn enemy",
+    "message box",
     "spawn power bomb",
     "shot block",
+    "wet ground",
     "freeze enemies",
     "screen shake",
     "knockback",

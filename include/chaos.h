@@ -28,6 +28,8 @@ void ChaosEffectExplosions(void);
 
 // One time effects
 s32 ChaosEffectSpawnEnemy(void);
+s32 ChaosEffectMessageBox(void);
+const u16* ChaosRandomTextPointer(void);
 s32 ChaosEffectSpawnPB(void);
 void ChaosEffectShotBlock(void);
 void ChaosEffectReplaceSolidBlocks(u16 value);

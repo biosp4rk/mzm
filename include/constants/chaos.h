@@ -69,6 +69,8 @@ enum ChaosEffect {
 
     // Spawns an enemy in the spriteset near Samus
     CHAOS_EFFECT_SPAWN_ENEMY = CHAOS_EFFECT_ONE_TIME,
+    // Displays a message box with a random text entry
+    CHAOS_EFFECT_MESSAGE_BOX,
     // Spawns a power bomb near Samus
     CHAOS_EFFECT_SPAWN_PB,
     // Makes a block near Samus a shot block

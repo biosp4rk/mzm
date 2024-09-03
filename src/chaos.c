@@ -24,6 +24,7 @@
 #include "constants/room.h"
 #include "constants/samus.h"
 #include "constants/sprite.h"
+#include "constants/text.h"
 
 #include "structs/bg_clip.h"
 #include "structs/chaos.h"
@@ -33,6 +34,8 @@
 #include "structs/room.h"
 #include "structs/samus.h"
 #include "structs/sprite.h"
+
+#include "data/text_pointers.h"
 
 // Max positions where HUD elements can be drawn when moved
 #define HUD_MAX_X (SCREEN_SIZE_X - 24)
@@ -195,6 +198,7 @@ void ChaosCreateEffect(void)
 
     for (tries = 0; tries < 5; tries++)
     {
+        id = ChaosRandU16(start, CHAOS_EFFECT_END - 1);
 
         // Try again if duration effect is already active
         if (id < CHAOS_EFFECT_ONE_TIME && ChaosIsEffectActive(1 << id))
@@ -268,6 +272,10 @@ void ChaosCreateEffect(void)
             // One time effects
             case CHAOS_EFFECT_SPAWN_ENEMY:
                 if (!ChaosEffectSpawnEnemy())
+                    continue;
+                break;
+            case CHAOS_EFFECT_MESSAGE_BOX:
+                if (!ChaosEffectMessageBox())
                     continue;
                 break;
             case CHAOS_EFFECT_SPAWN_PB:
@@ -760,6 +768,72 @@ s32 ChaosEffectSpawnEnemy(void)
 
     // None of the sprite IDs worked
     return FALSE;
+}
+
+s32 ChaosEffectMessageBox(void)
+{
+    u8 slot;
+
+    // Don't display message if spriteset uses last 2 graphics rows
+    switch (gSpriteset)
+    {
+        case 0x03:
+        case 0x07:
+        case 0x23:
+        case 0x25:
+        case 0x36:
+        case 0x37:
+        case 0x43:
+        case 0x49:
+        case 0x4D:
+        case 0x51:
+        case 0x56:
+        case 0x58:
+        case 0x5D:
+        case 0x61:
+        case 0x64:
+        case 0x65:
+        case 0x67:
+            return FALSE;
+    }
+
+    if (SpriteUtilCountPrimarySprites(PSPRITE_ITEM_BANNER) > 0)
+        return FALSE;
+
+    slot = SpriteSpawnPrimary(PSPRITE_ITEM_BANNER, MESSAGE_CHAOS, 6,
+        gSamusData.yPosition, gSamusData.xPosition, 0);
+    if (slot == 0xFF)
+        return FALSE;
+
+    gChaosTextPointer = ChaosRandomTextPointer();
+    return TRUE;
+}
+
+const u16* ChaosRandomTextPointer(void)
+{
+    s32 total;
+    u16 index;
+
+    total = STORY_TEXT_END + DESCRIPTION_TEXT_END + LT_UNUSED_7 + MESSAGE_END + FILE_SCREEN_TEXT_END;
+    index = ChaosRandU16(0, total - 1);
+
+    if (index < STORY_TEXT_END)
+        return sEnglishTextPointers_Story[index];
+    index -= STORY_TEXT_END;
+
+    if (index < DESCRIPTION_TEXT_END)
+        return sEnglishTextPointers_Description[index];
+    index -= DESCRIPTION_TEXT_END;
+
+    if (index < LT_UNUSED_7)
+        return sEnglishTextPointers_Location[index];
+    index -= LT_UNUSED_7;
+
+    if (index < MESSAGE_END)
+        return sEnglishTextPointers_Message[index];
+    index -= MESSAGE_END;
+
+    return sEnglishTextPointers_FileScreen[index];
 }
 
 s32 ChaosEffectSpawnPB(void)

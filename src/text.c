@@ -14,6 +14,7 @@
 
 #include "structs/game_state.h"
 #include "structs/menus/pause_screen.h"
+#include "structs/chaos.h"
 
 /**
  * @brief 6e460 | 24 | Gets the width of a character
@@ -660,7 +661,7 @@ u8 unk_6f0a8(u8 textID, u8 gfxSlot, u8 param_3)
     {
         gCurrentMessage = sMessage_Empty;
         
-        gCurrentMessage.messageID = textID > MESSAGE_ENEMY_LOCATION_ABNORMAL ? MESSAGE_ENEMY_LOCATION_ABNORMAL : textID;
+        gCurrentMessage.messageID = textID;
         gCurrentMessage.gfxSlot = gfxSlot;
     }
 
@@ -743,7 +744,7 @@ void TextStartMessage(u8 textID, u8 gfxSlot)
 {
     gCurrentMessage = sMessage_Empty;
 
-    gCurrentMessage.messageID = textID > MESSAGE_ENEMY_LOCATION_ABNORMAL ? MESSAGE_ENEMY_LOCATION_ABNORMAL : textID;
+    gCurrentMessage.messageID = textID;
     gCurrentMessage.gfxSlot = gfxSlot;
 }
 
@@ -755,6 +756,7 @@ void TextStartMessage(u8 textID, u8 gfxSlot)
 u8 TextProcessItemBanner(void)
 {
     s32 i;
+    const u16* pText;
     u32 flag;
 
     switch (gCurrentMessage.stage)
@@ -784,10 +786,14 @@ u8 TextProcessItemBanner(void)
             if (i == 0)
                 break;
 
+            if (gCurrentMessage.messageID == MESSAGE_CHAOS)
+                pText = gChaosTextPointer;
+            else
+                pText = sMessageTextPointers[gLanguage][gCurrentMessage.messageID];
+
             while (i != 0)
             {
-                switch (TextProcessCurrentMessage(&gCurrentMessage,
-                    sStoryTextPointers[gLanguage][gCurrentMessage.messageID],
+                switch (TextProcessCurrentMessage(&gCurrentMessage, pText,
                     VRAM_BASE + 0x14000 + gCurrentMessage.gfxSlot * 0x800 + gCurrentMessage.line * 0x800))
                 {
                     case TEXT_STATE_ENDED:

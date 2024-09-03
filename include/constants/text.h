@@ -55,6 +55,8 @@ enum MessageId {
 
     MESSAGE_END,
 
+    MESSAGE_CHAOS,
+
     MESSAGE_NONE = -1,
 };
 
