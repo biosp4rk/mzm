@@ -4,7 +4,7 @@
 // 32ba08
 
 const u16 sCommonSpritesPal[96] = INCBIN_U16("data/hud/Common.pal");
-const u32 sCommonSpritesGfx[3584] = INCBIN_U32("data/hud/Common.gfx");
+const u32 sCommonSpritesGfx[3584] = INCBIN_U32("data_new/CommonSprite.gfx");
 
 const u8 sMissileDigitsGfx[2304] = INCBIN_U8("data/hud/MissileDigits.gfx");
 const u8 sPowerBombDigitsGfx[2304] = INCBIN_U8("data/hud/PowerBombDigits.gfx");

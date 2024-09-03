@@ -18,6 +18,7 @@ WIP - 1.1.0
 - Fixed losing fully powered suit if obtained while suitless
 - Added sounds that play when an ability is deactivated or reactivated
 - Added two new effects
+- Slow/fast X movement affects crawling speed
 
 2024-09-01 - 1.0.0
 - Initial release

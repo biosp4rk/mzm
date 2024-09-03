@@ -6347,6 +6347,8 @@ u8 SamusStartingToCrawlGfx(struct SamusData* pData)
  */
 u8 SamusCrawling(struct SamusData* pData)
 {
+    s32 velocityCap;
+
     if (SamusCheckCollisionAbove(pData, sSamusHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_HITBOX_TOP]) == SAMUS_COLLISION_DETECTION_NONE)
     {
         // No collision above, exit crawl
@@ -6359,7 +6361,13 @@ u8 SamusCrawling(struct SamusData* pData)
     if (gButtonInput & pData->direction)
     {
         // Move
-        SamusApplyXAcceleration(gSamusPhysics.xAcceleration, HALF_BLOCK_SIZE, pData);
+        velocityCap = HALF_BLOCK_SIZE;
+        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_HORI_MOVEMENT))
+            velocityCap /= 2;
+        else if (ChaosIsEffectActive(CHAOS_FLAG_FAST_HORI_MOVEMENT))
+            velocityCap = velocityCap * 3 / 2;
+
+        SamusApplyXAcceleration(gSamusPhysics.xAcceleration, velocityCap, pData);
         return SPOSE_NONE;
     }
 

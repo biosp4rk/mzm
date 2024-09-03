@@ -421,6 +421,7 @@ s32 ChaosEffectSuitless(struct ChaosEffect* pEffect)
     pEffect->data = gEquipment.suitType;
     UpdateSuitType(SUIT_SUITLESS, TRUE);
     ProjectileLoadGraphics();
+    gSamusWeaponInfo.chargeCounter = 0;
     return TRUE;
 }
 
@@ -518,6 +519,8 @@ s32 ChaosEffectSpawnEnemy(void)
     u8 i;
     u8 spritesetIdx;
     u8 spriteId;
+    u16 spriteX;
+    u16 spriteY;
     u8 spriteSlot;
 
     // Count number of active sprites
@@ -610,9 +613,13 @@ s32 ChaosEffectSpawnEnemy(void)
                 continue;
         }
 
-        // Try spawning sprite
+        // Get X and Y positions on a block boundary
+        spriteX = ChaosPositionNearSamusX() / BLOCK_SIZE * BLOCK_SIZE;
+        spriteY = ChaosPositionNearSamusY() / BLOCK_SIZE * BLOCK_SIZE;
+
+        // Try spawning sprite (on bottom middle of block)
         spriteSlot = SpriteSpawnPrimary(spriteId, 0, gSpritesetGfxSlots[spritesetIdx],
-            ChaosPositionNearSamusY(), ChaosPositionNearSamusX(), 0);
+            spriteY + BLOCK_SIZE, spriteX + HALF_BLOCK_SIZE, 0);
 
         // Spawning should always succeed, but check just in case
         if (spriteSlot == 0xFF)
