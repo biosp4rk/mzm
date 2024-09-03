@@ -95,21 +95,54 @@ void ChaosUpdateEffects(void)
 
 void ChaosEffectEnded(struct ChaosEffect* pEffect)
 {
+    u8 flag;
+
     switch (pEffect->id)
     {
         case CHAOS_EFFECT_DEACTIVATE_ABILITY:
+            // TODO: Move to function
+            flag = (u8)pEffect->data;
             if ((pEffect->data >> 8) == 0)
             {
-                gEquipment.beamBombsActivation |= (u8)pEffect->data;
+                gEquipment.beamBombsActivation |= flag;
                 if (gMainGameMode == GM_INGAME)
                     ProjectileLoadGraphics();
             }
             else
             {
-                gEquipment.suitMiscActivation |= (u8)pEffect->data;
+                gEquipment.suitMiscActivation |= flag;
             }
             // Play "enable" sound
             SoundPlay(SOUND_RUINS_TEST_SYMBOL_PLACED);
+            break;
+        case CHAOS_EFFECT_GIVE_ABILITY:
+            // TODO: Move to function
+            flag = (u8)pEffect->data;
+            if ((pEffect->data >> 8) == 0)
+            {
+                // Only deactivate the ability if it wasn't obtained while the effect was active,
+                // or if it's an unknown item (plasma beam)
+                if (!(gEquipment.beamBombs & flag) ||
+                    (gEquipment.suitType != SUIT_FULLY_POWERED && flag == BBF_PLASMA_BEAM))
+                {
+                    gEquipment.beamBombsActivation &= ~flag;
+                    if (gMainGameMode == GM_INGAME)
+                        ProjectileLoadGraphics();   
+                }
+            }
+            else
+            {
+                // Only deactivate the ability if it wasn't obtained while the effect was active,
+                // or if it's an unknown item (space jump or gravity suit)
+                if (!(gEquipment.suitMisc & flag) ||
+                    (gEquipment.suitType != SUIT_FULLY_POWERED && flag & (SMF_SPACE_JUMP | SMF_GRAVITY_SUIT)))
+                {
+                    gEquipment.suitMiscActivation &= ~flag;
+                }
+            }
+            // Play "disable" sound
+            // TODO: Different sound
+            SoundPlay(SOUND_UNKNOWN_ITEM_ACQUISITION);
             break;
         case CHAOS_EFFECT_SUITLESS:
             UpdateSuitType(pEffect->data, TRUE);
@@ -142,6 +175,7 @@ void ChaosEndEquipmentEffects(void)
         switch (gChaosEffects[i].id)
         {
             case CHAOS_EFFECT_DEACTIVATE_ABILITY:
+            case CHAOS_EFFECT_GIVE_ABILITY:
             case CHAOS_EFFECT_SUITLESS:
                 ChaosEffectEnded(&gChaosEffects[i]);
                 break;
@@ -199,8 +233,14 @@ void ChaosCreateEffect(void)
                 if (ChaosIsEffectActive(CHAOS_FLAG_LOW_GRAVITY))
                     continue;
                 break;
+            case CHAOS_EFFECT_LONG_ECHO:
+                break; // No extra checks or setup required
             case CHAOS_EFFECT_DEACTIVATE_ABILITY:
                 if (!ChaosEffectDeactivateAbility(&gChaosEffects[effectIdx]))
+                    continue;
+                break;
+            case CHAOS_EFFECT_GIVE_ABILITY:
+                if (!ChaosEffectGiveAbility(&gChaosEffects[effectIdx]))
                     continue;
                 break;
             case CHAOS_EFFECT_SUITLESS:
@@ -337,30 +377,45 @@ u16 ChaosPositionNearSamusY(void)
 
 s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect)
 {
+    s32 i;
+    u8 beamBombsFlags[6];
     u8 beamBombsCount;
-    u8 beamBombsAct;
+    u8 suitMiscFlags[8];
     u8 suitMiscCount;
-    u8 suitMiscAct;
     u8 itemIdx;
 
-    if (gEquipment.suitType == SUIT_SUITLESS)
+    if (ChaosIsEffectActive(CHAOS_FLAG_GIVE_ABILITY) || gEquipment.suitType == SUIT_SUITLESS)
         return FALSE;
 
     // Count active abilities
+    beamBombsFlags[0] = BBF_LONG_BEAM;
+    beamBombsFlags[1] = BBF_ICE_BEAM;
+    beamBombsFlags[2] = BBF_WAVE_BEAM;
+    beamBombsFlags[3] = BBF_PLASMA_BEAM;
+    beamBombsFlags[4] = BBF_CHARGE_BEAM;
+    beamBombsFlags[5] = BBF_BOMBS;
+
     beamBombsCount = 0;
-    beamBombsAct = gEquipment.beamBombsActivation;
-    while (beamBombsAct != 0)
+    for (i = 0; i < 6; i++)
     {
-        beamBombsCount += beamBombsAct & 1;
-        beamBombsAct >>= 1;
+        if (gEquipment.beamBombsActivation & beamBombsFlags[i])
+            beamBombsCount++;
     }
+    
+    suitMiscFlags[0] = SMF_HIGH_JUMP;
+    suitMiscFlags[1] = SMF_SPEEDBOOSTER;
+    suitMiscFlags[2] = SMF_SPACE_JUMP;
+    suitMiscFlags[3] = SMF_SCREW_ATTACK;
+    suitMiscFlags[4] = SMF_VARIA_SUIT;
+    suitMiscFlags[5] = SMF_GRAVITY_SUIT;
+    suitMiscFlags[6] = SMF_MORPH_BALL;
+    suitMiscFlags[7] = SMF_POWER_GRIP;
 
     suitMiscCount = 0;
-    suitMiscAct = gEquipment.suitMiscActivation;
-    while (suitMiscAct != 0)
+    for (i = 0; i < 8; i++)
     {
-        suitMiscCount += suitMiscAct & 1;
-        suitMiscAct >>= 1;
+        if (gEquipment.suitMiscActivation & suitMiscFlags[i])
+            suitMiscCount++;
     }
 
     if (beamBombsCount + suitMiscCount == 0)
@@ -371,42 +426,125 @@ s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect)
     if (itemIdx < beamBombsCount)
     {
         beamBombsCount = 0;
-        beamBombsAct = 1;
-        while (TRUE)
+        for (i = 0; i < 6; i++)
         {
-            if (gEquipment.beamBombsActivation & beamBombsAct)
+            if (gEquipment.beamBombsActivation & beamBombsFlags[i])
             {
-                beamBombsCount++;
-                if (beamBombsCount == itemIdx + 1)
+                if (beamBombsCount == itemIdx)
                     break;
+                beamBombsCount++;
             }
-            beamBombsAct <<= 1;
         }
-        pEffect->data = beamBombsAct;
-        gEquipment.beamBombsActivation &= ~beamBombsAct;
+        pEffect->data = beamBombsFlags[i];
+        gEquipment.beamBombsActivation &= ~beamBombsFlags[i];
         ProjectileLoadGraphics();
     }
     else
     {
         itemIdx -= beamBombsCount;
         suitMiscCount = 0;
-        suitMiscAct = 1;
-        while (TRUE)
+        for (i = 0; i < 8; i++)
         {
-            if (gEquipment.suitMiscActivation & suitMiscAct)
+            if (gEquipment.suitMiscActivation & suitMiscFlags[i])
             {
-                suitMiscCount++;
-                if (suitMiscCount == itemIdx + 1)
+                if (suitMiscCount == itemIdx)
                     break;
+                suitMiscCount++;
             }
-            suitMiscAct <<= 1;
         }
-        pEffect->data = suitMiscAct | 0x100;
-        gEquipment.suitMiscActivation &= ~suitMiscAct;
+        pEffect->data = suitMiscFlags[i] | 0x100;
+        gEquipment.suitMiscActivation &= ~suitMiscFlags[i];
     }
 
     // Play "disable" sound
     SoundPlay(SOUND_UNKNOWN_ITEM_ACQUISITION);
+    return TRUE;
+}
+
+s32 ChaosEffectGiveAbility(struct ChaosEffect* pEffect)
+{
+    s32 i;
+    u8 beamBombsFlags[6];
+    u8 beamBombsCount;
+    u8 suitMiscFlags[8];
+    u8 suitMiscCount;
+    u8 itemIdx;
+
+    if (ChaosIsEffectActive(CHAOS_FLAG_DEACTIVATE_ABILITY) || gEquipment.suitType == SUIT_SUITLESS)
+        return FALSE;
+
+    // Count inactive abilities
+    beamBombsFlags[0] = BBF_LONG_BEAM;
+    beamBombsFlags[1] = BBF_ICE_BEAM;
+    beamBombsFlags[2] = BBF_WAVE_BEAM;
+    beamBombsFlags[3] = BBF_PLASMA_BEAM;
+    beamBombsFlags[4] = BBF_CHARGE_BEAM;
+    beamBombsFlags[5] = BBF_BOMBS;
+
+    beamBombsCount = 0;
+    for (i = 0; i < 6; i++)
+    {
+        if (!(gEquipment.beamBombsActivation & beamBombsFlags[i]))
+            beamBombsCount++;
+    }
+    
+    suitMiscFlags[0] = SMF_HIGH_JUMP;
+    suitMiscFlags[1] = SMF_SPEEDBOOSTER;
+    suitMiscFlags[2] = SMF_SPACE_JUMP;
+    suitMiscFlags[3] = SMF_SCREW_ATTACK;
+    suitMiscFlags[4] = SMF_VARIA_SUIT;
+    suitMiscFlags[5] = SMF_GRAVITY_SUIT;
+    suitMiscFlags[6] = SMF_MORPH_BALL;
+    suitMiscFlags[7] = SMF_POWER_GRIP;
+
+    suitMiscCount = 0;
+    for (i = 0; i < 8; i++)
+    {
+        if (!(gEquipment.suitMiscActivation & suitMiscFlags[i]))
+            suitMiscCount++;
+    }
+
+    if (beamBombsCount + suitMiscCount == 0)
+        return FALSE;
+
+    // Get ability to give
+    itemIdx = ChaosRandU16(0, beamBombsCount + suitMiscCount - 1);
+    if (itemIdx < beamBombsCount)
+    {
+        beamBombsCount = 0;
+        for (i = 0; i < 6; i++)
+        {
+            if (!(gEquipment.beamBombsActivation & beamBombsFlags[i]))
+            {
+                if (beamBombsCount == itemIdx)
+                    break;
+                beamBombsCount++;
+            }
+        }
+        pEffect->data = beamBombsFlags[i];
+        gEquipment.beamBombsActivation |= beamBombsFlags[i];
+        ProjectileLoadGraphics();
+    }
+    else
+    {
+        itemIdx -= beamBombsCount;
+        suitMiscCount = 0;
+        for (i = 0; i < 8; i++)
+        {
+            if (!(gEquipment.suitMiscActivation & suitMiscFlags[i]))
+            {
+                if (suitMiscCount == itemIdx)
+                    break;
+                suitMiscCount++;
+            }
+        }
+        pEffect->data = suitMiscFlags[i] | 0x100;
+        gEquipment.suitMiscActivation |= suitMiscFlags[i];
+    }
+
+    // Play "enable" sound
+    // TODO: Different sound
+    SoundPlay(SOUND_RUINS_TEST_SYMBOL_PLACED);
     return TRUE;
 }
 
@@ -733,16 +871,19 @@ void ChaosEffectChangeEnergyAmmo(void)
 
 void ChaosEffectRandSound(void)
 {
-    switch (ChaosRandU16(0, 2))
+    switch (ChaosRandU16(0, 3))
     {
         case 0:
-            SoundPlay(0xA6); // Thunder
+            SoundPlay(SOUND_THUNDER);
             break;
         case 1:
-            SoundPlay(0x1BF); // Kraid
+            SoundPlay(SOUND_KRAID_RISING);
             break;
         case 2:
-            SoundPlay(0x24C); // Ridley
+            SoundPlay(SOUND_RIDLEY_SPAWN_ROAR);
+            break;
+        case 3:
+            SoundPlay(SOUND_MECHA_RIDLEY_ENTRANCE_CRAWL);
             break;
     }
 }

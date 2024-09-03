@@ -23,33 +23,34 @@
 #define CHAOS_EFFECT_LONG_ECHO 6            // Draws long Samus echoes at all times
 // Samus related
 #define CHAOS_EFFECT_DEACTIVATE_ABILITY 7   // Deactivates a random ability
-#define CHAOS_EFFECT_SUITLESS 8             // Makes Samus suitless
+#define CHAOS_EFFECT_GIVE_ABILITY 8         // Activates a random new ability
+#define CHAOS_EFFECT_SUITLESS 9             // Makes Samus suitless
 // Weapon related
-#define CHAOS_EFFECT_SLOW_WEAPONS 9         // Makes beams and missiles move slowly
-#define CHAOS_EFFECT_ARM_WEAPON 10          // Alternates arming and unarming weapon
-#define CHAOS_EFFECT_SWAP_MISSILES 11       // Swaps missile types back and forth
-#define CHAOS_EFFECT_CHARGED_SHOTS 12       // Beam shots are always charged
-#define CHAOS_EFFECT_SHOOT_BOMBS 13         // Shooting a beam spawns a bomb
+#define CHAOS_EFFECT_SLOW_WEAPONS 10        // Makes beams and missiles move slowly
+#define CHAOS_EFFECT_ARM_WEAPON 11          // Alternates arming and unarming weapon
+#define CHAOS_EFFECT_SWAP_MISSILES 12       // Swaps missile types back and forth
+#define CHAOS_EFFECT_CHARGED_SHOTS 13       // Beam shots are always charged
+#define CHAOS_EFFECT_SHOOT_BOMBS 14         // Shooting a beam spawns a bomb
 // Misc
-#define CHAOS_EFFECT_MOVE_HUD 14            // Draws HUD elements in random positions
-#define CHAOS_EFFECT_SLOW_SCROLLING 15      // Makes scrolling slow
-#define CHAOS_EFFECT_EXPLOSIONS 16          // Spawns explosion particles around Samus
+#define CHAOS_EFFECT_MOVE_HUD 15            // Draws HUD elements in random positions
+#define CHAOS_EFFECT_SLOW_SCROLLING 16      // Makes scrolling slow
+#define CHAOS_EFFECT_EXPLOSIONS 17          // Spawns explosion particles around Samus
 
 // -- One time effects --
-#define CHAOS_EFFECT_ONE_TIME 17            // Marks the start of one time effects
+#define CHAOS_EFFECT_ONE_TIME 18            // Marks the start of one time effects
 
-#define CHAOS_EFFECT_SPAWN_ENEMY 17         // Spawns an enemy in the spriteset near Samus
-#define CHAOS_EFFECT_SPAWN_PB 18            // Spawns a power bomb near Samus
-#define CHAOS_EFFECT_SHOT_BLOCK 19          // Makes a block near Samus a shot block
-#define CHAOS_EFFECT_FREEZE_ENEMIES 20      // Freezes all freezable enemies in the room
-#define CHAOS_EFFECT_SCREEN_SHAKE 21        // Sets the screen shake timer
-#define CHAOS_EFFECT_KNOCKBACK_SAMUS 22     // Put Samus in knockback pose
-#define CHAOS_EFFECT_SHINE_TIMER 23         // Set the shinespark timer
-#define CHAOS_EFFECT_CHANGE_ENERGY_AMMO 24  // Sets energy or ammo to a random amount
-#define CHAOS_EFFECT_PAUSE_GAME 25          // Pauses the game
-#define CHAOS_EFFECT_RAND_SOUND 26          // Plays a random sound, like lightning or Ridley
-#define CHAOS_EFFECT_COLOR_EFFECT 27        // Changes the background colors (brightness, monochrome)
-#define CHAOS_EFFECT_END 28                 // Marks the end of all duration effects
+#define CHAOS_EFFECT_SPAWN_ENEMY 18         // Spawns an enemy in the spriteset near Samus
+#define CHAOS_EFFECT_SPAWN_PB 19            // Spawns a power bomb near Samus
+#define CHAOS_EFFECT_SHOT_BLOCK 20          // Makes a block near Samus a shot block
+#define CHAOS_EFFECT_FREEZE_ENEMIES 21      // Freezes all freezable enemies in the room
+#define CHAOS_EFFECT_SCREEN_SHAKE 22        // Sets the screen shake timer
+#define CHAOS_EFFECT_KNOCKBACK_SAMUS 23     // Put Samus in knockback pose
+#define CHAOS_EFFECT_SHINE_TIMER 24         // Set the shinespark timer
+#define CHAOS_EFFECT_CHANGE_ENERGY_AMMO 25  // Sets energy or ammo to a random amount
+#define CHAOS_EFFECT_PAUSE_GAME 26          // Pauses the game
+#define CHAOS_EFFECT_RAND_SOUND 27          // Plays a random sound, like lightning or Ridley
+#define CHAOS_EFFECT_COLOR_EFFECT 28        // Changes the background colors (brightness, monochrome)
+#define CHAOS_EFFECT_END 29                 // Marks the end of all duration effects
 
 #define CHAOS_FLAG_INVERTED_CONTROLS (1 << CHAOS_EFFECT_INVERTED_CONTROLS)
 #define CHAOS_FLAG_WATER_PHYSICS (1 << CHAOS_EFFECT_WATER_PHYSICS)
@@ -59,6 +60,7 @@
 #define CHAOS_FLAG_HIGH_GRAVITY (1 << CHAOS_EFFECT_HIGH_GRAVITY)
 #define CHAOS_FLAG_LONG_ECHO (1 << CHAOS_EFFECT_LONG_ECHO)
 #define CHAOS_FLAG_DEACTIVATE_ABILITY (1 << CHAOS_EFFECT_DEACTIVATE_ABILITY)
+#define CHAOS_FLAG_GIVE_ABILITY (1 << CHAOS_EFFECT_GIVE_ABILITY)
 #define CHAOS_FLAG_SUITLESS (1 << CHAOS_EFFECT_SUITLESS)
 #define CHAOS_FLAG_SLOW_WEAPONS (1 << CHAOS_EFFECT_SLOW_WEAPONS)
 #define CHAOS_FLAG_ARM_WEAPON (1 << CHAOS_EFFECT_ARM_WEAPON)

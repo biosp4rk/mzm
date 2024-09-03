@@ -21,6 +21,7 @@ u16 ChaosPositionNearSamusY(void);
 
 // Duration effects
 s32 ChaosEffectDeactivateAbility(struct ChaosEffect* pEffect);
+s32 ChaosEffectGiveAbility(struct ChaosEffect* pEffect);
 s32 ChaosEffectSuitless(struct ChaosEffect* pEffect);
 void ChaosEffectMoveHud(void);
 void ChaosEffectExplosions(void);
