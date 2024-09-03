@@ -787,7 +787,7 @@ u8 TextProcessItemBanner(void)
             while (i != 0)
             {
                 switch (TextProcessCurrentMessage(&gCurrentMessage,
-                    sMessageTextPointers[gLanguage][gCurrentMessage.messageID],
+                    sStoryTextPointers[gLanguage][gCurrentMessage.messageID],
                     VRAM_BASE + 0x14000 + gCurrentMessage.gfxSlot * 0x800 + gCurrentMessage.line * 0x800))
                 {
                     case TEXT_STATE_ENDED:

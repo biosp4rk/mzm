@@ -30,6 +30,7 @@ void ChaosEffectExplosions(void);
 s32 ChaosEffectSpawnEnemy(void);
 s32 ChaosEffectSpawnPB(void);
 void ChaosEffectShotBlock(void);
+void ChaosEffectReplaceSolidBlocks(u16 value);
 s32 ChaosEffectFreezeEnemies(void);
 s32 ChaosEffectKnockback(void);
 void ChaosEffectScreenShake(void);

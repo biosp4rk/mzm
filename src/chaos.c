@@ -195,16 +195,6 @@ void ChaosCreateEffect(void)
 
     for (tries = 0; tries < 5; tries++)
     {
-        id = ChaosRandU16(start, CHAOS_EFFECT_END + 1);
-        
-        // Extra chance for deactivate ability and spawn sprite
-        if (id >= CHAOS_EFFECT_END)
-        {
-            if (effectIdx != 0xFF && id == CHAOS_EFFECT_END)
-                id = CHAOS_EFFECT_DEACTIVATE_ABILITY;
-            else
-                id = CHAOS_EFFECT_SPAWN_ENEMY;
-        }
 
         // Try again if duration effect is already active
         if (id < CHAOS_EFFECT_ONE_TIME && ChaosIsEffectActive(1 << id))
@@ -274,6 +264,7 @@ void ChaosCreateEffect(void)
                 break; // No extra checks or setup required
             case CHAOS_EFFECT_EXPLOSIONS:
                 break; // No extra checks or setup required
+
             // One time effects
             case CHAOS_EFFECT_SPAWN_ENEMY:
                 if (!ChaosEffectSpawnEnemy())
@@ -285,6 +276,9 @@ void ChaosCreateEffect(void)
                 break;
             case CHAOS_EFFECT_SHOT_BLOCK:
                 ChaosEffectShotBlock();
+                break;
+            case CHAOS_EFFECT_WET_GROUND:
+                ChaosEffectReplaceSolidBlocks(CLIPDATA_WET_GROUND);
                 break;
             case CHAOS_EFFECT_FREEZE_ENEMIES:
                 if (!ChaosEffectFreezeEnemies())
@@ -793,6 +787,30 @@ void ChaosEffectShotBlock(void)
 
     BgClipSetClipdataBlockValue(CLIPDATA_SHOT_BLOCK_REFORM, yPos, xPos);
     BgClipSetBg1BlockValue(0x46, yPos, xPos);
+}
+
+void ChaosEffectReplaceSolidBlocks(u16 value)
+{
+    s32 size;
+    u16* pClipStart;
+    u16* pClip;
+
+    size = gBgPointersAndDimensions.clipdataWidth * gBgPointersAndDimensions.clipdataHeight;
+    pClipStart = gBgPointersAndDimensions.pClipDecomp;
+
+    for (pClip = pClipStart; pClip < pClipStart + size; pClip++)
+    {
+        switch (*pClip)
+        {
+            case CLIPDATA_SOLID:
+            case CLIPDATA_WET_GROUND:
+            case CLIPDATA_DUSTY_GROUND:
+            case CLIPDATA_BUBBLY_GROUND:
+            case CLIPDATA_VERY_DUSTY_GROUND:
+                *pClip = value;
+                break;
+        }
+    }
 }
 
 s32 ChaosEffectFreezeEnemies(void)

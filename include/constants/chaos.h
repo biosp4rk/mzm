@@ -73,6 +73,8 @@ enum ChaosEffect {
     CHAOS_EFFECT_SPAWN_PB,
     // Makes a block near Samus a shot block
     CHAOS_EFFECT_SHOT_BLOCK,
+    // Makes all solid blocks wet ground
+    CHAOS_EFFECT_WET_GROUND,
     // Freezes all freezable enemies in the room
     CHAOS_EFFECT_FREEZE_ENEMIES,
     // Sets the screen shake timer
@@ -94,6 +96,7 @@ enum ChaosEffect {
     CHAOS_EFFECT_END
 };
 
+// Bit flags for duration effects
 #define CHAOS_FLAG_INVERTED_CONTROLS (1 << CHAOS_EFFECT_INVERTED_CONTROLS)
 #define CHAOS_FLAG_WATER_PHYSICS (1 << CHAOS_EFFECT_WATER_PHYSICS)
 #define CHAOS_FLAG_SLOW_HORI_MOVEMENT (1 << CHAOS_EFFECT_SLOW_HORI_MOVEMENT)
