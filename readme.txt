@@ -17,8 +17,9 @@ WIP - 1.1.0
 - Fixed "swap missiles" activating when Samus has no missiles
 - Fixed losing fully powered suit if obtained while suitless
 - Added sounds that play when an ability is deactivated or reactivated
-- Added two new effects
+- Added three new effects
 - Slow/fast X movement affects crawling speed
+- Removed "forward camera" effect
 
 2024-09-01 - 1.0.0
 - Initial release
