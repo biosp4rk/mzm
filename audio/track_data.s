@@ -514,6 +514,8 @@
 .include "audio/tracks/track_531.s"
 .include "audio/tracks/track_532.s"
 .include "audio/tracks/track_533.s"
+.include "audio/tracks/track_534.s"
+.include "audio/tracks/track_535.s"
 .include "audio/tracks/track_550.s"
 .include "audio/tracks/track_551.s"
 .include "audio/tracks/track_552.s"

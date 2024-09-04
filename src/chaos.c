@@ -116,7 +116,7 @@ void ChaosEffectEnded(struct ChaosEffectData* pEffect)
                 gEquipment.suitMiscActivation |= flag;
             }
             // Play "enable" sound
-            SoundPlay(SOUND_RUINS_TEST_SYMBOL_PLACED);
+            SoundPlay(SOUND_CHAOS_ITEM_ON);
             break;
         case CHAOS_EFFECT_GIVE_ABILITY:
             // TODO: Move to function
@@ -144,8 +144,7 @@ void ChaosEffectEnded(struct ChaosEffectData* pEffect)
                 }
             }
             // Play "disable" sound
-            // TODO: Different sound
-            SoundPlay(SOUND_UNKNOWN_ITEM_ACQUISITION);
+            SoundPlay(SOUND_CHAOS_ITEM_OFF);
             break;
         case CHAOS_EFFECT_SUITLESS:
             UpdateSuitType(pEffect->data, TRUE);
@@ -459,7 +458,7 @@ s32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect)
     }
 
     // Play "disable" sound
-    SoundPlay(SOUND_UNKNOWN_ITEM_ACQUISITION);
+    SoundPlay(SOUND_CHAOS_ITEM_OFF);
     return TRUE;
 }
 
@@ -545,8 +544,7 @@ s32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect)
     }
 
     // Play "enable" sound
-    // TODO: Different sound
-    SoundPlay(SOUND_RUINS_TEST_SYMBOL_PLACED);
+    SoundPlay(SOUND_CHAOS_ITEM_ON);
     return TRUE;
 }
 

@@ -2140,13 +2140,13 @@ sSoundDataEntries:
 	.short 8
 	.short 8
 
-	.word track_0
-	.short 0
-	.short 0
+	.word track_534
+	.short 5
+	.short 5
 
-	.word track_0
-	.short 0
-	.short 0
+	.word track_535
+	.short 5
+	.short 5
 
 	.word track_0
 	.short 0
