@@ -988,7 +988,7 @@ void ChaosEffectColorEffect(void)
     u8 b;
     u8 result;
 
-    effect = ChaosRandU16(0, 2);
+    effect = ChaosRandU16(0, 5);
     pPalette = (u16*)PALRAM_BASE;
 
     for (i = 0; i < 256; i++, pPalette++)
@@ -1027,6 +1027,27 @@ void ChaosEffectColorEffect(void)
                 g = result;
                 b = result;
                 break;
+            case 3:
+                // Red
+                r = r * 3 / 2;
+                g = g * 3 / 4;
+                b = b * 3 / 4;
+                if (r > COLOR_MASK)
+                    r = COLOR_MASK;
+            case 4:
+                // Green
+                r = r * 3 / 4;
+                g = g * 3 / 2;
+                b = b * 3 / 4;
+                if (g > COLOR_MASK)
+                    g = COLOR_MASK;
+            case 5:
+                // Blue
+                r = r * 3 / 4;
+                g = g * 3 / 4;
+                b = b * 3 / 2;
+                if (b > COLOR_MASK)
+                    b = COLOR_MASK;
         }
 
         *pPalette = COLOR(r, g, b);

@@ -6,7 +6,7 @@ track_535_0:
 	.byte KEYSH, 0
 	.byte TEMPO, 75
 	.byte VOICE, 2
-	.byte VOL, 51 * 2
+	.byte VOL, 51 * 3
 	.byte PAN, c_v
 	.byte N04
 	.byte Fs3, Cn3

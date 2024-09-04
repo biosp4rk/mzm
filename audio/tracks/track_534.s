@@ -6,7 +6,7 @@ track_534_0:
 	.byte KEYSH, 0
 	.byte TEMPO, 75
 	.byte VOICE, 2
-	.byte VOL, 59 * 2
+	.byte VOL, 59 * 3
 	.byte PAN, c_v
 	.byte N04
 	.byte Gn2, Gs4
