@@ -9,13 +9,14 @@ If you play on bizhawk, you can use the included lua script to display the previ
 Softlocks are possible, so save often. I won't be fixing any softlocks that occur due to unfortunate circumstances (ex: a sprite blocking your path), but if there are any bad bugs, softlocks, or crashes, let me know and I'll fix them.
 
 This was made using the mzm decomp. Thanks to yohann and everyone who has contributed to the decomp.
+NOTE: Since all the code and data are shifted, this hack is not compatible with any existing tweaks or mods.
 Source code: https://github.com/biosp4rk/mzm/tree/chaos
 
 
 Version history:
-WIP - 1.1.0
+2024-09-05 - 1.1.0
 - Added 6 new effects
-- Added sounds that play when an ability is deactivated or reactivated
+- Added sounds that play when an ability is deactivated or activated
 - Slow/fast X movement affects crawling speed
 - Removed "forward camera" effect
 - Fixed "swap missiles" activating when Samus has no missiles
