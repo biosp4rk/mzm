@@ -17,6 +17,7 @@
 #include "constants/chaos.h"
 #include "constants/clipdata.h"
 #include "constants/color_fading.h"
+#include "constants/connection.h"
 #include "constants/game_state.h"
 #include "constants/particle.h"
 #include "constants/power_bomb_explosion.h"
@@ -374,6 +375,25 @@ u16 ChaosPositionNearSamusY(void)
     return ChaosPositionNearSamus(gSamusData.yPosition, CHAOS_NEAR_SAMUS_MAX_Y);
 }
 
+s32 ChaosIsInMetroidRoom(void)
+{
+    if (gCurrentArea != AREA_TOURIAN)
+        return FALSE;
+    
+    switch (gCurrentRoom)
+    {
+        case 0x01:
+        case 0x02:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x13:
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
 // Duration effects
 
 s32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect)
@@ -658,6 +678,10 @@ s32 ChaosEffectSpawnEnemy(void)
     u16 spriteY;
     u8 spriteSlot;
 
+    // Don't spawn any sprites in Metroid rooms
+    if (ChaosIsInMetroidRoom())
+        return FALSE;
+
     // Count number of active sprites
     spriteCount = 0;
     for (pSprite = gSpriteData; pSprite < gSpriteData + MAX_AMOUNT_OF_SPRITES; pSprite++)
@@ -889,6 +913,10 @@ s32 ChaosEffectFreezeEnemies(void)
 {
     s32 success;
     u8 i;
+
+    // Don't freeze sprites in Metroid rooms
+    if (ChaosIsInMetroidRoom())
+        return FALSE;
 
     success = FALSE;
 

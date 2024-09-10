@@ -18,6 +18,7 @@ u16 ChaosRandU16(u16 min, u16 max);
 u16 ChaosPositionNearSamus(u16 samusPos, u16 max);
 u16 ChaosPositionNearSamusX(void);
 u16 ChaosPositionNearSamusY(void);
+s32 ChaosIsInMetroidRoom(void);
 
 // Duration effects
 s32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect);
