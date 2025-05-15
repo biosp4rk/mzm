@@ -71,7 +71,7 @@ void DemoInit(void)
     }
 
     // Load ram values
-    unk_7584c(0x1);
+    unk_7584c(1);
     SramLoad_DemoRamValues(FALSE, demoNbr);
 
     if (gDemoState == DEMO_STATE_STARTING)
@@ -161,7 +161,7 @@ void DemoEnd(void)
 {
     gCurrentDemo.active = FALSE;
 
-    if (gDemoState == DEMO_STATE_IN_CONTROL_DEBUG)
+    if (gDemoState == DEMO_STATE_RECORDING_DEBUG)
     {
         // Debug, forward demo input and duration to SRAM, and save it flash
         DMA_SET(3, gDemoInputData, gSramDemoInputData, C_32_2_16(DMA_ENABLE, DEMO_MAX_DURATION));
@@ -182,7 +182,11 @@ void DemoEnd(void)
     if (gCurrentDemo.noDemoShuffle)
     {
         gDemoState = DEMO_STATE_NONE;
+        #ifdef DEBUG
+        gGameModeSub2 = 16;
+        #else // !DEBUG
         gGameModeSub2 = 2;
+        #endif // DEBUG
     }
     else if (gCurrentDemo.endedWithInput)
     {
@@ -192,8 +196,8 @@ void DemoEnd(void)
             gCurrentDemo.number = 0;
 
         // Fade every sound and music
-        FadeAllSounds(10);
-        FadeMusicForDemo(10);
+        FadeAllSounds(CONVERT_SECONDS(1.f / 6));
+        FadeMusicForDemo(CONVERT_SECONDS(1.f / 6));
 
         // Sets to no demo
         gDemoState = DEMO_STATE_NONE;

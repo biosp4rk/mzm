@@ -3,15 +3,15 @@
 #include "gba.h"
 
 #include "constants/connection.h"
-#include "constants/menus/pause_screen.h"
 #include "constants/event.h"
 #include "constants/samus.h"
 #include "constants/text.h"
 
+#include "constants/menus/status_screen.h"
+
 const u16 sPauseScreen_3fcef0[11 * 16] = INCBIN_U16("data/menus/PauseScreen/3fcef0.pal");
 const u16 sTankIconsPal[16 * 16] = INCBIN_U16("data/menus/PauseScreen/TankIcons.pal");
-static const u16 sUnk_3fd250 = 0x2A25;
-const u16 sPauseScreen_3fd252[5 * 16 - 1] = INCBIN_U16("data/menus/PauseScreen/3fd252.pal");
+const u16 sPauseScreen_3fd250[5 * 16] = INCBIN_U16("data/menus/PauseScreen/3fd250.pal");
 
 const u16 sMinimapAnimatedPalette[1 * 16] = INCBIN_U16("data/menus/PauseScreen/MinimapAnimated.pal");
 const u16 sSamusWireframePal[4 * 16] = INCBIN_U16("data/menus/PauseScreen/SamusWireframe.pal");
@@ -1291,982 +1291,1391 @@ static const u16 sMiscOam_GravityKnown_Frame0[OAM_DATA_SIZE(4)] = {
 
 
 static const struct FrameData sSamusIconOam_Suit[9] = {
-    sSamusIconOam_Suit_Frame0,
-    20,
-    sSamusIconOam_Suit_Frame1,
-    8,
-    sSamusIconOam_Suit_Frame2,
-    8,
-    sSamusIconOam_Suit_Frame3,
-    4,
-    sSamusIconOam_Suit_Frame4,
-    20,
-    sSamusIconOam_Suit_Frame3,
-    2,
-    sSamusIconOam_Suit_Frame2,
-    2,
-    sSamusIconOam_Suit_Frame1,
-    2,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sSamusIconOam_Suit_Frame0,
+        .timer = ONE_THIRD_SECOND
+    },
+    [1] = {
+        .pFrame = sSamusIconOam_Suit_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = {
+        .pFrame = sSamusIconOam_Suit_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sSamusIconOam_Suit_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sSamusIconOam_Suit_Frame4,
+        .timer = ONE_THIRD_SECOND
+    },
+    [5] = {
+        .pFrame = sSamusIconOam_Suit_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [6] = {
+        .pFrame = sSamusIconOam_Suit_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sSamusIconOam_Suit_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [8] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_RightCursor[5] = {
-    sMiscOam_RightCursor_Frame0,
-    8,
-    sMiscOam_RightCursor_Frame1,
-    8,
-    sMiscOam_RightCursor_Frame2,
-    8,
-    sMiscOam_RightCursor_Frame1,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_RightCursor_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [1] = {
+        .pFrame = sMiscOam_RightCursor_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = {
+        .pFrame = sMiscOam_RightCursor_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sMiscOam_RightCursor_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_DownCursor[5] = {
-    sMiscOam_DownCursor_Frame0,
-    8,
-    sMiscOam_DownCursor_Frame1,
-    8,
-    sMiscOam_DownCursor_Frame2,
-    8,
-    sMiscOam_DownCursor_Frame1,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_DownCursor_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [1] = {
+        .pFrame = sMiscOam_DownCursor_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = {
+        .pFrame = sMiscOam_DownCursor_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sMiscOam_DownCursor_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sBorderArrowOam_Up[5] = {
-    sBorderArrowOam_Up_Frame0,
-    4,
-    sBorderArrowOam_Up_Frame1,
-    4,
-    sBorderArrowOam_Up_Frame2,
-    8,
-    sBorderArrowOam_Up_Frame1,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sBorderArrowOam_Up_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sBorderArrowOam_Up_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sBorderArrowOam_Up_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sBorderArrowOam_Up_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sBorderArrowOam_Down[5] = {
-    sBorderArrowOam_Down_Frame0,
-    4,
-    sBorderArrowOam_Down_Frame1,
-    4,
-    sBorderArrowOam_Down_Frame2,
-    8,
-    sBorderArrowOam_Down_Frame1,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sBorderArrowOam_Down_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sBorderArrowOam_Down_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sBorderArrowOam_Down_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sBorderArrowOam_Down_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sBorderArrowOam_Left[5] = {
-    sBorderArrowOam_Left_Frame0,
-    4,
-    sBorderArrowOam_Left_Frame1,
-    4,
-    sBorderArrowOam_Left_Frame2,
-    8,
-    sBorderArrowOam_Left_Frame1,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sBorderArrowOam_Left_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sBorderArrowOam_Left_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sBorderArrowOam_Left_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sBorderArrowOam_Left_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sBorderArrowOam_Right[5] = {
-    sBorderArrowOam_Right_Frame0,
-    4,
-    sBorderArrowOam_Right_Frame1,
-    4,
-    sBorderArrowOam_Right_Frame2,
-    8,
-    sBorderArrowOam_Right_Frame1,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sBorderArrowOam_Right_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sBorderArrowOam_Right_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sBorderArrowOam_Right_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sBorderArrowOam_Right_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sBorderArrowOam_Unused[2] = {
-    sBorderArrowOam_Unused_Frame0,
-    16,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sBorderArrowOam_Unused_Frame0,
+        .timer = CONVERT_SECONDS(4.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sTargetOam_UpArrow[8] = {
-    sTargetOam_UpArrow_Frame0,
-    4,
-    sTargetOam_UpArrow_Frame1,
-    4,
-    sTargetOam_UpArrow_Frame2,
-    4,
-    sTargetOam_UpArrow_Frame3,
-    4,
-    sTargetOam_UpArrow_Frame4,
-    4,
-    sTargetOam_UpArrow_Frame5,
-    4,
-    sSamusIconOam_Suit_Frame4,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sTargetOam_UpArrow_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sTargetOam_UpArrow_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sTargetOam_UpArrow_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sTargetOam_UpArrow_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sTargetOam_UpArrow_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sTargetOam_UpArrow_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [6] = {
+        .pFrame = sSamusIconOam_Suit_Frame4,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [7] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sTargetOam_DownArrow[8] = {
-    sTargetOam_DownArrow_Frame0,
-    4,
-    sTargetOam_DownArrow_Frame1,
-    4,
-    sTargetOam_DownArrow_Frame2,
-    4,
-    sTargetOam_DownArrow_Frame3,
-    4,
-    sTargetOam_DownArrow_Frame4,
-    4,
-    sTargetOam_DownArrow_Frame5,
-    4,
-    sSamusIconOam_Suit_Frame4,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sTargetOam_DownArrow_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sTargetOam_DownArrow_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sTargetOam_DownArrow_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sTargetOam_DownArrow_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sTargetOam_DownArrow_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sTargetOam_DownArrow_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [6] = {
+        .pFrame = sSamusIconOam_Suit_Frame4,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [7] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_DownloadLineTrail[5] = {
-    sMiscOam_DownloadLine_Frame0,
-    1,
-    sMiscOam_DownloadLineTrail_Frame1,
-    1,
-    sMiscOam_DownloadLineTrail_Frame2,
-    1,
-    sMiscOam_DownloadLineTrail_Frame3,
-    1,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_DownloadLine_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [1] = {
+        .pFrame = sMiscOam_DownloadLineTrail_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [2] = {
+        .pFrame = sMiscOam_DownloadLineTrail_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [3] = {
+        .pFrame = sMiscOam_DownloadLineTrail_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_DownloadLine[2] = {
-    sMiscOam_DownloadLine_Frame0,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_DownloadLine_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_Brinstar[2] = {
-    sOverlayOam_Brinstar_Frame0,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_Brinstar_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_Kraid[2] = {
-    sOverlayOam_Kraid_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_Kraid_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_Norfair[2] = {
-    sOverlayOam_Norfair_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_Norfair_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_Ridley[2] = {
-    sOverlayOam_Ridley_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_Ridley_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_Tourian[2] = {
-    sOverlayOam_Tourian_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_Tourian_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_Crateria[2] = {
-    sOverlayOam_Crateria_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_Crateria_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_Chozodia[2] = {
-    sOverlayOam_Chozodia_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_Chozodia_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_AreaNameSpawning[10] = {
-    sOverlayOam_AreaNameSpawning_Frame0,
-    2,
-    sOverlayOam_AreaNameSpawning_Frame1,
-    2,
-    sOverlayOam_AreaNameSpawning_Frame2,
-    2,
-    sOverlayOam_AreaNameSpawning_Frame3,
-    2,
-    sOverlayOam_AreaNameSpawning_Frame4,
-    8,
-    sOverlayOam_AreaNameSpawning_Frame3,
-    2,
-    sOverlayOam_AreaNameSpawning_Frame2,
-    2,
-    sOverlayOam_AreaNameSpawning_Frame1,
-    2,
-    sOverlayOam_AreaNameSpawning_Frame0,
-    2,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_AreaNameSpawning_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sOverlayOam_AreaNameSpawning_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = {
+        .pFrame = sOverlayOam_AreaNameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sOverlayOam_AreaNameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [4] = {
+        .pFrame = sOverlayOam_AreaNameSpawning_Frame4,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [5] = {
+        .pFrame = sOverlayOam_AreaNameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [6] = {
+        .pFrame = sOverlayOam_AreaNameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sOverlayOam_AreaNameSpawning_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [8] = {
+        .pFrame = sOverlayOam_AreaNameSpawning_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [9] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_EnergyTanks[2] = {
-    sMiscOam_EnergyTanks_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_EnergyTanks_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_MissileTanks[2] = {
-    sMiscOam_MissileTanks_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_MissileTanks_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_SuperMissileTanks[2] = {
-    sMiscOam_SuperMissileTanks_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_SuperMissileTanks_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_PowerBombTanks[2] = {
-    sMiscOam_PowerBombTanks_Frame0,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_PowerBombTanks_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sTargetOam_Target[5] = {
-    sTargetOam_Target_Frame0,
-    8,
-    sTargetOam_Target_Frame1,
-    8,
-    sTargetOam_Target_Frame2,
-    8,
-    sTargetOam_Target_Frame3,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sTargetOam_Target_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [1] = {
+        .pFrame = sTargetOam_Target_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = {
+        .pFrame = sTargetOam_Target_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sTargetOam_Target_Frame3,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_EnergyHeader[2] = {
-    sMiscOam_EnergyHeader_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_EnergyHeader_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_BeamHeader[2] = {
-    sMiscOam_BeamHeader_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_BeamHeader_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_MissileHeader[2] = {
-    sMiscOam_MissileHeader_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_MissileHeader_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_BombHeader[2] = {
-    sMiscOam_BombHeader_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_BombHeader_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_SuitHeader[2] = {
-    sMiscOam_SuitHeader_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_SuitHeader_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_MiscHeader[2] = {
-    sMiscOam_MiscHeader_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_MiscHeader_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_SamusPowerSuitWireframe[2] = {
-    sMiscOam_SamusPowerSuitWireFrame_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_SamusPowerSuitWireFrame_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_SamusFullSuitWireframe[2] = {
-    sMiscOam_SamusFullSuitWireFrame_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_SamusFullSuitWireFrame_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_BeamLinker[11] = {
-    sMiscOam_BeamLinker_Frame0,
-    2,
-    sMiscOam_BeamLinker_Frame1,
-    2,
-    sMiscOam_BeamLinker_Frame2,
-    2,
-    sMiscOam_BeamLinker_Frame3,
-    2,
-    sMiscOam_BeamLinker_Frame4,
-    2,
-    sMiscOam_BeamLinker_Frame5,
-    2,
-    sMiscOam_BeamLinker_Frame6,
-    2,
-    sMiscOam_BeamLinker_Frame7,
-    2,
-    sMiscOam_BeamLinker_Frame8,
-    2,
-    sMiscOam_BeamLinker_Frame9,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_BeamLinker_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sMiscOam_BeamLinker_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = {
+        .pFrame = sMiscOam_BeamLinker_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sMiscOam_BeamLinker_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [4] = {
+        .pFrame = sMiscOam_BeamLinker_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [5] = {
+        .pFrame = sMiscOam_BeamLinker_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [6] = {
+        .pFrame = sMiscOam_BeamLinker_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sMiscOam_BeamLinker_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [8] = {
+        .pFrame = sMiscOam_BeamLinker_Frame8,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [9] = {
+        .pFrame = sMiscOam_BeamLinker_Frame9,
+        .timer = UCHAR_MAX
+    },
+    [10] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_MissileLinker[6] = {
-    sMiscOam_MissileLinker_Frame0,
-    2,
-    sMiscOam_MissileLinker_Frame1,
-    2,
-    sMiscOam_MissileLinker_Frame2,
-    2,
-    sMiscOam_MissileLinker_Frame3,
-    2,
-    sMiscOam_MissileLinker_Frame4,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_MissileLinker_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sMiscOam_MissileLinker_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = {
+        .pFrame = sMiscOam_MissileLinker_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sMiscOam_MissileLinker_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [4] = {
+        .pFrame = sMiscOam_MissileLinker_Frame4,
+        .timer = UCHAR_MAX
+    },
+    [5] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_BombLinker[10] = {
-    sMiscOam_BombLinker_Frame0,
-    2,
-    sMiscOam_BombLinker_Frame1,
-    2,
-    sMiscOam_BombLinker_Frame2,
-    2,
-    sMiscOam_BombLinker_Frame3,
-    2,
-    sMiscOam_BombLinker_Frame4,
-    2,
-    sMiscOam_BombLinker_Frame5,
-    2,
-    sMiscOam_BombLinker_Frame6,
-    2,
-    sMiscOam_BombLinker_Frame7,
-    2,
-    sMiscOam_BombLinker_Frame8,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_BombLinker_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sMiscOam_BombLinker_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = {
+        .pFrame = sMiscOam_BombLinker_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sMiscOam_BombLinker_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [4] = {
+        .pFrame = sMiscOam_BombLinker_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [5] = {
+        .pFrame = sMiscOam_BombLinker_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [6] = {
+        .pFrame = sMiscOam_BombLinker_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sMiscOam_BombLinker_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [8] = {
+        .pFrame = sMiscOam_BombLinker_Frame8,
+        .timer = UCHAR_MAX
+    },
+    [9] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_SuitLinker[10] = {
-    sMiscOam_SuitLinker_Frame0,
-    2,
-    sMiscOam_SuitLinker_Frame1,
-    2,
-    sMiscOam_SuitLinker_Frame2,
-    2,
-    sMiscOam_SuitLinker_Frame3,
-    2,
-    sMiscOam_SuitLinker_Frame4,
-    2,
-    sMiscOam_SuitLinker_Frame5,
-    2,
-    sMiscOam_SuitLinker_Frame6,
-    2,
-    sMiscOam_SuitLinker_Frame7,
-    2,
-    sMiscOam_SuitLinker_Frame8,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_SuitLinker_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sMiscOam_SuitLinker_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = {
+        .pFrame = sMiscOam_SuitLinker_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sMiscOam_SuitLinker_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [4] = {
+        .pFrame = sMiscOam_SuitLinker_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [5] = {
+        .pFrame = sMiscOam_SuitLinker_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [6] = {
+        .pFrame = sMiscOam_SuitLinker_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sMiscOam_SuitLinker_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [8] = {
+        .pFrame = sMiscOam_SuitLinker_Frame8,
+        .timer = UCHAR_MAX
+    },
+    [9] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_MiscLinker[9] = {
-    sMiscOam_MiscLinker_Frame0,
-    2,
-    sMiscOam_MiscLinker_Frame1,
-    2,
-    sMiscOam_MiscLinker_Frame2,
-    2,
-    sMiscOam_MiscLinker_Frame3,
-    2,
-    sMiscOam_MiscLinker_Frame4,
-    2,
-    sMiscOam_MiscLinker_Frame5,
-    2,
-    sMiscOam_MiscLinker_Frame6,
-    2,
-    sMiscOam_MiscLinker_Frame7,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_MiscLinker_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sMiscOam_MiscLinker_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = {
+        .pFrame = sMiscOam_MiscLinker_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sMiscOam_MiscLinker_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [4] = {
+        .pFrame = sMiscOam_MiscLinker_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [5] = {
+        .pFrame = sMiscOam_MiscLinker_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [6] = {
+        .pFrame = sMiscOam_MiscLinker_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sMiscOam_MiscLinker_Frame7,
+        .timer = UCHAR_MAX
+    },
+    [8] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_ItemCursorIdle[7] = {
-    sMiscOam_ItemCursorIdle_Frame0,
-    4,
-    sMiscOam_ItemCursorIdle_Frame1,
-    4,
-    sMiscOam_ItemCursorIdle_Frame2,
-    4,
-    sMiscOam_ItemCursorIdle_Frame1,
-    4,
-    sMiscOam_ItemCursorIdle_Frame0,
-    4,
-    sSamusIconOam_Suit_Frame4,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_ItemCursorIdle_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sMiscOam_ItemCursorIdle_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sMiscOam_ItemCursorIdle_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sMiscOam_ItemCursorIdle_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sMiscOam_ItemCursorIdle_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sSamusIconOam_Suit_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [6] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_SelectOn[2] = {
-    sOverlayOam_SelectOn_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_SelectOn_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_SelectOff[2] = {
-    sOverlayOam_SelectOff_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_SelectOff_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_InGameTimer[2] = {
-    sMiscOam_InGameTimer_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_InGameTimer_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_RPromptPressed[2] = {
-    sOverlayOam_RPromptPressed_Frame0,
-    2,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_RPromptPressed_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_LPromptPressed[2] = {
-    sOverlayOam_LPromptPressed_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_LPromptPressed_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_CrateriaOutline[2] = {
-    sOverlayOam_CrateriaOutline_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_CrateriaOutline_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_BrinstarOutline[2] = {
-    sOverlayOam_BrinstarOutline_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_BrinstarOutline_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_KraidOutline[2] = {
-    sOverlayOam_KraidOutline_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_KraidOutline_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_NorfairOutline[2] = {
-    sOverlayOam_NorfairOutline_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_NorfairOutline_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_RidleyOutline[2] = {
-    sOverlayOam_RidleyOutline_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_RidleyOutline_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_TourianOutline[2] = {
-    sOverlayOam_TourianOutline_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_TourianOutline_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_ChozodiaOutline[2] = {
-    sOverlayOam_ChozodiaOutline_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_ChozodiaOutline_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_OutlinedCrateria[2] = {
-    sWorldMapOam_OutlinedCrateria_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_OutlinedCrateria_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_NameCrateria[2] = {
-    sWorldMapOam_NameCrateria_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_NameCrateria_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_OutlinedBrinstar[2] = {
-    sWorldMapOam_OutlinedBrinstar_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_OutlinedBrinstar_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_NameBrinstar[2] = {
-    sWorldMapOam_NameBrinstar_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_NameBrinstar_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_OutlinedKraid[2] = {
-    sWorldMapOam_OutlinedKraid_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_OutlinedKraid_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_NameKraid[2] = {
-    sWorldMapOam_NameKraid_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_NameKraid_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_OutlinedNorfair[2] = {
-    sWorldMapOam_OutlinedNorfair_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_OutlinedNorfair_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_NameNorfair[2] = {
-    sWorldMapOam_NameNorfair_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_NameNorfair_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_OutlinedRidley[2] = {
-    sWorldMapOam_OutlinedRidley_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_OutlinedRidley_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_NameRidley[2] = {
-    sWorldMapOam_NameRidley_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_NameRidley_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_OutlinedTourian[2] = {
-    sWorldMapOam_OutlinedTourian_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_OutlinedTourian_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_NameTourian[2] = {
-    sWorldMapOam_NameTourian_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_NameTourian_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_OutlinedChozodia[2] = {
-    sWorldMapOam_OutlinedChozodia_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_OutlinedChozodia_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_NameChozodia[2] = {
-    sWorldMapOam_NameChozodia_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_NameChozodia_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sWorldMapOam_Target[8] = {
-    sWorldMapOam_Target_Frame0,
-    8,
-    sWorldMapOam_Target_Frame1,
-    8,
-    sWorldMapOam_Target_Frame2,
-    8,
-    sWorldMapOam_Target_Frame0,
-    8,
-    sWorldMapOam_Target_Frame1,
-    8,
-    sWorldMapOam_Target_Frame2,
-    8,
-    sSamusIconOam_Suit_Frame4,
-    12,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sWorldMapOam_Target_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [1] = {
+        .pFrame = sWorldMapOam_Target_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = {
+        .pFrame = sWorldMapOam_Target_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sWorldMapOam_Target_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = {
+        .pFrame = sWorldMapOam_Target_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [5] = {
+        .pFrame = sWorldMapOam_Target_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [6] = {
+        .pFrame = sSamusIconOam_Suit_Frame4,
+        .timer = CONVERT_SECONDS(0.2f)
+    },
+    [7] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_ItemCursorFocusing[6] = {
-    sMiscOam_ItemCursorFocusing_Frame0,
-    2,
-    sMiscOam_ItemCursorFocusing_Frame1,
-    1,
-    sMiscOam_ItemCursorFocusing_Frame2,
-    1,
-    sMiscOam_ItemCursorFocusing_Frame3,
-    1,
-    sMiscOam_ItemCursorFocusing_Frame4,
-    1,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_ItemCursorFocusing_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sMiscOam_ItemCursorFocusing_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [2] = {
+        .pFrame = sMiscOam_ItemCursorFocusing_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [3] = {
+        .pFrame = sMiscOam_ItemCursorFocusing_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [4] = {
+        .pFrame = sMiscOam_ItemCursorFocusing_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [5] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_TextMarkerDown[3] = {
-    sMiscOam_TextMarkerDown_Frame0,
-    6,
-    sMiscOam_TextMarkerDown_Frame1,
-    6,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_TextMarkerDown_Frame0,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [1] = {
+        .pFrame = sMiscOam_TextMarkerDown_Frame1,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [2] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_TextMarkerUp[3] = {
-    sMiscOam_TextMarkerUp_Frame0,
-    6,
-    sMiscOam_TextMarkerUp_Frame1,
-    6,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_TextMarkerUp_Frame0,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [1] = {
+        .pFrame = sMiscOam_TextMarkerUp_Frame1,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [2] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sBossIconOam_Kraid[2] = {
-    sBossIconOam_Kraid_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sBossIconOam_Kraid_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sBossIconOam_Ridley[2] = {
-    sBossIconOam_Ridley_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sBossIconOam_Ridley_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_ChozoHintCrateria[2] = {
-    sOverlayOam_ChozoHintCrateria_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_ChozoHintCrateria_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_ChozoHintBrinstar[2] = {
-    sOverlayOam_ChozoHintBrinstar_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_ChozoHintBrinstar_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_ChozoHintNorfair[2] = {
-    sOverlayOam_ChozoHintNorfair_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_ChozoHintNorfair_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_ChozoHintRidley[2] = {
-    sOverlayOam_ChozoHintRidley_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_ChozoHintRidley_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_ChozoHintTourian[2] = {
-    sOverlayOam_ChozoHintTourian_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_ChozoHintTourian_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_ChozoHintChozodia[2] = {
-    sOverlayOam_ChozoHintChozodia_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_ChozoHintChozodia_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sOverlayOam_ChozoHintKraid[2] = {
-    sOverlayOam_ChozoHintKraid_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sOverlayOam_ChozoHintKraid_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sBossIconOam_Crossmark[2] = {
-    sBossIconOam_Crossmark_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sBossIconOam_Crossmark_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_GunHeader[2] = {
-    sMiscOam_GunHeader_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_GunHeader_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sSamusIconOam_Suitless[9] = {
-    sSamusIconOam_Suitless_Frame0,
-    20,
-    sSamusIconOam_Suitless_Frame1,
-    8,
-    sSamusIconOam_Suitless_Frame2,
-    8,
-    sSamusIconOam_Suitless_Frame3,
-    4,
-    sSamusIconOam_Suit_Frame4,
-    20,
-    sSamusIconOam_Suitless_Frame3,
-    2,
-    sSamusIconOam_Suitless_Frame2,
-    2,
-    sSamusIconOam_Suitless_Frame1,
-    2,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sSamusIconOam_Suitless_Frame0,
+        .timer = ONE_THIRD_SECOND
+    },
+    [1] = {
+        .pFrame = sSamusIconOam_Suitless_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = {
+        .pFrame = sSamusIconOam_Suitless_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sSamusIconOam_Suitless_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sSamusIconOam_Suit_Frame4,
+        .timer = ONE_THIRD_SECOND
+    },
+    [5] = {
+        .pFrame = sSamusIconOam_Suitless_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [6] = {
+        .pFrame = sSamusIconOam_Suitless_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sSamusIconOam_Suitless_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [8] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sBossIconOam_Ship[2] = {
-    sBossIconOam_Ship_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sBossIconOam_Ship_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sTargetOam_GreenFlameSpawning[7] = {
-    sTargetOam_GreenFlameSpawning_Frame0,
-    3,
-    sTargetOam_GreenFlameSpawning_Frame1,
-    3,
-    sTargetOam_GreenFlameSpawning_Frame2,
-    3,
-    sTargetOam_GreenFlameSpawning_Frame3,
-    3,
-    sTargetOam_GreenFlameSpawning_Frame4,
-    3,
-    sTargetOam_GreenFlameSpawning_Frame5,
-    3,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame0,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [1] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame1,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [2] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [3] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [4] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame4,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [5] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame5,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [6] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sTargetOam_GreenFlame[5] = {
-    sTargetOam_GreenFlameSpawning_Frame2,
-    4,
-    sTargetOam_GreenFlameSpawning_Frame3,
-    4,
-    sTargetOam_GreenFlameMoving_Frame6,
-    4,
-    sTargetOam_GreenFlameMoving_Frame7,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sTargetOam_GreenFlameMoving[17] = {
-    sTargetOam_GreenFlameMoving_Frame0,
-    4,
-    sTargetOam_GreenFlameMoving_Frame1,
-    4,
-    sTargetOam_GreenFlameMoving_Frame2,
-    4,
-    sTargetOam_GreenFlameMoving_Frame3,
-    4,
-    sTargetOam_GreenFlameSpawning_Frame2,
-    4,
-    sTargetOam_GreenFlameSpawning_Frame3,
-    4,
-    sTargetOam_GreenFlameMoving_Frame6,
-    4,
-    sTargetOam_GreenFlameMoving_Frame7,
-    4,
-    sTargetOam_GreenFlameMoving_Frame8,
-    4,
-    sTargetOam_GreenFlameMoving_Frame9,
-    4,
-    sTargetOam_GreenFlameMoving_Frame10,
-    4,
-    sTargetOam_GreenFlameMoving_Frame11,
-    4,
-    sTargetOam_GreenFlameSpawning_Frame2,
-    4,
-    sTargetOam_GreenFlameSpawning_Frame3,
-    4,
-    sTargetOam_GreenFlameMoving_Frame6,
-    4,
-    sTargetOam_GreenFlameMoving_Frame7,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [6] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [7] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [8] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame8,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [9] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame9,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [10] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame10,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [11] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame11,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [12] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [13] = {
+        .pFrame = sTargetOam_GreenFlameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [14] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [15] = {
+        .pFrame = sTargetOam_GreenFlameMoving_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [16] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sTargetOam_PurpleFlameSpawning[7] = {
-    sTargetOam_PurpleFlameSpawning_Frame0,
-    3,
-    sTargetOam_PurpleFlameSpawning_Frame1,
-    3,
-    sTargetOam_PurpleFlameSpawning_Frame2,
-    3,
-    sTargetOam_PurpleFlameSpawning_Frame3,
-    3,
-    sTargetOam_PurpleFlameSpawning_Frame4,
-    3,
-    sTargetOam_PurpleFlameSpawning_Frame5,
-    3,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame0,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [1] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame1,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [2] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [3] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [4] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame4,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [5] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame5,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [6] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sTargetOam_PurpleFlame[5] = {
-    sTargetOam_PurpleFlameSpawning_Frame2,
-    4,
-    sTargetOam_PurpleFlameSpawning_Frame3,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame6,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame7,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sTargetOam_PurpleFlameMoving[17] = {
-    sTargetOam_PurpleFlameMoving_Frame0,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame1,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame2,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame3,
-    4,
-    sTargetOam_PurpleFlameSpawning_Frame2,
-    4,
-    sTargetOam_PurpleFlameSpawning_Frame3,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame6,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame7,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame8,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame9,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame10,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame11,
-    4,
-    sTargetOam_PurpleFlameSpawning_Frame2,
-    4,
-    sTargetOam_PurpleFlameSpawning_Frame3,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame6,
-    4,
-    sTargetOam_PurpleFlameMoving_Frame7,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [6] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [7] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [8] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame8,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [9] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame9,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [10] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame10,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [11] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame11,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [12] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [13] = {
+        .pFrame = sTargetOam_PurpleFlameSpawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [14] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [15] = {
+        .pFrame = sTargetOam_PurpleFlameMoving_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [16] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_SamusSuitlessWireframe[2] = {
-    sMiscOam_SamusSuitlessWireframe_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_SamusSuitlessWireframe_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_PlasmaBeamUnknown[2] = {
-    sMiscOam_PlasmaBeamUnknown_Frame0,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_PlasmaBeamUnknown_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_SpaceJumpUnknown[2] = {
-    sMiscOam_SpaceJumpUnknown_Frame0,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_SpaceJumpUnknown_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_GravityUnknown[2] = {
-    sMiscOam_GravityUnknown_Frame0,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_GravityUnknown_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_PlasmaBeamKnown[2] = {
-    sMiscOam_PlasmaBeamKnown_Frame0,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_PlasmaBeamKnown_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_SpaceJumpKnown[2] = {
-    sMiscOam_SpaceJumpKnown_Frame0,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_SpaceJumpKnown_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_GravityKnown[2] = {
-    sMiscOam_GravityKnown_Frame0,
-    UCHAR_MAX,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_GravityKnown_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 static const u16 sMiscOam_DebugCursor_Frame0[OAM_DATA_SIZE(0)] = {
@@ -2311,32 +2720,43 @@ static const u16 sMiscOam_DebugSamusHeadAndArrows_Frame0[OAM_DATA_SIZE(10)] = {
 };
 
 static const struct FrameData sMiscOam_DebugCursor[3] = {
-    sMiscOam_DebugCursor_Frame0,
-    8,
-    sMiscOam_DebugCursor_Frame1,
-    8,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_DebugCursor_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [1] = {
+        .pFrame = sMiscOam_DebugCursor_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_DebugSelector[5] = {
-    sMiscOam_DebugSelector_Frame0,
-    6,
-    sMiscOam_DebugSelector_Frame1,
-    4,
-    sMiscOam_DebugSelector_Frame2,
-    6,
-    sMiscOam_DebugSelector_Frame1,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_DebugSelector_Frame0,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [1] = {
+        .pFrame = sMiscOam_DebugSelector_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sMiscOam_DebugSelector_Frame2,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [3] = {
+        .pFrame = sMiscOam_DebugSelector_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
 };
 
 static const struct FrameData sMiscOam_DebugSamusHeadAndArrows[2] = {
-    sMiscOam_DebugSamusHeadAndArrows_Frame0,
-    4,
-    NULL,
-    0
+    [0] = {
+        .pFrame = sMiscOam_DebugSamusHeadAndArrows_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = FRAME_DATA_TERMINATOR
 };
 
 
@@ -2446,8 +2866,7 @@ const struct MenuOamData sMenuOamDataEraseSram_Empty = {
 const struct CutsceneOamData sCutsceneOam_Empty = {
     .yPosition = 0,
     .xPosition = 0,
-    .unk_2 = 0,
-    .padding_5 = { 0, 0, 0 },
+    .padding_4 = { 0, 0, 0, 0 },
     .animationDurationCounter = 0,
     .currentAnimationFrame = 0,
     .oamID = 0,
@@ -2477,11 +2896,11 @@ const u8 sUnused_40d078[16] = {
     0x4, 0, 0, 0
 };
 
-const u16 sPauseScreen_40d088[4] = {
-    [0] = 0,
-    [1] = 1,
-    [2] = 2,
-    [3] = 3
+const u16 sPauseScreen_BgCntPriority[4] = {
+    [BGCNT_HIGH_PRIORITY] = BGCNT_HIGH_PRIORITY,
+    [BGCNT_HIGH_MID_PRIORITY] = BGCNT_HIGH_MID_PRIORITY,
+    [BGCNT_LOW_MID_PRIORITY] = BGCNT_LOW_MID_PRIORITY,
+    [BGCNT_LOW_PRIORITY] = BGCNT_LOW_PRIORITY
 };
 
 const struct PauseScreenAreaIconData sPauseScreenAreaIconsData[MAX_AMOUNT_OF_AREAS] = {
@@ -2543,121 +2962,123 @@ const struct PauseScreenAreaIconData sPauseScreenAreaIconsData[MAX_AMOUNT_OF_ARE
     }
 };
 
+// right, left, up, down?
+// borderArrowsOam_id index, oam_id, x_position, y_position
 const u16 sMapScreenArrowsData[4][4] = {
     {
-        1, 0x4, BLOCK_SIZE * 14 + 8, BLOCK_SIZE * 5 - QUARTER_BLOCK_SIZE
+        1, BORDER_ARROW_OAM_ID_RIGHT, BLOCK_SIZE * 14 + 8, BLOCK_SIZE * 5 - QUARTER_BLOCK_SIZE
     },
     {
-        0, 0x3, QUARTER_BLOCK_SIZE + 8, BLOCK_SIZE * 5 - QUARTER_BLOCK_SIZE
+        0, BORDER_ARROW_OAM_ID_LEFT, QUARTER_BLOCK_SIZE + 8, BLOCK_SIZE * 5 - QUARTER_BLOCK_SIZE
     },
     {
-        2, 0x1, BLOCK_SIZE * 7 + QUARTER_BLOCK_SIZE, BLOCK_SIZE + 8
+        2, BORDER_ARROW_OAM_ID_UP, BLOCK_SIZE * 7 + QUARTER_BLOCK_SIZE, BLOCK_SIZE + 8
     },
     {
-        3, 0x2, BLOCK_SIZE * 7 + QUARTER_BLOCK_SIZE, BLOCK_SIZE * 8 + QUARTER_BLOCK_SIZE + 8
+        3, BORDER_ARROW_OAM_ID_DOWN, BLOCK_SIZE * 7 + QUARTER_BLOCK_SIZE, BLOCK_SIZE * 8 + QUARTER_BLOCK_SIZE + 8
     }
 };
 
-const u8 sStatusScreenBeamFlagsOrder[5] = {
-    BBF_LONG_BEAM,
-    BBF_CHARGE_BEAM,
-    BBF_ICE_BEAM,
-    BBF_WAVE_BEAM,
-    BBF_PLASMA_BEAM
+const u8 sStatusScreenBeamFlagsOrder[STATUS_SCREEN_BEAM_OFFSET_END] = {
+    [STATUS_SCREEN_BEAM_OFFSET_LONG] = BBF_LONG_BEAM,
+    [STATUS_SCREEN_BEAM_OFFSET_CHARGE] = BBF_CHARGE_BEAM,
+    [STATUS_SCREEN_BEAM_OFFSET_ICE] = BBF_ICE_BEAM,
+    [STATUS_SCREEN_BEAM_OFFSET_WAVE] = BBF_WAVE_BEAM,
+    [STATUS_SCREEN_BEAM_OFFSET_PLASMA] = BBF_PLASMA_BEAM
 };
 
 const u8 sStatusScreenBombFlagsOrder[1] = {
     BBF_BOMBS
 };
 
-const u8 sStatusScreenSuitFlagsOrder[2] = {
-    SMF_VARIA_SUIT,
-    SMF_GRAVITY_SUIT
+const u8 sStatusScreenSuitFlagsOrder[STATUS_SCREEN_SUIT_OFFSET_END] = {
+    [STATUS_SCREEN_SUIT_OFFSET_VARIA] = SMF_VARIA_SUIT,
+    [STATUS_SCREEN_SUIT_OFFSET_GRAVITY] = SMF_GRAVITY_SUIT
 };
 
-const u8 sStatusScreenMiscFlagsOrder[6] = {
-    SMF_MORPH_BALL,
-    SMF_POWER_GRIP,
-    SMF_SPEEDBOOSTER,
-    SMF_HIGH_JUMP,
-    SMF_SCREW_ATTACK,
-    SMF_SPACE_JUMP
+const u8 sStatusScreenMiscFlagsOrder[STATUS_SCREEN_MISC_OFFSET_END] = {
+    [STATUS_SCREEN_MISC_OFFSET_MORPH_BALL] = SMF_MORPH_BALL,
+    [STATUS_SCREEN_MISC_OFFSET_POWER_GRIP] = SMF_POWER_GRIP,
+    [STATUS_SCREEN_MISC_OFFSET_SPEED_BOOSTER] = SMF_SPEEDBOOSTER,
+    [STATUS_SCREEN_MISC_OFFSET_HIGH_JUMP] = SMF_HIGH_JUMP,
+    [STATUS_SCREEN_MISC_OFFSET_SCREW_ATTACK] = SMF_SCREW_ATTACK,
+    [STATUS_SCREEN_MISC_OFFSET_SPACE_JUMP] = SMF_SPACE_JUMP
 };
 
-const u8 sPauseScreen_40d0fe[4] = {
-    ARRAY_SIZE(sStatusScreenBeamFlagsOrder),
-    ARRAY_SIZE(sStatusScreenBombFlagsOrder),
-    ARRAY_SIZE(sStatusScreenSuitFlagsOrder),
-    ARRAY_SIZE(sStatusScreenMiscFlagsOrder)
+const u8 sStatusScreenFlagsSize[ABILITY_GROUP_STATUS_GROUPS_END] = {
+    [ABILITY_GROUP_BEAMS] = ARRAY_SIZE(sStatusScreenBeamFlagsOrder),
+    [ABILITY_GROUP_BOMBS] = ARRAY_SIZE(sStatusScreenBombFlagsOrder),
+    [ABILITY_GROUP_SUITS] = ARRAY_SIZE(sStatusScreenSuitFlagsOrder),
+    [ABILITY_GROUP_MISC] = ARRAY_SIZE(sStatusScreenMiscFlagsOrder)
 };
 
 const u16 sPauseScreen_40d102[5] = {
-    0x1, 0xA, 0x64, 0x3E8, 0x2710
+    1, 10, 100, 1000, 10000
 };
 
-const struct PauseScreenWireframeData sSamusWireframeData[7] = {
-    [0] = {
+const struct PauseScreenWireframeData sSamusWireframeData[SAMUS_WIREFRAME_DATA_END] = {
+    [SAMUS_WIREFRAME_DATA_ENERGY] = {
         .oamId = MISC_OAM_ID_ENERGY_HEADER,
         .xPosition = BLOCK_SIZE - QUARTER_BLOCK_SIZE,
         .yPosition = BLOCK_SIZE - QUARTER_BLOCK_SIZE,
         .xOffset = BLOCK_SIZE * 15,
         .objMode = 0,
-        .unk_A = BLOCK_SIZE - QUARTER_BLOCK_SIZE,
-        .unk_C = BLOCK_SIZE - QUARTER_BLOCK_SIZE 
+        .xPosition2 = BLOCK_SIZE - QUARTER_BLOCK_SIZE,
+        .yPosition2 = BLOCK_SIZE - QUARTER_BLOCK_SIZE 
     },
-    [1] = {
+    [SAMUS_WIREFRAME_DATA_BEAM] = {
         .oamId = MISC_OAM_ID_BEAM_HEADER,
         .xPosition = -QUARTER_BLOCK_SIZE,
         .yPosition = BLOCK_SIZE * 2 - QUARTER_BLOCK_SIZE,
         .xOffset = BLOCK_SIZE * 16,
         .objMode = 0,
-        .unk_A = BLOCK_SIZE * 3 + HALF_BLOCK_SIZE + 4,
-        .unk_C = BLOCK_SIZE * 2
+        .xPosition2 = BLOCK_SIZE * 3 + HALF_BLOCK_SIZE + 4,
+        .yPosition2 = BLOCK_SIZE * 2
     },
-    [2] = {
+    [SAMUS_WIREFRAME_DATA_MISSILE] = {
         .oamId = MISC_OAM_ID_MISSILE_HEADER,
         .xPosition = -QUARTER_BLOCK_SIZE,
         .yPosition = BLOCK_SIZE * 5 + QUARTER_BLOCK_SIZE,
         .xOffset = BLOCK_SIZE * 17,
         .objMode = 0,
-        .unk_A = BLOCK_SIZE * 4 + 4,
-        .unk_C = BLOCK_SIZE * 5 + HALF_BLOCK_SIZE + 4
+        .xPosition2 = BLOCK_SIZE * 4 + 4,
+        .yPosition2 = BLOCK_SIZE * 5 + HALF_BLOCK_SIZE + 4
     },
-    [3] = {
+    [SAMUS_WIREFRAME_DATA_BOMB] = {
         .oamId = MISC_OAM_ID_BOMB_HEADER,
         .xPosition = BLOCK_SIZE * 9 - QUARTER_BLOCK_SIZE,
         .yPosition = BLOCK_SIZE - QUARTER_BLOCK_SIZE,
         .xOffset = BLOCK_SIZE * 9 - QUARTER_BLOCK_SIZE,
         .objMode = 0,
-        .unk_A = BLOCK_SIZE * 9 + 4,
-        .unk_C = BLOCK_SIZE
+        .xPosition2 = BLOCK_SIZE * 9 + 4,
+        .yPosition2 = BLOCK_SIZE
     },
-    [4] = {
+    [SAMUS_WIREFRAME_DATA_SUIT] = {
         .oamId = MISC_OAM_ID_SUIT_HEADER,
         .xPosition = BLOCK_SIZE * 10 - QUARTER_BLOCK_SIZE,
         .yPosition = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
         .xOffset = BLOCK_SIZE * 10 - QUARTER_BLOCK_SIZE,
         .objMode = 0,
-        .unk_A = BLOCK_SIZE * 10 + 4,
-        .unk_C = BLOCK_SIZE * 2 + HALF_BLOCK_SIZE + 4
+        .xPosition2 = BLOCK_SIZE * 10 + 4,
+        .yPosition2 = BLOCK_SIZE * 2 + HALF_BLOCK_SIZE + 4
     },
-    [5] = {
+    [SAMUS_WIREFRAME_DATA_MISC] = {
         .oamId = MISC_OAM_ID_MISC_HEADER,
         .xPosition = BLOCK_SIZE * 10 - QUARTER_BLOCK_SIZE,
         .yPosition = BLOCK_SIZE * 4 + QUARTER_BLOCK_SIZE,
         .xOffset = BLOCK_SIZE * 11 - QUARTER_BLOCK_SIZE,
         .objMode = 0,
-        .unk_A = BLOCK_SIZE * 10 + 4,
-        .unk_C = BLOCK_SIZE * 4 + HALF_BLOCK_SIZE + 4
+        .xPosition2 = BLOCK_SIZE * 10 + 4,
+        .yPosition2 = BLOCK_SIZE * 4 + HALF_BLOCK_SIZE + 4
     },
-    [6] = {
+    [SAMUS_WIREFRAME_DATA_SAMUS_POWER_SUIT_WIREFRAME] = {
         .oamId = MISC_OAM_ID_SAMUS_POWER_SUIT_WIREFRAME,
         .xPosition = BLOCK_SIZE * 5 + QUARTER_BLOCK_SIZE,
         .yPosition = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
         .xOffset = 0,
         .objMode = 1,
-        .unk_A = BLOCK_SIZE * 5 + QUARTER_BLOCK_SIZE,
-        .unk_C = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE
+        .xPosition2 = BLOCK_SIZE * 5 + QUARTER_BLOCK_SIZE,
+        .yPosition2 = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE
     }
 };
 
@@ -2740,7 +3161,14 @@ const u16 sWorldMapTargetPositions[16][2] = {
     [15] = { 0, 0 }
 };
 
-const u8 sBossIcons[MAX_AMOUNT_OF_AREAS - 1][5] = {
+/**
+ * 0 : Associated event
+ * 1 : Boss icon OAM ID
+ * 2 : X position
+ * 3 : Y position
+ * 4 : X offset
+ */
+const u8 sBossIcons[AREA_NORMAL_COUNT][5] = {
     [AREA_BRINSTAR] = {
         EVENT_NONE,
         0,
@@ -2799,7 +3227,7 @@ const u16 sMapChunksToUpdate[3] = {
 
 
 
-const struct OamArray sPauseScreenMiscOam[56] = {
+const struct OamArray sPauseScreenMiscOam[MISC_OAM_ID_END] = {
     [0] = {
         .pOam = sSamusIconOam_Suit,
         .preAction = OAM_ARRAY_PRE_ACTION_NONE
@@ -3026,7 +3454,7 @@ const struct OamArray sPauseScreenMiscOam[56] = {
     }
 };
 
-const struct OamArray sPauseScreenOverlayOam[33] = {
+const struct OamArray sPauseScreenOverlayOam[OVERLAY_OAM_ID_END] = {
     [0] = {
         .pOam = sSamusIconOam_Suit,
         .preAction = OAM_ARRAY_PRE_ACTION_NONE
@@ -3161,7 +3589,7 @@ const struct OamArray sPauseScreenOverlayOam[33] = {
     }
 };
 
-const struct OamArray sPauseScreenBorderArrowsOam[5] = {
+const struct OamArray sPauseScreenBorderArrowsOam[BORDER_ARROW_OAM_ID_END] = {
     [0] = {
         .pOam = sSamusIconOam_Suit,
         .preAction = OAM_ARRAY_PRE_ACTION_NONE
@@ -3184,7 +3612,7 @@ const struct OamArray sPauseScreenBorderArrowsOam[5] = {
     }
 };
 
-const struct OamArray sPauseScreenSamusIconOam[3] = {
+const struct OamArray sPauseScreenSamusIconOam[SAMUS_ICON_OAM_ID_END] = {
     [0] = {
         .pOam = sSamusIconOam_Suit,
         .preAction = OAM_ARRAY_PRE_ACTION_NONE
@@ -3199,7 +3627,7 @@ const struct OamArray sPauseScreenSamusIconOam[3] = {
     }
 };
 
-const struct OamArray sPauseScreenBossIconsOam[5] = {
+const struct OamArray sPauseScreenBossIconsOam[BOSS_ICON_OAM_ID_END] = {
     [0] = {
         .pOam = sSamusIconOam_Suit,
         .preAction = OAM_ARRAY_PRE_ACTION_NONE
@@ -3222,7 +3650,7 @@ const struct OamArray sPauseScreenBossIconsOam[5] = {
     }
 };
 
-const struct OamArray sPauseScreenTargetsOam[16] = {
+const struct OamArray sPauseScreenTargetsOam[TARGET_OAM_END] = {
     [0] = {
         .pOam = sSamusIconOam_Suit,
         .preAction = OAM_ARRAY_PRE_ACTION_NONE
@@ -3289,7 +3717,7 @@ const struct OamArray sPauseScreenTargetsOam[16] = {
     }
 };
 
-const struct OamArray sPauseScreenWorldMapOam[18] = {
+const struct OamArray sPauseScreenWorldMapOam[WORLD_MAP_OAM_ID_END] = {
     [0] = {
         .pOam = sSamusIconOam_Suit,
         .preAction = OAM_ARRAY_PRE_ACTION_NONE
@@ -3517,12 +3945,12 @@ const struct MinimapAreaName sMinimapAreaNames[10] = {
 const u8 sPauseScreen_40d6fc[80] = INCBIN_U8("data/menus/PauseScreen/40d6fc.gfx");
 const u8 sPauseScreen_40d74c[80] = INCBIN_U8("data/menus/PauseScreen/40d74c.gfx");
 
-u8* const sPauseScreen_40d79c[5] = {
-    VRAM_BASE + 0x16360,
-    VRAM_BASE + 0x16760,
-    VRAM_BASE + 0x16B60,
-    VRAM_BASE + 0x16F60,
-    VRAM_BASE + 0x17300,
+u8* const sPauseScreen_IgtAndTanksVramAddresses[IGT_AND_TANKS_VRAM_ADDRESS_END] = {
+    [IGT_AND_TANKS_VRAM_ADDRESS_ENERGY_TANKS] = VRAM_BASE + 0x16360,
+    [IGT_AND_TANKS_VRAM_ADDRESS_MISSILE_TANKS] = VRAM_BASE + 0x16760,
+    [IGT_AND_TANKS_VRAM_ADDRESS_SUPER_MISSILE_TANKS] = VRAM_BASE + 0x16B60,
+    [IGT_AND_TANKS_VRAM_ADDRESS_POWER_BOMB_TANKS] = VRAM_BASE + 0x16F60,
+    [IGT_AND_TANKS_VRAM_ADDRESS_TIME] = VRAM_BASE + 0x17300,
 };
 
 // TODO use char defines
@@ -3679,7 +4107,13 @@ const u8 sPauseScreen_40dcf4[16] = {
 };
 
 const u8 sMinimapAnimatedPaletteOffsets[MAX_AMOUNT_OF_AREAS + 1] = {
-    0x9E, 0x9D, 0x9C, 0x9B,
-    0x9A, 0x9F, 0x99, 0x98,
-    0x97
+    [AREA_BRINSTAR] = 0x9E,
+    [AREA_KRAID] = 0x9D,
+    [AREA_NORFAIR] = 0x9C,
+    [AREA_RIDLEY] = 0x9B,
+    [AREA_TOURIAN] = 0x9A,
+    [AREA_CRATERIA] = 0x9F,
+    [AREA_CHOZODIA] = 0x99,
+    [AREA_DEBUG_1] = 0x98,
+    [MAX_AMOUNT_OF_AREAS] = 0x97
 };

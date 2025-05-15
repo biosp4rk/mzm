@@ -383,22 +383,22 @@ void ScrollProcessGeneral(void)
         if (gSamusData.pose == SPOSE_HANGING_ON_LEDGE || gSamusData.pose == SPOSE_GRABBING_A_LEDGE_SUITLESS)
         {
             // Hanging on ledge, slow scroll a little bit
-            gSlowScrollingTimer = 1;
+            gSlowScrollingTimer = 1 * DELTA_TIME;
         }
         else if (gSamusData.pose == SPOSE_PULLING_YOURSELF_UP_FROM_HANGING || gSamusData.pose == SPOSE_PULLING_YOURSELF_FORWARD_FROM_HANGING)
         {
             // Pulling self up, slow scroll during the animation
-            gSlowScrollingTimer = 8;
+            gSlowScrollingTimer = CONVERT_SECONDS(2.f / 15);
         }
         else if (gSamusData.pose == SPOSE_PULLING_YOURSELF_INTO_A_MORPH_BALL_TUNNEL)
         {
             // Pulling self up and morphing, slow scroll during the animation
-            gSlowScrollingTimer = 20;
+            gSlowScrollingTimer = ONE_THIRD_SECOND;
         }
         else if (gSlowScrollingTimer != 0)
         {
             // Decrement timer
-            gSlowScrollingTimer--;
+            APPLY_DELTA_TIME_DEC(gSlowScrollingTimer);
         }
     }
     else if (gLockScreen.lock == LOCK_SCREEN_TYPE_POSITION)
@@ -465,10 +465,10 @@ void ScrollProcessGeneral(void)
     if (!gDisableScrolling)
     {
         // Process scrolling
-        if (gFreeMovementLockCamera && gGameModeSub1 == SUB_GAME_MODE_FREE_MOVEMENT)
+        if (gNoClipLockCamera && gGameModeSub1 == SUB_GAME_MODE_NO_CLIP)
         {
             // Update camera lock movement
-            ScrollFreeMovementDebugCameraLock(&coords);
+            ScrollNoClipDebugCameraLock(&coords);
         }
         else if (gCurrentRoomEntry.scrollsFlag == ROOM_SCROLLS_FLAG_HAS_SCROLLS)
         {
@@ -1028,11 +1028,11 @@ void ScrollBg2(struct Coordinates* pCoords)
 }
 
 /**
- * @brief 59008 | a8 | Handle the free movement camera lock functionality
+ * @brief 59008 | a8 | Handle the debug no-clip camera lock functionality
  * 
  * @param pCoords Coords pointer
  */
-void ScrollFreeMovementDebugCameraLock(struct Coordinates* pCoords)
+void ScrollNoClipDebugCameraLock(struct Coordinates* pCoords)
 {
     if (pCoords->x < BLOCK_SIZE * 7 + HALF_BLOCK_SIZE)
     {

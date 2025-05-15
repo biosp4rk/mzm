@@ -28,7 +28,7 @@ u8 StatueOpeningOpening(void)
     switch (CUTSCENE_DATA.timeInfo.subStage)
     {
         case 0:
-            if (CUTSCENE_DATA.timeInfo.timer > 20)
+            if (CUTSCENE_DATA.timeInfo.timer > ONE_THIRD_SECOND)
             {
                 CutsceneStartSpriteEffect(CUTSCENE_DATA.bldcnt, 0, 8, 1);
                 CUTSCENE_DATA.timeInfo.timer = 0;
@@ -37,7 +37,7 @@ u8 StatueOpeningOpening(void)
             break;
 
         case 1:
-            if (CUTSCENE_DATA.timeInfo.timer > 30)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(.5f))
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -69,22 +69,35 @@ u8 StatueOpeningOpening(void)
             break;
 
         case 4:
-            if (CUTSCENE_DATA.timeInfo.timer > 30)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(.5f))
             {
-                // Set opening animation for appropriate statue
-                if (gCurrentArea == AREA_KRAID)
+                #ifdef DEBUG
+                if (gBootDebugActive)
+                {
                     UpdateCutsceneOamDataID(&CUTSCENE_DATA.oam[0], STATUE_OPENING_OAM_ID_KRAID_ACTIVATING);
-                else if (gCurrentArea == AREA_RIDLEY)
                     UpdateCutsceneOamDataID(&CUTSCENE_DATA.oam[1], STATUE_OPENING_OAM_ID_RIDLEY_ACTIVATING);
-
-                SoundPlay(SOUND_STATUE_OPENING_STATUE_ACTIVATING);
-                CUTSCENE_DATA.timeInfo.subStage++;
-                CUTSCENE_DATA.timeInfo.timer = 0;
+                    SoundPlay(SOUND_STATUE_OPENING_STATUE_ACTIVATING);
+                    CUTSCENE_DATA.timeInfo.subStage++;
+                    CUTSCENE_DATA.timeInfo.timer = 0;
+                }
+                else
+                #endif // DEBUG
+                {
+                    // Set opening animation for appropriate statue
+                    if (gCurrentArea == AREA_KRAID)
+                        UpdateCutsceneOamDataID(&CUTSCENE_DATA.oam[0], STATUE_OPENING_OAM_ID_KRAID_ACTIVATING);
+                    else if (gCurrentArea == AREA_RIDLEY)
+                        UpdateCutsceneOamDataID(&CUTSCENE_DATA.oam[1], STATUE_OPENING_OAM_ID_RIDLEY_ACTIVATING);
+    
+                    SoundPlay(SOUND_STATUE_OPENING_STATUE_ACTIVATING);
+                    CUTSCENE_DATA.timeInfo.subStage++;
+                    CUTSCENE_DATA.timeInfo.timer = 0;
+                }
             }
             break;
 
         case 5:
-            if (CUTSCENE_DATA.timeInfo.timer > 60 * 3)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(3.f))
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -92,7 +105,7 @@ u8 StatueOpeningOpening(void)
             break;
 
         case 6:
-            unk_61f0c();
+            CutsceneFadeScreenToBlack();
             CUTSCENE_DATA.timeInfo.stage++;
             MACRO_CUTSCENE_NEXT_STAGE();
             break;
@@ -100,6 +113,10 @@ u8 StatueOpeningOpening(void)
 
     *CutsceneGetBgVerticalPointer(sStatueOpeningPageData[1].bg) = *CutsceneGetBgVerticalPointer(sStatueOpeningPageData[0].bg);
     *CutsceneGetBgVerticalPointer(sStatueOpeningPageData[2].bg) = *CutsceneGetBgVerticalPointer(sStatueOpeningPageData[0].bg) / 2;
+
+    #ifdef DEBUG
+    CutsceneCheckSkipStage(1);
+    #endif
 
     return FALSE;
 }
@@ -114,8 +131,8 @@ u8 StatueOpeningInit(void)
     u8 oamId;
     const u8* ptr;
     
-    unk_61f0c();
-    DmaTransfer(3, sBossStatuesPal, PALRAM_BASE + 0x300, sizeof(sBossStatuesPal), 16);
+    CutsceneFadeScreenToBlack();
+    DmaTransfer(3, sBossStatuesPal, PALRAM_OBJ + 8 * PAL_ROW_SIZE, sizeof(sBossStatuesPal), 16);
     DmaTransfer(3, sStatueOpeningPal, PALRAM_BASE, sizeof(sStatueOpeningPal), 16);
     SET_BACKDROP_COLOR(COLOR_BLACK);
 
@@ -136,17 +153,17 @@ u8 StatueOpeningInit(void)
 
     CutsceneReset();
 
-    CUTSCENE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+    CUTSCENE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
     gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE;
 
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[0].bg, BLOCK_SIZE * 33);
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[1].bg, BLOCK_SIZE * 33);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[0].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[1].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE);
 
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_VOFS, sStatueOpeningPageData[0].bg, BLOCK_SIZE * 38);
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_VOFS, sStatueOpeningPageData[1].bg, BLOCK_SIZE * 38);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_VOFS, sStatueOpeningPageData[0].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE * 6);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_VOFS, sStatueOpeningPageData[1].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE * 6);
 
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[2].bg, BLOCK_SIZE * 16 + HALF_BLOCK_SIZE);
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_VOFS, sStatueOpeningPageData[2].bg, BLOCK_SIZE * 16);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[2].bg, NON_GAMEPLAY_START_BG_POS / 2 + HALF_BLOCK_SIZE);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_VOFS, sStatueOpeningPageData[2].bg, NON_GAMEPLAY_START_BG_POS / 2);
 
     CUTSCENE_DATA.oam[0].xPosition = BLOCK_SIZE * 8;
     CUTSCENE_DATA.oam[0].yPosition = BLOCK_SIZE * 7;

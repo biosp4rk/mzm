@@ -51,7 +51,7 @@ void FusionGalleryInit(void)
     {
         ClearGfxRam();
         zero = 0;
-        DMA_SET(3, &zero, &gNonGameplayRAM, (DMA_ENABLE | DMA_32BIT | DMA_SRC_FIXED) << 16 | sizeof(gNonGameplayRAM) / 4);
+        DMA_SET(3, &zero, &gNonGameplayRam, (DMA_ENABLE | DMA_32BIT | DMA_SRC_FIXED) << 16 | sizeof(gNonGameplayRam) / 4);
     }
 
     image = FUSION_GALLERY_DATA.currentImage;
@@ -63,8 +63,8 @@ void FusionGalleryInit(void)
     BitFill(3, 0x4FF04FF, VRAM_BASE + 0xE800, 0x800, 32);
     DMA_SET(3, sFusionGalleryData[image].pPalette, PALRAM_BASE, DMA_ENABLE << 16 | PALRAM_SIZE / 4);
 
-    write16(REG_BG0CNT, 0x9C00);
-    write16(REG_BG1CNT, 0x9E09);
+    write16(REG_BG0CNT, CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x512));
+    write16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x512));
 
     gNextOamSlot = 0;
     ResetFreeOam();
@@ -89,8 +89,7 @@ void FusionGalleryInit(void)
 
     FUSION_GALLERY_DATA.unk_2 = 0;
     FUSION_GALLERY_DATA.dispcnt = DCNT_BG0 | DCNT_BG1 | DCNT_OBJ;
-    ENDING_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET |
-        BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+    ENDING_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
 
     FusionGalleryVBlank();
 }
@@ -116,9 +115,7 @@ u32 FusionGalleryDisplay(void)
 
     if (gChangedInput & KEY_B)
     {
-        FUSION_GALLERY_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_BG2_FIRST_TARGET_PIXEL |
-            BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_BACKDROP_FIRST_TARGET_PIXEL |
-            BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+        FUSION_GALLERY_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
 
         gWrittenToBLDY_NonGameplay = 0;
         ended = TRUE;
@@ -147,9 +144,7 @@ u32 FusionGalleryDisplay(void)
     {
         FUSION_GALLERY_DATA.currentImage = imageId;
 
-        FUSION_GALLERY_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_BG2_FIRST_TARGET_PIXEL |
-            BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_BACKDROP_FIRST_TARGET_PIXEL |
-            BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+        FUSION_GALLERY_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
 
         gWrittenToBLDY_NonGameplay = 0;
         gGameModeSub1 = 5;
@@ -232,7 +227,7 @@ u32 FusionGallerySubroutine(void)
 
         case 3:
         case 5:
-            if (gWrittenToBLDY_NonGameplay < 16)
+            if (gWrittenToBLDY_NonGameplay < BLDY_MAX_VALUE)
             {
                 if (FUSION_GALLERY_DATA.unk_94++ & 1)
                     gWrittenToBLDY_NonGameplay++;

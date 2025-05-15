@@ -12,6 +12,7 @@
 #include "structs/menus/title_screen.h"
 #include "structs/menus/erase_sram.h"
 #include "structs/menus/file_select.h"
+#include "structs/menus/boot_debug.h"
 #include "structs/fusion_gallery.h"
 #include "structs/chozodia_escape.h"
 #include "structs/tourian_escape.h"
@@ -32,6 +33,7 @@ union NonGameplayRAM {
     struct FusionGalleryData fusionGallery;
     struct ChozodiaEscapeData chozodiaEscape;
     struct TourianEscapeData tourianEscape;
+    struct BootDebugData bootDebug;
     u8 inGame[1576];
 };
 
@@ -39,13 +41,13 @@ union EwramData {
     struct PauseScreenEwramData pauseScreen;
     struct FileSelectEwramData fileSelect;
     struct KraidRisingEwramData kraidRising;
-    struct BeforeCharieEwramData beforeCharlie;
+    struct BeforeCharlieEwramData beforeCharlie;
 };
 
 extern u16 unk_02035400;
 
 extern u8 gUnk_03004fc9;
-extern union NonGameplayRAM gNonGameplayRAM;
+extern union NonGameplayRAM gNonGameplayRam;
 
 extern u16 gBg0HOFS_NonGameplay;
 extern u16 gBg0VOFS_NonGameplay;

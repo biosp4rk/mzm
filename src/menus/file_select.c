@@ -4,6 +4,8 @@
 #include "callbacks.h"
 #include "text.h"
 #include "save_file.h"
+#include "color_effects.h"
+#include "time_attack.h"
 
 #include "data/shortcut_pointers.h"
 #include "data/text_data.h"
@@ -14,6 +16,8 @@
 #include "data/menus/internal_file_select_data.h"
 
 #include "constants/audio.h"
+#include "constants/cable_link.h"
+#include "constants/color_fading.h"
 #include "constants/text.h"
 #include "constants/game_state.h"
 #include "constants/menus/file_select.h"
@@ -30,17 +34,17 @@
  */
 void FileSelectApplyStereo(void)
 {
-    u32 request;
+    u32 action;
 
     if (gStereoFlag >= 2)
         return;
 
     if (gStereoFlag)
-        request = 0x2000000; // Enable flag
+        action = SOUND_ACTION_ENABLE_STEREO;
     else
-        request = 0x1000000; // Disable flag
+        action = SOUND_ACTION_DISABLE_STEREO;
 
-    DoSoundAction(request);
+    DoSoundAction(action);
 }
 
 /**
@@ -86,27 +90,27 @@ void FileSelectResetOAM(void)
 
     // Reset file screen OAM
     pOam = FILE_SELECT_DATA.fileScreenOam;
-    for (i  = 0; i < ARRAY_SIZE(FILE_SELECT_DATA.fileScreenOam); i++)
+    for (i = 0; i < ARRAY_SIZE(FILE_SELECT_DATA.fileScreenOam); i++)
         pOam[i] = sFileSelectOamData_Empty[0];
 
     // Setup file markers
-    pOam[FILE_SELECT_OAM_FILE_A_MARKER].xPosition = sFileSelectCursorOamData[0].xPosition;
-    pOam[FILE_SELECT_OAM_FILE_A_MARKER].yPosition = sFileSelectCursorOamData[0].yPosition;
-    UpdateMenuOamDataID(&pOam[FILE_SELECT_OAM_FILE_A_MARKER], sFileSelectCursorOamData[0].unk_4);
+    pOam[FILE_SELECT_OAM_FILE_A_MARKER].xPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].xPosition;
+    pOam[FILE_SELECT_OAM_FILE_A_MARKER].yPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].yPosition;
+    UpdateMenuOamDataID(&pOam[FILE_SELECT_OAM_FILE_A_MARKER], sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId);
 
-    pOam[FILE_SELECT_OAM_FILE_B_MARKER].xPosition = sFileSelectCursorOamData[1].xPosition;
-    pOam[FILE_SELECT_OAM_FILE_B_MARKER].yPosition = sFileSelectCursorOamData[1].yPosition;
-    UpdateMenuOamDataID(&pOam[FILE_SELECT_OAM_FILE_B_MARKER], sFileSelectCursorOamData[1].unk_4);
+    pOam[FILE_SELECT_OAM_FILE_B_MARKER].xPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].xPosition;
+    pOam[FILE_SELECT_OAM_FILE_B_MARKER].yPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].yPosition;
+    UpdateMenuOamDataID(&pOam[FILE_SELECT_OAM_FILE_B_MARKER], sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId);
 
-    pOam[FILE_SELECT_OAM_FILE_C_MARKER].xPosition = sFileSelectCursorOamData[2].xPosition;
-    pOam[FILE_SELECT_OAM_FILE_C_MARKER].yPosition = sFileSelectCursorOamData[2].yPosition;
-    UpdateMenuOamDataID(&pOam[FILE_SELECT_OAM_FILE_C_MARKER], sFileSelectCursorOamData[2].unk_4);
+    pOam[FILE_SELECT_OAM_FILE_C_MARKER].xPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].xPosition;
+    pOam[FILE_SELECT_OAM_FILE_C_MARKER].yPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].yPosition;
+    UpdateMenuOamDataID(&pOam[FILE_SELECT_OAM_FILE_C_MARKER], sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId);
 
-    FILE_SELECT_DATA.fileScreenOam[11].boundBackground = 1;
-    FILE_SELECT_DATA.fileScreenOam[11].priority = 2;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].boundBackground = 1;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].priority = BGCNT_LOW_MID_PRIORITY;
 
-    FILE_SELECT_DATA.fileScreenOam[4].boundBackground = 0;
-    FILE_SELECT_DATA.fileScreenOam[4].priority = 1;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].boundBackground = 0;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].priority = BGCNT_HIGH_MID_PRIORITY;
     
     FILE_SELECT_DATA.fileScreenOam[0].boundBackground = 0;
     FILE_SELECT_DATA.fileScreenOam[1].boundBackground = 0;
@@ -115,9 +119,9 @@ void FileSelectResetOAM(void)
     FILE_SELECT_DATA.fileScreenOam[1].priority = 0;
     FILE_SELECT_DATA.fileScreenOam[2].priority = 0;
 
-    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_LOGO].priority = 3;
-    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_LOGO].priority = 3;
-    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_LOGO].priority = 3;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_LOGO].priority = BGCNT_LOW_PRIORITY;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_LOGO].priority = BGCNT_LOW_PRIORITY;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_LOGO].priority = BGCNT_LOW_PRIORITY;
 
     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_LOGO].oamID = FILE_SELECT_OAM_ID_METROID_LOGO;
     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_LOGO].oamID = FILE_SELECT_OAM_ID_METROID_LOGO;
@@ -157,7 +161,7 @@ void FileSelectResetOAM(void)
         pOam[i] = sFileSelectOamData_Empty[0];
 
     // Update stereo OAM
-    OptionsUpdateStereoOam(USHORT_MAX);
+    OptionsUpdateStereoOam(USHORT_MAX | STEREO_UPDATE_FLAGS_SOUND_TEST | STEREO_UPDATE_FLAGS_ACTIVE | STEREO_UPDATE_FLAGS_IDLE);
 }
 
 /**
@@ -173,7 +177,7 @@ void FileSelectUpdateCursor(u8 cursorPose, u8 position)
     if (position < FILE_SELECT_CURSOR_POSITION_COPY)
         oamId = gSaveFilesInfo[position].suitType; // Cursor based on current suit
     else
-        oamId = 0;
+        oamId = SUIT_NORMAL;
 
     oamId = sFileSelectCursorOamData[position].oamIds[oamId];
 
@@ -194,21 +198,21 @@ void FileSelectUpdateCursor(u8 cursorPose, u8 position)
 
             // File A
             if (position != FILE_SELECT_CURSOR_POSITION_FILE_A)
-                oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].unk_4;
+                oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId;
             else
                 oamId = FILE_SELECT_OAM_ID_FILE_A_MARKER_SELECTED_RED;
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
 
             // File B
             if (position != FILE_SELECT_CURSOR_POSITION_FILE_B)
-                oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].unk_4;
+                oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId;
             else
                 oamId = FILE_SELECT_OAM_ID_FILE_B_MARKER_SELECTED_RED;
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
 
             // File C
             if (position != FILE_SELECT_CURSOR_POSITION_FILE_C)
-                oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].unk_4;
+                oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId;
             else
                 oamId = FILE_SELECT_OAM_ID_FILE_C_MARKER_SELECTED_RED;
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER], oamId);
@@ -259,6 +263,7 @@ void FileSelectUpdateCursor(u8 cursorPose, u8 position)
 
         case 8:
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].oamID = oamId + 4;
+            break;
     }
 }
 
@@ -275,7 +280,7 @@ void FileSelectUpdateCopyCursor(u8 cursorPose, u8 fileNumber)
     if (fileNumber < FILE_SELECT_CURSOR_POSITION_COPY)
         oamId = gSaveFilesInfo[fileNumber].suitType; // Cursor based on current suit
     else
-        oamId = 0;
+        oamId = SUIT_NORMAL;
 
     oamId = sFileSelectCursorOamData[fileNumber].oamIds[oamId];
 
@@ -295,21 +300,21 @@ void FileSelectUpdateCopyCursor(u8 cursorPose, u8 fileNumber)
             // If on file and exists or intro played -> red marker, otherwise use idle marker
 
             // File A
-            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].unk_4;
+            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_A && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_A_MARKER_SELECTED_RED;
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
 
             // File B
-            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].unk_4;
+            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_B && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_B_MARKER_SELECTED_RED;
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
 
             // File C
-            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].unk_4;
+            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_C && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_C_MARKER_SELECTED_RED;
@@ -323,13 +328,13 @@ void FileSelectUpdateCopyCursor(u8 cursorPose, u8 fileNumber)
 
             // Reset every file marker to non-selected 
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER],
-                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].unk_4);
+                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId);
 
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER],
-                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].unk_4);
+                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId);
 
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER],
-                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].unk_4);
+                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId);
             break;
 
         case CURSOR_COPY_POSE_SELECTING_FILE:
@@ -369,7 +374,7 @@ void FileSelectUpdateCopyArrow(u8 arrowPose, u8 dstFileNumber)
             if (FILE_SELECT_DATA.copySourceFile != FILE_SELECT_CURSOR_POSITION_FILE_A)
             {
                 if (dstFileNumber != FILE_SELECT_CURSOR_POSITION_FILE_A)
-                    oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].unk_4;
+                    oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId;
                 else
                     oamId = FILE_SELECT_OAM_ID_FILE_A_MARKER_SELECTED_GREEN;
 
@@ -380,7 +385,7 @@ void FileSelectUpdateCopyArrow(u8 arrowPose, u8 dstFileNumber)
             if (FILE_SELECT_DATA.copySourceFile != FILE_SELECT_CURSOR_POSITION_FILE_B)
             {
                 if (dstFileNumber != FILE_SELECT_CURSOR_POSITION_FILE_B)
-                    oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].unk_4;
+                    oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId;
                 else
                     oamId = FILE_SELECT_OAM_ID_FILE_B_MARKER_SELECTED_GREEN;
 
@@ -391,7 +396,7 @@ void FileSelectUpdateCopyArrow(u8 arrowPose, u8 dstFileNumber)
             if (FILE_SELECT_DATA.copySourceFile != FILE_SELECT_CURSOR_POSITION_FILE_C)
             {
                 if (dstFileNumber != FILE_SELECT_CURSOR_POSITION_FILE_C)
-                    oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].unk_4;
+                    oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId;
                 else
                     oamId = FILE_SELECT_OAM_ID_FILE_C_MARKER_SELECTED_GREEN;
 
@@ -408,19 +413,19 @@ void FileSelectUpdateCopyArrow(u8 arrowPose, u8 dstFileNumber)
             if (dstFileNumber == FILE_SELECT_CURSOR_POSITION_FILE_A)
             {
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER],
-                    sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].unk_4);
+                    sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId);
             }
             
             if (dstFileNumber == FILE_SELECT_CURSOR_POSITION_FILE_B)
             {
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER],
-                    sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].unk_4);
+                    sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId);
             }
             
             if (dstFileNumber == FILE_SELECT_CURSOR_POSITION_FILE_C)
             {
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER],
-                    sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].unk_4);
+                    sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId);
             }
             break;
 
@@ -463,21 +468,21 @@ void FileSelectUpdateEraseCursor(u8 cursorPose, u8 fileNumber)
             // If on file and exists or intro played -> red marker, otherwise use idle marker
 
             // File A
-            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].unk_4;
+            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_A && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_A_MARKER_SELECTED_RED;
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
 
             // File B
-            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].unk_4;
+            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_B && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_B_MARKER_SELECTED_RED;
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
 
             // File C
-            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].unk_4;
+            oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_C && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_C_MARKER_SELECTED_RED;
@@ -491,13 +496,13 @@ void FileSelectUpdateEraseCursor(u8 cursorPose, u8 fileNumber)
 
             // Reset every file marker to non-selected 
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER],
-                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].unk_4);
+                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId);
 
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER],
-                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].unk_4);
+                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId);
 
             UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER],
-                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].unk_4);
+                sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId);
             break;
 
         case CURSOR_ERASE_POSE_SELECTING_FILE:
@@ -540,7 +545,7 @@ void OptionsUpdateCursor(u8 cursorPose)
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR], OPTIONS_OAM_ID_CURSOR_SELECTED);
     }
 
-    FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].priority = 2;
+    FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].priority = BGCNT_LOW_MID_PRIORITY;
 }
 
 /**
@@ -552,9 +557,9 @@ void OptionsUpdateStereoOam(u16 flags)
 {
     u32 offset;
 
-    if (flags & (STEREO_UPDATE_FLAGS_1 | STEREO_UPDATE_FLAGS_SPEAKER_EFFECT))
+    if (flags & (STEREO_UPDATE_FLAGS_IDLE | STEREO_UPDATE_FLAGS_ACTIVE))
     {
-        if (flags & STEREO_UPDATE_FLAGS_1)
+        if (flags & STEREO_UPDATE_FLAGS_IDLE)
             offset = 2;
         else
             offset = 3;
@@ -563,23 +568,23 @@ void OptionsUpdateStereoOam(u16 flags)
 
         FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SPEAKER].xPosition = sStereoOamData[gStereoFlag][0];
         FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SPEAKER].yPosition = sStereoOamData[gStereoFlag][1];
-        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SPEAKER].priority = 2;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SPEAKER].priority = BGCNT_LOW_MID_PRIORITY;
     }
 
-    if (flags & STEREO_UPDATE_FLAGS_4)
+    if (flags & STEREO_UPDATE_FLAGS_SOUND_TEST)
     {
-        FILE_SELECT_DATA.optionsOam[7].xPosition = BLOCK_SIZE * 10 + HALF_BLOCK_SIZE;
-        FILE_SELECT_DATA.optionsOam[7].yPosition = BLOCK_SIZE * 5;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].xPosition = BLOCK_SIZE * 10 + HALF_BLOCK_SIZE;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].yPosition = BLOCK_SIZE * 5;
 
-        FILE_SELECT_DATA.optionsOam[8].xPosition = FILE_SELECT_DATA.optionsOam[7].xPosition;
-        FILE_SELECT_DATA.optionsOam[8].yPosition = FILE_SELECT_DATA.optionsOam[7].yPosition;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW].xPosition = FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].xPosition;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW].yPosition = FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].yPosition;
 
-        FILE_SELECT_DATA.optionsOam[9].xPosition = FILE_SELECT_DATA.optionsOam[7].xPosition;
-        FILE_SELECT_DATA.optionsOam[9].yPosition = FILE_SELECT_DATA.optionsOam[7].yPosition;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].xPosition = FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].xPosition;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].yPosition = FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].yPosition;
 
-        FILE_SELECT_DATA.optionsOam[7].priority = 3;
-        FILE_SELECT_DATA.optionsOam[8].priority = 3;
-        FILE_SELECT_DATA.optionsOam[9].priority = 3;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].priority = BGCNT_LOW_PRIORITY;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW].priority = BGCNT_LOW_PRIORITY;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].priority = BGCNT_LOW_PRIORITY;
     }
 }
 
@@ -589,7 +594,7 @@ void OptionsUpdateStereoOam(u16 flags)
  */
 void FileScreenProcessText(void)
 {
-    u8 array[2];
+    u8 newIdQueue[2];
     u32* dst;
     vu16 buffer;
     s32 var_0;
@@ -597,77 +602,73 @@ void FileScreenProcessText(void)
     u32 dstType;
     u32 flag;
 
-    switch (FILE_SELECT_DATA.unk_34)
+    switch (FILE_SELECT_DATA.processTextStage)
     {
-        case 0:
+        case FILE_SCREEN_PROCESS_TEXT_STAGE_NONE:
             break;
 
-        case 1:
+        case FILE_SCREEN_PROCESS_TEXT_STAGE_INIT:
             gCurrentMessage = sFileScreenMessage_Empty;
 
+            // always true?
             if (gCurrentMessage.isMessage)
                 var_0 = -1;
             else
                 var_0 = 0;
 
-            dstType = sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1];
+            dstType = sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1];
 
             if (dstType == 3 || dstType == 1)
             {
                 buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1]],
-                    (DMA_ENABLE | DMA_SRC_FIXED) << 16 | 0x800);
+                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x1000 / sizeof(u16)));
             }
             else if (dstType == 2)
             {
                 buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1]],
-                    (DMA_ENABLE | DMA_SRC_FIXED) << 16 | 0x100);
+                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x200 / sizeof(u16)));
 
                 buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1]] + 0x400,
-                    (DMA_ENABLE | DMA_SRC_FIXED) << 16 | 0x100);
+                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x400, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x200 / sizeof(u16)));
 
                 buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1]] + 0x600,
-                    (DMA_ENABLE | DMA_SRC_FIXED) << 16 | 0x400);
+                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x600, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x800 / sizeof(u16)));
             }
             else
             {
                 buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1]],
-                    (DMA_ENABLE | DMA_SRC_FIXED) << 16 | 0x400);
+                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x800 / sizeof(u16)));
 
-                if (sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][2] == 3)
+                if (sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][2] == 3)
                 {
                     buffer = var_0;
-                    DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1]] + 0x800,
-                        (DMA_ENABLE | DMA_SRC_FIXED) << 16 | 0x100);
+                    DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x800, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x200 / sizeof(u16)));
 
                     buffer = var_0;
-                    DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1]] + 0xC00,
-                        (DMA_ENABLE | DMA_SRC_FIXED) << 16 | 0x100);
+                    DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0xC00, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x200 / sizeof(u16)));
                 }
             }
 
-            FILE_SELECT_DATA.unk_34++;
+            FILE_SELECT_DATA.processTextStage++;
             break;
 
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-            dst = sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1]];
+        case FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_1:
+        case FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_2:
+        case FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_3:
+        case FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_4:
+            dst = sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]];
 
-            var_0 = FILE_SELECT_DATA.unk_34 - 2;
+            var_0 = FILE_SELECT_DATA.processTextStage - FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_1;
+            // FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_3
             if (var_0 & 2)
                 dst += 0x200;
 
+            // FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_2 and FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_4
             if (var_0 & 1)
             {
                 dst += 0x80;
             
-                if (sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][1] == 2)
+                if (sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1] == 2)
                     dst += 0x100;
             }
 
@@ -675,105 +676,102 @@ void FileScreenProcessText(void)
 
             while (TRUE)
             {
-                var_0 = TextProcessCurrentMessage(&gCurrentMessage, sFileScreenTextPointers[gLanguage][sFileScreenMessagesInfo[FILE_SELECT_DATA.unk_35][0]], dst);
+                var_0 = TextProcessCurrentMessage(&gCurrentMessage, sFileScreenTextPointers[gLanguage][sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][0]], dst);
 
                 if (var_0 == TEXT_STATE_ENDED)
                 {
-                    FILE_SELECT_DATA.unk_34 = 6;
+                    FILE_SELECT_DATA.processTextStage = FILE_SCREEN_PROCESS_TEXT_STAGE_UPDATE_QUEUE;
                     break;
                 }
                 
                 if (var_0 == TEXT_STATE_NEW_LINE)
                 {
-                    FILE_SELECT_DATA.unk_34++;
+                    FILE_SELECT_DATA.processTextStage++;
                     break;
                 }
             }
             break;
-            
-            FILE_SELECT_DATA.unk_34++;
-            break;
 
-        case 6:
-            FILE_SELECT_DATA.unk_35 = UCHAR_MAX;
+        case FILE_SCREEN_PROCESS_TEXT_STAGE_UPDATE_QUEUE:
+            FILE_SELECT_DATA.messageInfoIdQueue[0] = UCHAR_MAX;
             var_0 = 0;
 
-            array[0] = -1;
-            array[1] = -1;
+            newIdQueue[0] = UCHAR_MAX;
+            newIdQueue[1] = UCHAR_MAX;
 
-            if (FILE_SELECT_DATA.unk_36 != UCHAR_MAX)
+            if (FILE_SELECT_DATA.messageInfoIdQueue[1] != UCHAR_MAX)
             {
-                array[0] = FILE_SELECT_DATA.unk_36;
-                FILE_SELECT_DATA.unk_36 |= -1;
-                var_0 = TRUE;
+                newIdQueue[0] = FILE_SELECT_DATA.messageInfoIdQueue[1];
+                FILE_SELECT_DATA.messageInfoIdQueue[1] = UCHAR_MAX;
+                var_0++;
             }
 
-            if (FILE_SELECT_DATA.unk_37 != UCHAR_MAX)
+            if (FILE_SELECT_DATA.messageInfoIdQueue[2] != UCHAR_MAX)
             {
-                array[var_0] = FILE_SELECT_DATA.unk_37;
-                FILE_SELECT_DATA.unk_37 |= -1;
+                newIdQueue[var_0] = FILE_SELECT_DATA.messageInfoIdQueue[2];
+                FILE_SELECT_DATA.messageInfoIdQueue[2] = UCHAR_MAX;
             }
 
-            FILE_SELECT_DATA.unk_35 = array[0];
-            FILE_SELECT_DATA.unk_36 = array[1];
+            FILE_SELECT_DATA.messageInfoIdQueue[0] = newIdQueue[0];
+            FILE_SELECT_DATA.messageInfoIdQueue[1] = newIdQueue[1];
 
-            FILE_SELECT_DATA.unk_34 = FILE_SELECT_DATA.unk_35 != UCHAR_MAX;
+            FILE_SELECT_DATA.processTextStage = FILE_SELECT_DATA.messageInfoIdQueue[0] != UCHAR_MAX;
     }
 }
 
 /**
- * @brief 790cc | ac | To document
+ * @brief 790cc | ac | Update the message info ID queue
  * 
- * @param param_1 To document
- * @param param_2 To document
- * @return u32 To document
+ * @param updateOption Option for update, 0: add to queue, 1: check if not in queue, 2: reset queue
+ * @param newMessageInfoId ID for new message info
+ * @return u32 Bool, result of update, option 0: added to queue, option 1: not in queue, option 2: always true
  */
-u32 unk_790cc(u8 param_1, u8 param_2)
+u32 FileScreenUpdateMessageInfoIdQueue(u8 updateOption, u8 newMessageInfoId)
 {
     u32 result;
 
     result = TRUE;
 
-    if (param_1 == FALSE)
+    if (updateOption == 0)
     {
-        if (FILE_SELECT_DATA.unk_35 == UCHAR_MAX)
+        if (FILE_SELECT_DATA.messageInfoIdQueue[0] == UCHAR_MAX)
         {
-            FILE_SELECT_DATA.unk_35 = param_2;
-            FILE_SELECT_DATA.unk_34 = 1;
+            FILE_SELECT_DATA.messageInfoIdQueue[0] = newMessageInfoId;
+            FILE_SELECT_DATA.processTextStage = FILE_SCREEN_PROCESS_TEXT_STAGE_INIT;
         }
-        else if (FILE_SELECT_DATA.unk_36 == UCHAR_MAX)
+        else if (FILE_SELECT_DATA.messageInfoIdQueue[1] == UCHAR_MAX)
         {
-            FILE_SELECT_DATA.unk_36 = param_2;
+            FILE_SELECT_DATA.messageInfoIdQueue[1] = newMessageInfoId;
         }
-        else if (FILE_SELECT_DATA.unk_37 == UCHAR_MAX)
+        else if (FILE_SELECT_DATA.messageInfoIdQueue[2] == UCHAR_MAX)
         {
-            FILE_SELECT_DATA.unk_37 = param_2;
+            FILE_SELECT_DATA.messageInfoIdQueue[2] = newMessageInfoId;
         }
         else
             result = FALSE;
     }
-    else
+
+    else if (updateOption == 1)
     {
-        if (param_1 == TRUE)
-        {
-            if (FILE_SELECT_DATA.unk_35 == param_2)
-                result = FALSE;
+        if (FILE_SELECT_DATA.messageInfoIdQueue[0] == newMessageInfoId)
+            result = FALSE;
 
-            if (FILE_SELECT_DATA.unk_36 == param_2)
-                result = FALSE;
+        if (FILE_SELECT_DATA.messageInfoIdQueue[1] == newMessageInfoId)
+            result = FALSE;
 
-            if (FILE_SELECT_DATA.unk_37 == param_2)
-                result = FALSE;
-        }
-        else
-        {
-            FILE_SELECT_DATA.unk_35 = UCHAR_MAX;
-            FILE_SELECT_DATA.unk_36 = UCHAR_MAX;
-            FILE_SELECT_DATA.unk_37 = UCHAR_MAX;
-            FILE_SELECT_DATA.unk_34 = 0;
-        }
+        if (FILE_SELECT_DATA.messageInfoIdQueue[2] == newMessageInfoId)
+            result = FALSE;
     }
 
+    else
+    {
+        FILE_SELECT_DATA.messageInfoIdQueue[0] = UCHAR_MAX;
+        FILE_SELECT_DATA.messageInfoIdQueue[1] = UCHAR_MAX;
+        FILE_SELECT_DATA.messageInfoIdQueue[2] = UCHAR_MAX;
+        FILE_SELECT_DATA.processTextStage = FILE_SCREEN_PROCESS_TEXT_STAGE_NONE;
+        result = TRUE;
+    }
+    
     return result;
 }
 
@@ -828,8 +826,8 @@ u32 FileSelectCopyFileSubroutine(void)
     switch (FILE_SELECT_DATA.subroutineStage)
     {
         case 0:
-            unk_790cc(0, 1);
-            unk_790cc(0, 2);
+            FileScreenUpdateMessageInfoIdQueue(0, 1);
+            FileScreenUpdateMessageInfoIdQueue(0, 2);
 
             FileSelectFindFirstNonEmptyFile(&FILE_SELECT_DATA.copySourceFile);
             FileSelectUpdateCopyCursor(CURSOR_COPY_POSE_DEFAULT, FILE_SELECT_DATA.copySourceFile);
@@ -847,7 +845,7 @@ u32 FileSelectCopyFileSubroutine(void)
             break;
 
         case 2:
-            if (unk_790cc(1, 2))
+            if (FileScreenUpdateMessageInfoIdQueue(1, 2))
                 FILE_SELECT_DATA.subroutineStage++;
             break;
 
@@ -886,7 +884,7 @@ u32 FileSelectCopyFileSubroutine(void)
                 if (gSaveFilesInfo[FILE_SELECT_DATA.copySourceFile].timeAttack)
                 {
                     SoundPlay(SOUND_REFUSE_MENU);
-                    unk_790cc(0, 4);
+                    FileScreenUpdateMessageInfoIdQueue(0, 4);
                     FILE_SELECT_DATA.subroutineStage = 9;
                 }
                 else
@@ -945,7 +943,7 @@ u32 FileSelectCopyFileSubroutine(void)
 
                 if ((FILE_SELECT_DATA.enabledMenus >> FILE_SELECT_DATA.currentFile) & 1)
                 {
-                    unk_790cc(0, 3);
+                    FileScreenUpdateMessageInfoIdQueue(0, 3);
                     FileSelectUpdateTilemap(TILEMAP_REQUEST_COPY_OVERRIDE_SPAWN_INIT);
                     FileSelectPlayMenuSound(MENU_SOUND_REQUEST_COPY_DELETE);
                     FILE_SELECT_DATA.subroutineStage = 5;
@@ -1026,7 +1024,7 @@ u32 FileSelectCopyFileSubroutine(void)
             break;
 
         case 9:
-            if (unk_790cc(1, 4))
+            if (FileScreenUpdateMessageInfoIdQueue(1, 4))
             {
                 FileSelectUpdateTilemap(0x1C);
                 FILE_SELECT_DATA.subroutineStage++;
@@ -1088,7 +1086,7 @@ u32 FileSelectCopyFileSubroutine(void)
         case 15:
             if (FileSelectUpdateTilemap(TILEMAP_REQUEST_COPY_DESPAWN))
             {
-                unk_790cc(2, UCHAR_MAX);
+                FileScreenUpdateMessageInfoIdQueue(2, UCHAR_MAX);
                 ended = TRUE;
             }
             break;
@@ -1146,10 +1144,10 @@ lbl_08079244: @ jump table \n\
 lbl_08079284: \n\
     movs r0, #0 \n\
     movs r1, #1 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     movs r0, #0 \n\
     movs r1, #2 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     ldr r4, lbl_080792c8 @ =sNonGameplayRamPointer \n\
     ldr r0, [r4] \n\
     add r0, #0x26 \n\
@@ -1190,7 +1188,7 @@ lbl_080792e4: .4byte sNonGameplayRamPointer \n\
 lbl_080792e8: \n\
     movs r0, #1 \n\
     movs r1, #2 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     bne lbl_080792f6 \n\
     b lbl_08079794 \n\
@@ -1287,7 +1285,7 @@ lbl_0807937e: \n\
     bl SoundPlay \n\
     movs r0, #0 \n\
     movs r1, #4 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     ldr r0, [r4] \n\
     add r0, #0x40 \n\
     movs r1, #9 \n\
@@ -1411,7 +1409,7 @@ lbl_08079486: \n\
     beq lbl_080794dc \n\
     movs r0, #0 \n\
     movs r1, #3 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     movs r0, #0x16 \n\
     bl FileSelectUpdateTilemap \n\
     movs r0, #8 \n\
@@ -1569,7 +1567,7 @@ lbl_080795f8: .4byte sNonGameplayRamPointer \n\
 lbl_080795fc: \n\
     movs r0, #1 \n\
     movs r1, #4 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     bne lbl_0807960a \n\
     b lbl_08079794 \n\
@@ -1757,7 +1755,7 @@ lbl_08079780: \n\
     beq lbl_08079794 \n\
     movs r0, #2 \n\
     movs r1, #0xff \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     movs r7, #1 \n\
 lbl_08079794: \n\
     add r0, r7, #0 \n\
@@ -1782,12 +1780,12 @@ u32 FileSelectEraseFileSubroutine(void)
 
     ended = FALSE;
 
-    FILE_SELECT_DATA.subroutineTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
     switch (FILE_SELECT_DATA.subroutineStage)
     {
-        case 0:
-            unk_790cc(0, 5);
-            unk_790cc(0, 6);
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_INIT:
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_ERASE_CHOOSE);
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_ERASE_CONFIRM);
 
             FileSelectFindFirstNonEmptyFile(&FILE_SELECT_DATA.eraseFile);
             FileSelectUpdateEraseCursor(CURSOR_ERASE_POSE_DEFAULT, FILE_SELECT_DATA.eraseFile);
@@ -1797,12 +1795,12 @@ u32 FileSelectEraseFileSubroutine(void)
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
-        case 1:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_WAIT_FOR_CHOOSE:
             if (FileSelectUpdateTilemap(TILEMAP_REQUEST_ERASE_SPAWN))
                 FILE_SELECT_DATA.subroutineStage++;
             break;
 
-        case 2:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_UPDATE_CHOOSE:
             action = 0;
 
             if (gChangedInput)
@@ -1839,11 +1837,11 @@ u32 FileSelectEraseFileSubroutine(void)
                 SoundPlay(SOUND_SELECTING_FILE_TO_DELETE);
                 FileSelectUpdateEraseCursor(CURSOR_ERASE_POSE_SELECTING_FILE, FILE_SELECT_DATA.eraseFile);
                 FileSelectUpdateTilemap(TILEMAP_REQUEST_ERASE_YES_NO_SPAWN_INIT);
-                FILE_SELECT_DATA.subroutineStage = 3;
+                FILE_SELECT_DATA.subroutineStage = FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_WAIT_FOR_CONFIRM;
             }
             break;
 
-        case 3:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_WAIT_FOR_CONFIRM:
             if (FileSelectUpdateTilemap(TILEMAP_REQUEST_ERASE_YES_NO_SPAWN))
             {
                 FILE_SELECT_DATA.fileSelectCursors.confirmErase = sFileSelectMenuCursors_Empty.confirmErase;
@@ -1852,7 +1850,7 @@ u32 FileSelectEraseFileSubroutine(void)
             }
             break;
 
-        case 4:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_UPDATE_CONFIRM:
             action = UCHAR_MAX;
 
             if (gChangedInput)
@@ -1860,17 +1858,19 @@ u32 FileSelectEraseFileSubroutine(void)
                 if (gChangedInput & KEY_A)
                 {
                     if (FILE_SELECT_DATA.fileSelectCursors.confirmErase != 0)
-                        FILE_SELECT_DATA.subroutineStage = 5;
+                    {
+                        FILE_SELECT_DATA.subroutineStage = FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_CANCEL_CONFIRM;
+                    }
                     else
                     {
                         action = 0x80;
                         SoundPlay(SOUND_FILE_DELETE);
-                        FILE_SELECT_DATA.subroutineStage = 7;
+                        FILE_SELECT_DATA.subroutineStage = FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_ERASE_FILE;
                     }
                 }
                 else if (gChangedInput & KEY_B)
                 {
-                    FILE_SELECT_DATA.subroutineStage = 5;
+                    FILE_SELECT_DATA.subroutineStage = FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_CANCEL_CONFIRM;
                 }
                 else if (gChangedInput & KEY_LEFT)
                 {
@@ -1892,48 +1892,49 @@ u32 FileSelectEraseFileSubroutine(void)
                 }
             }
 
+            // action never -1, so condition always true
             if (action + 1 != 0)
                 unk_7e3fc(3, action);
             break;
 
-        case 5:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_CANCEL_CONFIRM:
             SoundPlay(SOUND_REFUSE_MENU);
             unk_7e3fc(3, 0x81);
             FileSelectUpdateTilemap(TILEMAP_REQUEST_ERASE_YES_NO_DESPAWN_INIT);
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
-        case 6:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_RESTART_CHOOSE:
             if (FileSelectUpdateTilemap(TILEMAP_REQUEST_ERASE_YES_NO_DESPAWN))
             {
                 FileSelectUpdateEraseCursor(CURSOR_ERASE_POSE_DEFAULT, FILE_SELECT_DATA.eraseFile);
-                FILE_SELECT_DATA.subroutineStage = 2;
+                FILE_SELECT_DATA.subroutineStage = FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_UPDATE_CHOOSE;
             }
             break;
 
-        case 7:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_ERASE_FILE:
             if (SramDeleteFile(FILE_SELECT_DATA.eraseFile))
             {
                 FILE_SELECT_DATA.unk_3A = 1;
-                FILE_SELECT_DATA.subroutineStage = 8;
+                FILE_SELECT_DATA.subroutineStage = FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_BEGIN_EXIT;
             }
             break;
 
-        case 8:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_BEGIN_EXIT:
             unk_7e3fc(3, 0x81);
             FileSelectUpdateTilemap(TILEMAP_REQUEST_ERASE_YES_NO_DESPAWN_INIT);
             FILE_SELECT_DATA.subroutineStage++;
             break;
         
-        case 9:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_WAIT_FOR_EXIT:
             if (FileSelectUpdateTilemap(TILEMAP_REQUEST_ERASE_YES_NO_DESPAWN))
             {
                 lbl_case_9:
-                FILE_SELECT_DATA.subroutineStage = 10;
+                FILE_SELECT_DATA.subroutineStage = FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_UPDATE_ERASED_FILE;
             }
             break;
 
-        case 10:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_UPDATE_ERASED_FILE:
             if (FILE_SELECT_DATA.unk_3A != 0)
             {
                 FileSelectDisplaySaveFileHealth(FILE_SELECT_DATA.eraseFile);
@@ -1953,10 +1954,10 @@ u32 FileSelectEraseFileSubroutine(void)
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
-        case 11:
+        case FILE_SELECT_ERASE_FILE_SUBROUTINE_STAGE_EXIT:
             if (FileSelectUpdateTilemap(TILEMAP_REQUEST_ERASE_DESPAWN))
             {
-                unk_790cc(2, UCHAR_MAX);
+                FileScreenUpdateMessageInfoIdQueue(2, UCHAR_MAX);
                 ended = TRUE;
             }
             break;
@@ -1974,7 +1975,7 @@ u32 FileSelectCorruptedFileSubroutine(void)
 {
     u8 done;
 
-    FILE_SELECT_DATA.subroutineTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
     switch (FILE_SELECT_DATA.subroutineStage)
     {
@@ -1982,28 +1983,28 @@ u32 FileSelectCorruptedFileSubroutine(void)
             FILE_SELECT_DATA.corruptMessageFileA = FILE_SELECT_DATA.corruptMessageFileB = FILE_SELECT_DATA.corruptMessageFileC = 0;
 
             if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].corruptionFlag == CORRUPTED_FILE_FLAG_CURRENT)
-                FILE_SELECT_DATA.corruptMessageFileA = 7;
+                FILE_SELECT_DATA.corruptMessageFileA = FILE_SCREEN_MESSAGE_INFO_ID_FILE_A_CORRUPT_REVERT;
             else if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].corruptionFlag == CORRUPTED_FILE_FLAG_CURRENT_AND_BACKUP)
-                FILE_SELECT_DATA.corruptMessageFileA = 10;
+                FILE_SELECT_DATA.corruptMessageFileA = FILE_SCREEN_MESSAGE_INFO_ID_FILE_A_CORRUPT_ERASE;
 
             if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].corruptionFlag == CORRUPTED_FILE_FLAG_CURRENT)
-                FILE_SELECT_DATA.corruptMessageFileB = 8;
+                FILE_SELECT_DATA.corruptMessageFileB = FILE_SCREEN_MESSAGE_INFO_ID_FILE_B_CORRUPT_REVERT;
             else if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].corruptionFlag == CORRUPTED_FILE_FLAG_CURRENT_AND_BACKUP)
-                FILE_SELECT_DATA.corruptMessageFileB = 11;
+                FILE_SELECT_DATA.corruptMessageFileB = FILE_SCREEN_MESSAGE_INFO_ID_FILE_B_CORRUPT_ERASE;
 
             if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].corruptionFlag == CORRUPTED_FILE_FLAG_CURRENT)
-                FILE_SELECT_DATA.corruptMessageFileC = 9;
+                FILE_SELECT_DATA.corruptMessageFileC = FILE_SCREEN_MESSAGE_INFO_ID_FILE_C_CORRUPT_REVERT;
             else if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].corruptionFlag == CORRUPTED_FILE_FLAG_CURRENT_AND_BACKUP)
-                FILE_SELECT_DATA.corruptMessageFileC = 12;
+                FILE_SELECT_DATA.corruptMessageFileC = FILE_SCREEN_MESSAGE_INFO_ID_FILE_C_CORRUPT_ERASE;
 
             if (FILE_SELECT_DATA.corruptMessageFileA)
-                unk_790cc(0, FILE_SELECT_DATA.corruptMessageFileA);
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SELECT_DATA.corruptMessageFileA);
 
             if (FILE_SELECT_DATA.corruptMessageFileB)
-                unk_790cc(0, FILE_SELECT_DATA.corruptMessageFileB);
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SELECT_DATA.corruptMessageFileB);
 
             if (FILE_SELECT_DATA.corruptMessageFileC)
-                unk_790cc(0, FILE_SELECT_DATA.corruptMessageFileC);
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SELECT_DATA.corruptMessageFileC);
 
             FILE_SELECT_DATA.subroutineStage++;
             break;
@@ -2012,25 +2013,25 @@ u32 FileSelectCorruptedFileSubroutine(void)
             done = FALSE;
             if (FILE_SELECT_DATA.corruptMessageFileA)
             {
-                if (unk_790cc(1, FILE_SELECT_DATA.corruptMessageFileA))
+                if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SELECT_DATA.corruptMessageFileA))
                 {
-                    FILE_SELECT_DATA.unk_47 = 0;
+                    FILE_SELECT_DATA.corruptFile = 0;
                     done = TRUE;
                 }
             }
             else if (FILE_SELECT_DATA.corruptMessageFileB)
             {
-                if (unk_790cc(1, FILE_SELECT_DATA.corruptMessageFileB))
+                if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SELECT_DATA.corruptMessageFileB))
                 {
-                    FILE_SELECT_DATA.unk_47 = 1;
+                    FILE_SELECT_DATA.corruptFile = 1;
                     done = TRUE;
                 }
             }
             else if (FILE_SELECT_DATA.corruptMessageFileC)
             {
-                if (unk_790cc(1, FILE_SELECT_DATA.corruptMessageFileC))
+                if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SELECT_DATA.corruptMessageFileC))
                 {
-                    FILE_SELECT_DATA.unk_47 = 2;
+                    FILE_SELECT_DATA.corruptFile = 2;
                     done = TRUE;
                 }
             }
@@ -2056,7 +2057,7 @@ u32 FileSelectCorruptedFileSubroutine(void)
             break;
 
         case 3:
-            if (FILE_SELECT_DATA.subroutineTimer > 30)
+            if (FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(.5f))
                 FILE_SELECT_DATA.subroutineStage++;
             break;
 
@@ -2065,7 +2066,7 @@ u32 FileSelectCorruptedFileSubroutine(void)
             {
                 gUnk_3000c20 = 0;
 
-                gMostRecentSaveFile = FILE_SELECT_DATA.unk_47;
+                gMostRecentSaveFile = FILE_SELECT_DATA.corruptFile;
                 FILE_SELECT_DATA.subroutineStage++;
             }
             break;
@@ -2094,21 +2095,21 @@ u32 FileSelectCorruptedFileSubroutine(void)
             break;
 
         case 7:
-            FileSelectDisplaySaveFileHealth(FILE_SELECT_DATA.unk_47);
-            FileSelectDisplaySaveFileTimer(FILE_SELECT_DATA.unk_47);
-            FileSelectDisplaySaveFileMiscInfo(&gSaveFilesInfo[FILE_SELECT_DATA.unk_47], FILE_SELECT_DATA.unk_47);
+            FileSelectDisplaySaveFileHealth(FILE_SELECT_DATA.corruptFile);
+            FileSelectDisplaySaveFileTimer(FILE_SELECT_DATA.corruptFile);
+            FileSelectDisplaySaveFileMiscInfo(&gSaveFilesInfo[FILE_SELECT_DATA.corruptFile], FILE_SELECT_DATA.corruptFile);
 
             FileScreenSetEnabledMenuFlags();
 
-            if (FILE_SELECT_DATA.unk_47 == 0)
+            if (FILE_SELECT_DATA.corruptFile == 0)
                 FILE_SELECT_DATA.corruptMessageFileA = 0;
-            else if (FILE_SELECT_DATA.unk_47 == 1)
+            else if (FILE_SELECT_DATA.corruptFile == 1)
                 FILE_SELECT_DATA.corruptMessageFileB = 0;
             else
                 FILE_SELECT_DATA.corruptMessageFileC = 0;
 
             DmaTransfer(3, (void*)sEwramPointer + 0x800, VRAM_BASE + 0xD800, 0x800, 16);
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_DATA.unk_47 + FILE_SELECT_OAM_FILE_A_LOGO].notDrawn = FALSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_DATA.corruptFile + FILE_SELECT_OAM_FILE_A_LOGO].notDrawn = FALSE;
 
             FILE_SELECT_DATA.subroutineStage++;
             break;
@@ -2124,14 +2125,14 @@ u32 FileSelectCorruptedFileSubroutine(void)
             break;
 
         case 10:
-            unk_790cc(2, UCHAR_MAX);
+            FileScreenUpdateMessageInfoIdQueue(2, UCHAR_MAX);
             gMostRecentSaveFile = FILE_SELECT_DATA.unk_24;
             FILE_SELECT_DATA.subroutineStage++;
             FILE_SELECT_DATA.subroutineTimer = 0;
             break;
 
         case 11:
-            if (FILE_SELECT_DATA.subroutineTimer > 16)
+            if (FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(.25f) + 1 * DELTA_TIME)
             {
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].notDrawn = FALSE;
                 FileSelectUpdateCursor(CURSOR_POSE_DEFAULT, FILE_SELECT_DATA.unk_24);
@@ -2293,7 +2294,7 @@ void FileSelectCopyTimeAttackTime(void)
     if (FILE_SELECT_DATA.timeAttackRecordFlags == 0)
         return;
 
-    unk_7f60c(&FILE_SELECT_DATA.unk_48);
+    unk_7f60c(FILE_SELECT_DATA.timeAttackPassword);
 
     if (gTimeAttackRecord.igt.hours < 99)
         value = gTimeAttackRecord.igt.hours;
@@ -2349,7 +2350,7 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
     u16 bgPos;
     u32 fadeEnded;
 
-    FILE_SELECT_DATA.subroutineTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
     switch (FILE_SELECT_DATA.subroutineStage)
     {
@@ -2362,24 +2363,22 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
             break;
 
         case 1:
-            if (FILE_SELECT_DATA.subroutineTimer < 10)
+            if (FILE_SELECT_DATA.subroutineTimer < CONVERT_SECONDS(1.f / 6))
                 break;
             
             gWrittenToBLDALPHA_H = 0;
-            gWrittenToBLDALPHA_L = 16;
+            gWrittenToBLDALPHA_L = BLDALPHA_MAX_VALUE;
 
-            FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BG0_SECOND_TARGET_PIXEL |
-                BLDCNT_BG1_SECOND_TARGET_PIXEL | BLDCNT_BG2_SECOND_TARGET_PIXEL | BLDCNT_BG3_SECOND_TARGET_PIXEL |
-                BLDCNT_OBJ_SECOND_TARGET_PIXEL | BLDCNT_BACKDROP_SECOND_TARGET_PIXEL;
+            FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET;
 
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER].objMode = 1;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER].objMode = 1;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER].objMode = 1;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].objMode = 1;
 
-            FILE_SELECT_DATA.fileScreenOam[12].notDrawn = TRUE;
-            FILE_SELECT_DATA.fileScreenOam[13].notDrawn = TRUE;
-            FILE_SELECT_DATA.fileScreenOam[14].notDrawn = TRUE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_LOGO].notDrawn = TRUE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_LOGO].notDrawn = TRUE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_LOGO].notDrawn = TRUE;
 
             BitFill(3, 0, VRAM_BASE + 0xE000, 0x800, 16);
             DmaTransfer(3, (void*)sEwramPointer + 0x5100, VRAM_BASE + 0xE000, 0xC0, 16);
@@ -2449,9 +2448,7 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
 
         case 4:
             unk_79ecc();
-            FILE_SELECT_DATA.bldcnt = BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT |
-                BLDCNT_BG0_SECOND_TARGET_PIXEL | BLDCNT_BG1_SECOND_TARGET_PIXEL | BLDCNT_BG2_SECOND_TARGET_PIXEL |
-                BLDCNT_BG3_SECOND_TARGET_PIXEL | BLDCNT_OBJ_SECOND_TARGET_PIXEL | BLDCNT_BACKDROP_SECOND_TARGET_PIXEL; 
+            FILE_SELECT_DATA.bldcnt = BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET; 
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
@@ -2491,23 +2488,22 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
 
 
         case 7:
+            // todo: seconds or delta time?
             if (FILE_SELECT_DATA.subroutineTimer < 4)
                 break;
 
             BitFill(3, 0, VRAM_BASE + 0xE000, 0x800, 16);
             DmaTransfer(3, (void*)sEwramPointer + 0x5100, VRAM_BASE + 0xE000, 0xC0, 16);
 
-            gBg0HOFS_NonGameplay = gBg0VOFS_NonGameplay = BLOCK_SIZE * 32;
+            gBg0HOFS_NonGameplay = gBg0VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
 
-            FILE_SELECT_DATA.bldcnt = BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT |
-                BLDCNT_BG0_SECOND_TARGET_PIXEL | BLDCNT_BG1_SECOND_TARGET_PIXEL | BLDCNT_BG2_SECOND_TARGET_PIXEL |
-                BLDCNT_BG3_SECOND_TARGET_PIXEL | BLDCNT_OBJ_SECOND_TARGET_PIXEL | BLDCNT_BACKDROP_SECOND_TARGET_PIXEL; 
+            FILE_SELECT_DATA.bldcnt = BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET; 
 
             gWrittenToBLDALPHA_H = 0;
             gWrittenToBLDALPHA_L = 16;
 
-            gBg1HOFS_NonGameplay = BLOCK_SIZE * 32;
-            gBg1VOFS_NonGameplay = BLOCK_SIZE * 32;
+            gBg1HOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
+            gBg1VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
 
             FILE_SELECT_DATA.bg0cnt = FILE_SELECT_DATA.unk_1E;
             FILE_SELECT_DATA.dispcnt |= DCNT_BG0;
@@ -2572,9 +2568,7 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER].notDrawn = FALSE;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].notDrawn = FALSE;
 
-            FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BG0_SECOND_TARGET_PIXEL |
-                BLDCNT_BG1_SECOND_TARGET_PIXEL | BLDCNT_BG2_SECOND_TARGET_PIXEL | BLDCNT_BG3_SECOND_TARGET_PIXEL |
-                BLDCNT_OBJ_SECOND_TARGET_PIXEL | BLDCNT_BACKDROP_SECOND_TARGET_PIXEL;
+            FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET;
 
             FILE_SELECT_DATA.subroutineStage++;
             break;
@@ -2609,9 +2603,9 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER].objMode = FALSE;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].objMode = FALSE;
 
-            FILE_SELECT_DATA.fileScreenOam[12].notDrawn = FALSE;
-            FILE_SELECT_DATA.fileScreenOam[13].notDrawn = FALSE;
-            FILE_SELECT_DATA.fileScreenOam[14].notDrawn = FALSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_LOGO].notDrawn = FALSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_LOGO].notDrawn = FALSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_LOGO].notDrawn = FALSE;
 
             FILE_SELECT_DATA.subroutineStage++;
             break;
@@ -2655,7 +2649,7 @@ u8 OptionsSubroutine(void)
             break;
 
         case 1:
-            if (FILE_SELECT_DATA.timer > 16)
+            if (FILE_SELECT_DATA.timer > CONVERT_SECONDS(.25f) + 1 * DELTA_TIME)
             {
                 OptionsUpdateCursor(CURSOR_OPTIONS_POSE_MOVING);
                 FILE_SELECT_DATA.currentSubMenu = 2;
@@ -2739,12 +2733,12 @@ u8 OptionsSubroutine(void)
 
         case 4:
             FILE_SELECT_DATA.soundTestId = 0;        
-            CheckReplayFileSelectMusic(10);
+            CheckReplayFileSelectMusic(CONVERT_SECONDS(1.f / 6));
             gGameModeSub2 = 0;
             return TRUE;
 
         case 5:
-            if (FILE_SELECT_DATA.timer > 10)
+            if (FILE_SELECT_DATA.timer > CONVERT_SECONDS(1.f / 6))
                 return TRUE;
     }
 
@@ -2778,7 +2772,7 @@ u8 OptionsNesMetroidSubroutine(void)
     NesEmuFunc_T func;
     void* entryPoint;
 
-    FILE_SELECT_DATA.subroutineTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
     switch (FILE_SELECT_DATA.subroutineStage)
     {
@@ -2791,7 +2785,7 @@ u8 OptionsNesMetroidSubroutine(void)
                 return TRUE;
             }
 
-            if (FILE_SELECT_DATA.subroutineTimer > 10)
+            if (FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(1.f / 6))
             {
                 FILE_SELECT_DATA.subroutineStage++;
                 FILE_SELECT_DATA.subroutineTimer = 0;
@@ -2811,12 +2805,10 @@ u8 OptionsNesMetroidSubroutine(void)
 
         case 2:
             // Sound stuff
-            unk_33dc();
+            RestartSound();
 
             // Start screen fade
-            FILE_SELECT_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_BG2_FIRST_TARGET_PIXEL |
-                BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT |
-                BLDCNT_BACKDROP_FIRST_TARGET_PIXEL | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+            FILE_SELECT_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
             gWrittenToBLDY_NonGameplay = 0;
 
             FILE_SELECT_DATA.subroutineStage++;
@@ -2826,7 +2818,7 @@ u8 OptionsNesMetroidSubroutine(void)
         case 3:
             // Apply fade
             gWrittenToBLDY_NonGameplay += 2;
-            if (gWrittenToBLDY_NonGameplay >= 16)
+            if (gWrittenToBLDY_NonGameplay >= BLDY_MAX_VALUE)
             {
                 SET_BACKDROP_COLOR(COLOR_BLACK);
 
@@ -2862,7 +2854,7 @@ u8 OptionsNesMetroidSubroutine(void)
  */
 u8 OptionsSubMenu_Empty(void)
 {
-    FILE_SELECT_DATA.subroutineTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
     if (gChangedInput && gChangedInput & KEY_B)
         return TRUE;
@@ -2871,13 +2863,13 @@ u8 OptionsSubMenu_Empty(void)
 }
 
 /**
- * @brief 7abf8 | 5c | To document
+ * @brief 7abf8 | 5c | Subroutine for the gallery
  * 
  * @return u8 bool, leaving
  */
-u8 unk_7abf8(void)
+u8 OptionsGallerySubroutine(void)
 {
-    FILE_SELECT_DATA.subroutineTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
     if (gChangedInput & KEY_B)
     {
@@ -2886,7 +2878,7 @@ u8 unk_7abf8(void)
         return TRUE;
     }
     
-    if (gChangedInput & KEY_A || FILE_SELECT_DATA.subroutineTimer > 10)
+    if (gChangedInput & KEY_A || FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(1.f / 6))
     {
         FILE_SELECT_DATA.subroutineTimer = 0;
         FILE_SELECT_DATA.subroutineStage = 0;
@@ -2909,7 +2901,7 @@ u8 OptionsStereoSubroutine(void)
     {
         case 0:
             // Update OAM to have the animation
-            OptionsUpdateStereoOam(STEREO_UPDATE_FLAGS_SPEAKER_EFFECT);
+            OptionsUpdateStereoOam(STEREO_UPDATE_FLAGS_ACTIVE);
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
@@ -2949,13 +2941,13 @@ u8 OptionsStereoSubroutine(void)
 
             // Update OAM and apply new choice
             SoundPlay(SOUND_SUB_MENU_CURSOR);
-            OptionsUpdateStereoOam(STEREO_UPDATE_FLAGS_SPEAKER_EFFECT);
+            OptionsUpdateStereoOam(STEREO_UPDATE_FLAGS_ACTIVE);
             FileSelectApplyStereo();
             break;
 
         case 2:
             // Remove animated symbols
-            OptionsUpdateStereoOam(STEREO_UPDATE_FLAGS_1);
+            OptionsUpdateStereoOam(STEREO_UPDATE_FLAGS_IDLE);
             // Write to SRAM
             SramWrite_SoundMode();
             FILE_SELECT_DATA.subroutineStage++;
@@ -2979,7 +2971,7 @@ u8 OptionsSoundTestSubroutine(void)
 {
     s32 action;
 
-    FILE_SELECT_DATA.subroutineTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
     switch (FILE_SELECT_DATA.subroutineStage)
     {
@@ -3000,7 +2992,7 @@ u8 OptionsSoundTestSubroutine(void)
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].yPosition =
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].yPosition;
 
-            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].priority = 3;
+            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].priority = BGCNT_LOW_PRIORITY;
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
@@ -3104,7 +3096,7 @@ u8 OptionsSoundTestSubroutine(void)
             break;
 
         case 5:
-            if (FILE_SELECT_DATA.subroutineTimer > 30)
+            if (FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(.5f))
                 FILE_SELECT_DATA.subroutineStage = 2;
             break;
 
@@ -3196,24 +3188,24 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
 {
     u32 action;
 
-    FILE_SELECT_DATA.subroutineTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
     switch (FILE_SELECT_DATA.subroutineStage)
     {
         case 0:
             if (FILE_SELECT_DATA.timeAttackRecordFlags & 1)
-                unk_790cc(0, 0x1F);
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_ID_PASSWORD);
             
             if (FILE_SELECT_DATA.timeAttackRecordFlags & 2)
-                unk_790cc(0, 0x20);
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_ID_PASSWORD2);
 
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].boundBackground = 1;
-            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].priority = 2;
+            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].priority = BGCNT_LOW_MID_PRIORITY;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].xPosition = BLOCK_SIZE * 5;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].yPosition = BLOCK_SIZE * 3;
 
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].boundBackground = 0;
-            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].priority = 1;
+            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].priority = BGCNT_HIGH_MID_PRIORITY;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].xPosition = BLOCK_SIZE * 4;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].yPosition = BLOCK_SIZE * 2;
 
@@ -3231,13 +3223,13 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             {
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW], OPTIONS_OAM_ID_LEFT_ARROW_IDLE);
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].boundBackground = 0;
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].priority = 0;
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].xPosition = BLOCK_SIZE + 0x1C;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].yPosition = BLOCK_SIZE + HALF_BLOCK_SIZE;
 
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW], OPTIONS_OAM_ID_RIGHT_ARROW_IDLE);
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].boundBackground = 0;
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].priority = 0;
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].xPosition = BLOCK_SIZE * 6 + HALF_BLOCK_SIZE + 4;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].yPosition = BLOCK_SIZE + HALF_BLOCK_SIZE;
             }
@@ -3255,10 +3247,10 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             break;
 
         case 1:
-            if (!unk_790cc(1, 0x1F))
+            if (!FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_ID_PASSWORD))
                 break;
             
-            if (!unk_790cc(1, 0x20))
+            if (!FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_ID_PASSWORD2))
                 break;
 
             unk_7b854();
@@ -3268,8 +3260,8 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
         case 2:
             if (FILE_SELECT_DATA.timeAttackRecordFlags & 1)
             {
-                OptionTimeAttackLoadPasswrod(0);
-                OptionTimeAttackLoadPasswrod(1);
+                OptionsTimeAttackLoadPassword(0|0);
+                OptionsTimeAttackLoadPassword(0|1);
             }
             FILE_SELECT_DATA.subroutineStage = 4;
             break;
@@ -3281,8 +3273,8 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
         case 4:
             if (FILE_SELECT_DATA.timeAttackRecordFlags & 2)
             {
-                OptionTimeAttackLoadPasswrod(2);
-                OptionTimeAttackLoadPasswrod(3);
+                OptionsTimeAttackLoadPassword(2|0);
+                OptionsTimeAttackLoadPassword(2|1);
             }
             FILE_SELECT_DATA.subroutineStage = 6;
             break;
@@ -3292,7 +3284,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             break;
 
         case 6:
-            unk_7b71c();
+            OptionsTimeAttackLoadBestTimeMessage();
             UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL], OPTIONS_OAM_ID_HUGE_PANEL);
             UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL], OPTIONS_OAM_ID_LARGE_PANEL);
 
@@ -3308,7 +3300,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             {
                 if (FILE_SELECT_DATA.timeAttack100Only)
                 {
-                    if (unk_790cc(1, 0x1E))
+                    if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_BEST_TIME_100))
                     {
                         DmaTransfer(3, (void*)sEwramPointer + 0x4E00, VRAM_BASE + 0xE800, 0x300, 16);
                         action = TRUE;
@@ -3316,7 +3308,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
                 }
                 else
                 {
-                    if (unk_790cc(1, 0x1D))
+                    if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_BEST_TIME))
                     {
                         action = TRUE;
                         DmaTransfer(3, (void*)sEwramPointer + 0x4B00, VRAM_BASE + 0xE800, 0x300, 16);
@@ -3338,7 +3330,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].notDrawn = FALSE;
             }
 
-            OptionTimeAttackLoadRecord(FILE_SELECT_DATA.timeAttack100Only);
+            OptionsTimeAttackLoadRecord(FILE_SELECT_DATA.timeAttack100Only);
 
             FILE_SELECT_DATA.dispcnt |= (DCNT_BG0 | DCNT_BG1);
             FILE_SELECT_DATA.subroutineTimer = 0;
@@ -3346,7 +3338,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             break;
 
         case 8:
-            if (FILE_SELECT_DATA.subroutineTimer > 10)
+            if (FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(1.f / 6))
             {
                 FILE_SELECT_DATA.subroutineTimer = 0;
                 FILE_SELECT_DATA.subroutineStage++;
@@ -3394,7 +3386,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             if (!action)
                 break;
 
-            unk_7b71c();
+            OptionsTimeAttackLoadBestTimeMessage();
 
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].notDrawn = TRUE;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].notDrawn = TRUE;
@@ -3424,7 +3416,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].exists)
                 break;
 
-            FILE_SELECT_DATA.subroutineTimer++;
+            APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
@@ -3438,15 +3430,15 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
 }
 
 /**
- * @brief 7b71c | 28 | To document
+ * @brief 7b71c | 28 | Adds best time or best time 100 message to queue
  * 
  */
-void unk_7b71c(void)
+void OptionsTimeAttackLoadBestTimeMessage(void)
 {
     if (FILE_SELECT_DATA.timeAttack100Only)
-        unk_790cc(0, 0x1E);
+        FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_BEST_TIME_100);
     else
-        unk_790cc(0, 0x1D);
+        FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_BEST_TIME);
 }
 
 /**
@@ -3454,7 +3446,7 @@ void unk_7b71c(void)
  * 
  * @param id Id to load : 0 = Any%, 1 = 100%
  */
-void OptionTimeAttackLoadRecord(u8 id)
+void OptionsTimeAttackLoadRecord(u8 id)
 {
     u16* dst;
     u16 baseTile;
@@ -3514,7 +3506,7 @@ void unk_7b854(void)
     u8* dstLow;
     u32 bitSize;
 
-    password = &FILE_SELECT_DATA.unk_48;
+    password = FILE_SELECT_DATA.timeAttackPassword;
     if (!(gFileScreenOptionsUnlocked.timeAttack & 1))
         password = sFileSelectDefaultPassword;
 
@@ -3544,7 +3536,7 @@ void unk_7b854(void)
  * 
  * @param part 2 bits : XY, where X is id and Y which half
  */
-void OptionTimeAttackLoadPasswrod(u8 part)
+void OptionsTimeAttackLoadPassword(u8 part)
 {
     const u8* password;
     s32 i;
@@ -3592,41 +3584,46 @@ void OptionTimeAttackLoadPasswrod(u8 part)
  */
 u8 OptionsMetroidFusionLinkSubroutine(void)
 {
-    FILE_SELECT_DATA.subroutineTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
-    if (gIoTransferInfo.active == 1)
-        CableLinkProcess();
-    else if (gIoTransferInfo.active == 2)
-        unk_89e30();
+    if (gIoTransferInfo.active == ACTIVE_TRANSFER_CONNECT)
+        FusionGalleryConnectProcess();
+    else if (gIoTransferInfo.active == ACTIVE_TRANSFER_LINK)
+        FusionGalleryLinkProcess();
     else
-        gIoTransferInfo.result = 0;
+        gIoTransferInfo.result = TRANSFER_RESULT_NONE;
 
     switch (FILE_SELECT_DATA.subroutineStage)
     {
         case 0:
+            #ifdef DEBUG
+            // Holding L forces attempt to link
+            if (gFileScreenOptionsUnlocked.fusionGalleryImages && !(gButtonInput & KEY_L))
+            #else // !DEBUG
             if (gFileScreenOptionsUnlocked.fusionGalleryImages)
+            #endif // DEBUG
             {
                 FILE_SELECT_DATA.subroutineStage = 1;
             }
             else
             {
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].boundBackground = 1;
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].priority = 2;
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].priority = BGCNT_LOW_MID_PRIORITY;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].xPosition = BLOCK_SIZE * 5;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].yPosition = BLOCK_SIZE * 3;
 
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS].boundBackground = 1;
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS].priority = 0;
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS].xPosition = BLOCK_SIZE * 5;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS].yPosition = BLOCK_SIZE * 3 + HALF_BLOCK_SIZE;
 
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].boundBackground = 0;
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].priority = 2;
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].priority = BGCNT_LOW_MID_PRIORITY;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].xPosition = BLOCK_SIZE * 4;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].yPosition = BLOCK_SIZE * 2;
 
-                unk_790cc(0, 0x19);
-                unk_790cc(0, 0x15);
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_DO_NOT_TURN_POWER_OFF);
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_LINKING_PLEASE_WAIT);
 
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL], OPTIONS_OAM_ID_HUGE_PANEL);
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL], OPTIONS_OAM_ID_LARGE_PANEL);
@@ -3650,7 +3647,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
                 return TRUE;
             }
 
-            if (gChangedInput & KEY_A || FILE_SELECT_DATA.subroutineTimer > 10)
+            if (gChangedInput & KEY_A || FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(1.f / 6))
             {
                 FILE_SELECT_DATA.subroutineTimer = 0;
                 FILE_SELECT_DATA.subroutineStage = 0;
@@ -3661,14 +3658,14 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
         case 2:
             if ((FILE_SELECT_DATA.dispcnt & (DCNT_BG0 | DCNT_BG1)) == (DCNT_BG0 | DCNT_BG1))
             {
-                gIoTransferInfo.active = 1;
+                gIoTransferInfo.active = ACTIVE_TRANSFER_CONNECT;
                 FILE_SELECT_DATA.subroutineStage++;
                 break;
             }
 
             if (!(FILE_SELECT_DATA.dispcnt & DCNT_BG1) && FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].ended)
             {
-                if (unk_790cc(1, 0x15))
+                if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_LINKING_PLEASE_WAIT))
                 {
                     DmaTransfer(3, (void*)sEwramPointer + 0x3C00, VRAM_BASE + 0xE800, 0x300, 16);
                     FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_1C;
@@ -3680,7 +3677,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
 
             if (!(FILE_SELECT_DATA.dispcnt & DCNT_BG0) && FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].ended)
             {
-                if (unk_790cc(1, 0x19))
+                if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_DO_NOT_TURN_POWER_OFF))
                 {
                     DmaTransfer(3, (void*)sEwramPointer + 0x4800, VRAM_BASE + 0xE000, 0x300, 16);
                     FILE_SELECT_DATA.bg0cnt = FILE_SELECT_DATA.unk_1E;
@@ -3692,27 +3689,27 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
         case 3:
             switch (gIoTransferInfo.result)
             {
-                case 1:
+                case TRANSFER_RESULT_SUCCESS:
                     SramWrite_FileScreenOptionsUnlocked();
                     FILE_SELECT_DATA.subroutineStage = 8;
                     FILE_SELECT_DATA.subroutineTimer = 0;
                     break;
 
-                case 4:
+                case TRANSFER_RESULT_FAILURE:
                     FILE_SELECT_DATA.subroutineStage = 4;
                     FILE_SELECT_DATA.subroutineTimer = 0;
                     break;
 
-                case 5:
+                case TRANSFER_RESULT_SUCCESS2:
                     FILE_SELECT_DATA.subroutineStage = 14;
                     FILE_SELECT_DATA.subroutineTimer = 0;
                     break;
 
-                case 3:
+                case TRANSFER_RESULT_TIMED_OUT:
                     FILE_SELECT_DATA.subroutineStage = 18;
                     break;
 
-                case 2:
+                case TRANSFER_RESULT_BACKED_OUT:
                     FILE_SELECT_DATA.subroutineStage = 21;
                     break;
             }
@@ -3720,8 +3717,8 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
 
         case 4:
             FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1);
-            unk_790cc(0, 0x17);
-            unk_790cc(0, 0x18);
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_LINKING_ERROR);
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_TURN_OFF_CONFIRM_LINK);
 
             UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
 
@@ -3738,10 +3735,10 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
             if (!FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].ended)
                 break;
 
-            if (!unk_790cc(1, 0x18))
+            if (!FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_TURN_OFF_CONFIRM_LINK))
                 break;
 
-            if (unk_790cc(1, 0x17))
+            if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_LINKING_ERROR))
             {
                 FILE_SELECT_DATA.dispcnt |= (DCNT_BG0 | DCNT_BG1);
                 FILE_SELECT_DATA.subroutineStage++;
@@ -3750,7 +3747,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
             break;
 
         case 6:
-            if (FILE_SELECT_DATA.subroutineTimer > 30)
+            if (FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(.5f))
                 FILE_SELECT_DATA.subroutineStage++;
             break;
 
@@ -3767,12 +3764,12 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
             if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID != 0)
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID++;
 
-            unk_790cc(0, 0x1A);
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_DATA_UPLOAD_COMPLETE);
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
         case 9:
-            if (unk_790cc(1, 0x1A))
+            if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_DATA_UPLOAD_COMPLETE))
             {
                 FILE_SELECT_DATA.dispcnt |= DCNT_BG1;
                 FILE_SELECT_DATA.subroutineStage++;
@@ -3781,7 +3778,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
             break;
 
         case 10:
-            if (FILE_SELECT_DATA.subroutineTimer > 60)
+            if (FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(1.f))
                 FILE_SELECT_DATA.subroutineStage++;
             break;
 
@@ -3803,7 +3800,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
             break;
 
         case 13:
-            if (FILE_SELECT_DATA.subroutineTimer > 30)
+            if (FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(.5f))
             {
                 OptionsSetupTiletable();
                 DmaTransfer(3, (void*)sEwramPointer + 0x5100, VRAM_BASE + 0xF000, 0x800, 16);
@@ -3814,7 +3811,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
         case 14:
             UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
             FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1);
-            unk_790cc(0, 0x16);
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_UNABLE_TO_DETECT_FUSION);
 
             if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID != 0)
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID++;
@@ -3823,7 +3820,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
             break;
 
         case 15:
-            if (unk_790cc(1, 0x16))
+            if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_UNABLE_TO_DETECT_FUSION))
             {
                 FILE_SELECT_DATA.dispcnt |= DCNT_BG1;
                 FILE_SELECT_DATA.subroutineStage++;
@@ -3831,7 +3828,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
             break;
 
         case 16:
-            if (gIoTransferInfo.result == 4)
+            if (gIoTransferInfo.result == TRANSFER_RESULT_FAILURE)
             {
                 FILE_SELECT_DATA.subroutineStage = 4;
                 break;
@@ -3839,13 +3836,13 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
 
             if (gChangedInput & (KEY_A | KEY_START))
             {
-                gIoTransferInfo.unk_4 = 0;
+                gIoTransferInfo.linkInProgress = 0;
                 FILE_SELECT_DATA.subroutineStage++;
             }
             break;
 
         case 17:
-            if (gIoTransferInfo.result == 4)
+            if (gIoTransferInfo.result == TRANSFER_RESULT_FAILURE)
                 FILE_SELECT_DATA.subroutineStage = 21;
             break;
 
@@ -3856,12 +3853,12 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
             if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID != 0)
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID++;
 
-            unk_790cc(0, 0x1B);
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_LINKING_ERROR_CHECK_CONNECTION);
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
         case 19:
-            if (unk_790cc(1, 0x1B))
+            if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_LINKING_ERROR_CHECK_CONNECTION))
             {
                 FILE_SELECT_DATA.dispcnt |= DCNT_BG1;
                 FILE_SELECT_DATA.subroutineStage++;
@@ -3911,7 +3908,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
  */
 u32 FileSelectMenuSubroutine(void)
 {
-    FILE_SELECT_DATA.timer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.timer);
 
     switch (gGameModeSub1)
     {
@@ -3924,8 +3921,8 @@ u32 FileSelectMenuSubroutine(void)
 
         case 1:
         case 9:
-            unk_7c568();
-            if (FileSelectFading())
+            FileSelectApplyFading();
+            if (FileSelectUpdateFading())
             {
                 gGameModeSub1++;
                 gGameModeSub2 = 0;
@@ -3951,7 +3948,7 @@ u32 FileSelectMenuSubroutine(void)
                 if (gGameModeSub2 == 0)
                     break;
 
-                unk_7c4b0(TRUE);
+                FileSelectInitFading(TRUE);
                 gOptionsOptionSelected = 0;
             }
             break;
@@ -3961,7 +3958,7 @@ u32 FileSelectMenuSubroutine(void)
             {
                 if (gGameModeSub2)
                 {
-                    unk_7c4b0(TRUE);
+                    FileSelectInitFading(TRUE);
                     gGameModeSub1 = 11;
                 }
                 else
@@ -3977,15 +3974,15 @@ u32 FileSelectMenuSubroutine(void)
 
         case 3:
         case 11:
-            unk_7c568();
-            if (FileSelectFading())
+            FileSelectApplyFading();
+            if (FileSelectUpdateFading())
                 return TRUE;
             break;
 
         case 4:
         case 7:
-            unk_7c568();
-            if (FileSelectFading())
+            FileSelectApplyFading();
+            if (FileSelectUpdateFading())
             {
                 FILE_SELECT_DATA.timer = 0;
                 gGameModeSub1++;
@@ -3993,13 +3990,13 @@ u32 FileSelectMenuSubroutine(void)
             break;
 
         case 5:
-            if (FILE_SELECT_DATA.timer > 30)
+            if (FILE_SELECT_DATA.timer > CONVERT_SECONDS(.5f))
                 gGameModeSub1++;
             break;
 
         case 6:
         case 8:
-            unk_75c04(FALSE);
+            unk_75c04(0);
             return TRUE;
     }
 
@@ -4012,7 +4009,7 @@ u32 FileSelectMenuSubroutine(void)
  * 
  * @return u32 bool, ended
  */
-u32 FileSelectFading(void)
+u32 FileSelectUpdateFading(void)
 {
     u32 ended;
     u16* src;
@@ -4020,14 +4017,15 @@ u32 FileSelectFading(void)
 
     ended = FALSE;
 
-    FILE_SELECT_DATA.fadingTimer++;
+    APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.fadingTimer);
 
     switch (FILE_SELECT_DATA.fadingStage)
     {
-        case 0:
-            if (FILE_SELECT_DATA.unk_E)
+        case FILE_SELECT_FADING_STAGE_FADE_IN:
+            if (FILE_SELECT_DATA.paletteUpdated)
                 break;
 
+            // frequency always 0?
             if (FILE_SELECT_DATA.fadingTimer < FILE_SELECT_DATA.fadingFrequency)
                 break;
 
@@ -4035,12 +4033,13 @@ u32 FileSelectFading(void)
             {
                 src = (void*)sEwramPointer + 0x000;
                 dst = (void*)sEwramPointer + 0x400;
-                ApplySpecialBackgroundFadingColor(0, FILE_SELECT_DATA.colorToApply, &src, &dst, USHORT_MAX);
+                ApplySpecialBackgroundFadingColor(COLOR_FADING_TYPE_IN, FILE_SELECT_DATA.colorToApply, &src, &dst, USHORT_MAX);
+
                 src = (void*)sEwramPointer + 0x200;
                 dst = (void*)sEwramPointer + 0x600;
-                ApplySpecialBackgroundFadingColor(0, FILE_SELECT_DATA.colorToApply, &src, &dst, USHORT_MAX);
+                ApplySpecialBackgroundFadingColor(COLOR_FADING_TYPE_IN, FILE_SELECT_DATA.colorToApply, &src, &dst, USHORT_MAX);
 
-                FILE_SELECT_DATA.unk_E = TRUE;
+                FILE_SELECT_DATA.paletteUpdated = TRUE;
                 if (FILE_SELECT_DATA.colorToApply == 31)
                 {
                     FILE_SELECT_DATA.colorToApply++;
@@ -4055,13 +4054,13 @@ u32 FileSelectFading(void)
                 break;
             }
 
-            DmaTransfer(3, (void*)sEwramPointer, (void*)sEwramPointer + 0x400, 0x400, 16);
-            FILE_SELECT_DATA.unk_E = TRUE;
+            DmaTransfer(3, (void*)sEwramPointer, (void*)sEwramPointer + 0x400, PALRAM_SIZE, 16);
+            FILE_SELECT_DATA.paletteUpdated = TRUE;
             FILE_SELECT_DATA.fadingStage++;
             break;
 
-        case 1:
-            if (!FILE_SELECT_DATA.unk_E)
+        case FILE_SELECT_FADING_STAGE_CHECK_FADE_IN:
+            if (!FILE_SELECT_DATA.paletteUpdated)
             {
                 FILE_SELECT_DATA.colorToApply = 0;
                 FILE_SELECT_DATA.fadingStage = 0;
@@ -4069,8 +4068,8 @@ u32 FileSelectFading(void)
             }
             break;
 
-        case 2:
-            if (FILE_SELECT_DATA.unk_E)
+        case FILE_SELECT_FADING_STAGE_FADE_OUT:
+            if (FILE_SELECT_DATA.paletteUpdated)
                 break;
 
             if (FILE_SELECT_DATA.fadingTimer < FILE_SELECT_DATA.fadingFrequency)
@@ -4081,12 +4080,12 @@ u32 FileSelectFading(void)
             {
                 src = (void*)sEwramPointer + 0x000;
                 dst = (void*)sEwramPointer + 0x400;
-                ApplySpecialBackgroundFadingColor(2, FILE_SELECT_DATA.colorToApply, &src, &dst, USHORT_MAX);
+                ApplySpecialBackgroundFadingColor(COLOR_FADING_TYPE_OUT, FILE_SELECT_DATA.colorToApply, &src, &dst, USHORT_MAX);
                 src = (void*)sEwramPointer + 0x200;
                 dst = (void*)sEwramPointer + 0x600;
-                ApplySpecialBackgroundFadingColor(2, FILE_SELECT_DATA.colorToApply, &src, &dst, USHORT_MAX);
+                ApplySpecialBackgroundFadingColor(COLOR_FADING_TYPE_OUT, FILE_SELECT_DATA.colorToApply, &src, &dst, USHORT_MAX);
 
-                FILE_SELECT_DATA.unk_E = TRUE;
+                FILE_SELECT_DATA.paletteUpdated = TRUE;
                 if (FILE_SELECT_DATA.colorToApply == 31)
                 {
                     FILE_SELECT_DATA.colorToApply++;
@@ -4101,13 +4100,13 @@ u32 FileSelectFading(void)
                 break;
             }
 
-            BitFill(3, 0, (void*)sEwramPointer + 0x400, 0x400, 16);
-            FILE_SELECT_DATA.unk_E = TRUE;
+            BitFill(3, 0, (void*)sEwramPointer + 0x400, PALRAM_SIZE, 16);
+            FILE_SELECT_DATA.paletteUpdated = TRUE;
             FILE_SELECT_DATA.fadingStage++;
             break;
 
-        case 3:
-            if (!FILE_SELECT_DATA.unk_E)
+        case FILE_SELECT_FADING_STAGE_CHECK_FADE_OUT:
+            if (!FILE_SELECT_DATA.paletteUpdated)
             {
                 FILE_SELECT_DATA.colorToApply = 0;
                 FILE_SELECT_DATA.fadingStage = 0;
@@ -4122,21 +4121,21 @@ u32 FileSelectFading(void)
 /**
  * @brief 7c4b0 | b8 | To document
  * 
- * @param param_1 To document
+ * @param fadingOut Bool, file select fading out
  */
-void unk_7c4b0(u8 param_1)
+void FileSelectInitFading(u8 fadingOut)
 {
     FILE_SELECT_DATA.colorToApply = 0;
-    FILE_SELECT_DATA.unk_E = 0;
+    FILE_SELECT_DATA.paletteUpdated = 0;
     FILE_SELECT_DATA.fadingTimer = 0;
 
-    if (!param_1)
+    if (!fadingOut)
     {
         DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer, PALRAM_SIZE, 16);
         BitFill(3, 0, PALRAM_BASE, PALRAM_SIZE, 16);
         DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer + 0x400, PALRAM_SIZE, 16);
 
-        FILE_SELECT_DATA.fadingStage = 0;
+        FILE_SELECT_DATA.fadingStage = FILE_SELECT_FADING_STAGE_FADE_IN;
         FILE_SELECT_DATA.fadingIntensity = 8;
         FILE_SELECT_DATA.fadingFrequency = 0;
     }
@@ -4144,30 +4143,30 @@ void unk_7c4b0(u8 param_1)
     {
         DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer, PALRAM_SIZE, 16);
 
-        FILE_SELECT_DATA.fadingStage = 2;
+        FILE_SELECT_DATA.fadingStage = FILE_SELECT_FADING_STAGE_FADE_OUT;
         FILE_SELECT_DATA.fadingIntensity = 8;
         FILE_SELECT_DATA.fadingFrequency = 0;
     }
 }
 
 /**
- * @brief 7c568 | 3c | To document
+ * @brief 7c568 | 3c | Transfers the fading palette to palette RAM
  * 
  */
-void unk_7c568(void)
+void FileSelectApplyFading(void)
 {
-    if (FILE_SELECT_DATA.unk_E)
+    if (FILE_SELECT_DATA.paletteUpdated)
     {
         DmaTransfer(3, (void*)sEwramPointer + 0x400, PALRAM_BASE, PALRAM_SIZE, 16);
-        FILE_SELECT_DATA.unk_E = FALSE;
+        FILE_SELECT_DATA.paletteUpdated = FALSE;
     }
 }
 
 /**
- * @brief 7c5a4 | 3c | To document
+ * @brief 7c5a4 | 3c | Sets the language to English
  * 
  */
-void unk_7c5a4(void)
+void FileSelectSetEnglishLanguage(void)
 {
     s32 i;
     u32 saveLanguage;
@@ -4195,13 +4194,11 @@ void FileSelectInit(void)
 {
     CallbackSetVBlank(FileSelectVBlank_Empty);
 
-    BitFill(3, 0, &gNonGameplayRAM, sizeof(gNonGameplayRAM), 32);
+    BitFill(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam), 32);
 
     write16(REG_DISPCNT, FILE_SELECT_DATA.dispcnt = 0);
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay = 16);
-    write16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL |
-        BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL |
-        BLDCNT_BACKDROP_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT);
+    write16(REG_BLDY, gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE);
+    write16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT);
 
     gNextOamSlot = 0;
     ClearGfxRam();
@@ -4209,12 +4206,12 @@ void FileSelectInit(void)
 
     gOamXOffset_NonGameplay = gOamYOffset_NonGameplay = 0;
 
-    gSramErrorFlag = FALSE;
-    gDebugFlag = FALSE;
+    gBootDebugActive = FALSE;
+    gDebugMode = FALSE;
 
     BitFill(3, 0, (void*)sEwramPointer + 0x1000, 0x800, 16);
     SramWrite_FileInfo();
-    unk_7c5a4();
+    FileSelectSetEnglishLanguage();
 
     FILE_SELECT_DATA.unk_24 = gMostRecentSaveFile;
     FILE_SELECT_DATA.unk_25 = gMostRecentSaveFile;
@@ -4224,7 +4221,7 @@ void FileSelectInit(void)
     FILE_SELECT_DATA.fileSelectCursorPosition = gMostRecentSaveFile;
 
     DmaTransfer(3, sFileSelectPal, PALRAM_BASE, sizeof(sFileSelectPal), 16);
-    DmaTransfer(3, sFileSelect_4548f8, PALRAM_BASE + 0x1C0, sizeof(sFileSelect_4548f8), 16);
+    DmaTransfer(3, sFileSelect_4548f8, PALRAM_BASE + (PAL_SIZE - 2 * PAL_ROW_SIZE), sizeof(sFileSelect_4548f8), 16);
     DmaTransfer(3, sFileSelectIconsPal, PALRAM_OBJ, sizeof(sFileSelectIconsPal), 16);
     SET_BACKDROP_COLOR(COLOR_BLACK);
 
@@ -4232,8 +4229,13 @@ void FileSelectInit(void)
     CallLZ77UncompVram(sFileSelectChozoBackgroundGfx, VRAM_BASE + 0x8000);
     CallLZ77UncompVram(sFileSelectIconsGfx, VRAM_OBJ);
 
-    BitFill(3, 0, VRAM_BASE + 0x400, 0x800, 16);
-    CallLZ77UncompVram(sFileSelectTextGfxPointers[gLanguage - 2], VRAM_BASE + 0xC00);
+    #ifdef DEBUG
+    if (gLanguage >= LANGUAGE_ENGLISH)
+    #endif // DEBUG
+    {
+        BitFill(3, 0, VRAM_BASE + 0x400, 0x800, 16);
+        CallLZ77UncompVram(sFileSelectTextGfxPointers[gLanguage - LANGUAGE_ENGLISH], VRAM_BASE + 0xC00);
+    }
     CallLZ77UncompVram(sFileSelectChozoBackgroundTileTable, VRAM_BASE + 0xF800);
 
     CallLZ77UncompWram(sFileSelectMenuTileTable, (void*)sEwramPointer + 0x800);
@@ -4251,7 +4253,9 @@ void FileSelectInit(void)
     gGameModeSub1 = 2;
 
     if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].corruptionFlag || gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].corruptionFlag || gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].corruptionFlag)
+    {
         FILE_SELECT_DATA.currentSubMenu = 4;
+    }
     else
     {
         if (FILE_SELECT_DATA.optionsUnlocked[gOptionsOptionSelected] && gOptionsOptionSelected > 0 && (u8)gOptionsOptionSelected < 7)
@@ -4268,19 +4272,19 @@ void FileSelectInit(void)
         }
     }
 
-    gBg0HOFS_NonGameplay = gBg0VOFS_NonGameplay = 0x800;
-    gBg1HOFS_NonGameplay = gBg1VOFS_NonGameplay = 0x800;
-    gBg2HOFS_NonGameplay = gBg2VOFS_NonGameplay = 0x800;
-    gBg3HOFS_NonGameplay = gBg3VOFS_NonGameplay = 0x800;
+    gBg0HOFS_NonGameplay = gBg0VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
+    gBg1HOFS_NonGameplay = gBg1VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
+    gBg2HOFS_NonGameplay = gBg2VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
+    gBg3HOFS_NonGameplay = gBg3VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
 
     FILE_SELECT_DATA.dispcnt = DCNT_BG1 | DCNT_BG3 | DCNT_OBJ;
-    FILE_SELECT_DATA.unk_14 = 0x1F0B;
-    FILE_SELECT_DATA.unk_16 = 0x1E02;
-    FILE_SELECT_DATA.unk_18 = 0x1B01;
-    FILE_SELECT_DATA.unk_1A = 0x1B02;
-    FILE_SELECT_DATA.unk_1C = 0x1D01;
-    FILE_SELECT_DATA.unk_1E = 0x1C00;
-    FILE_SELECT_DATA.unk_20 = 0x1E02;
+    FILE_SELECT_DATA.unk_14 = CREATE_BGCNT(2, 31, BGCNT_LOW_PRIORITY, BGCNT_SIZE_256x256);
+    FILE_SELECT_DATA.unk_16 = CREATE_BGCNT(0, 30, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256);
+    FILE_SELECT_DATA.unk_18 = CREATE_BGCNT(0, 27, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256);
+    FILE_SELECT_DATA.unk_1A = CREATE_BGCNT(0, 27, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256);
+    FILE_SELECT_DATA.unk_1C = CREATE_BGCNT(0, 29, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256);
+    FILE_SELECT_DATA.unk_1E = CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256);
+    FILE_SELECT_DATA.unk_20 = CREATE_BGCNT(0, 30, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256);
 
     write16(REG_BG0CNT, FILE_SELECT_DATA.bg0cnt = 0);
     write16(REG_BG1CNT, FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_18);
@@ -4289,10 +4293,10 @@ void FileSelectInit(void)
 
     FILE_SELECT_DATA.fileSelectCursors = sFileSelectMenuCursors_Empty;
 
-    FILE_SELECT_DATA.unk_34 = 0;
-    FILE_SELECT_DATA.unk_35 = UCHAR_MAX;
-    FILE_SELECT_DATA.unk_36 = UCHAR_MAX;
-    FILE_SELECT_DATA.unk_37 = UCHAR_MAX;
+    FILE_SELECT_DATA.processTextStage = FILE_SCREEN_PROCESS_TEXT_STAGE_NONE;
+    FILE_SELECT_DATA.messageInfoIdQueue[0] = UCHAR_MAX;
+    FILE_SELECT_DATA.messageInfoIdQueue[1] = UCHAR_MAX;
+    FILE_SELECT_DATA.messageInfoIdQueue[2] = UCHAR_MAX;
 
     FileSelectResetOAM();
     FileSelectUpdateCursor(CURSOR_POSE_DEFAULT, FILE_SELECT_DATA.unk_24);
@@ -4319,7 +4323,7 @@ void FileSelectInit(void)
     }
 
     FileSelectProcessOAM();
-    unk_7c4b0(FALSE);
+    FileSelectInitFading(FALSE);
 
     write16(REG_BLDY, gWrittenToBLDY_NonGameplay = 0);
     write16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt = 0);
@@ -4334,23 +4338,23 @@ void FileSelectInit(void)
  */
 void FileSelectVBlank(void)
 {
-    if (gIoTransferInfo.unk_4)
-        unk_8a730();
+    if (gIoTransferInfo.linkInProgress)
+        LinkVSync();
 
-    DMA_SET(3, gOamData, OAM_BASE, (DMA_ENABLE | DMA_32BIT) << 16 | OAM_SIZE / sizeof(u32))
+    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)))
 
-    write16(REG_BG0HOFS, gBg0HOFS_NonGameplay / 4);
-    write16(REG_BG0VOFS, gBg0VOFS_NonGameplay / 4);
-    write16(REG_BG1HOFS, gBg1HOFS_NonGameplay / 4);
-    write16(REG_BG1VOFS, gBg1VOFS_NonGameplay / 4);
-    write16(REG_BG2HOFS, gBg2HOFS_NonGameplay / 4);
-    write16(REG_BG2VOFS, gBg2VOFS_NonGameplay / 4);
-    write16(REG_BG3HOFS, gBg3HOFS_NonGameplay / 4);
-    write16(REG_BG3VOFS, gBg3VOFS_NonGameplay / 4);
+    write16(REG_BG0HOFS, gBg0HOFS_NonGameplay / PIXEL_SIZE);
+    write16(REG_BG0VOFS, gBg0VOFS_NonGameplay / PIXEL_SIZE);
+    write16(REG_BG1HOFS, gBg1HOFS_NonGameplay / PIXEL_SIZE);
+    write16(REG_BG1VOFS, gBg1VOFS_NonGameplay / PIXEL_SIZE);
+    write16(REG_BG2HOFS, gBg2HOFS_NonGameplay / PIXEL_SIZE);
+    write16(REG_BG2VOFS, gBg2VOFS_NonGameplay / PIXEL_SIZE);
+    write16(REG_BG3HOFS, gBg3HOFS_NonGameplay / PIXEL_SIZE);
+    write16(REG_BG3VOFS, gBg3VOFS_NonGameplay / PIXEL_SIZE);
 
     write16(REG_DISPCNT, FILE_SELECT_DATA.dispcnt);
     write16(REG_BLDY, gWrittenToBLDY_NonGameplay);
-    write16(REG_BLDALPHA, gWrittenToBLDALPHA_H << 8 | gWrittenToBLDALPHA_L);
+    write16(REG_BLDALPHA, C_16_2_8(gWrittenToBLDALPHA_H, gWrittenToBLDALPHA_L));
     write16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt);
     write16(REG_BG0CNT, FILE_SELECT_DATA.bg0cnt);
     write16(REG_BG1CNT, FILE_SELECT_DATA.bg1cnt);
@@ -4546,6 +4550,7 @@ void FileSelectDisplaySaveFileTimer(u8 file)
     }
 }
 
+// TODO: Not matching for REGION_JP || DEBUG
 /**
  * @brief 7cf98 | 118 | Displays the misc. info of a file (difficulty, area, time attack)
  * 
@@ -4569,8 +4574,7 @@ void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file)
     else
         return;
 
-    i = pFile->timeAttack;
-    if (i)
+    if (pFile->timeAttack)
         tile = 6 << 12;
     else
         tile = 5 << 12;
@@ -4581,10 +4585,26 @@ void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file)
 
     if ((pFile->exists || pFile->introPlayed) && pFile->corruptionFlag == 0)
     {
-        if (i)
+        if (pFile->timeAttack)
+        {
             tile = 0x1AF;
+            #if defined(REGION_JP) || defined(DEBUG)
+            if (pFile->language == LANGUAGE_HIRAGANA)
+                tile += 5;
+            #endif // REGION_JP || DEBUG
+        }
         else
+        {
+            #if defined(REGION_JP) || defined(DEBUG)
+            tile = pFile->difficulty * 5;
+            if (pFile->language == LANGUAGE_HIRAGANA)
+                tile += 0x13D;
+            else
+                tile += 0x1A0;
+            #else // !(REGION_JP || DEBUG)
             tile = 0x1A0 + pFile->difficulty * 5;
+            #endif // REGION_JP || DEBUG
+        }
 
         for (i = 0; i < 5; i++)
         {
@@ -4609,7 +4629,16 @@ void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file)
 
     if ((pFile->exists || pFile->introPlayed) && i >= 0 && pFile->corruptionFlag == 0)
     {
+        #if defined(REGION_JP) || defined(DEBUG)
+        tile = i * 6;
+        if (pFile->language == LANGUAGE_HIRAGANA)
+            tile += 0x14C;
+        else
+            tile += 0x176;
+        #else // !(REGION_JP || DEBUG)
         tile = i * 6 + 0x176;
+        #endif // REGION_JP || DEBUG
+
         for (i = 0; i < 6; i++)
         {
             *dst++ = baseTile | tile++;
@@ -4803,9 +4832,61 @@ u8 FileSelectUpdateSubMenu(void)
                 else
                 {
                     if (gChangedInput & KEY_B)
+                    {
                         result = 2;
+                    }
                     else if (gChangedInput & KEY_A)
+                    {
                         result = 3;
+                    }
+                    #ifdef DEBUG
+                    else if (gButtonInput & KEY_SELECT)
+                    {
+                        if (FILE_SELECT_DATA.fileSelectCursorPosition < FILE_SELECT_CURSOR_POSITION_COPY &&
+                            (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].exists ||
+                            gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].introPlayed))
+                        {
+                            if (gChangedInput & KEY_RIGHT)
+                            {
+                                gDifficulty = DIFF_NORMAL;
+                                result = 1;
+                            }
+                            else if (gChangedInput & KEY_LEFT)
+                            {
+                                gDifficulty = DIFF_HARD;
+                                result = 1;
+                            }
+                            else if (gChangedInput & KEY_L)
+                            {
+                                gDifficulty = DIFF_EASY;
+                                result = 1;
+                            }
+
+                            if (result != 0)
+                            {
+                                // Mark file as completed
+                                gMostRecentSaveFile = FILE_SELECT_DATA.fileSelectCursorPosition;
+                                gLanguage = gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].language; 
+                                gGameCompletion.completedGame = FALSE;
+
+                                if (FILE_SELECT_DATA.fileSelectCursorPosition == 0)
+                                    result = 0xC;
+                                else if (FILE_SELECT_DATA.fileSelectCursorPosition == 1)
+                                    result = 0xD;
+                                else
+                                    result = 0xE;
+                                FILE_SELECT_DATA.fileScreenOam[result].exists = OAM_ID_CHANGED_FLAG;
+                                gSramOperationStage = 0;
+
+                                while (!SramProcessEndingSave_Debug());
+
+                                SoundPlay(SOUND_GAME_BOY_BOOT);
+                            }
+                        }
+                        
+                        result = 0;
+                    }
+                    #endif // DEBUG
                 }
             }
 
@@ -4898,12 +4979,17 @@ u8 FileSelectUpdateSubMenu(void)
                             gSaveFilesInfo[gMostRecentSaveFile].exists = FALSE;
                             gSaveFilesInfo[gMostRecentSaveFile].difficulty = FILE_SELECT_DATA.fileSelectCursors.difficulty;
                             gSaveFilesInfo[gMostRecentSaveFile].timeAttack = FILE_SELECT_DATA.fileSelectCursors.completedFileOptions == 2;
+
+                            #ifdef DEBUG
+                            if (gSaveFilesInfo[gMostRecentSaveFile].language < LANGUAGE_ENGLISH)
+                                gSaveFilesInfo[gMostRecentSaveFile].language = FILE_SELECT_DATA.fileSelectCursors.japaneseText;
+                            #endif // DEBUG
                         }
                     }
                 }
                 
                 gGameModeSub2 = gSaveFilesInfo[gMostRecentSaveFile].exists ? 1 : 2;
-                FadeMusic(20);
+                FadeMusic(ONE_THIRD_SECOND);
                 return TRUE;
             }
 
@@ -4969,7 +5055,7 @@ u32 FileSelectCheckInputtingTimeAttackCode(void)
     {
         // Not inputting, update cooldown and check for first input
         if (FILE_SELECT_DATA.timeAttackInputCooldown != 0)
-            FILE_SELECT_DATA.timeAttackInputCooldown--;
+            APPLY_DELTA_TIME_DEC(FILE_SELECT_DATA.timeAttackInputCooldown);
         else
         {
             if (input == sTimeAttackButtonCode[0])
@@ -4979,7 +5065,7 @@ u32 FileSelectCheckInputtingTimeAttackCode(void)
                 FILE_SELECT_DATA.numberOfTimeAttackInputs = 1;
             }
             else if (input)
-                FILE_SELECT_DATA.timeAttackInputCooldown = 30;
+                FILE_SELECT_DATA.timeAttackInputCooldown = CONVERT_SECONDS(.5f);
         }
     }
     else
@@ -4999,21 +5085,26 @@ u32 FileSelectCheckInputtingTimeAttackCode(void)
             // Invalid input detected, reset
             FILE_SELECT_DATA.inputtingTimeAttack = FALSE;
             FILE_SELECT_DATA.numberOfTimeAttackInputs = 0;
-            FILE_SELECT_DATA.timeAttackInputCooldown = 30;
+            FILE_SELECT_DATA.timeAttackInputCooldown = CONVERT_SECONDS(.5f);
         }
     }
 
     return FALSE;
 }
 
-#ifdef NON_MATCHING
+/**
+ * @brief 7d62c | dd0 | 
+ * 
+ * @return u8 Leaving, 
+ */
 u8 FileSelectProcessFileSelection(void)
 {
-    // https://decomp.me/scratch/VYid8
-
     u32 leaving;
     u32 offset;
     s32 action;
+    struct FileSelectData *pFSD;
+    struct SaveFileInfo *pSFI;
+    u8 tmp;
 
     leaving = FALSE;
     FILE_SELECT_DATA.subroutineTimer++;
@@ -5031,17 +5122,15 @@ u8 FileSelectProcessFileSelection(void)
             FILE_SELECT_DATA.dispcnt |= DCNT_BG2;
             FILE_SELECT_DATA.dispcnt |= DCNT_WIN0;
 
-            write16(REG_WIN0H, 0x46AA);
-            write16(REG_WIN0V, 0x17);
-            write16(REG_WINOUT, 0x3F);
-            write8(REG_WININ, 0x1F);
+            write16(REG_WIN0H, C_16_2_8(70, 170));
+            write16(REG_WIN0V, C_16_2_8(0, 23));
+            write16(REG_WINOUT, C_16_2_8(0, WIN0_ALL));
+            write8(REG_WININ, C_16_2_8(0, WIN0_ALL_NO_COLOR_EFFECT));
 
             gWrittenToBLDALPHA_H = 0;
             gWrittenToBLDALPHA_L = 16;
 
-            FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BG0_SECOND_TARGET_PIXEL |
-                BLDCNT_BG1_SECOND_TARGET_PIXEL | BLDCNT_BG2_SECOND_TARGET_PIXEL | BLDCNT_BG3_SECOND_TARGET_PIXEL |
-                BLDCNT_OBJ_SECOND_TARGET_PIXEL | BLDCNT_BACKDROP_SECOND_TARGET_PIXEL;
+            FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET;
 
             FILE_SELECT_DATA.unk_3A = 0;
 
@@ -5114,7 +5203,7 @@ u8 FileSelectProcessFileSelection(void)
             FILE_SELECT_DATA.dispcnt &= ~DCNT_WIN0;
 
             FileSelectUpdateTilemap(TILEMAP_REQUEST_START_GAME_INIT);
-            unk_790cc(0, 0x0);
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_START_GAME);
             
             FILE_SELECT_DATA.subroutineStage = 4;
             break;
@@ -5143,16 +5232,18 @@ u8 FileSelectProcessFileSelection(void)
                 action = 0x80;
                 FileSelectPlayMenuSound(MENU_SOUND_REQUEST_ACCEPT_CONFIRM_MENU);
 
-                if (!gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].completedGame &&
-                    (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].exists ||
-                     gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].introPlayed))
+                pSFI = (struct SaveFileInfo*)gSaveFilesInfo;
+                pFSD = &FILE_SELECT_DATA;
+                if (!pSFI[pFSD->fileSelectCursorPosition].completedGame &&
+                    (pSFI[pFSD->fileSelectCursorPosition].exists ||
+                     pSFI[pFSD->fileSelectCursorPosition].introPlayed))
                 {
                     FILE_SELECT_DATA.unk_3A = 0;
                     FILE_SELECT_DATA.subroutineStage = 34;
                 }
                 else
                 {
-                    FILE_SELECT_DATA.subroutineStage = 8;
+                    pFSD->subroutineStage = 8;
                 }
             }
             else if (gChangedInput & KEY_B)
@@ -5179,9 +5270,9 @@ u8 FileSelectProcessFileSelection(void)
             if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].exists || gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].introPlayed)
             {
                 if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].timeAttack || FILE_SELECT_DATA.inputtedTimeAttack)
-                    FILE_SELECT_DATA.unk_39 = 16;
+                    FILE_SELECT_DATA.continueNewMessage = FILE_SCREEN_MESSAGE_INFO_ID_CONTINUE_NEW_TIME_ATTACK;
                 else
-                    FILE_SELECT_DATA.unk_39 = 15;
+                    FILE_SELECT_DATA.continueNewMessage = FILE_SCREEN_MESSAGE_INFO_ID_CONTINUE_NEW;
                 FILE_SELECT_DATA.subroutineStage = 9;
             }
             else
@@ -5191,8 +5282,8 @@ u8 FileSelectProcessFileSelection(void)
             break;
 
         case 9:
-            unk_790cc(0, FILE_SELECT_DATA.unk_39);
-            unk_790cc(0, 0x14);
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SELECT_DATA.continueNewMessage);
+            FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_ERASE_FILE_CONFIRM);
 
             FileSelectUpdateTilemap(0x1D);
             FILE_SELECT_DATA.subroutineStage++;
@@ -5236,7 +5327,7 @@ u8 FileSelectProcessFileSelection(void)
                 }
                 else if (gChangedInput & KEY_DOWN)
                 {
-                    if (FILE_SELECT_DATA.unk_39 == 0x10)
+                    if (FILE_SELECT_DATA.continueNewMessage == FILE_SCREEN_MESSAGE_INFO_ID_CONTINUE_NEW_TIME_ATTACK)
                     {
                         if (FILE_SELECT_DATA.fileSelectCursors.completedFileOptions < 2)
                         {
@@ -5357,7 +5448,15 @@ u8 FileSelectProcessFileSelection(void)
                 break;
             }
 
-            if (FILE_SELECT_DATA.fileSelectCursors.completedFileOptions != 2)
+            #ifdef DEBUG
+            action = TRUE;
+            if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].language >= LANGUAGE_ENGLISH)
+            #endif // DEBUG
+            {
+                action = FILE_SELECT_DATA.fileSelectCursors.completedFileOptions != 2;
+            }
+
+            if (action)
             {
                 unk_7e3fc(6, 0x81);
                 FileSelectUpdateTilemap(0x23);
@@ -5365,7 +5464,7 @@ u8 FileSelectProcessFileSelection(void)
                 break;
             }
 
-            FILE_SELECT_DATA.unk_3A = FILE_SELECT_DATA.fileSelectCursors.completedFileOptions;
+            FILE_SELECT_DATA.unk_3A = 2;
             FILE_SELECT_DATA.subroutineStage = 34;
             break;
 
@@ -5381,7 +5480,17 @@ u8 FileSelectProcessFileSelection(void)
             break;
 
         case 21:
-            FILE_SELECT_DATA.subroutineStage = 28;
+            #ifdef DEBUG
+            if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].language <= LANGUAGE_HIRAGANA)
+            {
+                FILE_SELECT_DATA.subroutineStage = 22;
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_MESSAGE_OPTION);
+            }
+            else
+            #endif // DEBUG
+            {
+                FILE_SELECT_DATA.subroutineStage = 28;
+            }
 
             if (FILE_SELECT_DATA.fileSelectCursors.completedFileOptions == 2)
             {
@@ -5390,11 +5499,11 @@ u8 FileSelectProcessFileSelection(void)
             else
             {
                 if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].completedGame & 0x36)
-                    FILE_SELECT_DATA.unk_38 = 0x13;
+                    FILE_SELECT_DATA.difficultyMessage = 0x13;
                 else
-                    FILE_SELECT_DATA.unk_38 = 0x12;
+                    FILE_SELECT_DATA.difficultyMessage = 0x12;
 
-                unk_790cc(0, FILE_SELECT_DATA.unk_38);
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SELECT_DATA.difficultyMessage);
             }
             break;
 
@@ -5533,7 +5642,7 @@ u8 FileSelectProcessFileSelection(void)
                 }
                 else if (gChangedInput & KEY_DOWN)
                 {
-                    if (FILE_SELECT_DATA.unk_38 == 0x13)
+                    if (FILE_SELECT_DATA.difficultyMessage == 0x13)
                     {
                         if (FILE_SELECT_DATA.fileSelectCursors.difficulty <= 1)
                         {
@@ -5556,10 +5665,19 @@ u8 FileSelectProcessFileSelection(void)
         case 31:
             if (FileSelectUpdateTilemap(TILEMAP_REQUEST_DIFFICULTY_DESPAWN))
             {
-                if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].exists)
-                    FILE_SELECT_DATA.subroutineStage = 8;
+                #ifdef DEBUG
+                if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].language <= LANGUAGE_HIRAGANA)
+                {
+                    FILE_SELECT_DATA.subroutineStage = 22;
+                }
                 else
-                    FILE_SELECT_DATA.subroutineStage = 6;
+                #endif // DEBUG
+                {
+                    if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].exists)
+                        FILE_SELECT_DATA.subroutineStage = 8;
+                    else
+                        FILE_SELECT_DATA.subroutineStage = 6;
+                }
             }
             break;
 
@@ -5634,9 +5752,7 @@ u8 FileSelectProcessFileSelection(void)
             break;
 
         case 39:
-            FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT |
-                BLDCNT_BG0_SECOND_TARGET_PIXEL | BLDCNT_BG1_SECOND_TARGET_PIXEL | BLDCNT_BG2_SECOND_TARGET_PIXEL |
-                BLDCNT_BG3_SECOND_TARGET_PIXEL | BLDCNT_OBJ_SECOND_TARGET_PIXEL | BLDCNT_BACKDROP_SECOND_TARGET_PIXEL;
+            FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamID = FILE_SELECT_OAM_ID_SMALL_PANEL + 1;
 
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_CLOSE_SUB_MENU);
@@ -5716,1732 +5832,6 @@ u8 FileSelectProcessFileSelection(void)
 
     return leaving;
 }
-#else
-NAKED_FUNCTION
-u8 FileSelectProcessFileSelection(void)
-{
-    asm(" \n\
-    push {r4, r5, r6, r7, lr} \n\
-    mov r7, sl \n\
-    mov r6, sb \n\
-    mov r5, r8 \n\
-    push {r5, r6, r7} \n\
-    sub sp, #4 \n\
-    movs r0, #0 \n\
-    mov sl, r0 \n\
-    ldr r2, lbl_0807d664 @ =sNonGameplayRamPointer \n\
-    ldr r1, [r2] \n\
-    add r3, r1, #0 \n\
-    add r3, #0x42 \n\
-    ldrh r0, [r3] \n\
-    add r0, #1 \n\
-    strh r0, [r3] \n\
-    add r1, #0x40 \n\
-    ldrb r0, [r1] \n\
-    add r7, r2, #0 \n\
-    cmp r0, #0x2c \n\
-    bls lbl_0807d658 \n\
-    bl lbl_0807e3e6 \n\
-lbl_0807d658: \n\
-    lsl r0, r0, #2 \n\
-    ldr r1, lbl_0807d668 @ =lbl_0807d66c \n\
-    add r0, r0, r1 \n\
-    ldr r0, [r0] \n\
-    mov pc, r0 \n\
-    .align 2, 0 \n\
-lbl_0807d664: .4byte sNonGameplayRamPointer \n\
-lbl_0807d668: .4byte lbl_0807d66c \n\
-lbl_0807d66c: @ jump table \n\
-    .4byte lbl_0807d720 @ case 0 \n\
-    .4byte lbl_0807d854 @ case 1 \n\
-    .4byte lbl_0807d8ec @ case 2 \n\
-    .4byte lbl_0807d922 @ case 3 \n\
-    .4byte lbl_0807d978 @ case 4 \n\
-    .4byte lbl_0807d986 @ case 5 \n\
-    .4byte lbl_0807d9a4 @ case 6 \n\
-    .4byte lbl_0807d9c8 @ case 7 \n\
-    .4byte lbl_0807daa8 @ case 8 \n\
-    .4byte lbl_0807db0a @ case 9 \n\
-    .4byte lbl_0807db28 @ case 10 \n\
-    .4byte lbl_0807db50 @ case 11 \n\
-    .4byte lbl_0807dc1a @ case 12 \n\
-    .4byte lbl_0807dc44 @ case 13 \n\
-    .4byte lbl_0807dc66 @ case 14 \n\
-    .4byte lbl_0807e3b6 @ case 15 \n\
-    .4byte lbl_0807dc7c @ case 16 \n\
-    .4byte lbl_0807dcac @ case 17 \n\
-    .4byte lbl_0807dd78 @ case 18 \n\
-    .4byte lbl_0807ddc4 @ case 19 \n\
-    .4byte lbl_0807dde0 @ case 20 \n\
-    .4byte lbl_0807ddfc @ case 21 \n\
-    .4byte lbl_0807de56 @ case 22 \n\
-    .4byte lbl_0807de68 @ case 23 \n\
-    .4byte lbl_0807de8c @ case 24 \n\
-    .4byte lbl_0807df38 @ case 25 \n\
-    .4byte lbl_0807df78 @ case 26 \n\
-    .4byte lbl_0807dfb0 @ case 27 \n\
-    .4byte lbl_0807dfdc @ case 28 \n\
-    .4byte lbl_0807dfec @ case 29 \n\
-    .4byte lbl_0807e010 @ case 30 \n\
-    .4byte lbl_0807e0da @ case 31 \n\
-    .4byte lbl_0807e3e6 @ case 32 \n\
-    .4byte lbl_0807e3e6 @ case 33 \n\
-    .4byte lbl_0807e11e @ case 34 \n\
-    .4byte lbl_0807e132 @ case 35 \n\
-    .4byte lbl_0807e164 @ case 36 \n\
-    .4byte lbl_0807e190 @ case 37 \n\
-    .4byte lbl_0807e1a4 @ case 38 \n\
-    .4byte lbl_0807e26a @ case 39 \n\
-    .4byte lbl_0807e288 @ case 40 \n\
-    .4byte lbl_0807e2c4 @ case 41 \n\
-    .4byte lbl_0807e2ec @ case 42 \n\
-    .4byte lbl_0807e34c @ case 43 \n\
-    .4byte lbl_0807e3d8 @ case 44 \n\
-lbl_0807d720: \n\
-    ldr r2, lbl_0807d824 @ =gMostRecentSaveFile \n\
-    ldr r0, [r7] \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    strb r1, [r2] \n\
-    ldrb r0, [r0] \n\
-    add r0, #1 \n\
-    lsl r4, r0, #1 \n\
-    add r4, r4, r0 \n\
-    ldr r5, lbl_0807d828 @ =sEwramPointer \n\
-    ldr r2, [r5] \n\
-    movs r1, #0x86 \n\
-    lsl r1, r1, #5 \n\
-    add r2, r2, r1 \n\
-    movs r3, #0x90 \n\
-    lsl r3, r3, #2 \n\
-    movs r0, #0x10 \n\
-    mov r8, r0 \n\
-    str r0, [sp] \n\
-    movs r0, #3 \n\
-    movs r1, #0 \n\
-    bl BitFill \n\
-    lsl r4, r4, #6 \n\
-    movs r1, #0x80 \n\
-    lsl r1, r1, #4 \n\
-    mov sb, r1 \n\
-    add r1, r4, r1 \n\
-    ldr r2, [r5] \n\
-    add r1, r2, r1 \n\
-    movs r6, #0x80 \n\
-    lsl r6, r6, #5 \n\
-    add r4, r4, r6 \n\
-    add r2, r2, r4 \n\
-    mov r3, r8 \n\
-    str r3, [sp] \n\
-    movs r0, #3 \n\
-    movs r3, #0xc0 \n\
-    bl DmaTransfer \n\
-    ldr r1, [r5] \n\
-    add r1, r1, r6 \n\
-    ldr r2, lbl_0807d82c @ =0x0600f000 \n\
-    mov r5, r8 \n\
-    str r5, [sp] \n\
-    movs r0, #3 \n\
-    mov r3, sb \n\
-    bl DmaTransfer \n\
-    ldr r2, [r7] \n\
-    ldrh r1, [r2] \n\
-    movs r3, #0x80 \n\
-    lsl r3, r3, #3 \n\
-    add r0, r3, #0 \n\
-    movs r4, #0 \n\
-    movs r3, #0 \n\
-    orr r0, r1 \n\
-    movs r5, #0x80 \n\
-    lsl r5, r5, #6 \n\
-    add r1, r5, #0 \n\
-    orr r0, r1 \n\
-    strh r0, [r2] \n\
-    ldr r1, lbl_0807d830 @ =0x04000040 \n\
-    ldr r5, lbl_0807d834 @ =0x000046aa \n\
-    add r0, r5, #0 \n\
-    strh r0, [r1] \n\
-    add r1, #4 \n\
-    movs r0, #0x17 \n\
-    strh r0, [r1] \n\
-    add r1, #6 \n\
-    movs r0, #0x3f \n\
-    strh r0, [r1] \n\
-    sub r1, #2 \n\
-    movs r0, #0x1f \n\
-    strb r0, [r1] \n\
-    ldr r0, lbl_0807d838 @ =gWrittenToBLDALPHA_H \n\
-    strh r3, [r0] \n\
-    ldr r0, lbl_0807d83c @ =gWrittenToBLDALPHA_L \n\
-    mov r1, r8 \n\
-    strh r1, [r0] \n\
-    ldr r0, lbl_0807d840 @ =0x00003f42 \n\
-    strh r0, [r2, #2] \n\
-    add r2, #0x3a \n\
-    strb r4, [r2] \n\
-    ldr r2, [r7] \n\
-    ldr r0, lbl_0807d844 @ =sFileSelectMenuCursors_Empty \n\
-    ldr r1, [r0, #4] \n\
-    ldr r0, [r0] \n\
-    str r0, [r2, #0x2c] \n\
-    str r1, [r2, #0x30] \n\
-    add r0, r2, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807d7ea \n\
-    ldr r3, lbl_0807d848 @ =0x0000013f \n\
-    add r2, r2, r3 \n\
-    ldrb r0, [r2] \n\
-    movs r1, #0x20 \n\
-    orr r0, r1 \n\
-    strb r0, [r2] \n\
-lbl_0807d7ea: \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #1 \n\
-    beq lbl_0807d802 \n\
-    ldr r5, lbl_0807d84c @ =0x0000014f \n\
-    add r2, r1, r5 \n\
-    ldrb r0, [r2] \n\
-    movs r1, #0x20 \n\
-    orr r0, r1 \n\
-    strb r0, [r2] \n\
-lbl_0807d802: \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #2 \n\
-    bne lbl_0807d812 \n\
-    bl lbl_0807e3b6 \n\
-lbl_0807d812: \n\
-    ldr r0, lbl_0807d850 @ =0x0000015f \n\
-    add r2, r1, r0 \n\
-    ldrb r0, [r2] \n\
-    movs r1, #0x20 \n\
-    orr r0, r1 \n\
-    strb r0, [r2] \n\
-    bl lbl_0807e3b6 \n\
-    .align 2, 0 \n\
-lbl_0807d824: .4byte gMostRecentSaveFile \n\
-lbl_0807d828: .4byte sEwramPointer \n\
-lbl_0807d82c: .4byte 0x0600f000 \n\
-lbl_0807d830: .4byte 0x04000040 \n\
-lbl_0807d834: .4byte 0x000046aa \n\
-lbl_0807d838: .4byte gWrittenToBLDALPHA_H \n\
-lbl_0807d83c: .4byte gWrittenToBLDALPHA_L \n\
-lbl_0807d840: .4byte 0x00003f42 \n\
-lbl_0807d844: .4byte sFileSelectMenuCursors_Empty \n\
-lbl_0807d848: .4byte 0x0000013f \n\
-lbl_0807d84c: .4byte 0x0000014f \n\
-lbl_0807d850: .4byte 0x0000015f \n\
-lbl_0807d854: \n\
-    movs r5, #1 \n\
-    ldr r1, lbl_0807d86c @ =gWrittenToBLDALPHA_L \n\
-    ldrh r0, [r1] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807d872 \n\
-    movs r5, #0 \n\
-    sub r0, #2 \n\
-    cmp r0, #0 \n\
-    bge lbl_0807d870 \n\
-    strh r5, [r1] \n\
-    b lbl_0807d872 \n\
-    .align 2, 0 \n\
-lbl_0807d86c: .4byte gWrittenToBLDALPHA_L \n\
-lbl_0807d870: \n\
-    strh r0, [r1] \n\
-lbl_0807d872: \n\
-    ldr r1, lbl_0807d8e0 @ =gWrittenToBLDALPHA_H \n\
-    ldrh r0, [r1] \n\
-    cmp r0, #0x10 \n\
-    beq lbl_0807d886 \n\
-    movs r5, #0 \n\
-    add r0, #2 \n\
-    cmp r0, #0x10 \n\
-    ble lbl_0807d884 \n\
-    movs r0, #0x10 \n\
-lbl_0807d884: \n\
-    strh r0, [r1] \n\
-lbl_0807d886: \n\
-    cmp r5, #0 \n\
-    bne lbl_0807d88e \n\
-    bl lbl_0807e3e6 \n\
-lbl_0807d88e: \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807d8a6 \n\
-    add r0, r1, #0 \n\
-    add r0, #0xff \n\
-    ldrb r1, [r0] \n\
-    movs r2, #0x20 \n\
-    orr r1, r2 \n\
-    strb r1, [r0] \n\
-lbl_0807d8a6: \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #1 \n\
-    beq lbl_0807d8be \n\
-    ldr r3, lbl_0807d8e4 @ =0x0000010f \n\
-    add r2, r1, r3 \n\
-    ldrb r0, [r2] \n\
-    movs r1, #0x20 \n\
-    orr r0, r1 \n\
-    strb r0, [r2] \n\
-lbl_0807d8be: \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #2 \n\
-    bne lbl_0807d8ce \n\
-    bl lbl_0807e3b6 \n\
-lbl_0807d8ce: \n\
-    ldr r5, lbl_0807d8e8 @ =0x0000011f \n\
-    add r2, r1, r5 \n\
-    ldrb r0, [r2] \n\
-    movs r1, #0x20 \n\
-    orr r0, r1 \n\
-    strb r0, [r2] \n\
-    bl lbl_0807e3b6 \n\
-    .align 2, 0 \n\
-lbl_0807d8e0: .4byte gWrittenToBLDALPHA_H \n\
-lbl_0807d8e4: .4byte 0x0000010f \n\
-lbl_0807d8e8: .4byte 0x0000011f \n\
-lbl_0807d8ec: \n\
-    ldr r2, [r7] \n\
-    add r0, r2, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    lsl r0, r1, #1 \n\
-    add r0, r0, r1 \n\
-    lsl r0, r0, #5 \n\
-    movs r1, #0x80 \n\
-    lsl r1, r1, #4 \n\
-    add r5, r0, r1 \n\
-    ldr r1, lbl_0807d918 @ =gBg2VOFS_NonGameplay \n\
-    ldrh r0, [r1] \n\
-    cmp r5, r0 \n\
-    beq lbl_0807d91c \n\
-    add r0, #0xc \n\
-    cmp r0, r5 \n\
-    ble lbl_0807d912 \n\
-    bl lbl_0807e2fe \n\
-lbl_0807d912: \n\
-    bl lbl_0807e30c \n\
-    .align 2, 0 \n\
-lbl_0807d918: .4byte gBg2VOFS_NonGameplay \n\
-lbl_0807d91c: \n\
-    add r1, r2, #0 \n\
-    bl lbl_0807e3b8 \n\
-lbl_0807d922: \n\
-    ldr r0, lbl_0807d96c @ =sEwramPointer \n\
-    ldr r1, [r0] \n\
-    movs r2, #0x80 \n\
-    lsl r2, r2, #4 \n\
-    add r1, r1, r2 \n\
-    ldr r0, [r7] \n\
-    add r0, #0x3f \n\
-    ldrb r0, [r0] \n\
-    lsl r2, r0, #1 \n\
-    add r2, r2, r0 \n\
-    lsl r2, r2, #6 \n\
-    ldr r3, lbl_0807d970 @ =0x0600f000 \n\
-    add r2, r2, r3 \n\
-    movs r0, #0x10 \n\
-    str r0, [sp] \n\
-    movs r0, #3 \n\
-    movs r3, #0xc0 \n\
-    bl DmaTransfer \n\
-    ldr r2, [r7] \n\
-    ldrh r1, [r2] \n\
-    ldr r0, lbl_0807d974 @ =0x0000dfff \n\
-    and r0, r1 \n\
-    strh r0, [r2] \n\
-    movs r0, #0 \n\
-    bl FileSelectUpdateTilemap \n\
-    movs r0, #0 \n\
-    movs r1, #0 \n\
-    bl unk_790cc \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #4 \n\
-    strb r1, [r0] \n\
-    bl lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807d96c: .4byte sEwramPointer \n\
-lbl_0807d970: .4byte 0x0600f000 \n\
-lbl_0807d974: .4byte 0x0000dfff \n\
-lbl_0807d978: \n\
-    movs r0, #1 \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807d986 \n\
-    bl lbl_0807e3e6 \n\
-lbl_0807d986: \n\
-    ldr r4, lbl_0807d9a0 @ =sNonGameplayRamPointer \n\
-    ldr r0, [r4] \n\
-    add r0, #0x2e \n\
-    ldrb r1, [r0] \n\
-    movs r0, #0 \n\
-    bl unk_7e3fc \n\
-    ldr r0, [r4] \n\
-    add r0, #0x40 \n\
-    movs r1, #6 \n\
-    strb r1, [r0] \n\
-    bl lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807d9a0: .4byte sNonGameplayRamPointer \n\
-lbl_0807d9a4: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x6c \n\
-    movs r1, #0 \n\
-    strb r1, [r0] \n\
-    ldr r0, [r7] \n\
-    add r0, #0x6d \n\
-    strb r1, [r0] \n\
-    ldr r0, [r7] \n\
-    add r3, r0, #0 \n\
-    add r3, #0x6e \n\
-    movs r2, #0 \n\
-    strh r1, [r3] \n\
-    add r0, #0x70 \n\
-    strb r2, [r0] \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #7 \n\
-    strb r1, [r0] \n\
-lbl_0807d9c8: \n\
-    movs r5, #0xff \n\
-    ldr r0, lbl_0807da18 @ =gChangedInput \n\
-    ldrh r1, [r0] \n\
-    movs r2, #1 \n\
-    add r0, r2, #0 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807da2e \n\
-    movs r5, #0x80 \n\
-    movs r0, #1 \n\
-    bl FileSelectPlayMenuSound \n\
-    ldr r2, lbl_0807da1c @ =gSaveFilesInfo \n\
-    ldr r4, lbl_0807da20 @ =sNonGameplayRamPointer \n\
-    ldr r3, [r4] \n\
-    add r0, r3, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    lsl r0, r1, #1 \n\
-    add r0, r0, r1 \n\
-    lsl r0, r0, #3 \n\
-    add r1, r0, r2 \n\
-    movs r2, #0x11 \n\
-    ldrsb r2, [r1, r2] \n\
-    cmp r2, #0 \n\
-    bne lbl_0807da24 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    bne lbl_0807da0a \n\
-    movs r0, #0x12 \n\
-    ldrsb r0, [r1, r0] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807da24 \n\
-lbl_0807da0a: \n\
-    add r0, r3, #0 \n\
-    add r0, #0x3a \n\
-    strb r2, [r0] \n\
-    ldr r0, [r4] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x22 \n\
-    b lbl_0807da84 \n\
-    .align 2, 0 \n\
-lbl_0807da18: .4byte gChangedInput \n\
-lbl_0807da1c: .4byte gSaveFilesInfo \n\
-lbl_0807da20: .4byte sNonGameplayRamPointer \n\
-lbl_0807da24: \n\
-    add r1, r3, #0 \n\
-    add r1, #0x40 \n\
-    movs r0, #8 \n\
-    strb r0, [r1] \n\
-    b lbl_0807da86 \n\
-lbl_0807da2e: \n\
-    movs r0, #2 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807da40 \n\
-    movs r5, #0x81 \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x27 \n\
-    b lbl_0807da84 \n\
-lbl_0807da40: \n\
-    ldr r0, lbl_0807daa0 @ =gFileScreenOptionsUnlocked \n\
-    ldr r0, [r0, #8] \n\
-    and r0, r2 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807da86 \n\
-    ldr r2, lbl_0807daa4 @ =gSaveFilesInfo \n\
-    ldr r0, [r7] \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    lsl r0, r1, #1 \n\
-    add r0, r0, r1 \n\
-    lsl r0, r0, #3 \n\
-    add r0, r0, r2 \n\
-    ldrb r0, [r0, #0x11] \n\
-    lsl r0, r0, #0x18 \n\
-    asr r0, r0, #0x18 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807da86 \n\
-    bl FileSelectCheckInputtingTimeAttackCode \n\
-    cmp r0, #0 \n\
-    beq lbl_0807da86 \n\
-    movs r5, #0x80 \n\
-    ldr r0, [r7] \n\
-    add r0, #0x2f \n\
-    movs r1, #2 \n\
-    strb r1, [r0] \n\
-    ldr r0, [r7] \n\
-    add r0, #0x70 \n\
-    movs r1, #1 \n\
-    strb r1, [r0] \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #8 \n\
-lbl_0807da84: \n\
-    strb r1, [r0] \n\
-lbl_0807da86: \n\
-    add r0, r5, #1 \n\
-    cmp r0, #0 \n\
-    bne lbl_0807da90 \n\
-    bl lbl_0807e3e6 \n\
-lbl_0807da90: \n\
-    lsl r1, r5, #0x18 \n\
-    lsr r1, r1, #0x18 \n\
-    movs r0, #0 \n\
-    bl unk_7e3fc \n\
-    bl lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807daa0: .4byte gFileScreenOptionsUnlocked \n\
-lbl_0807daa4: .4byte gSaveFilesInfo \n\
-lbl_0807daa8: \n\
-    ldr r2, lbl_0807dae0 @ =gSaveFilesInfo \n\
-    ldr r3, [r7] \n\
-    add r0, r3, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    lsl r0, r1, #1 \n\
-    add r0, r0, r1 \n\
-    lsl r0, r0, #3 \n\
-    add r1, r0, r2 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dac8 \n\
-    movs r0, #0x12 \n\
-    ldrsb r0, [r1, r0] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807daf6 \n\
-lbl_0807dac8: \n\
-    ldrb r0, [r1, #0x15] \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dad8 \n\
-    add r0, r3, #0 \n\
-    add r0, #0x70 \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dae4 \n\
-lbl_0807dad8: \n\
-    add r1, r3, #0 \n\
-    add r1, #0x39 \n\
-    movs r0, #0x10 \n\
-    b lbl_0807daea \n\
-    .align 2, 0 \n\
-lbl_0807dae0: .4byte gSaveFilesInfo \n\
-lbl_0807dae4: \n\
-    add r1, r3, #0 \n\
-    add r1, #0x39 \n\
-    movs r0, #0xf \n\
-lbl_0807daea: \n\
-    strb r0, [r1] \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #9 \n\
-    strb r1, [r0] \n\
-    b lbl_0807dafe \n\
-lbl_0807daf6: \n\
-    add r1, r3, #0 \n\
-    add r1, #0x40 \n\
-    movs r0, #0x15 \n\
-    strb r0, [r1] \n\
-lbl_0807dafe: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x42 \n\
-    movs r1, #0 \n\
-    strh r1, [r0] \n\
-    bl lbl_0807e3e6 \n\
-lbl_0807db0a: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x39 \n\
-    ldrb r1, [r0] \n\
-    movs r0, #0 \n\
-    bl unk_790cc \n\
-    movs r0, #0 \n\
-    movs r1, #0x14 \n\
-    bl unk_790cc \n\
-    movs r0, #0x1d \n\
-    bl FileSelectUpdateTilemap \n\
-    bl lbl_0807e3b6 \n\
-lbl_0807db28: \n\
-    movs r0, #0x1e \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807db36 \n\
-    bl lbl_0807e3e6 \n\
-lbl_0807db36: \n\
-    ldr r4, lbl_0807db4c @ =sNonGameplayRamPointer \n\
-    ldr r0, [r4] \n\
-    add r0, #0x2f \n\
-    ldrb r1, [r0] \n\
-    movs r0, #5 \n\
-    bl unk_7e3fc \n\
-    ldr r1, [r4] \n\
-    bl lbl_0807e3b8 \n\
-    .align 2, 0 \n\
-lbl_0807db4c: .4byte sNonGameplayRamPointer \n\
-lbl_0807db50: \n\
-    movs r5, #0xff \n\
-    ldr r0, lbl_0807db7c @ =gChangedInput \n\
-    ldrh r1, [r0] \n\
-    cmp r1, #0 \n\
-    beq lbl_0807dc02 \n\
-    movs r4, #1 \n\
-    and r4, r1 \n\
-    cmp r4, #0 \n\
-    beq lbl_0807db80 \n\
-    movs r5, #0x80 \n\
-    ldr r0, [r7] \n\
-    add r0, #0x42 \n\
-    movs r1, #0 \n\
-    strh r1, [r0] \n\
-    movs r0, #1 \n\
-    bl FileSelectPlayMenuSound \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0xd \n\
-    strb r1, [r0] \n\
-    b lbl_0807dc02 \n\
-    .align 2, 0 \n\
-lbl_0807db7c: .4byte gChangedInput \n\
-lbl_0807db80: \n\
-    movs r0, #2 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dba8 \n\
-    movs r0, #0x1f \n\
-    bl FileSelectUpdateTilemap \n\
-    movs r5, #0x81 \n\
-    ldr r0, lbl_0807dba4 @ =sNonGameplayRamPointer \n\
-    ldr r0, [r0] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x42 \n\
-    strh r4, [r1] \n\
-    add r0, #0x40 \n\
-    movs r1, #0xc \n\
-    strb r1, [r0] \n\
-    b lbl_0807dc02 \n\
-    .align 2, 0 \n\
-lbl_0807dba4: .4byte sNonGameplayRamPointer \n\
-lbl_0807dba8: \n\
-    movs r0, #0x40 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dbc0 \n\
-    ldr r0, [r7] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x2f \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dc02 \n\
-    sub r0, #1 \n\
-    b lbl_0807dbde \n\
-lbl_0807dbc0: \n\
-    movs r0, #0x80 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dc02 \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x39 \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #0x10 \n\
-    bne lbl_0807dbec \n\
-    add r1, #0x2f \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #1 \n\
-    bhi lbl_0807dc02 \n\
-    add r0, #1 \n\
-lbl_0807dbde: \n\
-    strb r0, [r1] \n\
-    lsl r0, r0, #0x18 \n\
-    lsr r5, r0, #0x18 \n\
-    movs r0, #0 \n\
-    bl FileSelectPlayMenuSound \n\
-    b lbl_0807dc02 \n\
-lbl_0807dbec: \n\
-    add r1, #0x2f \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dc02 \n\
-    add r0, #1 \n\
-    strb r0, [r1] \n\
-    lsl r0, r0, #0x18 \n\
-    lsr r5, r0, #0x18 \n\
-    movs r0, #0 \n\
-    bl FileSelectPlayMenuSound \n\
-lbl_0807dc02: \n\
-    add r0, r5, #1 \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dc0c \n\
-    bl lbl_0807e3e6 \n\
-lbl_0807dc0c: \n\
-    lsl r1, r5, #0x18 \n\
-    lsr r1, r1, #0x18 \n\
-    movs r0, #5 \n\
-    bl unk_7e3fc \n\
-    bl lbl_0807e3e6 \n\
-lbl_0807dc1a: \n\
-    movs r0, #0x20 \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dc28 \n\
-    bl lbl_0807e3e6 \n\
-lbl_0807dc28: \n\
-    ldr r2, lbl_0807dc40 @ =sNonGameplayRamPointer \n\
-    ldr r0, [r2] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x2f \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #2 \n\
-    bne lbl_0807dc3a \n\
-    movs r0, #0 \n\
-    strb r0, [r1] \n\
-lbl_0807dc3a: \n\
-    ldr r0, [r2] \n\
-    b lbl_0807e20a \n\
-    .align 2, 0 \n\
-lbl_0807dc40: .4byte sNonGameplayRamPointer \n\
-lbl_0807dc44: \n\
-    ldr r1, [r7] \n\
-    add r2, r1, #0 \n\
-    add r2, #0x42 \n\
-    movs r0, #0 \n\
-    strh r0, [r2] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x2f \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dc5e \n\
-    add r1, #0x3a \n\
-    movs r0, #1 \n\
-    b lbl_0807df94 \n\
-lbl_0807dc5e: \n\
-    add r1, #0x40 \n\
-    movs r0, #0xe \n\
-    strb r0, [r1] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dc66: \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x42 \n\
-    ldrh r0, [r0] \n\
-    cmp r0, #0xa \n\
-    bhi lbl_0807dc74 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dc74: \n\
-    add r1, #0x40 \n\
-    movs r0, #0xf \n\
-    strb r0, [r1] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dc7c: \n\
-    movs r0, #0x22 \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dc88 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dc88: \n\
-    ldr r4, lbl_0807dca4 @ =sNonGameplayRamPointer \n\
-    ldr r0, [r4] \n\
-    ldr r1, lbl_0807dca8 @ =sFileSelectMenuCursors_Empty \n\
-    ldrb r1, [r1, #4] \n\
-    add r0, #0x30 \n\
-    strb r1, [r0] \n\
-    ldr r0, [r4] \n\
-    add r0, #0x30 \n\
-    ldrb r1, [r0] \n\
-    movs r0, #6 \n\
-    bl unk_7e3fc \n\
-    ldr r1, [r4] \n\
-    b lbl_0807e3b8 \n\
-    .align 2, 0 \n\
-lbl_0807dca4: .4byte sNonGameplayRamPointer \n\
-lbl_0807dca8: .4byte sFileSelectMenuCursors_Empty \n\
-lbl_0807dcac: \n\
-    movs r5, #0xff \n\
-    ldr r0, lbl_0807dcdc @ =gChangedInput \n\
-    ldrh r1, [r0] \n\
-    cmp r1, #0 \n\
-    beq lbl_0807dd64 \n\
-    movs r2, #1 \n\
-    and r2, r1 \n\
-    cmp r2, #0 \n\
-    beq lbl_0807dd00 \n\
-    ldr r0, lbl_0807dce0 @ =sNonGameplayRamPointer \n\
-    ldr r1, [r0] \n\
-    add r2, r1, #0 \n\
-    add r2, #0x42 \n\
-    movs r0, #0 \n\
-    strh r0, [r2] \n\
-    movs r5, #0x80 \n\
-    add r1, #0x30 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dce8 \n\
-    ldr r0, lbl_0807dce4 @ =0x00000209 \n\
-    bl SoundPlay \n\
-    b lbl_0807dcee \n\
-    .align 2, 0 \n\
-lbl_0807dcdc: .4byte gChangedInput \n\
-lbl_0807dce0: .4byte sNonGameplayRamPointer \n\
-lbl_0807dce4: .4byte 0x00000209 \n\
-lbl_0807dce8: \n\
-    movs r0, #1 \n\
-    bl FileSelectPlayMenuSound \n\
-lbl_0807dcee: \n\
-    ldr r0, lbl_0807dcfc @ =sNonGameplayRamPointer \n\
-    ldr r0, [r0] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x12 \n\
-    strb r1, [r0] \n\
-    b lbl_0807dd64 \n\
-    .align 2, 0 \n\
-lbl_0807dcfc: .4byte sNonGameplayRamPointer \n\
-lbl_0807dd00: \n\
-    movs r0, #2 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dd24 \n\
-    ldr r0, [r7] \n\
-    add r0, #0x42 \n\
-    strh r2, [r0] \n\
-    movs r5, #0x81 \n\
-    ldr r0, lbl_0807dd20 @ =0x00000209 \n\
-    bl SoundPlay \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x13 \n\
-    strb r1, [r0] \n\
-    b lbl_0807dd64 \n\
-    .align 2, 0 \n\
-lbl_0807dd20: .4byte 0x00000209 \n\
-lbl_0807dd24: \n\
-    movs r0, #0x20 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dd44 \n\
-    ldr r0, [r7] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x30 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dd64 \n\
-    movs r5, #0 \n\
-    strb r5, [r1] \n\
-    movs r0, #0 \n\
-    bl FileSelectPlayMenuSound \n\
-    b lbl_0807dd64 \n\
-lbl_0807dd44: \n\
-    movs r0, #0x10 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dd64 \n\
-    ldr r0, [r7] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x30 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dd64 \n\
-    movs r5, #1 \n\
-    movs r0, #1 \n\
-    strb r0, [r1] \n\
-    movs r0, #0 \n\
-    bl FileSelectPlayMenuSound \n\
-lbl_0807dd64: \n\
-    add r0, r5, #1 \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dd6c \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dd6c: \n\
-    lsl r1, r5, #0x18 \n\
-    lsr r1, r1, #0x18 \n\
-    movs r0, #6 \n\
-    bl unk_7e3fc \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dd78: \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x42 \n\
-    ldrh r0, [r0] \n\
-    cmp r0, #0xa \n\
-    bhi lbl_0807dd86 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dd86: \n\
-    add r0, r1, #0 \n\
-    add r0, #0x30 \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dd98 \n\
-    add r1, #0x40 \n\
-    movs r0, #0x13 \n\
-    strb r0, [r1] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dd98: \n\
-    add r0, r1, #0 \n\
-    add r0, #0x2f \n\
-    ldrb r0, [r0] \n\
-    movs r2, #2 \n\
-    cmp r0, r2 \n\
-    beq lbl_0807ddbc \n\
-    movs r0, #6 \n\
-    movs r1, #0x81 \n\
-    bl unk_7e3fc \n\
-    movs r0, #0x23 \n\
-    bl FileSelectUpdateTilemap \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x14 \n\
-    strb r1, [r0] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807ddbc: \n\
-    add r0, r1, #0 \n\
-    add r0, #0x3a \n\
-    strb r2, [r0] \n\
-    b lbl_0807df96 \n\
-lbl_0807ddc4: \n\
-    movs r0, #0x25 \n\
-    bl FileSelectUpdateTilemap \n\
-    ldr r4, lbl_0807dddc @ =sNonGameplayRamPointer \n\
-    ldr r0, [r4] \n\
-    add r0, #0x2f \n\
-    ldrb r1, [r0] \n\
-    movs r0, #5 \n\
-    bl unk_7e3fc \n\
-    ldr r0, [r4] \n\
-    b lbl_0807e220 \n\
-    .align 2, 0 \n\
-lbl_0807dddc: .4byte sNonGameplayRamPointer \n\
-lbl_0807dde0: \n\
-    movs r0, #0x24 \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807ddec \n\
-    b lbl_0807e3e6 \n\
-lbl_0807ddec: \n\
-    ldr r0, lbl_0807ddf8 @ =sNonGameplayRamPointer \n\
-    ldr r0, [r0] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x15 \n\
-    strb r1, [r0] \n\
-    b lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807ddf8: .4byte sNonGameplayRamPointer \n\
-lbl_0807ddfc: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x1c \n\
-    strb r1, [r0] \n\
-    ldr r3, [r7] \n\
-    add r0, r3, #0 \n\
-    add r0, #0x2f \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #2 \n\
-    bne lbl_0807de1a \n\
-    add r1, r3, #0 \n\
-    add r1, #0x32 \n\
-    movs r0, #1 \n\
-    strb r0, [r1] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807de1a: \n\
-    ldr r2, lbl_0807de3c @ =gSaveFilesInfo \n\
-    add r0, r3, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    lsl r0, r1, #1 \n\
-    add r0, r0, r1 \n\
-    lsl r0, r0, #3 \n\
-    add r0, r0, r2 \n\
-    ldrb r1, [r0, #0x11] \n\
-    movs r0, #0x36 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807de40 \n\
-    add r1, r3, #0 \n\
-    add r1, #0x38 \n\
-    movs r0, #0x13 \n\
-    b lbl_0807de46 \n\
-    .align 2, 0 \n\
-lbl_0807de3c: .4byte gSaveFilesInfo \n\
-lbl_0807de40: \n\
-    add r1, r3, #0 \n\
-    add r1, #0x38 \n\
-    movs r0, #0x12 \n\
-lbl_0807de46: \n\
-    strb r0, [r1] \n\
-    ldr r0, [r7] \n\
-    add r0, #0x38 \n\
-    ldrb r1, [r0] \n\
-    movs r0, #0 \n\
-    bl unk_790cc \n\
-    b lbl_0807e3e6 \n\
-lbl_0807de56: \n\
-    movs r0, #2 \n\
-    bl FileSelectUpdateTilemap \n\
-    ldr r0, lbl_0807de64 @ =sNonGameplayRamPointer \n\
-    ldr r1, [r0] \n\
-    b lbl_0807e3b8 \n\
-    .align 2, 0 \n\
-lbl_0807de64: .4byte sNonGameplayRamPointer \n\
-lbl_0807de68: \n\
-    movs r0, #3 \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807de74 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807de74: \n\
-    ldr r4, lbl_0807de88 @ =sNonGameplayRamPointer \n\
-    ldr r0, [r4] \n\
-    add r0, #0x31 \n\
-    ldrb r1, [r0] \n\
-    movs r0, #1 \n\
-    bl unk_7e3fc \n\
-    ldr r1, [r4] \n\
-    b lbl_0807e3b8 \n\
-    .align 2, 0 \n\
-lbl_0807de88: .4byte sNonGameplayRamPointer \n\
-lbl_0807de8c: \n\
-    movs r5, #0xff \n\
-    ldr r0, lbl_0807deb8 @ =gChangedInput \n\
-    ldrh r1, [r0] \n\
-    cmp r1, #0 \n\
-    beq lbl_0807df24 \n\
-    movs r4, #1 \n\
-    and r4, r1 \n\
-    cmp r4, #0 \n\
-    beq lbl_0807debc \n\
-    movs r5, #0x80 \n\
-    ldr r0, [r7] \n\
-    add r0, #0x42 \n\
-    movs r1, #0 \n\
-    strh r1, [r0] \n\
-    movs r0, #1 \n\
-    bl FileSelectPlayMenuSound \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x1a \n\
-    strb r1, [r0] \n\
-    b lbl_0807df24 \n\
-    .align 2, 0 \n\
-lbl_0807deb8: .4byte gChangedInput \n\
-lbl_0807debc: \n\
-    movs r0, #2 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807dee4 \n\
-    movs r0, #4 \n\
-    bl FileSelectUpdateTilemap \n\
-    movs r5, #0x81 \n\
-    ldr r0, lbl_0807dee0 @ =sNonGameplayRamPointer \n\
-    ldr r0, [r0] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x42 \n\
-    strh r4, [r1] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x19 \n\
-    strb r1, [r0] \n\
-    b lbl_0807df24 \n\
-    .align 2, 0 \n\
-lbl_0807dee0: .4byte sNonGameplayRamPointer \n\
-lbl_0807dee4: \n\
-    movs r0, #0x40 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807df04 \n\
-    ldr r0, [r7] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x31 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807df24 \n\
-    movs r5, #0 \n\
-    strb r5, [r1] \n\
-    movs r0, #0 \n\
-    bl FileSelectPlayMenuSound \n\
-    b lbl_0807df24 \n\
-lbl_0807df04: \n\
-    movs r0, #0x80 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807df24 \n\
-    ldr r0, [r7] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x31 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    bne lbl_0807df24 \n\
-    movs r5, #1 \n\
-    movs r0, #1 \n\
-    strb r0, [r1] \n\
-    movs r0, #0 \n\
-    bl FileSelectPlayMenuSound \n\
-lbl_0807df24: \n\
-    add r0, r5, #1 \n\
-    cmp r0, #0 \n\
-    bne lbl_0807df2c \n\
-    b lbl_0807e3e6 \n\
-lbl_0807df2c: \n\
-    lsl r1, r5, #0x18 \n\
-    lsr r1, r1, #0x18 \n\
-    movs r0, #1 \n\
-    bl unk_7e3fc \n\
-    b lbl_0807e3e6 \n\
-lbl_0807df38: \n\
-    movs r0, #5 \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807df44 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807df44: \n\
-    ldr r2, lbl_0807df70 @ =gSaveFilesInfo \n\
-    ldr r0, lbl_0807df74 @ =sNonGameplayRamPointer \n\
-    ldr r3, [r0] \n\
-    add r0, r3, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    lsl r0, r1, #1 \n\
-    add r0, r0, r1 \n\
-    lsl r0, r0, #3 \n\
-    add r0, r0, r2 \n\
-    ldrb r0, [r0, #0x11] \n\
-    lsl r0, r0, #0x18 \n\
-    asr r0, r0, #0x18 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807df64 \n\
-    b lbl_0807e100 \n\
-lbl_0807df64: \n\
-    add r1, r3, #0 \n\
-    add r1, #0x40 \n\
-    movs r0, #5 \n\
-    strb r0, [r1] \n\
-    b lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807df70: .4byte gSaveFilesInfo \n\
-lbl_0807df74: .4byte sNonGameplayRamPointer \n\
-lbl_0807df78: \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x42 \n\
-    ldrh r0, [r0] \n\
-    cmp r0, #0xa \n\
-    bhi lbl_0807df86 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807df86: \n\
-    add r0, r1, #0 \n\
-    add r0, #0x2f \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #2 \n\
-    bne lbl_0807dfa0 \n\
-    add r1, #0x3a \n\
-    movs r0, #3 \n\
-lbl_0807df94: \n\
-    strb r0, [r1] \n\
-lbl_0807df96: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x22 \n\
-    strb r1, [r0] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dfa0: \n\
-    movs r0, #4 \n\
-    bl FileSelectUpdateTilemap \n\
-    movs r0, #1 \n\
-    movs r1, #0x81 \n\
-    bl unk_7e3fc \n\
-    b lbl_0807e3b6 \n\
-lbl_0807dfb0: \n\
-    movs r0, #5 \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dfbc \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dfbc: \n\
-    ldr r2, lbl_0807dfd8 @ =sNonGameplayRamPointer \n\
-    ldr r0, [r2] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x1c \n\
-    strb r1, [r0] \n\
-    ldr r2, [r2] \n\
-    add r0, r2, #0 \n\
-    add r0, #0x31 \n\
-    ldrb r0, [r0] \n\
-    movs r1, #1 \n\
-    eor r0, r1 \n\
-    add r2, #0x32 \n\
-    strb r0, [r2] \n\
-    b lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807dfd8: .4byte sNonGameplayRamPointer \n\
-lbl_0807dfdc: \n\
-    movs r0, #6 \n\
-    bl FileSelectUpdateTilemap \n\
-    ldr r0, lbl_0807dfe8 @ =sNonGameplayRamPointer \n\
-    ldr r1, [r0] \n\
-    b lbl_0807e3b8 \n\
-    .align 2, 0 \n\
-lbl_0807dfe8: .4byte sNonGameplayRamPointer \n\
-lbl_0807dfec: \n\
-    movs r0, #7 \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807dff8 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807dff8: \n\
-    ldr r4, lbl_0807e00c @ =sNonGameplayRamPointer \n\
-    ldr r0, [r4] \n\
-    add r0, #0x32 \n\
-    ldrb r1, [r0] \n\
-    movs r0, #2 \n\
-    bl unk_7e3fc \n\
-    ldr r1, [r4] \n\
-    b lbl_0807e3b8 \n\
-    .align 2, 0 \n\
-lbl_0807e00c: .4byte sNonGameplayRamPointer \n\
-lbl_0807e010: \n\
-    movs r5, #0xff \n\
-    ldr r0, lbl_0807e040 @ =gChangedInput \n\
-    ldrh r1, [r0] \n\
-    cmp r1, #0 \n\
-    beq lbl_0807e0c6 \n\
-    movs r4, #1 \n\
-    and r4, r1 \n\
-    cmp r4, #0 \n\
-    beq lbl_0807e044 \n\
-    movs r5, #0x80 \n\
-    ldr r1, [r7] \n\
-    add r2, r1, #0 \n\
-    add r2, #0x42 \n\
-    movs r0, #0 \n\
-    strh r0, [r2] \n\
-    add r1, #0x3a \n\
-    movs r0, #4 \n\
-    strb r0, [r1] \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x22 \n\
-    strb r1, [r0] \n\
-    b lbl_0807e0c6 \n\
-    .align 2, 0 \n\
-lbl_0807e040: .4byte gChangedInput \n\
-lbl_0807e044: \n\
-    movs r0, #2 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807e06c \n\
-    movs r0, #8 \n\
-    bl FileSelectUpdateTilemap \n\
-    movs r5, #0x81 \n\
-    ldr r0, lbl_0807e068 @ =sNonGameplayRamPointer \n\
-    ldr r0, [r0] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x42 \n\
-    strh r4, [r1] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x1f \n\
-    strb r1, [r0] \n\
-    b lbl_0807e0c6 \n\
-    .align 2, 0 \n\
-lbl_0807e068: .4byte sNonGameplayRamPointer \n\
-lbl_0807e06c: \n\
-    movs r0, #0x40 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807e084 \n\
-    ldr r0, [r7] \n\
-    add r1, r0, #0 \n\
-    add r1, #0x32 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807e0c6 \n\
-    sub r0, #1 \n\
-    b lbl_0807e0a2 \n\
-lbl_0807e084: \n\
-    movs r0, #0x80 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807e0c6 \n\
-    ldr r1, [r7] \n\
-    add r0, r1, #0 \n\
-    add r0, #0x38 \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #0x13 \n\
-    bne lbl_0807e0b0 \n\
-    add r1, #0x32 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #1 \n\
-    bhi lbl_0807e0c6 \n\
-    add r0, #1 \n\
-lbl_0807e0a2: \n\
-    strb r0, [r1] \n\
-    lsl r0, r0, #0x18 \n\
-    lsr r5, r0, #0x18 \n\
-    movs r0, #0 \n\
-    bl FileSelectPlayMenuSound \n\
-    b lbl_0807e0c6 \n\
-lbl_0807e0b0: \n\
-    add r1, #0x32 \n\
-    ldrb r0, [r1] \n\
-    cmp r0, #0 \n\
-    bne lbl_0807e0c6 \n\
-    add r0, #1 \n\
-    strb r0, [r1] \n\
-    lsl r0, r0, #0x18 \n\
-    lsr r5, r0, #0x18 \n\
-    movs r0, #0 \n\
-    bl FileSelectPlayMenuSound \n\
-lbl_0807e0c6: \n\
-    add r0, r5, #1 \n\
-    cmp r0, #0 \n\
-    bne lbl_0807e0ce \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e0ce: \n\
-    lsl r1, r5, #0x18 \n\
-    lsr r1, r1, #0x18 \n\
-    movs r0, #2 \n\
-    bl unk_7e3fc \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e0da: \n\
-    movs r0, #9 \n\
-    bl FileSelectUpdateTilemap \n\
-    cmp r0, #0 \n\
-    bne lbl_0807e0e6 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e0e6: \n\
-    ldr r2, lbl_0807e10c @ =gSaveFilesInfo \n\
-    ldr r0, lbl_0807e110 @ =sNonGameplayRamPointer \n\
-    ldr r3, [r0] \n\
-    add r0, r3, #0 \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    lsl r0, r1, #1 \n\
-    add r0, r0, r1 \n\
-    lsl r0, r0, #3 \n\
-    add r0, r0, r2 \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807e114 \n\
-lbl_0807e100: \n\
-    add r1, r3, #0 \n\
-    add r1, #0x40 \n\
-    movs r0, #8 \n\
-    strb r0, [r1] \n\
-    b lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807e10c: .4byte gSaveFilesInfo \n\
-lbl_0807e110: .4byte sNonGameplayRamPointer \n\
-lbl_0807e114: \n\
-    add r1, r3, #0 \n\
-    add r1, #0x40 \n\
-    movs r0, #6 \n\
-    strb r0, [r1] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e11e: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    movs r0, #7 \n\
-    bl FileSelectUpdateCursor \n\
-    movs r0, #4 \n\
-    bl FileSelectPlayMenuSound \n\
-    b lbl_0807e3b6 \n\
-lbl_0807e132: \n\
-    ldr r0, lbl_0807e160 @ =gChangedInput \n\
-    ldrh r1, [r0] \n\
-    movs r0, #2 \n\
-    and r0, r1 \n\
-    lsl r0, r0, #0x10 \n\
-    lsr r3, r0, #0x10 \n\
-    cmp r3, #0 \n\
-    bne lbl_0807e170 \n\
-    ldr r2, [r7] \n\
-    add r0, r2, #0 \n\
-    add r0, #0xef \n\
-    ldrb r1, [r0] \n\
-    movs r0, #0x10 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    bne lbl_0807e154 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e154: \n\
-    add r0, r2, #0 \n\
-    add r0, #0x42 \n\
-    strh r3, [r0] \n\
-    add r1, r2, #0 \n\
-    b lbl_0807e3b8 \n\
-    .align 2, 0 \n\
-lbl_0807e160: .4byte gChangedInput \n\
-lbl_0807e164: \n\
-    ldr r0, lbl_0807e17c @ =gChangedInput \n\
-    ldrh r1, [r0] \n\
-    movs r0, #2 \n\
-    and r0, r1 \n\
-    cmp r0, #0 \n\
-    beq lbl_0807e180 \n\
-lbl_0807e170: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x25 \n\
-    strb r1, [r0] \n\
-    b lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807e17c: .4byte gChangedInput \n\
-lbl_0807e180: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x42 \n\
-    ldrh r0, [r0] \n\
-    cmp r0, #0x10 \n\
-    bhi lbl_0807e18c \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e18c: \n\
-    movs r5, #2 \n\
-    b lbl_0807e3e4 \n\
-lbl_0807e190: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x3f \n\
-    ldrb r1, [r0] \n\
-    movs r0, #8 \n\
-    bl FileSelectUpdateCursor \n\
-    movs r0, #7 \n\
-    bl FileSelectPlayMenuSound \n\
-    b lbl_0807e3b6 \n\
-lbl_0807e1a4: \n\
-    ldr r5, [r7] \n\
-    add r0, r5, #0 \n\
-    add r0, #0xee \n\
-    ldrb r4, [r0] \n\
-    ldr r2, lbl_0807e1e8 @ =sFileSelectCursorOamData \n\
-    ldr r3, lbl_0807e1ec @ =gSaveFilesInfo \n\
-    sub r0, #0xaf \n\
-    ldrb r1, [r0] \n\
-    lsl r0, r1, #1 \n\
-    add r0, r0, r1 \n\
-    lsl r0, r0, #3 \n\
-    add r0, r0, r3 \n\
-    lsl r1, r1, #3 \n\
-    ldrb r0, [r0, #0xc] \n\
-    add r1, r1, r0 \n\
-    add r2, #5 \n\
-    add r1, r1, r2 \n\
-    ldrb r0, [r1] \n\
-    add r0, #3 \n\
-    cmp r4, r0 \n\
-    beq lbl_0807e1d0 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e1d0: \n\
-    add r0, r5, #0 \n\
-    add r0, #0x3a \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #4 \n\
-    bls lbl_0807e1dc \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e1dc: \n\
-    lsl r0, r0, #2 \n\
-    ldr r1, lbl_0807e1f0 @ =lbl_0807e1f4 \n\
-    add r0, r0, r1 \n\
-    ldr r0, [r0] \n\
-    mov pc, r0 \n\
-    .align 2, 0 \n\
-lbl_0807e1e8: .4byte sFileSelectCursorOamData \n\
-lbl_0807e1ec: .4byte gSaveFilesInfo \n\
-lbl_0807e1f0: .4byte lbl_0807e1f4 \n\
-lbl_0807e1f4: @ jump table \n\
-    .4byte lbl_0807e208 @ case 0 \n\
-    .4byte lbl_0807e212 @ case 1 \n\
-    .4byte lbl_0807e228 @ case 2 \n\
-    .4byte lbl_0807e23e @ case 3 \n\
-    .4byte lbl_0807e254 @ case 4 \n\
-lbl_0807e208: \n\
-    ldr r0, [r7] \n\
-lbl_0807e20a: \n\
-    add r0, #0x40 \n\
-    movs r1, #5 \n\
-    strb r1, [r0] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e212: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x2f \n\
-    ldrb r1, [r0] \n\
-    movs r0, #5 \n\
-    bl unk_7e3fc \n\
-    ldr r0, [r7] \n\
-lbl_0807e220: \n\
-    add r0, #0x40 \n\
-    movs r1, #0xb \n\
-    strb r1, [r0] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e228: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x30 \n\
-    ldrb r1, [r0] \n\
-    movs r0, #6 \n\
-    bl unk_7e3fc \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x11 \n\
-    strb r1, [r0] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e23e: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x31 \n\
-    ldrb r1, [r0] \n\
-    movs r0, #1 \n\
-    bl unk_7e3fc \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x18 \n\
-    strb r1, [r0] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e254: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x32 \n\
-    ldrb r1, [r0] \n\
-    movs r0, #2 \n\
-    bl unk_7e3fc \n\
-    ldr r0, [r7] \n\
-    add r0, #0x40 \n\
-    movs r1, #0x1e \n\
-    strb r1, [r0] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e26a: \n\
-    ldr r1, [r7] \n\
-    ldr r0, lbl_0807e284 @ =0x00003f42 \n\
-    strh r0, [r1, #2] \n\
-    movs r0, #0x97 \n\
-    lsl r0, r0, #1 \n\
-    add r1, r1, r0 \n\
-    movs r0, #0x23 \n\
-    strb r0, [r1] \n\
-    movs r0, #6 \n\
-    bl FileSelectPlayMenuSound \n\
-    b lbl_0807e3b6 \n\
-    .align 2, 0 \n\
-lbl_0807e284: .4byte 0x00003f42 \n\
-lbl_0807e288: \n\
-    ldr r2, [r7] \n\
-    movs r1, #0x97 \n\
-    lsl r1, r1, #1 \n\
-    add r0, r2, r1 \n\
-    ldrb r0, [r0] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807e298 \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e298: \n\
-    ldrh r1, [r2] \n\
-    movs r3, #0x80 \n\
-    lsl r3, r3, #6 \n\
-    add r0, r3, #0 \n\
-    orr r0, r1 \n\
-    strh r0, [r2] \n\
-    ldrh r0, [r2, #0x18] \n\
-    strh r0, [r2, #6] \n\
-    ldr r0, lbl_0807e2bc @ =gBg1HOFS_NonGameplay \n\
-    movs r5, #0x80 \n\
-    lsl r5, r5, #4 \n\
-    add r1, r5, #0 \n\
-    strh r1, [r0] \n\
-    ldr r0, lbl_0807e2c0 @ =gBg1VOFS_NonGameplay \n\
-    strh r1, [r0] \n\
-    add r1, r2, #0 \n\
-    b lbl_0807e3b8 \n\
-    .align 2, 0 \n\
-lbl_0807e2bc: .4byte gBg1HOFS_NonGameplay \n\
-lbl_0807e2c0: .4byte gBg1VOFS_NonGameplay \n\
-lbl_0807e2c4: \n\
-    ldr r0, [r7] \n\
-    add r0, #0x3f \n\
-    ldrb r0, [r0] \n\
-    lsl r2, r0, #1 \n\
-    add r2, r2, r0 \n\
-    lsl r2, r2, #6 \n\
-    ldr r0, lbl_0807e304 @ =0x0600f000 \n\
-    add r2, r2, r0 \n\
-    movs r0, #0x10 \n\
-    str r0, [sp] \n\
-    movs r0, #3 \n\
-    movs r1, #0 \n\
-    movs r3, #0xc0 \n\
-    bl BitFill \n\
-    ldr r1, [r7] \n\
-    add r1, #0x40 \n\
-    ldrb r0, [r1] \n\
-    add r0, #1 \n\
-    strb r0, [r1] \n\
-lbl_0807e2ec: \n\
-    movs r5, #0x80 \n\
-    lsl r5, r5, #4 \n\
-    ldr r1, lbl_0807e308 @ =gBg2VOFS_NonGameplay \n\
-    ldrh r0, [r1] \n\
-    cmp r5, r0 \n\
-    beq lbl_0807e310 \n\
-    sub r0, #0xc \n\
-    cmp r0, r5 \n\
-    bge lbl_0807e30c \n\
-lbl_0807e2fe: \n\
-    strh r5, [r1] \n\
-    b lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807e304: .4byte 0x0600f000 \n\
-lbl_0807e308: .4byte gBg2VOFS_NonGameplay \n\
-lbl_0807e30c: \n\
-    strh r0, [r1] \n\
-    b lbl_0807e3e6 \n\
-lbl_0807e310: \n\
-    ldr r4, lbl_0807e340 @ =sNonGameplayRamPointer \n\
-    ldr r1, [r4] \n\
-    add r1, #0xff \n\
-    ldrb r3, [r1] \n\
-    movs r2, #0x21 \n\
-    neg r2, r2\n\
-    add r0, r2, #0 \n\
-    and r0, r3 \n\
-    strb r0, [r1] \n\
-    ldr r0, [r4] \n\
-    ldr r1, lbl_0807e344 @ =0x0000010f \n\
-    add r3, r0, r1 \n\
-    ldrb r1, [r3] \n\
-    add r0, r2, #0 \n\
-    and r0, r1 \n\
-    strb r0, [r3] \n\
-    ldr r0, [r4] \n\
-    ldr r3, lbl_0807e348 @ =0x0000011f \n\
-    add r1, r0, r3 \n\
-    ldrb r0, [r1] \n\
-    and r2, r0 \n\
-    strb r2, [r1] \n\
-    ldr r1, [r4] \n\
-    b lbl_0807e3b8 \n\
-    .align 2, 0 \n\
-lbl_0807e340: .4byte sNonGameplayRamPointer \n\
-lbl_0807e344: .4byte 0x0000010f \n\
-lbl_0807e348: .4byte 0x0000011f \n\
-lbl_0807e34c: \n\
-    movs r5, #1 \n\
-    ldr r1, lbl_0807e364 @ =gWrittenToBLDALPHA_H \n\
-    ldrh r0, [r1] \n\
-    cmp r0, #0 \n\
-    beq lbl_0807e36a \n\
-    movs r5, #0 \n\
-    sub r0, #2 \n\
-    cmp r0, #0 \n\
-    bge lbl_0807e368 \n\
-    strh r5, [r1] \n\
-    b lbl_0807e36a \n\
-    .align 2, 0 \n\
-lbl_0807e364: .4byte gWrittenToBLDALPHA_H \n\
-lbl_0807e368: \n\
-    strh r0, [r1] \n\
-lbl_0807e36a: \n\
-    ldr r1, lbl_0807e3c4 @ =gWrittenToBLDALPHA_L \n\
-    ldrh r0, [r1] \n\
-    cmp r0, #0x10 \n\
-    beq lbl_0807e37e \n\
-    movs r5, #0 \n\
-    add r0, #2 \n\
-    cmp r0, #0x10 \n\
-    ble lbl_0807e37c \n\
-    movs r0, #0x10 \n\
-lbl_0807e37c: \n\
-    strh r0, [r1] \n\
-lbl_0807e37e: \n\
-    cmp r5, #0 \n\
-    beq lbl_0807e3e6 \n\
-    ldr r1, [r7] \n\
-    ldrh r2, [r1] \n\
-    ldr r0, lbl_0807e3c8 @ =0x0000fbff \n\
-    and r0, r2 \n\
-    strh r0, [r1] \n\
-    ldr r5, lbl_0807e3cc @ =0x0000013f \n\
-    add r3, r1, r5 \n\
-    ldrb r2, [r3] \n\
-    movs r1, #0x21 \n\
-    neg r1, r1\n\
-    add r0, r1, #0 \n\
-    and r0, r2 \n\
-    strb r0, [r3] \n\
-    ldr r0, [r7] \n\
-    ldr r2, lbl_0807e3d0 @ =0x0000014f \n\
-    add r3, r0, r2 \n\
-    ldrb r2, [r3] \n\
-    add r0, r1, #0 \n\
-    and r0, r2 \n\
-    strb r0, [r3] \n\
-    ldr r0, [r7] \n\
-    ldr r3, lbl_0807e3d4 @ =0x0000015f \n\
-    add r2, r0, r3 \n\
-    ldrb r0, [r2] \n\
-    and r1, r0 \n\
-    strb r1, [r2] \n\
-lbl_0807e3b6: \n\
-    ldr r1, [r7] \n\
-lbl_0807e3b8: \n\
-    add r1, #0x40 \n\
-    ldrb r0, [r1] \n\
-    add r0, #1 \n\
-    strb r0, [r1] \n\
-    b lbl_0807e3e6 \n\
-    .align 2, 0 \n\
-lbl_0807e3c4: .4byte gWrittenToBLDALPHA_L \n\
-lbl_0807e3c8: .4byte 0x0000fbff \n\
-lbl_0807e3cc: .4byte 0x0000013f \n\
-lbl_0807e3d0: .4byte 0x0000014f \n\
-lbl_0807e3d4: .4byte 0x0000015f \n\
-lbl_0807e3d8: \n\
-    ldr r2, [r7] \n\
-    ldrh r1, [r2] \n\
-    ldr r0, lbl_0807e3f8 @ =0x0000dfff \n\
-    and r0, r1 \n\
-    strh r0, [r2] \n\
-    movs r5, #1 \n\
-lbl_0807e3e4: \n\
-    mov sl, r5 \n\
-lbl_0807e3e6: \n\
-    mov r0, sl \n\
-    add sp, #4 \n\
-    pop {r3, r4, r5} \n\
-    mov r8, r3 \n\
-    mov sb, r4 \n\
-    mov sl, r5 \n\
-    pop {r4, r5, r6, r7} \n\
-    pop {r1} \n\
-    bx r1 \n\
-    .align 2, 0 \n\
-lbl_0807e3f8: .4byte 0x0000dfff \n\
-    ");
-}
-#endif
 
 /**
  * @brief 7e3fc | 2dc | To document
@@ -7469,7 +5859,7 @@ void unk_7e3fc(u8 param_1, u8 param_2)
 
             if (param_2 == 0x0)
             {
-                FILE_SELECT_DATA.fileScreenOam[3].priority = 1;
+                FILE_SELECT_DATA.fileScreenOam[3].priority = BGCNT_HIGH_MID_PRIORITY;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].boundBackground = 1;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].xPosition = BLOCK_SIZE * 2;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].yPosition = BLOCK_SIZE * 2 - 8;
@@ -7495,7 +5885,7 @@ void unk_7e3fc(u8 param_1, u8 param_2)
 
             if (param_2 == 0x0 || param_2 == 0x1)
             {
-                FILE_SELECT_DATA.fileScreenOam[3].priority = 0;
+                FILE_SELECT_DATA.fileScreenOam[3].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.fileScreenOam[3].boundBackground = 0;
                 FILE_SELECT_DATA.fileScreenOam[3].xPosition = BLOCK_SIZE * 2;
 
@@ -7513,19 +5903,17 @@ void unk_7e3fc(u8 param_1, u8 param_2)
             if (param_2 == 0x80)
             {
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
-                break;
             }
             
-            if (param_2 == 0x81)
+            else if (param_2 == 0x81)
             {
                 FILE_SELECT_DATA.fileScreenOam[3].oamID = 0;
                 FILE_SELECT_DATA.fileScreenOam[3].exists = FALSE;
-                break;
             }
 
-            if (param_2 == 0 || param_2 == 1 || param_2 == 2)
+            else if (param_2 == 0 || param_2 == 1 || param_2 == 2)
             {
-                FILE_SELECT_DATA.fileScreenOam[3].priority = 0;
+                FILE_SELECT_DATA.fileScreenOam[3].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.fileScreenOam[3].boundBackground = 0;
                 FILE_SELECT_DATA.fileScreenOam[3].xPosition = BLOCK_SIZE * 2;
 
@@ -7546,19 +5934,17 @@ void unk_7e3fc(u8 param_1, u8 param_2)
             if (param_2 == 0x80)
             {
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
-                break;
             }
             
-            if (param_2 == 0x81)
+            else if (param_2 == 0x81)
             {
                 FILE_SELECT_DATA.fileScreenOam[3].oamID = 0;
                 FILE_SELECT_DATA.fileScreenOam[3].exists = FALSE;
-                break;
             }
 
-            if (param_2 == 0 || param_2 == 1)
+            else if (param_2 == 0 || param_2 == 1)
             {
-                FILE_SELECT_DATA.fileScreenOam[3].priority = 0;
+                FILE_SELECT_DATA.fileScreenOam[3].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.fileScreenOam[3].boundBackground = 0;
                 FILE_SELECT_DATA.fileScreenOam[3].yPosition = BLOCK_SIZE * 3 + 24;
 
@@ -7576,19 +5962,17 @@ void unk_7e3fc(u8 param_1, u8 param_2)
             if (param_2 == 0x80)
             {
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
-                break;
             }
             
-            if (param_2 == 0x81)
+            else if (param_2 == 0x81)
             {
                 FILE_SELECT_DATA.fileScreenOam[3].oamID = 0;
                 FILE_SELECT_DATA.fileScreenOam[3].exists = FALSE;
-                break;
             }
 
-            if (param_2 == 0 || param_2 == 1 || param_2 == 2)
+            else if (param_2 == 0 || param_2 == 1 || param_2 == 2)
             {
-                FILE_SELECT_DATA.fileScreenOam[3].priority = 0;
+                FILE_SELECT_DATA.fileScreenOam[3].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.fileScreenOam[3].boundBackground = 0;
                 FILE_SELECT_DATA.fileScreenOam[3].xPosition = BLOCK_SIZE + HALF_BLOCK_SIZE + 12;
 
@@ -7608,19 +5992,17 @@ void unk_7e3fc(u8 param_1, u8 param_2)
             if (param_2 == 0x80)
             {
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
-                break;
             }
             
-            if (param_2 == 0x81)
+            else if (param_2 == 0x81)
             {
                 FILE_SELECT_DATA.fileScreenOam[3].oamID = 0;
                 FILE_SELECT_DATA.fileScreenOam[3].exists = FALSE;
-                break;
             }
 
-            if (param_2 == 0 || param_2 == 1)
+            else if (param_2 == 0 || param_2 == 1)
             {
-                FILE_SELECT_DATA.fileScreenOam[3].priority = 0;
+                FILE_SELECT_DATA.fileScreenOam[3].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.fileScreenOam[3].boundBackground = 0;
                 FILE_SELECT_DATA.fileScreenOam[3].yPosition = BLOCK_SIZE * 4 + HALF_BLOCK_SIZE - 8;
 
@@ -7666,7 +6048,7 @@ u32 FileSelectUpdateTilemap(u8 request)
             break;
 
         case TILEMAP_REQUEST_START_GAME:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].ended && unk_790cc(1, 0x0))
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].ended && FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_START_GAME))
             {
                 FILE_SELECT_DATA.bldcnt = 0;
                 FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_1C;
@@ -7687,7 +6069,7 @@ u32 FileSelectUpdateTilemap(u8 request)
             break;
 
         case 3:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].ended && unk_790cc(1, 0x11))
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].ended && FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_MESSAGE_OPTION))
             {
                 FILE_SELECT_DATA.bg0cnt = FILE_SELECT_DATA.unk_1E;
                 FILE_SELECT_DATA.dispcnt |= DCNT_BG0;
@@ -7712,7 +6094,7 @@ u32 FileSelectUpdateTilemap(u8 request)
             break;
 
         case TILEMAP_REQUEST_DIFFICULTY_SPAWN:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].ended && unk_790cc(1, FILE_SELECT_DATA.unk_38))
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].ended && FileScreenUpdateMessageInfoIdQueue(1, FILE_SELECT_DATA.difficultyMessage))
             {
                 unk_7eedc((void*)sEwramPointer + 0x3C00);
                 DmaTransfer(3, (void*)sEwramPointer + 0x3C00, VRAM_BASE + 0xE000, 0x300, 16);
@@ -7747,7 +6129,7 @@ u32 FileSelectUpdateTilemap(u8 request)
             break;
 
         case TILEMAP_REQUEST_ERASE_SPAWN:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].ended && unk_790cc(1, 0x5))
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].ended && FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_ERASE_CHOOSE))
             {
                 FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_1C;
                 FILE_SELECT_DATA.dispcnt |= DCNT_BG1;
@@ -7770,7 +6152,7 @@ u32 FileSelectUpdateTilemap(u8 request)
             break;
 
         case TILEMAP_REQUEST_ERASE_YES_NO_SPAWN:
-            if (unk_790cc(1, 0x6))
+            if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_ERASE_CONFIRM))
             {
                 FILE_SELECT_DATA.bg0cnt = FILE_SELECT_DATA.unk_1E;
                 FILE_SELECT_DATA.dispcnt |= DCNT_BG0;
@@ -7802,7 +6184,7 @@ u32 FileSelectUpdateTilemap(u8 request)
             break;
 
         case TILEMAP_REQUEST_COPY_SPAWN:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].ended && unk_790cc(1, 0x1))
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].ended && FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_COPY_SOURCE_CHOOSE))
             {
                 FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_1C;
                 FILE_SELECT_DATA.dispcnt |= DCNT_BG1;
@@ -7849,7 +6231,7 @@ u32 FileSelectUpdateTilemap(u8 request)
             break;
 
         case TILEMAP_REQUEST_COPY_OVERRIDE_SPAWN:
-            if (unk_790cc(1, 0x3))
+            if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_COPY_CONFIRM))
             {
                 FILE_SELECT_DATA.bg0cnt = FILE_SELECT_DATA.unk_1E;
                 FILE_SELECT_DATA.dispcnt |= DCNT_BG0;
@@ -7889,7 +6271,7 @@ u32 FileSelectUpdateTilemap(u8 request)
             break;
 
         case 0x1E:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].ended && unk_790cc(1, FILE_SELECT_DATA.unk_39))
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].ended && FileScreenUpdateMessageInfoIdQueue(1, FILE_SELECT_DATA.continueNewMessage))
             {
                 FILE_SELECT_DATA.bg0cnt = FILE_SELECT_DATA.unk_1E;
                 FILE_SELECT_DATA.dispcnt |= DCNT_BG0;
@@ -7905,7 +6287,7 @@ u32 FileSelectUpdateTilemap(u8 request)
             break;
 
         case 0x22:
-            if (unk_790cc(1, FILE_SELECT_DATA.unk_39))
+            if (FileScreenUpdateMessageInfoIdQueue(1, FILE_SELECT_DATA.continueNewMessage))
             {
                 DmaTransfer(3, (void*)sEwramPointer + 0x3600, VRAM_BASE + 0xE000, 0x300, 16);
                 break;
@@ -7939,9 +6321,9 @@ u32 FileSelectUpdateTilemap(u8 request)
             gBg0HOFS_NonGameplay = BLOCK_SIZE * 29 + HALF_BLOCK_SIZE;
             gBg0VOFS_NonGameplay = BLOCK_SIZE * 29 + HALF_BLOCK_SIZE;
 
-            if (FILE_SELECT_DATA.unk_47 == 1)
+            if (FILE_SELECT_DATA.corruptFile == 1)
                 DmaTransfer(3, (void*)sEwramPointer + 0x4200, VRAM_BASE + 0xE000, 0x300, 16);
-            else if (FILE_SELECT_DATA.unk_47 == 2)
+            else if (FILE_SELECT_DATA.corruptFile == 2)
                 DmaTransfer(3, (void*)sEwramPointer + 0x4500, VRAM_BASE + 0xE000, 0x300, 16);
             else
                 DmaTransfer(3, (void*)sEwramPointer + 0x3F00, VRAM_BASE + 0xE000, 0x300, 16);
@@ -8097,7 +6479,7 @@ lbl_0807e800: \n\
 lbl_0807e814: \n\
     movs r0, #1 \n\
     movs r1, #0 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     bne lbl_0807e822 \n\
     b lbl_0807eec6 \n\
@@ -8160,7 +6542,7 @@ lbl_0807e888: \n\
 lbl_0807e89a: \n\
     movs r0, #1 \n\
     movs r1, #0x11 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     beq lbl_0807e8a8 \n\
     b lbl_0807ed1a \n\
@@ -8230,7 +6612,7 @@ lbl_0807e928: \n\
     add r0, #0x38 \n\
     ldrb r1, [r0] \n\
     movs r0, #1 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     bne lbl_0807e93a \n\
     b lbl_0807eec6 \n\
@@ -8342,7 +6724,7 @@ lbl_0807ea0c: \n\
 lbl_0807ea20: \n\
     movs r0, #1 \n\
     movs r1, #5 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     bne lbl_0807ea2e \n\
     b lbl_0807eec6 \n\
@@ -8396,7 +6778,7 @@ lbl_0807ea8c: .4byte sEwramPointer \n\
 lbl_0807ea90: \n\
     movs r0, #1 \n\
     movs r1, #6 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     beq lbl_0807ea9e \n\
     b lbl_0807ec1e \n\
@@ -8487,7 +6869,7 @@ lbl_0807eb40: \n\
 lbl_0807eb54: \n\
     movs r0, #1 \n\
     movs r1, #1 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     bne lbl_0807eb62 \n\
     b lbl_0807eec6 \n\
@@ -8579,7 +6961,7 @@ lbl_0807ec0c: .4byte sEwramPointer \n\
 lbl_0807ec10: \n\
     movs r0, #1 \n\
     movs r1, #3 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     bne lbl_0807ec1e \n\
     b lbl_0807eec6 \n\
@@ -8698,7 +7080,7 @@ lbl_0807ed08: \n\
     add r0, #0x39 \n\
     ldrb r1, [r0] \n\
     movs r0, #1 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     bne lbl_0807ed1a \n\
     b lbl_0807eec6 \n\
@@ -8737,7 +7119,7 @@ lbl_0807ed50: \n\
     add r0, #0x39 \n\
     ldrb r1, [r0] \n\
     movs r0, #1 \n\
-    bl unk_790cc \n\
+    bl FileScreenUpdateMessageInfoIdQueue \n\
     cmp r0, #0 \n\
     bne lbl_0807ed64 \n\
     b lbl_0807eec6 \n\

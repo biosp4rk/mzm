@@ -33,7 +33,6 @@ SECTIONS {
         . = 0x00035c00; gNeverReformBlocks = .;
         . = 0x00036c00; gItemsCollected = .;
         . = 0x00037400; gVisitedMinimapTiles = .;
-        . = 0x00037c00; gHatchesOpened = .;
         . = 0x00037e00; gEventsTriggered = .;
         . = 0x00037e20; gMinimapTilesGfx = .;
         . = 0x00038000; gSram = .;
@@ -43,8 +42,8 @@ SECTIONS {
     } >ewram
 
     iwram (NOLOAD) : ALIGN(4) {
-        . = 0x00000000; gDebugFlag = .;
-        . = 0x00000001; gSramErrorFlag = .;
+        . = 0x00000000; gDebugMode = .;
+        . = 0x00000001; gBootDebugActive = .;
         . = 0x00000002; gFrameCounter16Bit = .;
         . = 0x00000004; gStereoFlag = .;
         . = 0x00000005; gSubGameModeStage = .;
@@ -71,6 +70,8 @@ SECTIONS {
         . = 0x0000003c; gResetGame = .;
         . = 0x0000003D; gDisableScrolling = .;
         . = 0x0000003E; gSlowScrollingTimer = .;
+        . = 0x00000040; gDisableMusic = .;
+        . = 0x00000041; gDisableCutscenes_Unused = .;
         . = 0x00000042; gSkipDoorTransition = .;
         . = 0x00000043; gDisableSoftreset = .;
         . = 0x00000044; gCollectingTank = .;
@@ -106,7 +107,7 @@ SECTIONS {
         . = 0x0000007c; gDisableDrawingSprites = .;
         . = 0x0000007d; gCurrentCutscene = .;
         . = 0x0000007e; gTourianEscapeCutsceneStage = .;
-        . = 0x0000007f; gFreeMovementLockCamera = .;
+        . = 0x0000007f; gNoClipLockCamera = .;
         . = 0x00000080; gHazeInfo = .;
         . = 0x00000088; gIoRegistersBackup = .;
         . = 0x0000009C; gBgPointersAndDimensions = .;
@@ -190,7 +191,7 @@ SECTIONS {
         . = 0x00000c20; gUnk_3000c20 = .;
         . = 0x00000c21; gSramOperationStage = .;
         . = 0x00000c24; gSaveFilesInfo = .;
-        . = 0x00000c6c; gStartingInfo = .;
+        . = 0x00000c6c; gSectionInfo = .;
         . = 0x00000c70; gMainGameMode = .;
         . = 0x00000c72; gGameModeSub1 = .;
         . = 0x00000c74; gGameModeSub2 = .;
@@ -244,7 +245,7 @@ SECTIONS {
         . = 0x0000160c; gTimeAttackData = .;
         . = 0x0000168C; gButtonAssignments = .;
         . = 0x00001694; gTimeAttackRecord = .;
-        . = 0x000016C4; gNonGameplayRAM = .;
+        . = 0x000016C4; gNonGameplayRam = .;
         . = 0x00001cec; gVBlankCallback = .;
         . = 0x00001cf0; gHBlankCallback = .;
         . = 0x00001cf4; gVCountCallback = .;
@@ -280,6 +281,10 @@ SECTIONS {
         . = 0x000053cc; gDemoInputTimer = .;
         . = 0x000053ce; gDemoInput = .;
         . = 0x000053d0; gNotPressingUp = .;
+        . = 0x000053d2; gDebugVCount_InGameStart = .;
+        . = 0x000053d4; gDebugVCount_InGameEnd = .;
+        . = 0x000053d6; gDebugVCount_VBlankEnd = .;
+        . = 0x000053d8; gDebugVCount_AudioMax = .;
         . = 0x000053E0; gSamusPalette = .;
         . = 0x00005440; gSamusPaletteSize = .;
         . = 0x00005448; gWrittenToWIN1H = .;
@@ -329,7 +334,7 @@ SECTIONS {
         . = 0x00005730; gAnimatedGraphicsData = .;
         . = 0x000057F0; gTankAnimations = .;
         . = 0x00005800; gMaintainedInputData = .;
-        . = 0x00005804; gUnk_3005804 = .;
+        . = 0x00005804; gPrevChangedInput = .;
         . = 0x00005806; gOamXOffset_NonGameplay = .;
         . = 0x00005807; gOamYOffset_NonGameplay = .;
 
@@ -337,37 +342,37 @@ SECTIONS {
         . = 0x00005820; gMultiBootParamData = .;
         . = 0x0000586c; gDataSentPointer = .;
         . = 0x00005870; gDataSentSize = .;
-        . = 0x00005874; gUnk_3005874 = .;
-        . = 0x00005880; gUnk_3005880 = .;
-        . = 0x00005884; gUnk_3005884 = .;
-        . = 0x00005888; gUnk_3005888 = .;
-        . = 0x00005890; gUnk_3005890 = .;
-        . = 0x000058a8; gUnk_30058a8 = .;
-        . = 0x000058aa; gUnk_30058aa = .;
-        . = 0x000058ac; gUnk_30058ac = .;
-        . = 0x000058ae; gUnk_30058ae = .;
-        . = 0x000058af; gUnk_30058af = .;
-        . = 0x000058b0; gUnk_30058b0 = .;
-        . = 0x000058b1; gUnk_30058b1 = .;
+        . = 0x00005874; gMultibootErrorFlags = .;
+        . = 0x00005880; gMultibootUnk_3005880 = .;
+        . = 0x00005884; gMultibootInProgress = .;
+        . = 0x00005888; gMultiBootRequiredData = .;
+        . = 0x00005890; gTransferManager = .;
+        . = 0x000058a8; gTransferUpdateResult = .;
+        . = 0x000058aa; gTransferUnk_30058aa = .;
+        . = 0x000058ac; gTransferDataTimer = .;
+        . = 0x000058ae; gTransferStartupTimer = .;
+        . = 0x000058af; gTransferUnk_30058af = .;
+        . = 0x000058b0; gTransferGbaDetectedCount = .;
+        . = 0x000058b1; gTransferGbaId = .;
         . = 0x000058b2; gRegIme_Backup = .;
         . = 0x000058b4; gRegIe_Backup = .;
         . = 0x000058b6; gRegTm3Cnt_H_Backup = .;
         . = 0x000058b8; gRegSiocnt_Backup = .;
         . = 0x000058ba; gRegRcnt_Backup = .;
         . = 0x000058bc; gErrorFlag = .;
-        . = 0x000058c0; gUnk_30058c0 = .;
-        . = 0x000058c4; gUnk_30058c4 = .;
-        . = 0x000058cc; gUnk_30058cc = .;
-        . = 0x000058cd; gUnk_30058cd = .;
-        . = 0x000058ce; gUnk_30058ce = .;
-        . = 0x000058cf; gUnk_30058cf = .;
-        . = 0x000058d0; gUnk_30058d0 = .;
-        . = 0x000058d2; gUnk_30058d2 = .;
-        . = 0x000058d3; gUnk_30058d3 = .;
-        . = 0x000058d5; gUnk_30058d5 = .;
-        . = 0x000058d6; gUnk_30058d6 = .;
-        . = 0x000058d8; gUnk_30058d8 = .;
-        . = 0x000058da; gUnk_30058da = .;
+        . = 0x000058c0; gSendCmd = .;
+        . = 0x000058c4; gRecvCmds = .;
+        . = 0x000058cc; gShouldAdvanceLinkState = .;
+        . = 0x000058cd; gLinkPlayerCount = .;
+        . = 0x000058ce; gLinkLocalId = .;
+        . = 0x000058cf; gLinkUnkFlag9 = .;
+        . = 0x000058d0; gLinkSavedIme = .;
+        . = 0x000058d2; gNumVBlanksWithoutSerialIntr = .;
+        . = 0x000058d3; gSendBufferEmpty = .;
+        . = 0x000058d5; gHandshakePlayerCount = .;
+        . = 0x000058d6; gChecksumAvailable = .;
+        . = 0x000058d8; gSendNonzeroCheck = .;
+        . = 0x000058da; gRecvNonzeroCheck = .;
 
         . = 0x000058e0; src/libgcc/fp-bit-base.o(.bss);
         . = 0x000058f8; src/libgcc/float.o(.bss);
@@ -381,9 +386,9 @@ SECTIONS {
         . = 0x00005AD0; gTrackData2 = .;
         . = 0x00005B10; gTrackData5 = .;
 
-        . = 0x00005b50; gUnk_3005b50 = .;
-        . = 0x00005b54; gUnk_3005b54 = .;
-        . = 0x00005b60; gCableLinkInfo = .;
+        . = 0x00005b50; gLastSendQueueCount = .;
+        . = 0x00005b54; gLastRecvQueueCount = .;
+        . = 0x00005b60; gLink = .;
 
         . = 0x00006000; gChaosRng = .;
         . = 0x00006004; gActiveChaosEffects = .;
@@ -400,7 +405,7 @@ SECTIONS {
         . = 0x00007ffc; intr_vector = .;
     } >iwram
 
-    rom : ALIGN(2) {
+    .text : ALIGN(2) {
         asm/romheader.o(.text);
         asm/crt0.o(.text);
         asm/intr_main.o(.text);
@@ -571,6 +576,11 @@ SECTIONS {
         src/menus/status_screen.o(.text);
         src/menus/pause_screen_sub_menus.o(.text);
         src/save_file.o(.text);
+
+#ifdef DEBUG
+        src/menus/boot_debug.o(.text);
+#endif
+
         src/menus/erase_sram.o(.text);
         src/menus/title_screen.o(.text);
         src/menus/game_over.o(.text);
@@ -585,6 +595,9 @@ SECTIONS {
         src/ending_and_gallery.o(.text);
         src/chozodia_escape.o(.text);
         src/cable_link.o(.text);
+        src/multiboot.o(.text);
+        src/transfer.o(.text);
+        src/link.o(.text);
 
         asm/libgcc.o(.text);
         asm/disasm_0x0808af18.o(.text);
@@ -1045,6 +1058,11 @@ SECTIONS {
         src/data/menus/pause_screen_sub_menus_data.o(.rodata);
         src/data/menus/pause_screen_map_data.o(.rodata);
         src/data/save_file_data.o(.rodata);
+
+#ifdef DEBUG
+        src/data/menus/boot_debug_data.o(.rodata);
+#endif
+
         src/data/menus/erase_sram_data.o(.rodata);
         src/data/text_data.o(.rodata);
         src/data/menus/title_screen_data.o(.rodata);
@@ -1437,6 +1455,38 @@ SECTIONS {
         src/data/internal_tourian_escape_data.o(.rodata);
         src/data/internal_ending_and_gallery_data.o(.rodata);
         src/data/internal_chozodia_escape_data.o(.rodata);
+        src/data/internal_io_transfer_data.o(.rodata);
         src/data/nes_metroid.o(.rodata);
     } >rom
+
+    /* DWARF debug sections.
+       Symbols in the DWARF debugging sections are relative to the beginning
+       of the section so we begin them at 0.  */
+
+    /* DWARF 1 */
+    .debug          0 : { *(.debug) }
+    .line           0 : { *(.line) }
+
+    /* GNU DWARF 1 extensions */
+    .debug_srcinfo  0 : { *(.debug_srcinfo) }
+    .debug_sfnames  0 : { *(.debug_sfnames) }
+
+    /* DWARF 1.1 and DWARF 2 */
+    .debug_aranges  0 : { *(.debug_aranges) }
+    .debug_pubnames 0 : { *(.debug_pubnames) }
+
+    /* DWARF 2 */
+    .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
+    .debug_abbrev   0 : { *(.debug_abbrev) }
+    .debug_line     0 : { *(.debug_line) }
+    .debug_frame    0 : { *(.debug_frame) }
+    .debug_str      0 : { *(.debug_str) }
+    .debug_loc      0 : { *(.debug_loc) }
+    .debug_macinfo  0 : { *(.debug_macinfo) }
+
+    /* Discard everything not specifically mentioned above. */
+    /DISCARD/ :
+    {
+        *(*);
+    }
 }

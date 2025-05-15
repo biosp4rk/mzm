@@ -597,9 +597,9 @@ common/CommonTiles.gfx;4096;0x5d940c;1
 common/CommonTilesMotherShip.gfx;4096;0x5da40c;1
 common/CommonTilemap.tt;832;0x3655a0;2
 
-common/CommonTiles.pal;15;0x5dfe22;2
-common/DoorTransition.pal;241;0x5dfe40;2
-common/CommonTilesMotherShip.pal;15;0x5e0022;2
+common/CommonTiles.pal;16;0x5dfe20;2
+common/DoorTransition.pal;240;0x5dfe40;2
+common/CommonTilesMotherShip.pal;16;0x5e0020;2
 common/DoorTransitionMotherShip.pal;240;0x5e0040;2
 
 common/HatchFlashingMotherShip.pal;256;0x5e0220;2
@@ -1207,12 +1207,12 @@ characters_graphics.gfx;180224;0x415460;1
 
 # Pause screen
 
-menus/PauseScreen/40dd10.pal;96;0x40dd10;2
-menus/PauseScreen/40ddd0.pal;64;0x40ddd0;2
+menus/PauseScreen/MapScreenUnknownItemsFlashing.pal;96;0x40dd10;2
+menus/PauseScreen/MapScreenUnknownItemsNamesFlashing.pal;64;0x40ddd0;2
 
 menus/PauseScreen/3fcef0.pal;176;0x3fcef0;2
 menus/PauseScreen/TankIcons.pal;256;0x3fd050;2
-menus/PauseScreen/3fd252.pal;79;0x3fd252;2
+menus/PauseScreen/3fd250.pal;80;0x3fd250;2
 menus/PauseScreen/MinimapAnimated.pal;16;0x3fd2f0;2
 menus/PauseScreen/SamusWireframe.pal;64;0x3fd310;2
 
@@ -1264,7 +1264,7 @@ menus/PauseScreen/40dcd0.pal;16;0x40dcd0;2
 
 menus/PauseScreen/sMinimapTiles.gfx;5120;0x40e0c4;1
 menus/PauseScreen/40f4c4.gfx;1792;0x40f4c4;4
-menus/PauseScreen/MapScreenAreaNamesGfx;167;0x4110c4;4
+menus/PauseScreen/MapScreenAreaNamesGfx.gfx.lz;167;0x4110c4;4
 
 menus/PauseScreen/MinimapTiles.pal;80;0x411360;2
 
@@ -3093,7 +3093,7 @@ tilesets/animated_palettes/7.pal;64;0x5df9e0;2
 tilesets/animated_palettes/16.pal;128;0x5dfa60;2
 tilesets/animated_palettes/0.pal;64;0x5dfb60;2
 
-tilesets/animated_palettes/5.pal;65;0x5dfda0;2
+tilesets/animated_palettes/5.pal;64;0x5dfda0;2
 
 tilesets/animated_palettes/2.pal;192;0x62b8b8;2
 tilesets/animated_palettes/3.pal;128;0x62bdb8;2

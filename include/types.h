@@ -11,12 +11,16 @@ typedef unsigned short u16;
 typedef signed short s16;
 typedef unsigned int u32;
 typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
 typedef volatile unsigned char vu8;
 typedef volatile signed char vs8;
 typedef volatile unsigned short vu16;
 typedef volatile signed short vs16;
 typedef volatile unsigned int vu32;
 typedef volatile signed int vs32;
+typedef volatile unsigned long long vu64;
+typedef volatile signed long long vs64;
 
 #define SCHAR_MIN (-128)
 #define SCHAR_MAX (127)
@@ -47,6 +51,10 @@ typedef volatile signed int vs32;
 #define PIXEL_SIZE (BLOCK_SIZE / PIXEL_PER_BLOCK)
 // Size of a single sub pixel
 #define ONE_SUB_PIXEL (PIXEL_SIZE / PIXEL_SIZE)
+// Mask to filter out the sub pixel coordinates, effectively clamping to a pixel
+#define PIXEL_POSITION_FLAG ((u16)~PIXEL_SIZE + ONE_SUB_PIXEL)
+// Mask to filter out the sub pixel coordinates, effectively clamping to half of a block
+#define HALF_BLOCK_POSITION_FLAG ((u16)~HALF_BLOCK_SIZE + ONE_SUB_PIXEL)
 // Mask to filter out the sub pixel coordinates, effectively clamping to a block
 #define BLOCK_POSITION_FLAG ((u16)~BLOCK_SIZE + ONE_SUB_PIXEL)
 // Mask to filter out the block coordinates, resulting in only the sub pixels coordinates in the current block
@@ -57,8 +65,13 @@ typedef volatile signed int vs32;
 // Height of the screen, in pixels
 #define SCREEN_SIZE_Y 160
 
+#define SCREEN_X_MIDDLE (SCREEN_SIZE_X / 2)
+#define SCREEN_Y_MIDDLE (SCREEN_SIZE_Y / 2)
+
 // Target FPS
 #define FRAMES_PER_SECOND 60
+// The amount of frames the games considers 1 second internally (used by detailed timers)
+#define SIMULATED_FPS 64
 // Amount of time that happens in one frame
 #define DELTA_TIME 1
 // Converts a floating point value of seconds to an amount of frames (CONVERT_SECONDS(1.f) == FRAMES_PER_SECOND)

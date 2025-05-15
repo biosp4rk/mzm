@@ -1,16 +1,16 @@
 #include "syscalls.h"
 #include "data/generic_data.h"
 
+#include "gba.h"
 #include "constants/game_state.h"
 
 #include "structs/cutscene.h"
 #include "structs/demo.h"
 #include "structs/game_state.h"
+#include "structs/display.h"
 
 void agbmain(void)
 {
-    u8 psf;
-
     InitializeGame();
 
     while (TRUE)
@@ -24,8 +24,8 @@ void agbmain(void)
         UpdateInput();
         SoftresetCheck();
 
-        gFrameCounter8Bit++;
-        gFrameCounter16Bit++;
+        APPLY_DELTA_TIME_INC(gFrameCounter8Bit);
+        APPLY_DELTA_TIME_INC(gFrameCounter16Bit);
 
         switch (gMainGameMode)
         {
@@ -38,6 +38,14 @@ void agbmain(void)
                 break;
 
             case GM_INTRO:
+                #ifdef DEBUG
+                if (gChangedInput & KEY_R)
+                {
+                    gGameModeSub1 = 0;
+                    gMainGameMode = GM_DEBUG_MENU;
+                }
+                else
+                #endif // DEBUG
                 if (IntroSubroutine())
                 {
                     gMainGameMode = GM_TITLE;
@@ -46,11 +54,21 @@ void agbmain(void)
                 break;
 
             case GM_TITLE:
+                #ifdef DEBUG
+                if (gChangedInput & KEY_R)
+                {
+                    gGameModeSub1 = 0;
+                    gPauseScreenFlag = 0;
+                    gGameModeSub2 = 0;
+                    gMainGameMode = GM_DEBUG_MENU;
+                }
+                else
+                #endif // DEBUG
                 if (TitleScreenSubroutine())
                 {
                     if (gGameModeSub2 == 1)
                     {
-                        gMainGameMode = GM_FILESELECT;
+                        gMainGameMode = GM_FILE_SELECT;
                     }
                     else if (gGameModeSub2 == 2)
                     {
@@ -59,7 +77,11 @@ void agbmain(void)
                     }
                     else
                     {
+                        #ifdef DEBUG
+                        gMainGameMode = GM_DEBUG_MENU;
+                        #else // !DEBUG
                         gMainGameMode = GM_INTRO;
+                        #endif // DEBUG
                     }
 
                     gGameModeSub1 = 0;
@@ -68,7 +90,7 @@ void agbmain(void)
                 }
                 break;
 
-            case GM_FILESELECT:
+            case GM_FILE_SELECT:
                 if (FileSelectMenuSubroutine())
                 {
                     if (gGameModeSub2 == 1)
@@ -103,7 +125,11 @@ void agbmain(void)
                         }
                         else
                         {
+                            #ifdef DEBUG
+                            gMainGameMode = GM_DEBUG_MENU;
+                            #else // !DEBUG
                             gMainGameMode = GM_TITLE;
+                            #endif // DEBUG
                             gGameModeSub1 = 0;
                         }
                     }
@@ -168,6 +194,10 @@ void agbmain(void)
                 {
                     gGameModeSub1 = 0;
                     gMainGameMode = GM_INTRO;
+                    #ifdef DEBUG
+                    if (gBootDebugActive || gDebugMode)
+                        gMainGameMode = GM_DEBUG_MENU;
+                    #endif // DEBUG
                 }
                 break;
 
@@ -176,6 +206,10 @@ void agbmain(void)
                 {
                     gGameModeSub1 = 0;
                     gMainGameMode = gGameModeSub2;
+                    #ifdef DEBUG
+                    if (gBootDebugActive)
+                        gMainGameMode = GM_DEBUG_MENU;
+                    #endif // DEBUG
                 }
                 break;
 
@@ -183,13 +217,19 @@ void agbmain(void)
                 if (CutsceneSubroutine())
                 {
                     gGameModeSub1 = 0;
-                    psf = gPauseScreenFlag - 7;
-                    if (psf <= 1)
+
+                    if (gPauseScreenFlag == PAUSE_SCREEN_SUITLESS_ITEMS || gPauseScreenFlag == PAUSE_SCREEN_FULLY_POWERED_SUIT_ITEMS)
                     {
                         gMainGameMode = GM_MAP_SCREEN;
-                        break;
                     }
-                    gMainGameMode = GM_INGAME;
+                    else
+                    {
+                        gMainGameMode = GM_INGAME;
+                        #ifdef DEBUG
+                        if (gBootDebugActive)
+                            gMainGameMode = gBootDebugActive;
+                        #endif // DEBUG
+                    }
                 }
                 break;
 
@@ -220,7 +260,7 @@ void agbmain(void)
                 if (GallerySubroutine())
                 {
                     gGameModeSub1 = 0;
-                    gMainGameMode = GM_FILESELECT;
+                    gMainGameMode = GM_FILE_SELECT;
                 }
                 break;
 
@@ -228,7 +268,7 @@ void agbmain(void)
                 if (FusionGallerySubroutine())
                 {
                     gGameModeSub1 = 0;
-                    gMainGameMode = GM_FILESELECT;
+                    gMainGameMode = GM_FILE_SELECT;
                 }
                 break;
 
@@ -240,9 +280,17 @@ void agbmain(void)
                 if (EraseSramSubroutine())
                 {
                     if (gGameModeSub2 == 1)
+                    {
                         gResetGame = TRUE;
+                    }
                     else
+                    {
                         gMainGameMode = GM_SOFTRESET;
+                        #ifdef DEBUG
+                        if (gDebugMode)
+                            gMainGameMode = GM_DEBUG_MENU;
+                        #endif // DEBUG
+                    }
 
                     gGameModeSub1 = 0;
                     gGameModeSub2 = 0;
@@ -250,10 +298,49 @@ void agbmain(void)
                 break;
 
             case GM_DEBUG_MENU:
-                for (;;)
+                #ifdef DEBUG
+                if (BootDebugSubroutine())
                 {
-                    // TODO add debug code
+                    gGameModeSub1 = 0;
+
+                    switch (gGameModeSub2)
+                    {
+                        case 1:
+                            gMainGameMode = GM_INGAME;
+                            break;
+                        case 2:
+                            gMainGameMode = GM_INTRO;
+                            break;
+                        case 3:
+                            gMainGameMode = GM_MAP_SCREEN;
+                            break;
+                        case 6:
+                            gMainGameMode = GM_DEMO;
+                            break;
+                        case 8:
+                            gMainGameMode = GM_CUTSCENE;
+                            gGameModeSub2 = 0x10;
+                            break;
+                        case 7:
+                            gMainGameMode = GM_TOURIAN_ESCAPE;
+                            gGameModeSub2 = 0x10;
+                            break;
+                        case 5:
+                            gMainGameMode = GM_CREDITS;
+                            break;
+                        case 4:
+                            gMainGameMode = GM_CHOZODIA_ESCAPE;
+                            break;
+                        default:
+                            gMainGameMode = GM_DEBUG_MENU;
+                            gWrittenToBLDY_NonGameplay = 0;
+                            break;
+                    }
                 }
+                #else // !DEBUG
+                for (;;) {}
+                #endif // DEBUG
+                break;
         }
         
 

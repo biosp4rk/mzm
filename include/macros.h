@@ -27,7 +27,7 @@
  * @param high High
  * @param low Low
  */
-#define C_16_2_8(high, low) ((high) << 8 | (low))
+#define C_16_2_8(high, low) ((s32)(high) << 8 | (s32)(low))
 
 /**
  * @brief Constructs an ushort from 2 bytes (low | high << 8)
@@ -39,6 +39,9 @@
 
 #define C_S8_2_S16(value) ((value) & 0x80 ? 0x100 + (value) : (value))
 #define C_S9_2_S16(value) ((value) & 0x100 ? 0x200 + (value) : (value))
+
+
+#define CAST_TO_ARRAY(type, sizes, ptr) (*((type (*)sizes)((ptr))))
 
 #define OPPOSITE_DIRECTION(dir) ((dir) ^ (KEY_RIGHT | KEY_LEFT))
 #define ARRAY_SIZE(a) ((s32)(sizeof((a)) / sizeof((a)[0])))
@@ -61,10 +64,12 @@
 
 #define CEIL(v) ((int)(((float)v) + .5) == (int)(v) ? ((int)(v)) : (int)(((float)v) + .5))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define ABS_DIFF(a, b) ((a) > (b) ? (a) - (b) : (b) - (a))
 
 #define STATIC_ASSERT(expr, id) typedef char id[(expr) ? 1 : -1];
 #define EMPTY_DO_WHILE {do {} while(0);}
 
+#define COLOR_MASK 0x1F
 #define RED(c) ((c) & COLOR_MASK)
 #define GREEN(c) (((c) & (COLOR_MASK << 5)) >> 5)
 #define BLUE(c) (((c) & (COLOR_MASK << 10)) >> 10)
@@ -72,7 +77,12 @@
 #define COLOR_GRAD(r, g, b) ((r) | ((g) << 5) | ((b) << 10))
 #define COLOR_WHITE COLOR(COLOR_MASK, COLOR_MASK, COLOR_MASK)
 #define COLOR_BLACK COLOR(0, 0, 0)
-#define COLOR_MASK 0x1F
+#define COLOR_RED COLOR(COLOR_MASK, 0, 0)
+#define COLOR_GREEN COLOR(0, COLOR_MASK, 0)
+#define COLOR_BLUE COLOR(0, 0, COLOR_MASK)
+#define COLOR_YELLOW COLOR(COLOR_MASK, COLOR_MASK, 0)
+#define COLOR_PURPLE COLOR(COLOR_MASK, 0, COLOR_MASK)
+#define COLOR_LIGHT_BLUE COLOR(0, COLOR_MASK, COLOR_MASK)
 
 #define SET_BACKDROP_COLOR(color) (write16(PALRAM_BASE, (color)))
 
@@ -214,6 +224,7 @@
 
 
 #define INCTEXT(x)  {0}
+#define SHIFT_JIS(x) {0}
 
 #define INCBIN(...) {0}
 #define INCBIN_U8   INCBIN

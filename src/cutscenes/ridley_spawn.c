@@ -23,12 +23,12 @@ u8 RidleySpawnRidleyFlyingIn(void)
     switch (CUTSCENE_DATA.timeInfo.subStage)
     {
         case 0:
-            DmaTransfer(3, sRidleySpawnRidleyScreamingPal, PALRAM_OBJ, sizeof(sRidleySpawnRidleyScreamingPal), 0x10);
+            DmaTransfer(3, sRidleySpawnRidleyScreamingPal, PALRAM_OBJ, sizeof(sRidleySpawnRidleyScreamingPal), 16);
             CallLZ77UncompVram(sRidleySpawnScreamingGfx, VRAM_OBJ);
             
             CallLZ77UncompVram(sRidleySpawnBackgroundGfx, VRAM_BASE + sRidleySpawnPageData[3].graphicsPage * 0x4000);
             CallLZ77UncompVram(sRidleySpawnBackgroundTileTable, VRAM_BASE + sRidleySpawnPageData[3].tiletablePage * 0x800);
-            DmaTransfer(3, sRidleySpawnBackgroundPal, PALRAM_BASE, sizeof(sRidleySpawnBackgroundPal), 0x10);
+            DmaTransfer(3, sRidleySpawnBackgroundPal, PALRAM_BASE, sizeof(sRidleySpawnBackgroundPal), 16);
             SET_BACKDROP_COLOR(COLOR_BLACK);
             CutsceneSetBgcntPageData(sRidleySpawnPageData[3]);
 
@@ -66,13 +66,17 @@ u8 RidleySpawnRidleyFlyingIn(void)
             break;
 
         case 3:
-            unk_61f0c();
+            CutsceneFadeScreenToBlack();
             CUTSCENE_DATA.timeInfo.stage++;
             MACRO_CUTSCENE_NEXT_STAGE();
             break;
     }
 
     RidleySpawnUpdateRidley(&CUTSCENE_DATA.oam[0]);
+
+    #ifdef DEBUG
+    CutsceneCheckSkipStage(1);
+    #endif // DEBUG
 
     return FALSE;
 }
@@ -161,7 +165,7 @@ u8 RidleySpawnHelmetReflection(void)
                 CUTSCENE_DATA.timeInfo.subStage++;
             }
 
-            velocity = 8 - SUB_PIXEL_TO_PIXEL(CUTSCENE_DATA.timeInfo.timer);
+            velocity = 8 - SUB_PIXEL_TO_PIXEL(CUTSCENE_DATA.timeInfo.timer); // ?
             if (velocity > 0)
                 CUTSCENE_DATA.oam[0].yPosition += velocity;
 
@@ -169,10 +173,14 @@ u8 RidleySpawnHelmetReflection(void)
             break;
 
         case 2:
-            unk_61f0c();
+            CutsceneFadeScreenToBlack();
             CUTSCENE_DATA.timeInfo.stage++;
             MACRO_CUTSCENE_NEXT_STAGE();
     }
+
+    #ifdef DEBUG
+    CutsceneCheckSkipStage(1);
+    #endif // DEBUG
 
     return FALSE;
 }
@@ -187,7 +195,7 @@ u8 RidleySpawnSamusLookingUp(void)
     switch (CUTSCENE_DATA.timeInfo.subStage)
     {
         case 0:
-            if (CUTSCENE_DATA.timeInfo.timer > 30)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(.5f))
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -205,7 +213,7 @@ u8 RidleySpawnSamusLookingUp(void)
             break;
         
         case 2:
-            if (CUTSCENE_DATA.timeInfo.timer > 40)
+            if (CUTSCENE_DATA.timeInfo.timer > TWO_THIRD_SECOND)
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -218,6 +226,10 @@ u8 RidleySpawnSamusLookingUp(void)
             break;
     }
 
+    #ifdef DEBUG
+    CutsceneCheckSkipStage(0);
+    #endif // DEBUG
+
     return FALSE;
 }
 
@@ -228,14 +240,14 @@ u8 RidleySpawnSamusLookingUp(void)
  */
 u8 RidleySpawnInit(void)
 {
-    unk_61f0c();
+    CutsceneFadeScreenToBlack();
 
     if (gEquipment.suitMiscActivation & SMF_VARIA_SUIT)
-        DmaTransfer(3, sRidleySpawnSamusVariaPal, PALRAM_OBJ, sizeof(sRidleySpawnSamusVariaPal), 0x10);
+        DmaTransfer(3, sRidleySpawnSamusVariaPal, PALRAM_OBJ, sizeof(sRidleySpawnSamusVariaPal), 16);
     else
-        DmaTransfer(3, sRidleySpawnSamusPal, PALRAM_OBJ, sizeof(sRidleySpawnSamusPal), 0x10);
+        DmaTransfer(3, sRidleySpawnSamusPal, PALRAM_OBJ, sizeof(sRidleySpawnSamusPal), 16);
 
-    DmaTransfer(3, sRidleySpawnBackgroundPal, PALRAM_BASE, sizeof(sRidleySpawnBackgroundPal), 0x10);
+    DmaTransfer(3, sRidleySpawnBackgroundPal, PALRAM_BASE, sizeof(sRidleySpawnBackgroundPal), 16);
     SET_BACKDROP_COLOR(COLOR_BLACK);
 
     CallLZ77UncompVram(sRidleySpawnSamusAndRidleyGfx, VRAM_OBJ);
@@ -263,7 +275,7 @@ u8 RidleySpawnInit(void)
     CUTSCENE_DATA.oam[0].rotationScaling = TRUE;
     CUTSCENE_DATA.oam[0].objMode = 1;
 
-    gCurrentOamScaling = 0x100;
+    gCurrentOamScaling = Q_8_8(1.f);
     UpdateCutsceneOamDataID(&CUTSCENE_DATA.oam[0], RIDLEY_SPAWN_OAM_ID_SAMUS);
 
     CUTSCENE_DATA.dispcnt = sRidleySpawnPageData[0].bg | DCNT_OBJ;

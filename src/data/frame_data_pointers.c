@@ -1,17 +1,5 @@
 #include "data/frame_data_pointers.h"
 
-#include "data/sprites/chozo_statue.h"
-#include "data/sprites/crocomire.h"
-#include "data/sprites/unknown_item_chozo_statue.h"
-#include "data/sprites/kraid.h"
-#include "data/sprites/ridley.h"
-#include "data/sprites/tangle_vine.h"
-#include "data/sprites/imago_larva.h"
-#include "data/sprites/imago.h"
-#include "data/sprites/imago_cocoon.h"
-#include "data/sprites/mother_brain.h"
-#include "data/sprites/mecha_ridley.h"
-
 const struct FrameData* const sChozoStatueFrameDataPointers[CHOZO_STATUE_OAM_END] = {
     [CHOZO_STATUE_OAM_LEG_STANDING] = sChozoStatuePartOam_LegStanding,
     [CHOZO_STATUE_OAM_LEG_SITTING] = sChozoStatuePartOam_LegSitting,
@@ -31,7 +19,7 @@ const struct FrameData* const sChozoStatueFrameDataPointers[CHOZO_STATUE_OAM_END
     [CHOZO_STATUE_OAM_REFILL_GLOW_IDLE] = sChozoStatuePartOam_GlowIdle,
 };
 
-const struct FrameData* const sUnknownItemChozoStatueFrameDataPointers[16] = {
+const struct FrameData* const sUnknownItemChozoStatueFrameDataPointers[UNKNOWN_ITEM_CHOZO_STATUE_OAM_END] = {
     [UNKNOWN_ITEM_CHOZO_STATUE_OAM_LEG_STANDING] = sUnknownItemChozoStatuePartOam_LegStanding,
     [UNKNOWN_ITEM_CHOZO_STATUE_OAM_LEG_SITTING] = sUnknownItemChozoStatuePartOam_LegSitting,
     [UNKNOWN_ITEM_CHOZO_STATUE_OAM_LEG_SEATED] = sUnknownItemChozoStatuePartOam_LegSeated,
@@ -177,40 +165,42 @@ const struct FrameData* const sRidleyFrameDataPointers[RIDLEY_OAM_END] = {
     [RIDLEY_OAM_FIREBALL_BIG] = sRidleyFireballOam_Big
 };
 
-
+// palette, palette timer
 const u8 sAtomicDynamicPaletteData[33][2] = {
-    { 0, 4 },
-    { 2, 4 },
-    { 0, 4 },
-    { 2, 4 },
-    { 0, 4 },
-    { 2, 4 },
-    { 0, 4 },
-    { 2, 4 },
-    { 3, 4 },
-    { 2, 4 },
-    { 3, 4 },
-    { 2, 4 },
-    { 3, 4 },
-    { 2, 4 },
-    { 3, 4 },
-    { 2, 4 },
-    { 3, 2 },
-    { 2, 2 },
-    { 3, 2 },
-    { 2, 2 },
-    { 3, 2 },
-    { 2, 2 },
-    { 3, 2 },
-    { 2, 2 },
-    { 3, 2 },
-    { 2, 2 },
-    { 3, 2 },
-    { 2, 2 },
-    { 3, 2 },
-    { 2, 2 },
-    { 3, 2 },
-    { 2, 2 },
+    // mild flashing
+    { 0, CONVERT_SECONDS(1.f / 15) },
+    { 2, CONVERT_SECONDS(1.f / 15) },
+    { 0, CONVERT_SECONDS(1.f / 15) },
+    { 2, CONVERT_SECONDS(1.f / 15) },
+    { 0, CONVERT_SECONDS(1.f / 15) },
+    { 2, CONVERT_SECONDS(1.f / 15) },
+    { 0, CONVERT_SECONDS(1.f / 15) },
+    { 2, CONVERT_SECONDS(1.f / 15) },
+    { 3, CONVERT_SECONDS(1.f / 15) },
+    { 2, CONVERT_SECONDS(1.f / 15) },
+    { 3, CONVERT_SECONDS(1.f / 15) },
+    { 2, CONVERT_SECONDS(1.f / 15) },
+    { 3, CONVERT_SECONDS(1.f / 15) },
+    { 2, CONVERT_SECONDS(1.f / 15) },
+    { 3, CONVERT_SECONDS(1.f / 15) },
+    { 2, CONVERT_SECONDS(1.f / 15) },
+    // offset == 16, intense flashing
+    { 3, CONVERT_SECONDS(1.f / 30) },
+    { 2, CONVERT_SECONDS(1.f / 30) },
+    { 3, CONVERT_SECONDS(1.f / 30) },
+    { 2, CONVERT_SECONDS(1.f / 30) },
+    { 3, CONVERT_SECONDS(1.f / 30) },
+    { 2, CONVERT_SECONDS(1.f / 30) },
+    { 3, CONVERT_SECONDS(1.f / 30) },
+    { 2, CONVERT_SECONDS(1.f / 30) },
+    { 3, CONVERT_SECONDS(1.f / 30) },
+    { 2, CONVERT_SECONDS(1.f / 30) },
+    { 3, CONVERT_SECONDS(1.f / 30) },
+    { 2, CONVERT_SECONDS(1.f / 30) },
+    { 3, CONVERT_SECONDS(1.f / 30) },
+    { 2, CONVERT_SECONDS(1.f / 30) },
+    { 3, CONVERT_SECONDS(1.f / 30) },
+    { 2, CONVERT_SECONDS(1.f / 30) },
     { 0, 0 }
 };
 

@@ -22,10 +22,10 @@
 void ClipdataSetupCode(void)
 {
     // Copy code to RAM
-    DMA_SET(3, ClipdataConvertToCollision + 1, gNonGameplayRAM.inGame, C_32_2_16(DMA_ENABLE, 0x140));
+    DMA_SET(3, ClipdataConvertToCollision + 1, gNonGameplayRam.inGame, C_32_2_16(DMA_ENABLE, 0x140));
 
     // Set pointer
-    gClipdataCodePointer = (ClipFunc_T)(gNonGameplayRAM.inGame + 1);
+    gClipdataCodePointer = (ClipFunc_T)(gNonGameplayRam.inGame + 1);
 }
 
 /**
@@ -266,6 +266,9 @@ u32 ClipdataConvertToCollision(struct CollisionData* pCollision)
                 result = pCollision->clipdataType | CLIPDATA_TYPE_SOLID_FLAG;
             }
             break;
+        
+        default:
+            break;
     }
 
     return result;
@@ -444,19 +447,17 @@ u32 ClipdataCheckGroundEffect(u16 yPosition, u16 xPosition)
 
     if (tileY >= gBgPointersAndDimensions.clipdataHeight || tileX >= gBgPointersAndDimensions.clipdataWidth)
         return GROUND_EFFECT_NONE;
-    else
-    {
-        clipdata = gBgPointersAndDimensions.pClipDecomp[tileY * gBgPointersAndDimensions.clipdataWidth + tileX];
-        if (clipdata & CLIPDATA_TILEMAP_FLAG)
-            clipdata = CLIP_BEHAVIOR_NONE;
-        else
-            clipdata = gTilemapAndClipPointers.pClipBehaviors[clipdata];
 
-        if (BEHAVIOR_TO_GROUND_EFFECT(clipdata) < BEHAVIOR_TO_GROUND_EFFECT(CLIP_BEHAVIOR_GROUND_EFFECT_UNUSED1))
-            clipdata = sGroundEffectsClipdataValues[BEHAVIOR_TO_GROUND_EFFECT(clipdata)];
-        else
-            clipdata = GROUND_EFFECT_NONE;
-        
-        return clipdata;
-    }
+    clipdata = gBgPointersAndDimensions.pClipDecomp[tileY * gBgPointersAndDimensions.clipdataWidth + tileX];
+    if (clipdata & CLIPDATA_TILEMAP_FLAG)
+        clipdata = CLIP_BEHAVIOR_NONE;
+    else
+        clipdata = gTilemapAndClipPointers.pClipBehaviors[clipdata];
+
+    if (BEHAVIOR_TO_GROUND_EFFECT(clipdata) < BEHAVIOR_TO_GROUND_EFFECT(CLIP_BEHAVIOR_GROUND_EFFECT_UNUSED1))
+        clipdata = sGroundEffectsClipdataValues[BEHAVIOR_TO_GROUND_EFFECT(clipdata)];
+    else
+        clipdata = GROUND_EFFECT_NONE;
+    
+    return clipdata;
 }

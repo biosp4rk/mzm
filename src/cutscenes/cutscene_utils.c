@@ -7,6 +7,7 @@
 #include "data/menus/pause_screen_data.h"
 #include "data/shortcut_pointers.h"
 #include "data/engine_pointers.h"
+#include "data/block_data.h"
 
 #include "constants/audio.h"
 #include "constants/connection.h"
@@ -20,6 +21,9 @@
 #include "structs/connection.h"
 #include "structs/display.h"
 #include "structs/game_state.h"
+
+#define PAL_TO_FADE ((void*)(sEwramPointer))
+#define PAL_WITH_FADE ((void*)sEwramPointer + PALRAM_SIZE)
 
 /**
  * @brief 60e28 | 4 | Default subroutine for cutscenes that don't have any
@@ -47,8 +51,28 @@ u8 TourianEscapeSubroutine(void)
         gSubGameModeStage = 0;
         gGameModeSub1 = 0;
         gGameModeSub2 = 4;
+
+        #ifdef DEBUG
+        if (gBootDebugActive)
+        {
+            SET_BACKDROP_COLOR(COLOR_BLACK);
+            write16(REG_DISPCNT, 0);
+            StopAllMusicsAndSounds();
+            return FALSE;
+        }
+        #endif // DEBUG
+
         ended = TRUE;
     }
+    #ifdef DEBUG
+    else if (gChangedInput & KEY_B)
+    {
+        if (gBootDebugActive)
+            return TRUE;
+        if (gDebugMode)
+            ended = TRUE;
+    }
+    #endif // DEBUG
 
     if (ended)
     {
@@ -77,10 +101,12 @@ void CutsceneUpdateMusicAfterSkip(void)
     switch (gCurrentCutscene)
     {
         case CUTSCENE_KRAID_RISING:
+            // Properly start the fight music
             PlayMusic(MUSIC_KRAID_BATTLE_WITH_INTRO, 0);
             break;
 
         case CUTSCENE_RIDLEY_SPAWNING:
+            // Play roar anyways
             SoundPlay(SOUND_RIDLEY_SPAWN_ROAR);
     }
 
@@ -96,54 +122,112 @@ void CutsceneEnd(void)
     switch (gCurrentCutscene)
     {
         case CUTSCENE_RIDLEY_LANDING:
-            EventFunction(EVENT_ACTION_SETTING, sCutsceneData[CUTSCENE_RIDLEY_IN_SPACE].event);
+            #ifdef DEBUG
+            if (gBootDebugActive == 0)
+            #endif // DEBUG
+            {
+                // Set the event for the ridley in space cutscene, in case it was skipped
+                EventFunction(EVENT_ACTION_SETTING, sCutsceneData[CUTSCENE_RIDLEY_IN_SPACE].event);
+            }
             break;
 
         case CUTSCENE_INTRO_TEXT:
-            gCurrentArea = AREA_BRINSTAR;
-            gCurrentRoom = 0;
-            gLastDoorUsed = 0;
-            gGameModeSub3 = 0;
-            gShipLandingFlag = FALSE;
+            #ifdef DEBUG
+            if (gBootDebugActive == 0)
+            #endif // DEBUG
+            {
+                // Set spawn location
+                gCurrentArea = AREA_BRINSTAR;
+                gCurrentRoom = 0;
+                gLastDoorUsed = 0;
+                gGameModeSub3 = 0;
+                gShipLandingFlag = FALSE;
+            }
             break;
 
         case CUTSCENE_GETTING_FULLY_POWERED:
+            // Start fully powered items
             gPauseScreenFlag = PAUSE_SCREEN_FULLY_POWERED_SUIT_ITEMS;
+            #ifdef DEBUG
+            if (gBootDebugActive != 0)
+            {
+                gEquipment.maxEnergy = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].energy *
+                    sTankIncreaseAmount[gDifficulty].energy + sStartingHealthAmmo.energy;
+                gEquipment.maxMissiles = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].missile *
+                    sTankIncreaseAmount[gDifficulty].missile + sStartingHealthAmmo.missile;
+                gEquipment.maxSuperMissiles = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].superMissile *
+                    sTankIncreaseAmount[gDifficulty].superMissile + sStartingHealthAmmo.superMissile;
+                gEquipment.maxPowerBombs = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].powerBomb *
+                    sTankIncreaseAmount[gDifficulty].powerBomb + sStartingHealthAmmo.powerBomb;
+                gEquipment.currentMissiles = gEquipment.maxMissiles;
+                gEquipment.currentSuperMissiles = gEquipment.maxSuperMissiles;
+                gEquipment.currentPowerBombs = gEquipment.maxPowerBombs;
+                gEquipment.suitMisc = SMF_HIGH_JUMP | SMF_SPEEDBOOSTER | SMF_SPACE_JUMP | SMF_SCREW_ATTACK |
+                    SMF_VARIA_SUIT | SMF_GRAVITY_SUIT | SMF_MORPH_BALL | SMF_POWER_GRIP;
+                gEquipment.beamBombs = BBF_LONG_BEAM | BBF_ICE_BEAM | BBF_WAVE_BEAM | BBF_PLASMA_BEAM |
+                    BBF_CHARGE_BEAM | BBF_BOMBS;
+            }
+            #endif // DEBUG
             break;
 
         case CUTSCENE_COULD_I_SURVIVE:
+            // Start suitless items
             gPauseScreenFlag = PAUSE_SCREEN_SUITLESS_ITEMS;
             gMusicTrackInfo.pauseScreenFlag = PAUSE_SCREEN_SUITLESS_ITEMS;
             break;
 
         case CUTSCENE_STATUE_OPENING:
-            if (gCurrentArea == AREA_KRAID)
+            #ifdef DEBUG
+            if (gBootDebugActive == 0)
+            #endif // DEBUG
             {
-                SoundStop(MUSIC_STATUE_ROOM_OPENED);
-                unk_3bd0(MUSIC_KRAID_BATTLE_WITH_INTRO, 60);
+                // Play fight music
+                if (gCurrentArea == AREA_KRAID)
+                {
+                    SoundStop(MUSIC_STATUE_ROOM_OPENED);
+                    unk_3bd0(MUSIC_KRAID_BATTLE_WITH_INTRO, CONVERT_SECONDS(1.f));
+                }
+                else if (gCurrentArea == AREA_RIDLEY)
+                {
+                    SoundStop(MUSIC_STATUE_ROOM_OPENED);
+                    unk_3bd0(MUSIC_RIDLEY_BATTLE, CONVERT_SECONDS(1.f));
+                }
             }
-            else if (gCurrentArea == AREA_RIDLEY)
-            {
-                SoundStop(MUSIC_STATUE_ROOM_OPENED);
-                unk_3bd0(MUSIC_RIDLEY_BATTLE, 60);
-            }
+            break;
     }
 
+    // Play post cutscene bg fading
     ColorFadingStart(sCutsceneData[gCurrentCutscene].bgFading);
+
+    // Check should set event
     if (sCutsceneData[gCurrentCutscene].event != EVENT_NONE)
-        EventFunction(EVENT_ACTION_SETTING, sCutsceneData[gCurrentCutscene].event);
+    {
+        #ifdef DEBUG
+        if (gBootDebugActive == 0)
+        #endif // DEBUG
+        {
+            EventFunction(EVENT_ACTION_SETTING, sCutsceneData[gCurrentCutscene].event);
+        }
+    }
 
     if (sCutsceneData[gCurrentCutscene].isElevator)
     {
-        PlayFadingSound(SOUND_ELEVATOR, sCutsceneData[gCurrentCutscene].fadingTimer);
-        CheckPlayFadingMusic(gMusicTrackInfo.currentRoomTrack, sCutsceneData[gCurrentCutscene].fadingTimer, 0);
+        #ifdef DEBUG
+        if (gBootDebugActive == 0)
+        #endif // DEBUG
+        {
+            // Fade in the elevator sound
+            PlayFadingSound(SOUND_ELEVATOR, sCutsceneData[gCurrentCutscene].fadingTimer);
+            // Fade in the room music
+            CheckPlayFadingMusic(gMusicTrackInfo.currentRoomTrack, sCutsceneData[gCurrentCutscene].fadingTimer, 0);
+        }
     }
 }
 
 /**
  * @brief 61044 | 1e4 | Subroutine for a cutscene
  * 
- * @return u8 1 if ended, 0 otherwise
+ * @return u8 bool, ended
  */
 u8 CutsceneSubroutine(void)
 {
@@ -152,36 +236,63 @@ u8 CutsceneSubroutine(void)
 
     switch (gSubGameModeStage)
     {
-        case 0:
+        case CUTSCENE_STAGE_STARTING:
+            // Set dummy empty vblank
             CallbackSetVBlank(CutsceneLoadingVBlank);
+
+            // Start the pre cutscene background fading
             if (CutsceneStartBackgroundFading(sCutsceneData[gCurrentCutscene].preBgFading))
-                gSubGameModeStage = 2;
+            {
+                // Fade couldn't start, skip it
+                gSubGameModeStage = CUTSCENE_STAGE_INIT;
+            }
             else
-                gSubGameModeStage = 1;
+            {
+                gSubGameModeStage = CUTSCENE_STAGE_FADING_IN;
+            }
             break;
 
-        case 1:
-            unk_61f60();
+        case CUTSCENE_STAGE_FADING_IN:
+            CutsceneTransferFade();
             if (CutsceneUpdateFading())
                 gSubGameModeStage++;
             break;
             
-        case 2:
+        case CUTSCENE_STAGE_INIT:
             CutsceneInit();
             CallbackSetVBlank(CutsceneVBlank);
 
             gSubGameModeStage++;
             break;
             
-        case 3:
-            CUTSCENE_DATA.timeInfo.timer++;
+        case CUTSCENE_STAGE_ONGOING:
+            #ifdef DEBUG
+            ended = FALSE;
+            #endif // DEBUG
+            APPLY_DELTA_TIME_INC(CUTSCENE_DATA.timeInfo.timer);
             CutsceneUpdateSpecialEffect();
 
             result = sCutsceneData[gCurrentCutscene].pFunction();
+            #ifdef DEBUG
+            if (result)
+            {
+                ended = TRUE;
+                if (gBootDebugActive != 0)
+                    ended = 2;
+            }
+            else if (gBootDebugActive != 0)
+            {
+                if (gChangedInput & KEY_B)
+                    return TRUE;
+                if (gChangedInput & KEY_START)
+                    ended = 2;
+            }
+            #else // !DEBUG
             if (result)
                 ended = TRUE;
             else
                 ended = FALSE;
+            #endif // DEBUG
 
             if (gCutsceneToSkip == gCurrentCutscene && gChangedInput & KEY_B)
             {
@@ -193,29 +304,57 @@ u8 CutsceneSubroutine(void)
             {
                 CUTSCENE_DATA.dispcnt = 0;
                 gSubGameModeStage++;
+                #ifdef DEBUG
+                if (ended == 2)
+                {
+                    if ((gCurrentCutscene == CUTSCENE_COULD_I_SURVIVE ||
+                        gCurrentCutscene == CUTSCENE_GETTING_FULLY_POWERED) &&
+                        gButtonInput & (KEY_RIGHT | KEY_LEFT | KEY_UP | KEY_DOWN))
+                    {
+                        ended = FALSE;
+                    }
+                    if (ended)
+                    {
+                        StopAllMusicsAndSounds();
+                        gSubGameModeStage = 0;
+                        SET_BACKDROP_COLOR(COLOR_BLACK);
+                    }
+                }
+                #endif // DEBUG
             }
             break;
             
-        case 4:
+        case CUTSCENE_STAGE_ENDING:
             if (CUTSCENE_DATA.fadingType == 3)
-                BitFill(3, SHORT_MAX, PALRAM_BASE, PALRAM_SIZE, 0x10);
+                BitFill(3, COLOR_WHITE, PALRAM_BASE, PALRAM_SIZE, 16);
             else
-                BitFill(3, 0, PALRAM_BASE, PALRAM_SIZE, 0x10);
+                BitFill(3, 0, PALRAM_BASE, PALRAM_SIZE, 16);
 
-            BitFill(3, 0x40, VRAM_BASE, 0x10000, 0x10);
-            BitFill(3, 0, VRAM_OBJ, 0x8000, 0x10);
-            BitFill(3, 0xFF, OAM_BASE, OAM_SIZE, 0x20);
+            BitFill(3, 0x40, VRAM_BASE, VRAM_BG_SIZE, 16);
+            BitFill(3, 0, VRAM_OBJ, VRAM_OBJ_SIZE, 16);
+            BitFill(3, UCHAR_MAX, OAM_BASE, OAM_SIZE, 32);
 
             CutsceneEnd();
 
             if (sCutsceneData[gCurrentCutscene].skippable)
+            {
+                // Save the cutscene number, such that the next time this specific cutscene happens, it can be skipped
                 gCutsceneToSkip = gCurrentCutscene;
+            }
 
-            gSubGameModeStage = 0;
+            // Reset stage for the next cutscene
+            gSubGameModeStage = CUTSCENE_STAGE_STARTING;
 
-            if (sCutsceneData[gCurrentCutscene].unk_0 == 0)
-                gCurrentCutscene = CUTSCENE_NONE;
-        
+            if (sCutsceneData[gCurrentCutscene].gameplayType == CUTSCENE_TYPE_NON_GAMEPLAY)
+            {
+                #ifdef DEBUG
+                if (gBootDebugActive == 0)
+                #endif // DEBUG
+                {
+                    gCurrentCutscene = CUTSCENE_NONE;                
+                }
+            }
+
             return TRUE;
     }
 
@@ -238,7 +377,7 @@ u8 CutsceneEndFunction(void)
  */
 void CutsceneVBlank(void)
 {
-    DMA_SET(3, gOamData, OAM_BASE, (DMA_ENABLE | DMA_32BIT) << 16 | 0x100);
+    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, 0x100));
 
     write16(REG_BG0HOFS, CUTSCENE_DATA.bg0hofs);
     write16(REG_BG0VOFS, CUTSCENE_DATA.bg0vofs);
@@ -255,7 +394,7 @@ void CutsceneVBlank(void)
     write16(REG_BG3CNT, CUTSCENE_DATA.bgcnt[3]);
 
     write16(REG_BLDY, gWrittenToBLDY_NonGameplay);
-    write16(REG_BLDALPHA, gWrittenToBLDALPHA_H << 8 | gWrittenToBLDALPHA_L);
+    write16(REG_BLDALPHA, C_16_2_8(gWrittenToBLDALPHA_H, gWrittenToBLDALPHA_L));
 
     write16(REG_BLDCNT, CUTSCENE_DATA.bldcnt);
     write16(REG_DISPCNT, CUTSCENE_DATA.dispcnt);
@@ -276,10 +415,13 @@ void CutsceneLoadingVBlank(void)
  */
 void CutsceneInit(void)
 {
-    s32 unk;
+    s32 gameplayType;
+    #ifdef DEBUG
+    u8 temp;
+    #endif // DEBUG
 
     CallbackSetVBlank(CutsceneLoadingVBlank);
-    BitFill(3, 0, &gNonGameplayRAM, sizeof(union NonGameplayRAM), 0x20);
+    BitFill(3, 0, &gNonGameplayRam, sizeof(union NonGameplayRAM), 32);
 
     gOamXOffset_NonGameplay = gOamYOffset_NonGameplay = 0;
     gNextOamSlot = 0;
@@ -291,25 +433,45 @@ void CutsceneInit(void)
 
     write16(REG_DISPCNT, CUTSCENE_DATA.dispcnt = 0);
 
-    unk = sCutsceneData[gCurrentCutscene].unk_0;
-    if (unk != 0)
+    #ifdef DEBUG
+    if (gBootDebugActive == 0)
+    #endif // DEBUG
     {
-        if (unk == 2)
-            gPauseScreenFlag = PAUSE_SCREEN_PAUSE_OR_CUTSCENE;
-
-        if (unk < 3)
-            DmaTransfer(3, VRAM_OBJ, EWRAM_BASE + 0x1E000, unk * 0x4000, 0x10);
+        gameplayType = sCutsceneData[gCurrentCutscene].gameplayType;
+        if (gameplayType != CUTSCENE_TYPE_NON_GAMEPLAY)
+        {
+            if (gameplayType == CUTSCENE_TYPE_IN_GAMEPLAY)
+                gPauseScreenFlag = PAUSE_SCREEN_PAUSE_OR_CUTSCENE;
+    
+            if (gameplayType < CUTSCENE_TYPE_END)
+                DmaTransfer(3, VRAM_OBJ, EWRAM_BASE + 0x1E000, gameplayType * 0x4000, 16);
+        }
     }
+
+    #ifdef DEBUG
+    // Written this way to produce matching code
+    temp = gBootDebugActive;
+    if (temp != 0)
+    {
+        if (gButtonInput & KEY_L)
+            gEquipment.suitMiscActivation |= SMF_VARIA_SUIT;
+        else
+            gEquipment.suitMiscActivation &= ~SMF_VARIA_SUIT;
+    }
+
+    if (gDebugMode)
+        gCutsceneToSkip = gCurrentCutscene;
+    #endif // DEBUG
 
     if (gCutsceneToSkip != gCurrentCutscene)
         gCutsceneToSkip = CUTSCENE_NONE;
 
     ClearGfxRam();
 
-    gBg0HOFS_NonGameplay = gBg0VOFS_NonGameplay = 0x800;
-    gBg1HOFS_NonGameplay = gBg1VOFS_NonGameplay = 0x800;
-    gBg2HOFS_NonGameplay = gBg2VOFS_NonGameplay = 0x800;
-    gBg3HOFS_NonGameplay = gBg3VOFS_NonGameplay= 0x800;
+    gBg0HOFS_NonGameplay = gBg0VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
+    gBg1HOFS_NonGameplay = gBg1VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
+    gBg2HOFS_NonGameplay = gBg2VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
+    gBg3HOFS_NonGameplay = gBg3VOFS_NonGameplay= NON_GAMEPLAY_START_BG_POS;
 
     CUTSCENE_DATA.timeInfo.stage = 0;
     CUTSCENE_DATA.timeInfo.timer = 0;
@@ -454,7 +616,6 @@ u32 CutsceneStartBackgroundScrolling(struct CutsceneScrollingInfo scrollingData,
 {
     s32 nbrBackgrounds;
     s32 slot;
-    s32 var_0;
 
     nbrBackgrounds = 0;
 
@@ -591,7 +752,7 @@ void CutsceneUpdateBackgroundScrolling(struct CutsceneScrolling* pScrolling)
     {
         // Update delay
         if (pScrolling->delay > 0)
-            pScrolling->delay--;
+            APPLY_DELTA_TIME_DEC(pScrolling->delay);
         else
         {
             // Reset delay
@@ -689,14 +850,14 @@ void CutsceneUpdateBackgroundsPosition(u8 updateScrolling)
         }
     }
 
-    CUTSCENE_DATA.bg0hofs = gBg0HOFS_NonGameplay / 4;
-    CUTSCENE_DATA.bg0vofs = gBg0VOFS_NonGameplay / 4;
-    CUTSCENE_DATA.bg1hofs = gBg1HOFS_NonGameplay / 4;
-    CUTSCENE_DATA.bg1vofs = gBg1VOFS_NonGameplay / 4;
-    CUTSCENE_DATA.bg2hofs = gBg2HOFS_NonGameplay / 4;
-    CUTSCENE_DATA.bg2vofs = gBg2VOFS_NonGameplay / 4;
-    CUTSCENE_DATA.bg3hofs = gBg3HOFS_NonGameplay / 4;
-    CUTSCENE_DATA.bg3vofs = gBg3VOFS_NonGameplay / 4;
+    CUTSCENE_DATA.bg0hofs = gBg0HOFS_NonGameplay / PIXEL_SIZE;
+    CUTSCENE_DATA.bg0vofs = gBg0VOFS_NonGameplay / PIXEL_SIZE;
+    CUTSCENE_DATA.bg1hofs = gBg1HOFS_NonGameplay / PIXEL_SIZE;
+    CUTSCENE_DATA.bg1vofs = gBg1VOFS_NonGameplay / PIXEL_SIZE;
+    CUTSCENE_DATA.bg2hofs = gBg2HOFS_NonGameplay / PIXEL_SIZE;
+    CUTSCENE_DATA.bg2vofs = gBg2VOFS_NonGameplay / PIXEL_SIZE;
+    CUTSCENE_DATA.bg3hofs = gBg3HOFS_NonGameplay / PIXEL_SIZE;
+    CUTSCENE_DATA.bg3vofs = gBg3VOFS_NonGameplay / PIXEL_SIZE;
 
     if (CUTSCENE_DATA.horizontalScreenShake.bg != 0)
         CutsceneUpdateScreenShake(FALSE, &CUTSCENE_DATA.horizontalScreenShake);
@@ -717,9 +878,9 @@ void CutsceneUpdateScreenShake(u8 affectVertical, struct CutsceneScreenShake* pS
     s32 size;
 
     // Update delay
-    if (pShake->delay > 1)
+    if (pShake->delay > 1 * DELTA_TIME)
     {
-        pShake->delay--;
+        APPLY_DELTA_TIME_DEC(pShake->delay);
         return;
     }
 
@@ -818,7 +979,7 @@ void CutsceneUpdateSpecialEffect(void)
         // Update timer
         if (CUTSCENE_DATA.specialEffect.s_Timer > 0)
         {
-            CUTSCENE_DATA.specialEffect.s_Timer--;
+            APPLY_DELTA_TIME_DEC(CUTSCENE_DATA.specialEffect.s_Timer);
             return;
         }
 
@@ -860,7 +1021,7 @@ void CutsceneUpdateSpecialEffect(void)
         // Upate timer
         if (CUTSCENE_DATA.specialEffect.bg_Timer > 0)
         {
-            CUTSCENE_DATA.specialEffect.bg_Timer--;
+            APPLY_DELTA_TIME_DEC(CUTSCENE_DATA.specialEffect.bg_Timer);
             return;
         }
 
@@ -1013,35 +1174,35 @@ void CutsceneReset(void)
 }
 
 /**
- * @brief 61f0c | 1c | To document
+ * @brief 61f0c | 1c | Fade the screen to black
  * 
  */
-void unk_61f0c(void)
+void CutsceneFadeScreenToBlack(void)
 {
     CUTSCENE_DATA.dispcnt = 0;
     gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE;
-    CUTSCENE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+    CUTSCENE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
 }
 
 /**
- * @brief 61f28 | 1c | To document
+ * @brief 61f28 | 1c | Fade the screen to white
  * 
  */
-void unk_61f28(void)
+void CutsceneFadeScreenToWhite(void)
 {
     CUTSCENE_DATA.dispcnt = 0;
-    gWrittenToBLDY_NonGameplay = 16;
+    gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE;
     CUTSCENE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
 }
 
 /**
- * @brief 61f44 | 40 | To document
+ * @brief 61f44 | 40 | Update palette with fade and update cutscene fading
  * 
- * @return u32 
+ * @return u32 bool, ended
  */
-u32 unk_61f44(void)
+u32 CutsceneTransferAndUpdateFade(void)
 {
-    unk_61f60();
+    CutsceneTransferFade();
     if (CutsceneUpdateFading())
         return TRUE;
 
@@ -1049,15 +1210,15 @@ u32 unk_61f44(void)
 }
 
 /**
- * @brief 61f60 | 40 | To document
+ * @brief 61f60 | 40 | Transfer faded palette to RAM when ready
  * 
  */
-void unk_61f60(void)
+void CutsceneTransferFade(void)
 {
-    if (CUTSCENE_DATA.unk_BC)
+    if (CUTSCENE_DATA.fadingReady)
     {
-        DmaTransfer(3, (void*)sEwramPointer + 0x400, PALRAM_BASE, 0x400, 0x10);
-        CUTSCENE_DATA.unk_BC = FALSE;
+        DmaTransfer(3, PAL_WITH_FADE, PALRAM_BASE, PALRAM_SIZE, 16);
+        CUTSCENE_DATA.fadingReady = FALSE;
     }
 }
 
@@ -1065,7 +1226,7 @@ void unk_61f60(void)
  * @brief 61fa0 | 230 | Starts a cutscene background fading
  * 
  * @param type Type
- * @return u8 To document
+ * @return u8 bool, couldn't start
  */
 u8 CutsceneStartBackgroundFading(u8 type)
 {
@@ -1074,79 +1235,79 @@ u8 CutsceneStartBackgroundFading(u8 type)
     result = FALSE;
 
     CUTSCENE_DATA.fadingColor = 0;
-    CUTSCENE_DATA.unk_BC = FALSE;
-    CUTSCENE_DATA.unk_B8 = 0;
+    CUTSCENE_DATA.fadingReady = FALSE;
+    CUTSCENE_DATA.fadingDelay = 0; COLOR_FADING_END;
 
-    DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer, PALRAM_SIZE, 16);
+    DmaTransfer(3, PALRAM_BASE, PAL_TO_FADE, PALRAM_SIZE, 16);
 
     switch (type)
     {
-        case 1:
+        case COLOR_FADING_FLASH:
             BitFill(3, 0, PALRAM_BASE, PALRAM_SIZE, 16);
-            DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer + PALRAM_SIZE, PALRAM_SIZE, 16);
+            DmaTransfer(3, PALRAM_BASE, PAL_WITH_FADE, PALRAM_SIZE, 16);
 
             CUTSCENE_DATA.fadingStage = 0;
             CUTSCENE_DATA.fadingIntensity = 2;
-            CUTSCENE_DATA.unk_BE = 0;
-            CUTSCENE_DATA.fadingType = FADING_TYPE_IN;
+            CUTSCENE_DATA.fadingMaxDelay = 0;
+            CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_IN;
             break;
 
-        case 2:
+        case COLOR_FADING_CANCEL:
             BitFill(3, 0, PALRAM_BASE, PALRAM_SIZE, 16);
-            DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer + PALRAM_SIZE, PALRAM_SIZE, 16);
+            DmaTransfer(3, PALRAM_BASE, PAL_WITH_FADE, PALRAM_SIZE, 16);
 
             CUTSCENE_DATA.fadingStage = 0;
             CUTSCENE_DATA.fadingIntensity = 1;
-            CUTSCENE_DATA.unk_BE = 4;
-            CUTSCENE_DATA.fadingType = FADING_TYPE_IN;
+            CUTSCENE_DATA.fadingMaxDelay = 4;
+            CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_IN;
             break;
 
-        case 3:
+        case COLOR_FADING_WHITE:
             BitFill(3, 0, PALRAM_BASE, PALRAM_SIZE, 16);
-            DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer + PALRAM_SIZE, PALRAM_SIZE, 16);
+            DmaTransfer(3, PALRAM_BASE, PAL_WITH_FADE, PALRAM_SIZE, 16);
 
             CUTSCENE_DATA.fadingStage = 0;
             CUTSCENE_DATA.fadingIntensity = 1;
-            CUTSCENE_DATA.unk_BE = 8;
-            CUTSCENE_DATA.fadingType = FADING_TYPE_IN;
+            CUTSCENE_DATA.fadingMaxDelay = 8;
+            CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_IN;
             break;
 
-        case 5:
-            FadeMusic(20);
+        case COLOR_FADING_FLASH2:
+            FadeMusic(ONE_THIRD_SECOND);
 
-        case 6:
+        case COLOR_FADING_NO_TRANSITION:
             CUTSCENE_DATA.fadingStage = 2;
             CUTSCENE_DATA.fadingIntensity = 2;
-            CUTSCENE_DATA.unk_BE = 0;
-            CUTSCENE_DATA.fadingType = FADING_TYPE_OUT;
+            CUTSCENE_DATA.fadingMaxDelay = 0;
+            CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_OUT;
             break;
 
-        case 7:
+        case COLOR_FADING_FLASH_NO_TRANSITION:
             CUTSCENE_DATA.fadingStage = 2;
             CUTSCENE_DATA.fadingIntensity = 1;
-            CUTSCENE_DATA.unk_BE = 4;
-            CUTSCENE_DATA.fadingType = FADING_TYPE_OUT;
+            CUTSCENE_DATA.fadingMaxDelay = 4;
+            CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_OUT;
             break;
 
-        case 8:
+        case COLOR_FADING_NO_TRANSITION_HUD_HIDE:
             CUTSCENE_DATA.fadingStage = 2;
             CUTSCENE_DATA.fadingIntensity = 8;
-            CUTSCENE_DATA.unk_BE = 0;
-            CUTSCENE_DATA.fadingType = FADING_TYPE_OUT;
+            CUTSCENE_DATA.fadingMaxDelay = 0;
+            CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_OUT;
             break;
 
-        case 9:
+        case COLOR_FADING_SLOW_WHITE:
             CUTSCENE_DATA.fadingStage = 2;
             CUTSCENE_DATA.fadingIntensity = 2;
-            CUTSCENE_DATA.unk_BE = 0;
-            CUTSCENE_DATA.fadingType = FADING_TYPE_UNK;
+            CUTSCENE_DATA.fadingMaxDelay = 0;
+            CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_UNK;
             break;
 
-        case 10:
+        case COLOR_FADING_SLOW_BLACK:
             CUTSCENE_DATA.fadingStage = 2;
             CUTSCENE_DATA.fadingIntensity = 1;
-            CUTSCENE_DATA.unk_BE = 4;
-            CUTSCENE_DATA.fadingType = FADING_TYPE_UNK;
+            CUTSCENE_DATA.fadingMaxDelay = 4;
+            CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_UNK;
             break;
 
         default:
@@ -1168,28 +1329,30 @@ u8 CutsceneUpdateFading(void)
     u8 ended;
 
     ended = FALSE;
-    CUTSCENE_DATA.unk_B8++;
+    CUTSCENE_DATA.fadingDelay++;
 
     switch (CUTSCENE_DATA.fadingStage)
     {
         case 0:
-            if (CUTSCENE_DATA.unk_BC)
+            if (CUTSCENE_DATA.fadingReady)
                 break;
 
-            if (CUTSCENE_DATA.unk_B8 < CUTSCENE_DATA.unk_BE)
+            if (CUTSCENE_DATA.fadingDelay < CUTSCENE_DATA.fadingMaxDelay)
                 break;
 
             if (CUTSCENE_DATA.fadingColor < 32)
             {
-                src = (void*)sEwramPointer;
-                dst = (void*)sEwramPointer + PALRAM_SIZE;
+                // Transfer base palette
+                src = PAL_TO_FADE;
+                dst = PAL_WITH_FADE;
                 ApplySpecialBackgroundFadingColor(CUTSCENE_DATA.fadingType, CUTSCENE_DATA.fadingColor, &src, &dst, USHORT_MAX);
 
-                src = (void*)sEwramPointer + PALRAM_SIZE / 2;
-                dst = (void*)sEwramPointer + PALRAM_SIZE + PALRAM_SIZE / 2;
+                // Transfer obj palette
+                src = PAL_TO_FADE + PAL_SIZE;
+                dst = PAL_WITH_FADE + PAL_SIZE;
                 ApplySpecialBackgroundFadingColor(CUTSCENE_DATA.fadingType, CUTSCENE_DATA.fadingColor, &src, &dst, USHORT_MAX);
 
-                CUTSCENE_DATA.unk_BC = TRUE;
+                CUTSCENE_DATA.fadingReady = TRUE;
 
                 if (CUTSCENE_DATA.fadingColor == 31)
                 {
@@ -1204,14 +1367,14 @@ u8 CutsceneUpdateFading(void)
             }
             else
             {
-                DmaTransfer(3, (void*)sEwramPointer, (void*)sEwramPointer + PALRAM_SIZE, PALRAM_SIZE, 16);
-                CUTSCENE_DATA.unk_BC = TRUE;
+                DmaTransfer(3, PAL_TO_FADE, PAL_WITH_FADE, PALRAM_SIZE, 16);
+                CUTSCENE_DATA.fadingReady = TRUE;
                 CUTSCENE_DATA.fadingStage++;
             }
             break;
 
         case 1:
-            if (!CUTSCENE_DATA.unk_BC)
+            if (!CUTSCENE_DATA.fadingReady)
             {
                 CUTSCENE_DATA.fadingColor = 0;
                 CUTSCENE_DATA.fadingStage = 0;
@@ -1220,24 +1383,26 @@ u8 CutsceneUpdateFading(void)
             break;
 
         case 2:
-            if (CUTSCENE_DATA.unk_BC)
+            if (CUTSCENE_DATA.fadingReady)
                 break;
 
-            if (CUTSCENE_DATA.unk_B8 < CUTSCENE_DATA.unk_BE)
+            if (CUTSCENE_DATA.fadingDelay < CUTSCENE_DATA.fadingMaxDelay)
                 break;
 
-            CUTSCENE_DATA.unk_B8 = 0;
+            CUTSCENE_DATA.fadingDelay = 0;
             if (CUTSCENE_DATA.fadingColor < 32)
             {
-                src = (void*)sEwramPointer;
-                dst = (void*)sEwramPointer + PALRAM_SIZE;
+                // Transfer base palette
+                src = PAL_TO_FADE;
+                dst = PAL_WITH_FADE;
                 ApplySpecialBackgroundFadingColor(CUTSCENE_DATA.fadingType, CUTSCENE_DATA.fadingColor, &src, &dst, USHORT_MAX);
 
-                src = (void*)sEwramPointer + PALRAM_SIZE / 2;
-                dst = (void*)sEwramPointer + PALRAM_SIZE + PALRAM_SIZE / 2;
+                // Transfer obj palette
+                src = PAL_TO_FADE + PAL_SIZE;
+                dst = PAL_WITH_FADE + PAL_SIZE;
                 ApplySpecialBackgroundFadingColor(CUTSCENE_DATA.fadingType, CUTSCENE_DATA.fadingColor, &src, &dst, USHORT_MAX);
 
-                CUTSCENE_DATA.unk_BC = TRUE;
+                CUTSCENE_DATA.fadingReady = TRUE;
 
                 if (CUTSCENE_DATA.fadingColor == 31)
                 {
@@ -1253,17 +1418,17 @@ u8 CutsceneUpdateFading(void)
             else
             {
                 if (CUTSCENE_DATA.fadingType == 3)
-                    BitFill(3, COLOR_WHITE, (void*)sEwramPointer + PALRAM_SIZE, PALRAM_SIZE, 16);
+                    BitFill(3, COLOR_WHITE, PAL_WITH_FADE, PALRAM_SIZE, 16);
                 else                
-                    BitFill(3, COLOR_BLACK, (void*)sEwramPointer + PALRAM_SIZE, PALRAM_SIZE, 16);
+                    BitFill(3, COLOR_BLACK, PAL_WITH_FADE, PALRAM_SIZE, 16);
 
-                CUTSCENE_DATA.unk_BC = TRUE;
+                CUTSCENE_DATA.fadingReady = TRUE;
                 CUTSCENE_DATA.fadingStage = 3;
             }
             break;
 
         case 3:
-            if (!CUTSCENE_DATA.unk_BC)
+            if (!CUTSCENE_DATA.fadingReady)
             {
                 CUTSCENE_DATA.fadingColor = 0;
                 CUTSCENE_DATA.fadingStage = 0;
@@ -1274,3 +1439,24 @@ u8 CutsceneUpdateFading(void)
 
     return ended;
 }
+
+#ifdef DEBUG
+/**
+ * @brief Checks if the cutscene stage should be skipped when A is pressed
+ * 
+* @param bg Fade type (1 for black, 2 for white)
+ */
+void CutsceneCheckSkipStage(u8 fade)
+{
+    if (gBootDebugActive != 0 && gChangedInput & KEY_A)
+    {
+        CUTSCENE_DATA.timeInfo.stage++;
+        CUTSCENE_DATA.timeInfo.timer = CUTSCENE_DATA.timeInfo.subStage = 0;
+
+        if (fade == 1)
+            CutsceneFadeScreenToBlack();
+        else if (fade == 2)
+            CutsceneFadeScreenToWhite();
+    }
+}
+#endif // DEBUG

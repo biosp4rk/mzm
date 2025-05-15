@@ -211,9 +211,9 @@ void ProjectileProcessIceBeam(struct ProjectileData* pProj)
             distance /= 4;
         ProjectileMove(pProj, distance);
         if (pProj->status & PROJ_STATUS_X_FLIP)
-            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f));
+            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
         else
-            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f));
+            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -408,9 +408,9 @@ void ProjectileProcessWaveBeam(struct ProjectileData* pProj)
         if (gEquipment.beamBombsActivation & BBF_ICE_BEAM)
         {
             if (pProj->status & PROJ_STATUS_X_FLIP)
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f));
+                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
             else
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f));
+                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
         }
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
@@ -502,9 +502,9 @@ void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
         if (gEquipment.beamBombsActivation & BBF_ICE_BEAM)
         {
             if (pProj->status & PROJ_STATUS_X_FLIP)
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f));
+                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
             else
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f));
+                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
         }
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
@@ -771,7 +771,7 @@ void ProjectileProcessChargedLongBeam(struct ProjectileData* pProj)
         if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
-        ProjectileSetTrail(pProj, PE_CHARGED_LONG_BEAM_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
+        ProjectileSetTrail(pProj, PE_CHARGED_LONG_BEAM_TRAIL, CONVERT_SECONDS(.1f) + 1 * DELTA_TIME);
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -849,11 +849,11 @@ void ProjectileProcessChargedIceBeam(struct ProjectileData* pProj)
             distance /= 4;
         ProjectileMove(pProj, distance);
         if (pProj->status & PROJ_STATUS_X_FLIP)
-            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f));
+            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
         else
-            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f));
+            ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
 
-        ProjectileSetTrail(pProj, PE_CHARGED_ICE_BEAM_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
+        ProjectileSetTrail(pProj, PE_CHARGED_ICE_BEAM_TRAIL, CONVERT_SECONDS(.1f) + 1 * DELTA_TIME);
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -930,11 +930,11 @@ void ProjectileProcessChargedWaveBeam(struct ProjectileData* pProj)
         if (gEquipment.beamBombsActivation & BBF_ICE_BEAM)
         {
             if (pProj->status & PROJ_STATUS_X_FLIP)
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f));
+                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
             else
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f));
+                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
         }
-        ProjectileSetTrail(pProj, PE_CHARGED_WAVE_BEAM_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
+        ProjectileSetTrail(pProj, PE_CHARGED_WAVE_BEAM_TRAIL, CONVERT_SECONDS(.1f) + 1 * DELTA_TIME);
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -1027,21 +1027,21 @@ void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
         if (gEquipment.beamBombsActivation & BBF_ICE_BEAM)
         {
             if (pProj->status & PROJ_STATUS_X_FLIP)
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f));
+                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_LEFT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
             else
-                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f));
+                ProjectileSetTrail(pProj, PE_BEAM_TRAILING_RIGHT, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
 
             if (hasWave)
-                ProjectileSetTrail(pProj, PE_CHARGED_FULL_BEAM_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
+                ProjectileSetTrail(pProj, PE_CHARGED_FULL_BEAM_TRAIL, CONVERT_SECONDS(.1f) + 1 * DELTA_TIME);
             else
-                ProjectileSetTrail(pProj, PE_CHARGED_PLASMA_BEAM_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
+                ProjectileSetTrail(pProj, PE_CHARGED_PLASMA_BEAM_TRAIL, CONVERT_SECONDS(.1f) + 1 * DELTA_TIME);
         }
         else
         {
             if (hasWave)
-                ProjectileSetTrail(pProj, PE_CHARGED_FULL_BEAM_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
+                ProjectileSetTrail(pProj, PE_CHARGED_FULL_BEAM_TRAIL, CONVERT_SECONDS(.1f) + 1 * DELTA_TIME);
             else
-                ProjectileSetTrail(pProj, PE_CHARGED_PLASMA_BEAM_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
+                ProjectileSetTrail(pProj, PE_CHARGED_PLASMA_BEAM_TRAIL, CONVERT_SECONDS(.1f) + 1 * DELTA_TIME);
         }
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
@@ -1157,7 +1157,7 @@ void ProjectileProcessChargedPistol(struct ProjectileData* pProj)
         if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
-        ProjectileSetTrail(pProj, PE_CHARGED_PISTOL_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
+        ProjectileSetTrail(pProj, PE_CHARGED_PISTOL_TRAIL, CONVERT_SECONDS(.1f) + 1 * DELTA_TIME);
     }
     else if (pProj->movementStage == PROJECTILE_STAGE_SPAWNING)
     {
@@ -1253,7 +1253,7 @@ void ProjectileProcessMissile(struct ProjectileData* pProj)
             if (pProj->timer < CONVERT_SECONDS(.2f))
                 pProj->timer++;
 
-            ProjectileSetTrail(pProj, PE_MISSILE_TRAIL, CONVERT_SECONDS(.1f + 1.f / 60));
+            ProjectileSetTrail(pProj, PE_MISSILE_TRAIL, CONVERT_SECONDS(.1f) + 1 * DELTA_TIME);
         }
         else
         {
@@ -1360,7 +1360,7 @@ void ProjectileProcessSuperMissile(struct ProjectileData* pProj)
             if (pProj->timer <= CONVERT_SECONDS(.25f))
                 APPLY_DELTA_TIME_INC(pProj->timer);
 
-            ProjectileSetTrail(pProj, PE_SUPER_MISSILE_TRAIL, CONVERT_SECONDS(.05f));
+            ProjectileSetTrail(pProj, PE_SUPER_MISSILE_TRAIL, CONVERT_SECONDS(.05f)); // 3 * DELTA_TIME
         }
         else
         {
@@ -1564,7 +1564,7 @@ void ProjectileProcessBomb(struct ProjectileData* pProj)
             pProj->status |= PROJ_STATUS_HIGH_PRIORITY;
 
             // Timer before the bomb starts spinning faster
-            pProj->timer = CONVERT_SECONDS(.25f + 1.f / 60);
+            pProj->timer = CONVERT_SECONDS(.25f) + 1 * DELTA_TIME;
             pProj->movementStage++;
 
             SoundPlay(SOUND_BOMB_SET);
@@ -1645,7 +1645,7 @@ void ProjectileProcessBomb(struct ProjectileData* pProj)
             pProj->animationDurationCounter = 0;
             pProj->currentAnimationFrame = 0;
 
-            pProj->timer = CONVERT_SECONDS(.25f + 1.f / 60);
+            pProj->timer = CONVERT_SECONDS(.25f) + 1 * DELTA_TIME;
             pProj->movementStage++;
             break;
 
@@ -1658,7 +1658,7 @@ void ProjectileProcessBomb(struct ProjectileData* pProj)
                 pProj->animationDurationCounter = 0;
                 pProj->currentAnimationFrame = 0;
 
-                pProj->timer = CONVERT_SECONDS(.25f + 1.f / 60);
+                pProj->timer = CONVERT_SECONDS(.25f) + 1 * DELTA_TIME;
                 pProj->movementStage++;
             }
             break;

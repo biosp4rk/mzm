@@ -52,7 +52,7 @@ u8 GettingFullyPoweredSuitAnimation(void)
             break;
 
         case 1:
-            if (CUTSCENE_DATA.timeInfo.timer > 20)
+            if (CUTSCENE_DATA.timeInfo.timer > ONE_THIRD_SECOND)
             {
                 // Start ring movement
                 CUTSCENE_DATA.oam[OAM_SLOT_RING_BOTTOM].actions = RING_ACTION_MOVE;
@@ -91,10 +91,7 @@ u8 GettingFullyPoweredSuitAnimation(void)
                 CUTSCENE_DATA.dispcnt ^= DCNT_WIN1;
 
                 // Start final fade out
-                CutsceneStartSpriteEffect(CUTSCENE_DATA.bldcnt | BLDCNT_BG0_FIRST_TARGET_PIXEL |
-                    BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_BG2_FIRST_TARGET_PIXEL |
-                    BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL |
-                    BLDCNT_BACKDROP_FIRST_TARGET_PIXEL, BLDY_MAX_VALUE, 8, 1);
+                CutsceneStartSpriteEffect(CUTSCENE_DATA.bldcnt | BLDCNT_SCREEN_FIRST_TARGET, BLDY_MAX_VALUE, 8, 1);
 
                 // Set ring flying away
                 CUTSCENE_DATA.oam[OAM_SLOT_RING_BOTTOM].actions |= RING_ACTION_SCALING_VELOCITY;
@@ -104,7 +101,7 @@ u8 GettingFullyPoweredSuitAnimation(void)
             break;
 
         case 5:
-            if (CUTSCENE_DATA.timeInfo.timer > 60)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(1.f))
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -112,7 +109,7 @@ u8 GettingFullyPoweredSuitAnimation(void)
             break;
 
         case 6:
-            unk_61f28();
+            CutsceneFadeScreenToWhite();
             CUTSCENE_DATA.timeInfo.stage++;
             MACRO_CUTSCENE_NEXT_STAGE();
             break;
@@ -150,6 +147,10 @@ u8 GettingFullyPoweredSuitAnimation(void)
     for (i = OAM_UP_SPARKLES_START; i < OAM_UP_SPARKLES_END; i++)
         GettingFullyPoweredSuitUpdateSparkleGoingUp(&CUTSCENE_DATA.oam[i], i);
 
+    #ifdef DEBUG
+    CutsceneCheckSkipStage(2);
+    #endif // DEBUG
+
     return FALSE;
 }
 
@@ -166,7 +167,7 @@ void GettingFullyPoweredSuitUpdateRingPalette(struct CutscenePaletteData* pPalet
     // Update timer
     if (pPalette->timer != 0)
     {
-        pPalette->timer--;
+        APPLY_DELTA_TIME_DEC(pPalette->timer);
         return;
     }
 
@@ -179,8 +180,8 @@ void GettingFullyPoweredSuitUpdateRingPalette(struct CutscenePaletteData* pPalet
         pPalette->paletteRow = 0;
 
     // Transfer current row
-    DmaTransfer(3, &sGettingFullyPoweredSuitRingPal[sGettingFullyPoweredSuitRingPaletteRows[pPalette->paletteRow] * 16],
-        PALRAM_OBJ + 16 * 20, 16 * 2, 16);
+    DmaTransfer(3, &sGettingFullyPoweredSuitRingPal[sGettingFullyPoweredSuitRingPaletteRows[pPalette->paletteRow] * PAL_ROW],
+        PALRAM_OBJ + 10 * PAL_ROW_SIZE, 1 * PAL_ROW_SIZE, 16);
 }
 
 /**
@@ -238,7 +239,7 @@ void GettingFullyPoweredSuitUpdateSparkleAroundRing(struct CutsceneOamData* pOam
         // Spawn timer
         if (pOam->timer != 0)
         {
-            pOam->timer--;
+            APPLY_DELTA_TIME_DEC(pOam->timer);
         }
         else
         {
@@ -333,11 +334,11 @@ u8 GettingFullyPoweredSuitInit(void)
     // Make sure Samus isn't suitless
     ChaosEndEquipmentEffects();
 
-    unk_61f0c();
+    CutsceneFadeScreenToBlack();
 
     // Load palette, in both background and object
-    DmaTransfer(3, sGettingFullyPoweredSuitPal, PALRAM_BASE, 0x160, 16);
-    DmaTransfer(3, PALRAM_BASE, PALRAM_OBJ, PALRAM_SIZE / 2, 32);
+    DmaTransfer(3, sGettingFullyPoweredSuitPal, PALRAM_BASE, 11 * PAL_ROW_SIZE, 16);
+    DmaTransfer(3, PALRAM_BASE, PALRAM_OBJ, PAL_SIZE, 32);
     SET_BACKDROP_COLOR(COLOR_BLACK);
 
     // Load samus graphics

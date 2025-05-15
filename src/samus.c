@@ -1867,7 +1867,7 @@ void SamusSetLandingPose(struct SamusData* pData, struct SamusData* pCopy, struc
             else
             {
                 // Horizontal screen shake
-                ScreenShakeStartHorizontal(30, 1);
+                ScreenShakeStartHorizontal(CONVERT_SECONDS(.5f), 1);
 
                 // Set collision behavior
                 if (pCopy->pose == SPOSE_SHINESPARKING)
@@ -1998,7 +1998,7 @@ void SamusChangeToHurtPose(struct SamusData* pData, struct SamusData* pCopy, str
         xVelocity = DIV_SHIFT(xVelocity, 2);
         pData->xVelocity = xVelocity;
 
-        yVelocity = gBg1YPosition + SCREEN_SIZE_Y * 2 + SCREEN_SIZE_Y / 2 - pData->yPosition;
+        yVelocity = gBg1YPosition + SCREEN_SIZE_Y * 2 + SCREEN_Y_MIDDLE - pData->yPosition;
         yVelocity = DIV_SHIFT(yVelocity, 16);
         pData->yVelocity = yVelocity;
 
@@ -4810,7 +4810,7 @@ u8 SamusScrewAttackingGfx(struct SamusData* pData)
 }
 
 /**
- * @brief 9150 | c0 | Samus morphing subroutine
+ * @brief 9210 | 20 | Samus morphing subroutine
  * 
  * @param pData Samus data pointer
  * @return u8 New pose
@@ -5146,7 +5146,7 @@ u8 SamusHangingOnLedge(struct SamusData* pData)
     u32 blockAbove;
     u32 sideBlock;
 
-    if (gScreenShakeX.timer >= 30)
+    if (gScreenShakeX.timer >= CONVERT_SECONDS(.5f))
     {
         // Drop if horizontal screen shake active
         pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_FALL;
@@ -5278,7 +5278,7 @@ u8 SamusTurningToAimWhileHanging(struct SamusData* pData)
     u32 blockAbove;
     u32 sideBlock;
 
-    if (gScreenShakeX.timer >= 30)
+    if (gScreenShakeX.timer >= CONVERT_SECONDS(.5f))
     {
         // Drop if horizontal screen shake active
         pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_FALL;
@@ -5379,7 +5379,7 @@ u8 SamusAimingWhileHanging(struct SamusData* pData)
     u32 sideBlock;
     u32 aimingUp;
 
-    if (gScreenShakeX.timer >= 30)
+    if (gScreenShakeX.timer >= CONVERT_SECONDS(.5f))
     {
         // Drop if horizontal screen shake active
         pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_FALL;
@@ -5807,7 +5807,7 @@ u8 SamusShinesparking(struct SamusData* pData)
 
     if (stop)
     {
-        ScreenShakeStartVertical(30, 1);
+        ScreenShakeStartVertical(CONVERT_SECONDS(.5f), 1);
         return pData->pose + 1;
     }
 
@@ -5836,7 +5836,7 @@ u8 SamusShinesparking(struct SamusData* pData)
             }
         }
 
-        ScreenShakeStartHorizontal(30, 1);
+        ScreenShakeStartHorizontal(CONVERT_SECONDS(.5f), 1);
         return pData->pose + 1;
     }
 
@@ -6213,8 +6213,8 @@ u8 SamusDying(struct SamusData* pData)
     if (pData->xVelocity != 0 || pData->yVelocity != 0)
     {
         // Center of the screen
-        dstX = gBg1XPosition + PIXEL_TO_SUB_PIXEL(SCREEN_SIZE_X / 2);
-        dstY = gBg1YPosition + PIXEL_TO_SUB_PIXEL(SCREEN_SIZE_Y / 2 + QUARTER_BLOCK_SIZE + PIXEL_SIZE);
+        dstX = gBg1XPosition + PIXEL_TO_SUB_PIXEL(SCREEN_X_MIDDLE);
+        dstY = gBg1YPosition + PIXEL_TO_SUB_PIXEL(SCREEN_Y_MIDDLE + QUARTER_BLOCK_SIZE + PIXEL_SIZE);
 
         // Update X velocity
         if (pData->xVelocity > 0)

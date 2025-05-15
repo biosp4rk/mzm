@@ -15,6 +15,7 @@
 #include "constants/connection.h"
 #include "constants/game_state.h"
 #include "constants/samus.h"
+#include "constants/demo.h"
 
 #include "structs/audio.h"
 #include "structs/bg_clip.h"
@@ -390,6 +391,11 @@ u32 SramProcessEndingSave(void)
     u32 ended;
     u32 bit;
 
+    #ifdef DEBUG
+    if (gDebugMode)
+        return TRUE;
+    #endif
+
     ended = FALSE;
 
     switch (gSramOperationStage)
@@ -534,11 +540,11 @@ void SramCopy_GameCompletion(void)
 }
 
 /**
- * @brief 73a84 | 120 | Processes saving the current file during the ending (unused, doesn't account for best completion times)
+ * @brief 73a84 | 120 | Processes saving the current file as if it were completed (used by debug code)
  * 
  * @return u32 bool, ended
  */
-u32 SramProcessEndingSave_Unused(void)
+u32 SramProcessEndingSave_Debug(void)
 {
     u32 ended;
     u32 bit;
@@ -1160,14 +1166,9 @@ void SramRead_Arrays(void)
     pFile = &sSramEwramPointer->files[gMostRecentSaveFile];
     src = &pFile->worldData;
 
-    DmaTransfer(3, src->visitedMinimapTiles,
-        gVisitedMinimapTiles, sizeof(gVisitedMinimapTiles), 16);
-
-    DmaTransfer(3, src->hatchesOpened,
-        gHatchesOpened, sizeof(gHatchesOpened) / 2, 16);
-
-    DmaTransfer(3, src->eventsTriggered,
-        gEventsTriggered, sizeof(gEventsTriggered), 16);
+    DmaTransfer(3, src->visitedMinimapTiles, gVisitedMinimapTiles, sizeof(gVisitedMinimapTiles), 16);
+    DmaTransfer(3, src->hatchesOpened, gHatchesOpened, sizeof(gHatchesOpened), 16);
+    DmaTransfer(3, src->eventsTriggered, gEventsTriggered, sizeof(gEventsTriggered), 16);
 
     BitFill(3, USHORT_MAX, gNeverReformBlocks, sizeof(gNeverReformBlocks), 16);
     BitFill(3, USHORT_MAX, gItemsCollected, sizeof(gItemsCollected), 16);
@@ -1449,7 +1450,7 @@ void SramWrite_Language(void)
     pSave->notChecksum = ~0;
     
     i = gLanguage;
-    if ((u32)i > LANGUAGE_SPANISH)
+    if ((u32)i >= LANGUAGE_END)
         i = LANGUAGE_ENGLISH;
 
     pSave->value = i;
@@ -1745,10 +1746,9 @@ void SramWrite_ToEwram_DemoRam(void)
     pFile->environmentalEffects[3] = gSamusEnvironmentalEffects[3];
     pFile->environmentalEffects[4] = gSamusEnvironmentalEffects[4];
 
-    // 0x2037400 = gVisitedMinimapTiles
-    DmaTransfer(3, (u32*)0x2037400 + gCurrentArea * MINIMAP_SIZE, pFile->visitedMinimapTiles, sizeof(pFile->visitedMinimapTiles), 16);
-    // 0x2037c00 = gHatchesOpened
-    DmaTransfer(3, (u8*)0x2037c00 + gCurrentArea * 32, pFile->hatchesOpened, sizeof(pFile->hatchesOpened), 16);
+    // FIXME use symbol
+    DmaTransfer(3, (u32*)0x2037400 + gCurrentArea * MINIMAP_SIZE, pFile->visitedMinimapTiles, sizeof(pFile->visitedMinimapTiles), 16); // gVisitedMinimapTiles
+    DmaTransfer(3, gHatchesOpened[gCurrentArea], pFile->hatchesOpened, sizeof(pFile->hatchesOpened), 16);
 
     pFile->text[0] = 'A';
     pFile->text[1] = 'T';
@@ -1781,11 +1781,9 @@ void SramLoad_DemoRamValues(u8 loadSamusData, u8 demoNumber)
         gLastDoorUsed = pDemo->lastDoorUsed;
         gUseMotherShipDoors = pDemo->useMotherShipDoors;
 
-        // 0x02037400 = gVisitedMinimapTiles
-        DmaTransfer(3, pDemo->visitedMinimapTiles, (u32*)0x02037400 + gCurrentArea * MINIMAP_SIZE,
-            sizeof(pDemo->visitedMinimapTiles), 16);
-        // 0x2037c00 = gHatchesOpened
-        DmaTransfer(3, pDemo->hatchesOpened, (u16*)0x2037c00 + gCurrentArea * 16, sizeof(pDemo->hatchesOpened), 16);
+        // FIXME use symbol
+        DmaTransfer(3, pDemo->visitedMinimapTiles, (u32*)0x02037400 + gCurrentArea * MINIMAP_SIZE, sizeof(pDemo->visitedMinimapTiles), 16); // gVisitedMinimapTiles
+        DmaTransfer(3, pDemo->hatchesOpened, gHatchesOpened[gCurrentArea], sizeof(pDemo->hatchesOpened), 16);
     } 
     else if (loadSamusData == TRUE)
     {
@@ -2033,31 +2031,62 @@ void unk_757c8(u8 file)
  */
 void unk_7584c(u8 param_1)
 {
+    #ifdef DEBUG
+    u8 temp;
+    #endif // DEBUG
+
     gButtonAssignments = sDefaultButtonAssignments;
     gMaxInGameTimerFlag = FALSE;
     gShipLandingFlag = FALSE;
-    gColorFading.type = 2;
+    gColorFading.type = COLOR_FADING_CANCEL;
 
     switch (param_1)
     {
         case 0:
-            gStartingInfo = sStartingInfo;
+            gSectionInfo = sSectionInfo;
             Sram_CheckLoadSaveFile();
 
             gCurrentCutscene = 0;
             break;
 
         case 1:
-            gStartingInfo = sStartingInfo;
+            gSectionInfo = sSectionInfo;
             Sram_InitSaveFile();
             gCurrentRoom = 0;
             gLastDoorUsed = 0;
             gMaxInGameTimerFlag = TRUE;
             gSkipDoorTransition = FALSE;
-            gDebugFlag = FALSE;
+            #ifdef DEBUG
+            if (gDemoState != DEMO_STATE_NONE)
+            #endif // DEBUG
+            {
+                gDebugMode = FALSE;            
+            }
             gLanguage = LANGUAGE_ENGLISH;
 
             gCurrentCutscene = 0;
+            break;
+
+        case 2:
+            #ifdef DEBUG
+            gSectionInfo = sSectionInfo;
+            Sram_InitSaveFile();
+            // Written this way to produce matching code
+            temp = gDebugMode;
+            if (gDebugMode == 0)
+            {
+                gDebugMode = 2;
+                BootDebugWriteSram(temp);
+            }
+
+            gEquipment.downloadedMapStatus = gSectionInfo.downloadedMaps;
+            gSectionInfo.sectionIndex = gCurrentArea;
+            gSectionInfo.starIndex = gCurrentArea;
+            gAreaBeforeTransition = gCurrentArea;
+            gCurrentRoom = 0;
+            gLastDoorUsed = 1;
+            SramRead_Language();
+            #endif // DEBUG
             break;
 
         case 3:
@@ -2066,9 +2095,6 @@ void unk_7584c(u8 param_1)
                 SramLoadFile();
 
             gCurrentCutscene = 0;
-            break;
-
-        case 2:
             break;
     }
 
@@ -2097,8 +2123,8 @@ void Sram_CheckLoadSaveFile(void)
         gColorFading.type = COLOR_FADING_LANDING_SHIP;
 
         gEquipment.downloadedMapStatus = 0;
-        gCurrentArea = gStartingInfo.startingArea;
-        gAreaBeforeTransition = gStartingInfo.startingArea;
+        gCurrentArea = gSectionInfo.sectionIndex;
+        gAreaBeforeTransition = gSectionInfo.sectionIndex;
         
         gCurrentRoom = 0;
         gLastDoorUsed = 0;
@@ -2121,7 +2147,7 @@ void Sram_CheckLoadSaveFile(void)
     gGameCompletion.language = gSaveFilesInfo[gMostRecentSaveFile].language;
     gLanguage = gGameCompletion.language;
     gSkipDoorTransition = FALSE;
-    gDebugFlag = FALSE;
+    gDebugMode = FALSE;
 }
 
 #ifdef NON_MATCHING

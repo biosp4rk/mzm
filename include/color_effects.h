@@ -3,13 +3,6 @@
 
 #include "types.h"
 
-#define FADING_TYPE_IN 0
-#define FADING_TYPE_FLASH 1
-#define FADING_TYPE_OUT 2
-#define FADING_TYPE_UNK 3
-
-// Functions
-
 void unk_5b24c(void);
 void unk_5b288(void);
 void unk_5b2c4(void);

@@ -114,8 +114,8 @@ void HazeSetupCode(u8 hazeValue)
             break;
 
         case HAZE_VALUE_BG3:
-            DmaTransfer(3, Haze_Bg3, &gNonGameplayRAM.inGame[640], 0x200, 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRAM.inGame[640] + 1);
+            DmaTransfer(3, Haze_Bg3, &gNonGameplayRam.inGame[640], 0x200, 16);
+            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRam.inGame[640] + 1);
 
             gHazeInfo.enabled = TRUE;
             
@@ -125,8 +125,8 @@ void HazeSetupCode(u8 hazeValue)
             break;
 
         case HAZE_VALUE_BG3_STRONG_WEAK:
-            DmaTransfer(3, Haze_Bg3StrongWeak, &gNonGameplayRAM.inGame[640], 0x200, 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRAM.inGame[640] + 1);
+            DmaTransfer(3, Haze_Bg3StrongWeak, &gNonGameplayRam.inGame[640], 0x200, 16);
+            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRam.inGame[640] + 1);
 
             gHazeInfo.enabled = TRUE;
             
@@ -136,8 +136,8 @@ void HazeSetupCode(u8 hazeValue)
             break;
  
         case HAZE_VALUE_BG3_NONE_WEAK:
-            DmaTransfer(3, Haze_Bg3NoneWeak, &gNonGameplayRAM.inGame[640], 0x200, 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRAM.inGame[640] + 1);
+            DmaTransfer(3, Haze_Bg3NoneWeak, &gNonGameplayRam.inGame[640], 0x200, 16);
+            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRam.inGame[640] + 1);
 
             gHazeInfo.enabled = TRUE;
             
@@ -147,8 +147,8 @@ void HazeSetupCode(u8 hazeValue)
             break;
 
         case HAZE_VALUE_BG3_BG2_STRONG_WEAK_MEDIUM:
-            DmaTransfer(3, Haze_Bg3Bg2StrongWeakMedium, &gNonGameplayRAM.inGame[640], 0x200, 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRAM.inGame[640] + 1);
+            DmaTransfer(3, Haze_Bg3Bg2StrongWeakMedium, &gNonGameplayRam.inGame[640], 0x200, 16);
+            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRam.inGame[640] + 1);
 
             gHazeInfo.enabled = TRUE;
             
@@ -158,8 +158,8 @@ void HazeSetupCode(u8 hazeValue)
             break;
 
         case HAZE_VALUE_BG3_BG2_BG1:
-            DmaTransfer(3, Haze_Bg3Bg2Bg1, &gNonGameplayRAM.inGame[640], 0x200, 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRAM.inGame[640] + 1);
+            DmaTransfer(3, Haze_Bg3Bg2Bg1, &gNonGameplayRam.inGame[640], 0x200, 16);
+            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRam.inGame[640] + 1);
 
             gHazeInfo.enabled = TRUE;
             
@@ -173,7 +173,7 @@ void HazeSetupCode(u8 hazeValue)
             gWrittenToWINOUT_L = WIN0_BG0 | WIN0_BG1 | WIN0_BG2 | WIN0_OBJ | WIN0_COLOR_EFFECT;
 
             gWrittenToBLDCNT = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_BG2_FIRST_TARGET_PIXEL |
-                BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+                BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
 
             write16(REG_BLDY, 12);
 
@@ -187,8 +187,8 @@ void HazeSetupCode(u8 hazeValue)
 
             gBackdropColor = COLOR_WHITE;
 
-            DmaTransfer(3, Haze_PowerBombExpanding, &gNonGameplayRAM.inGame[640], 0x200, 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRAM.inGame[640] + 1);
+            DmaTransfer(3, Haze_PowerBombExpanding, &gNonGameplayRam.inGame[640], 0x200, 16);
+            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRam.inGame[640] + 1);
 
             gHazeInfo.enabled = TRUE;
             
@@ -201,8 +201,8 @@ void HazeSetupCode(u8 hazeValue)
             break;
 
         case HAZE_VALUE_POWER_BOMB_RETRACTING:
-            DmaTransfer(3, Haze_PowerBombRetracting, &gNonGameplayRAM.inGame[640], 0x200, 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRAM.inGame[640] + 1);
+            DmaTransfer(3, Haze_PowerBombRetracting, &gNonGameplayRam.inGame[640], 0x200, 16);
+            gHazeProcessCodePointer = (HazeFunc_T)(&gNonGameplayRam.inGame[640] + 1);
 
             gHazeInfo.enabled = TRUE;
 
@@ -692,7 +692,8 @@ u32 Haze_PowerBombExpanding(void)
     xPosition = SUB_PIXEL_TO_PIXEL_(gCurrentPowerBomb.xPosition - gBg1XPosition);
     yPosition = SUB_PIXEL_TO_PIXEL_(gCurrentPowerBomb.yPosition - gBg1YPosition);
 
-    dst = (u16*)0x2026d00;
+    // FIXME use symbol
+    dst = (u16*)0x2026d00; // gPreviousHazeValues
     for (i = 0; i <= 53 * 3; i++, dst++)
         *dst = 0;
 
@@ -713,7 +714,8 @@ u32 Haze_PowerBombExpanding(void)
         i = 53 * 3;
     }
 
-    dst = (u16*)0x2026d00 + i;
+    // FIXME use symbol
+    dst = (u16*)0x2026d00 + i; // gPreviousHazeValues
     for (; i < screenY; i++, subSlice++, dst++)
     {
         yPosition = (s16)(xPosition + src[subSlice * 2 + 1] * 2);
@@ -766,7 +768,8 @@ u32 Haze_PowerBombRetracting(void)
     xPosition = SUB_PIXEL_TO_PIXEL_(gCurrentPowerBomb.xPosition - gBg1XPosition);
     yPosition = SUB_PIXEL_TO_PIXEL_(gCurrentPowerBomb.yPosition - gBg1YPosition);
 
-    dst = (u16*)0x2026d00;
+    // FIXME use symbol
+    dst = (u16*)0x2026d00; // gPreviousHazeValues
     for (i = 0; i <= 53 * 3; i++, dst++)
         *dst = 0;
 
@@ -788,7 +791,8 @@ u32 Haze_PowerBombRetracting(void)
         i = 53 * 3;
     }
 
-    dst = (u16*)0x2026d00 + i;
+    // FIXME use symbol
+    dst = (u16*)0x2026d00 + i; // gPreviousHazeValues
     for (; i < screenY; i++, subSlice++, dst++)
     {
         yPosition = (s16)(xPosition + src[subSlice * 2 + 1] * 2);

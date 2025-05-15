@@ -19,7 +19,7 @@
 /**
  * @brief 60928 | bc | Checks if the current room music track should play
  * 
-* @param area Area
+ * @param area Area
  * @param room Room id
  */
 void CheckPlayRoomMusicTrack(u8 area, u8 room)
@@ -31,19 +31,24 @@ void CheckPlayRoomMusicTrack(u8 area, u8 room)
     switch (gAreaBeforeTransition)
     {
         case AREA_NORFAIR:
-            if (gMusicTrackInfo.currentRoomTrack == 0x5F)
+            if (gMusicTrackInfo.currentRoomTrack == MUSIC_5F)
                 gMusicTrackInfo.unk = TRUE;
             break;
 
         case AREA_CHOZODIA:
-            if (gEquipment.suitType == SUIT_FULLY_POWERED && gAlarmTimer != 0 &&
-                (gMusicTrackInfo.currentRoomTrack == 0x5B || gMusicTrackInfo.currentRoomTrack == 0x5C))
+            if (gEquipment.suitType != SUIT_FULLY_POWERED)
+                break;
+            
+            if (gAlarmTimer == 0)
+                break;
+            
+            if (gMusicTrackInfo.currentRoomTrack == MUSIC_MAP_ROOM_2 || gMusicTrackInfo.currentRoomTrack == MUSIC_SAVE_ELEVATOR_ROOM_2)
                 gMusicTrackInfo.unk = TRUE;
     }
 
     if (!gMusicTrackInfo.unk)
     {
-        if (!gCurrentCutscene || sCutsceneData[gCurrentCutscene].type)
+        if (gCurrentCutscene == CUTSCENE_NONE || sCutsceneData[gCurrentCutscene].playRoomMusic)
         {
             CheckSetNewMusicTrack(gMusicTrackInfo.currentRoomTrack);
             gMusicTrackInfo.takingNormalTransition = TRUE;
@@ -61,14 +66,23 @@ void CheckPlayLoadingJingle(void)
 {
     gMusicTrackInfo.currentRoomTrack = gCurrentRoomEntry.musicTrack;
 
-    if (!gGameModeSub3 && gDemoState == DEMO_STATE_NONE && gIsLoadingFile)
+    if (!gGameModeSub3 && gDemoState == DEMO_STATE_NONE)
     {
-        PlayCurrentMusicTrack();
-        if (gSamusData.pose == SPOSE_SAVING_LOADING_GAME)
+        if (gIsLoadingFile)
         {
-            gDisablePause = TRUE;
-            InsertMusicAndQueueCurrent(MUSIC_LOADING_JINGLE, 1);
+            PlayCurrentMusicTrack();
+            if (gSamusData.pose == SPOSE_SAVING_LOADING_GAME)
+            {
+                gDisablePause = TRUE;
+                InsertMusicAndQueueCurrent(MUSIC_LOADING_JINGLE, TRUE);
+            }
         }
+        #ifdef DEBUG
+        else if (gDebugMode && gCurrentRoomEntry.musicTrack != 0)
+        {
+            unk_42bc(gMusicTrackInfo.currentRoomTrack);
+        }
+        #endif // DEBUG
     }
 }
 

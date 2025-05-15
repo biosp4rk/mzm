@@ -1,11 +1,10 @@
 #include "data/menus/pause_screen_sub_menus_data.h"
 
-#include "constants/menus/pause_screen.h"
 #include "constants/event.h"
 #include "constants/connection.h"
 #include "constants/samus.h"
 
-const struct ChozoStatueTarget sChozoStatueTargets[16] = {
+const struct ChozoStatueTarget sChozoStatueTargets[TARGET_END] = {
     [TARGET_LONG_BEAM] = {
         .statueArea = AREA_BRINSTAR,
         .statueXStart = 9,
@@ -200,7 +199,7 @@ const struct ChozoStatueTarget sChozoStatueTargets[16] = {
     },
 };
 
-const u8 sChozoStatueTargetConditions[16][2] = {
+const u8 sChozoStatueTargetConditions[TARGET_END][2] = {
     [TARGET_LONG_BEAM] = {
         CHOZO_STATUE_HINT_CONDITION_TYPE_BEAM_BOMBS,
         BBF_LONG_BEAM
@@ -267,7 +266,7 @@ const u8 sChozoStatueTargetConditions[16][2] = {
     }
 };
 
-const u8 sChozoStatueHintEvents[16] = {
+const u8 sChozoStatueHintEvents[TARGET_END] = {
     [TARGET_LONG_BEAM] = EVENT_STATUE_LONG_BEAM_GRABBED,
     [TARGET_BOMBS] = EVENT_STATUE_BOMBS_GRABBED,
     [TARGET_ICE_BEAM] = EVENT_STATUE_ICE_BEAM_GRABBED,
@@ -288,150 +287,150 @@ const u8 sChozoStatueHintEvents[16] = {
 
 const s8 sChozoStatueTargetPathBrinstar[9][2] = {
     [0] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [1] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [2] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [3] = {
-        3, 0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_KRAID, 0x40
     },
     [4] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [5] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [6] = {
-        2, 0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, 0x40
     },
     [7] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [8] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
 };
 
 const s8 sChozoStatueTargetPathKraid[9][2] = {
     [0] = {
-        3, -0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_KRAID, -0x40
     },
     [1] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [2] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [3] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [4] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [5] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [6] = {
-        3, -0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_KRAID, -0x40
     },
     [7] = {
-        2, 0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, 0x40
     },
     [8] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
 };
 
 const s8 sChozoStatueTargetPathNorfair[9][2] = {
     [0] = {
-        2, -0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, -0x40
     },
     [1] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [2] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [3] = {
-        2, -0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, -0x40
     },
     [4] = {
-        3, 0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_KRAID, 0x40
     },
     [5] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [6] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [7] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [8] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
 };
 
 const s8 sChozoStatueTargetPathRidley[9][2] = {
     [0] = {
-        4, -0x40
+        ELEVATOR_ROUTE_NORFAIR_TO_RIDLEY, -0x40
     },
     [1] = {
-        2, -0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, -0x40
     },
     [2] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [3] = {
-        4, -0x40
+        ELEVATOR_ROUTE_NORFAIR_TO_RIDLEY, -0x40
     },
     [4] = {
-        2, -0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, -0x40
     },
     [5] = {
-        3, 0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_KRAID, 0x40
     },
     [6] = {
-        4, -0x40
+        ELEVATOR_ROUTE_NORFAIR_TO_RIDLEY, -0x40
     },
     [7] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [8] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
 };
 
 const s8 sChozoStatueTargetPathCrateria[9][2] = {
     [0] = {
-        7, 0x40
+        ELEVATOR_ROUTE_CRATERIA_TO_NORFAIR, 0x40
     },
     [1] = {
-        2, -0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, -0x40
     },
     [2] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [3] = {
-        7, 0x40
+        ELEVATOR_ROUTE_CRATERIA_TO_NORFAIR, 0x40
     },
     [4] = {
-        2, -0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, -0x40
     },
     [5] = {
-        3, 0x40
+        ELEVATOR_ROUTE_BRINSTAR_TO_KRAID, 0x40
     },
     [6] = {
-        7, 0x40
+        ELEVATOR_ROUTE_CRATERIA_TO_NORFAIR, 0x40
     },
     [7] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
     [8] = {
-        0, 0x40
+        ELEVATOR_ROUTE_NONE, 0x40
     },
 };

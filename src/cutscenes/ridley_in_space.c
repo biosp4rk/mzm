@@ -98,7 +98,7 @@ u8 RidleyInSpaceShipLeaving(void)
             break;
 
         case 1:
-            if (CUTSCENE_DATA.timeInfo.timer > 60)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(1.f))
             {
                 SoundPlay(SOUND_RIDLEY_IN_SPACE_MOTHER_SHIP_FLYING);
 
@@ -120,7 +120,7 @@ u8 RidleyInSpaceShipLeaving(void)
             break;
 
         case 3:
-            if (CUTSCENE_DATA.timeInfo.timer > 60 * 2)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(2.f))
             {
                 // Start mother ship zoom animation
                 CUTSCENE_DATA.oam[RIDLEY_IN_SPACE_MOTHER_SHIP_SLOT].actions = MOTHER_SHIP_ACTION_ZOOM;
@@ -141,7 +141,7 @@ u8 RidleyInSpaceShipLeaving(void)
             break;
 
         case 5:
-            if (CUTSCENE_DATA.timeInfo.timer > 60 * 2)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(2.f))
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -149,7 +149,7 @@ u8 RidleyInSpaceShipLeaving(void)
             break;
 
         case 6:
-            unk_61f0c();
+            CutsceneFadeScreenToBlack();
             CUTSCENE_DATA.timeInfo.stage++;
             MACRO_CUTSCENE_NEXT_STAGE();
             break;
@@ -163,6 +163,10 @@ u8 RidleyInSpaceShipLeaving(void)
 
     // Update mother ship
     RidleyInSpaceUpdateShipLeaving(&CUTSCENE_DATA.oam[RIDLEY_IN_SPACE_MOTHER_SHIP_SLOT]);
+
+    #ifdef DEBUG
+    CutsceneCheckSkipStage(1);
+    #endif // DEBUG
 
     return FALSE;
 }
@@ -306,7 +310,7 @@ u8 RidleyInSpaceRidleySuspicious(void)
         
         case 1:
         case 4:
-            if (CUTSCENE_DATA.timeInfo.timer > 60)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(1.f))
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -314,11 +318,15 @@ u8 RidleyInSpaceRidleySuspicious(void)
             break;
 
         case 5:
-            unk_61f0c();
+            CutsceneFadeScreenToBlack();
             CUTSCENE_DATA.timeInfo.stage++;
             MACRO_CUTSCENE_NEXT_STAGE();
             break;
     }
+
+    #ifdef DEBUG
+    CutsceneCheckSkipStage(1);
+    #endif // DEBUG
 
     return FALSE;
 }
@@ -364,7 +372,7 @@ u8 RidleyInSpaceRedAlert(void)
             break;
 
         case 1:
-            if (CUTSCENE_DATA.timeInfo.timer > 40)
+            if (CUTSCENE_DATA.timeInfo.timer > TWO_THIRD_SECOND)
             {
                 // Setup palette data
                 CUTSCENE_DATA.paletteData[0] = sRidleyInSpacePaletteData;
@@ -374,7 +382,7 @@ u8 RidleyInSpaceRedAlert(void)
             break;
 
         case 2:
-            if (CUTSCENE_DATA.timeInfo.timer > 60)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(1.f))
             {
                 // Start scroll
                 CutsceneStartBackgroundScrolling(sRidleyInSpaceScrollingInfo[0], sRidleyInSpacePageData[1].bg);
@@ -395,7 +403,7 @@ u8 RidleyInSpaceRedAlert(void)
             break;
 
         case 4:
-            if (CUTSCENE_DATA.timeInfo.timer > 60)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(1.f))
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -403,13 +411,18 @@ u8 RidleyInSpaceRedAlert(void)
             break;
 
         case 5:
-            unk_61f0c();
+            CutsceneFadeScreenToBlack();
             CUTSCENE_DATA.timeInfo.stage++;
             MACRO_CUTSCENE_NEXT_STAGE();
             break;
     }
 
     RidleyInSpaceUpdateAlertPalette(&CUTSCENE_DATA.paletteData[0]);
+
+    #ifdef DEBUG
+    CutsceneCheckSkipStage(1);
+    #endif // DEBUG
+
     return FALSE;
 }
 
@@ -426,7 +439,7 @@ void RidleyInSpaceUpdateAlertPalette(struct CutscenePaletteData* pPalette)
     // Update timer
     if (pPalette->timer != 0)
     {
-        pPalette->timer--;
+        APPLY_DELTA_TIME_DEC(pPalette->timer);
         return;
     }
 
@@ -439,8 +452,7 @@ void RidleyInSpaceUpdateAlertPalette(struct CutscenePaletteData* pPalette)
         pPalette->paletteRow = 0;
 
     // Transfer current row
-    DmaTransfer(3, &sRidleyInSpaceRedAlertPal[sRidleyInSpaceRedAlertPaletteRows[pPalette->paletteRow] * 16],
-        PALRAM_BASE + 16 * 10, 16 * 2, 16);
+    DmaTransfer(3, &sRidleyInSpaceRedAlertPal[sRidleyInSpaceRedAlertPaletteRows[pPalette->paletteRow] * 16], PALRAM_BASE + 5 * PAL_ROW_SIZE, 1 * PAL_ROW_SIZE, 16);
 }
 
 /**
@@ -453,7 +465,7 @@ u8 RidleyInSpaceViewOfShip(void)
     switch (CUTSCENE_DATA.timeInfo.subStage)
     {
         case 0:
-            if (CUTSCENE_DATA.timeInfo.timer > 60 / 2)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(.5f))
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -461,7 +473,7 @@ u8 RidleyInSpaceViewOfShip(void)
             break;
 
         case 1:
-            if (unk_61f44())
+            if (CutsceneTransferAndUpdateFade())
             {
                 CUTSCENE_DATA.timeInfo.timer = 0;
                 CUTSCENE_DATA.timeInfo.subStage++;
@@ -469,7 +481,7 @@ u8 RidleyInSpaceViewOfShip(void)
             break;
 
         case 2:
-            if (CUTSCENE_DATA.timeInfo.timer > 60)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(1.f))
             {
                 // Start left ship
                 CUTSCENE_DATA.oam[RIDLEY_IN_SPACE_LEFT_SHIP_SLOT].actions = SHIP_ACTION_MOVE_HORIZONTALLY | SHIP_ACTION_MOVE_VERTICALLY;
@@ -479,7 +491,7 @@ u8 RidleyInSpaceViewOfShip(void)
             break;
 
         case 3:
-            if (CUTSCENE_DATA.timeInfo.timer > 8)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(2.f / 15))
             {
                 // Start right ship
                 CUTSCENE_DATA.oam[RIDLEY_IN_SPACE_RIGHT_SHIP_SLOT].actions = SHIP_ACTION_MOVE_HORIZONTALLY | SHIP_ACTION_MOVE_VERTICALLY;
@@ -489,7 +501,7 @@ u8 RidleyInSpaceViewOfShip(void)
             break;
 
         case 4:
-            if (CUTSCENE_DATA.timeInfo.timer > 60 * 2)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(2.f))
             {
                 // Set ships semi transparent
                 CUTSCENE_DATA.oam[RIDLEY_IN_SPACE_LEFT_SHIP_SLOT].objMode = OAM_OBJ_MODE_SEMI_TRANSPARENT;
@@ -516,9 +528,9 @@ u8 RidleyInSpaceViewOfShip(void)
             break;
 
         case 6:
-            if (CUTSCENE_DATA.timeInfo.timer > 90)
+            if (CUTSCENE_DATA.timeInfo.timer > CONVERT_SECONDS(1.5f))
             {
-                unk_61f0c();
+                CutsceneFadeScreenToBlack();
                 CUTSCENE_DATA.timeInfo.stage++;
                 MACRO_CUTSCENE_NEXT_STAGE();
             }
@@ -536,6 +548,10 @@ u8 RidleyInSpaceViewOfShip(void)
     // Slowly move background
     if (MOD_AND(gFrameCounter8Bit, 8) == 0)
         *CutsceneGetBgVerticalPointer(sRidleyInSpacePageData[0].bg) -= ONE_SUB_PIXEL;
+
+    #ifdef DEBUG
+    CutsceneCheckSkipStage(1);
+    #endif // DEBUG
 
     return FALSE;
 }
@@ -649,7 +665,7 @@ void RidleyInSpaceUpdateLeftBlueShip(struct CutsceneOamData* pOam)
  */
 u8 RidleyInSpaceInit(void)
 {
-    unk_61f0c();
+    CutsceneFadeScreenToBlack();
 
     // Load space background palette
     DmaTransfer(3, sRidleyInSpaceSpaceBackgroundPal, PALRAM_BASE, sizeof(sRidleyInSpaceSpaceBackgroundPal), 16);
@@ -739,6 +755,7 @@ void RidleyInSpaceViewOfShipParticles(void)
     s32 i;
     u32 oamId;
 
+    // 2 * DELTA_TIME
     if (MOD_AND(CUTSCENE_DATA.timeInfo.timer, 2) == 0)
     {
         // Try to initialize a new particle every 2 frames
@@ -829,10 +846,10 @@ u32 RidleyInSpaceViewOfShipUpdateParticle(struct CutsceneOamData* pOam)
             pOam->exists = FALSE;
         }
     }
-    else if (pOam->unk_12 < 100)
+    else if (pOam->unk_12 < CONVERT_SECONDS(1.f) + TWO_THIRD_SECOND)
     {
         // Check change graphics
-        if (pOam->unk_12 == 25 || pOam->unk_12 == 50 || pOam->unk_12 == 70)
+        if (pOam->unk_12 == CONVERT_SECONDS(5.f / 12) || pOam->unk_12 == CONVERT_SECONDS(5.f / 6) || pOam->unk_12 == CONVERT_SECONDS(7.f / 6))
             oamId = RIDLEY_IN_SPACE_OAM_ID_VIEW_OF_SHIP_PARTICLE2;
 
         // Get complement from 100, used to dilute speed over time
@@ -885,6 +902,7 @@ void RidleyInSpaceShipLeavingParticles(void)
     s32 i;
     s32 newY;
 
+    // 2 * DELTA_TIME
     if (MOD_AND(CUTSCENE_DATA.timeInfo.timer, 2) == 0)
     {
         // Try to initialize a new particle every 2 frames

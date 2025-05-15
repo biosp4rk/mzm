@@ -504,7 +504,7 @@ void TourianEscapeInit(void)
     write16(REG_IME, TRUE);
 
     zero = 0;
-    DMA_SET(3, &zero, &gNonGameplayRAM, (DMA_ENABLE | DMA_32BIT | DMA_SRC_FIXED) << 16 | sizeof(gNonGameplayRAM) / 4);
+    DMA_SET(3, &zero, &gNonGameplayRam, (DMA_ENABLE | DMA_32BIT | DMA_SRC_FIXED) << 16 | sizeof(gNonGameplayRam) / 4);
     ClearGfxRam();
 
     LZ77UncompVRAM(sMotherShipBlowingUpExplosionsGfx, VRAM_OBJ);
@@ -574,9 +574,7 @@ u8 TourianEscapeZebesExploding(void)
         case 136:
         case 208:
         case 352:
-            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL |
-                BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL |
-                BLDCNT_BACKDROP_FIRST_TARGET_PIXEL | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
 
             TOURIAN_ESCAPE_DATA.unk_1++;
             break;
@@ -669,7 +667,7 @@ u8 TourianEscapeZebesExploding(void)
             DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeExplodingPal));
             DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_OBJ, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeExplodingPal));
 
-            write16(REG_BG0CNT, 0x1E00);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             gWrittenToBLDALPHA_L = 10;
             gWrittenToBLDALPHA_H = 6;
@@ -704,7 +702,7 @@ u8 TourianEscapeZebesExploding(void)
         {
             if (TOURIAN_ESCAPE_DATA.unk_5++ > 5)
             {
-                if (gWrittenToBLDY_NonGameplay < 16)
+                if (gWrittenToBLDY_NonGameplay < BLDY_MAX_VALUE)
                     gWrittenToBLDY_NonGameplay++;
 
                 TOURIAN_ESCAPE_DATA.unk_5 = 0;
@@ -714,7 +712,7 @@ u8 TourianEscapeZebesExploding(void)
         {
             if (TOURIAN_ESCAPE_DATA.unk_5++ & 1)
             {
-                if (gWrittenToBLDY_NonGameplay < 16)
+                if (gWrittenToBLDY_NonGameplay < BLDY_MAX_VALUE)
                     gWrittenToBLDY_NonGameplay++;
             }
         }
@@ -907,8 +905,8 @@ u8 TourianEscapeSamusInHerShip(void)
             break;
 
         case 3:
-            write16(REG_BG0CNT, 0x1E08);
-            write16(REG_BG1CNT, 0xE01);
+            write16(REG_BG0CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            write16(REG_BG1CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
 
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG1 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_SECOND_TARGET_PIXEL | BLDCNT_BG1_SECOND_TARGET_PIXEL |
@@ -922,9 +920,7 @@ u8 TourianEscapeSamusInHerShip(void)
 
         case 56:
             TOURIAN_ESCAPE_DATA.dispcnt |= DCNT_WIN0;
-            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL |
-                BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL |
-                BLDCNT_BACKDROP_FIRST_TARGET_PIXEL | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
 
             gWrittenToBLDY_NonGameplay = 10;
 
@@ -968,7 +964,7 @@ u8 TourianEscapeSamusInHerShip(void)
             break;
 
         case 352:
-            write16(REG_BG1CNT, 0xF00);
+            write16(REG_BG1CNT, CREATE_BGCNT(0, 15, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             break;
 
         case 372:
@@ -1007,7 +1003,7 @@ u8 TourianEscapeSamusInHerShip(void)
 
         if (TOURIAN_ESCAPE_DATA.timer >= 128 && TOURIAN_ESCAPE_DATA.timer & 1)
         {
-            if (gWrittenToBLDY_NonGameplay < 16)
+            if (gWrittenToBLDY_NonGameplay < BLDY_MAX_VALUE)
                 gWrittenToBLDY_NonGameplay++;
         }
     }
@@ -1080,7 +1076,7 @@ u8 TourianEscapeSamusLookingAround(void)
             break;
 
         case 3:
-            write16(REG_BG0CNT, 0x1000);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 16, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BG0_SECOND_TARGET_PIXEL;
             break;
@@ -1090,7 +1086,7 @@ u8 TourianEscapeSamusLookingAround(void)
             break;
 
         case 32:
-            write16(REG_BG0CNT, 0x1100);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 17, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             break;
 
         case 56:
@@ -1159,9 +1155,9 @@ u8 TourianEscapeSamusSurrounded(void)
             break;
 
         case 4:
-            write16(REG_BG0CNT, 0xE01);
-            write16(REG_BG1CNT, 0xE02);
-            write16(REG_BG2CNT, 0x4F88);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
+            write16(REG_BG1CNT, CREATE_BGCNT(0, 14, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256));
+            write16(REG_BG2CNT, CREATE_BGCNT(2, 15, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_512x256) | (1 << 7));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_MODE_1 | DCNT_BG0 | DCNT_BG2 | DCNT_OBJ;
             break;
 
@@ -1229,7 +1225,7 @@ u8 TourianEscapeSamusFlyingIn(void)
             DMA_SET(3, sIntroTextAndShipPal, PALRAM_BASE, DMA_ENABLE << 16 | sizeof(sIntroTextAndShipPal) / 2 + 16);
             DMA_SET(3, sIntroTextAndShipPal, PALRAM_OBJ, DMA_ENABLE << 16 | sizeof(sIntroTextAndShipPal) / 2 + 16);
 
-            write16(REG_BG0CNT, 0x1E00);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
 
             gWrittenToBLDALPHA_L = 9;
@@ -1364,7 +1360,7 @@ u8 TourianEscapeSamusChasedByPirates(void)
             break;
 
         case 3:
-            write16(REG_BG0CNT, 0x1C00);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             break;
 
@@ -1730,9 +1726,7 @@ u8 TourianEscapeSamusGettingShot(void)
 
         case 1:
             LZ77UncompVRAM(sTourianEscapeSamusGettingShotShipGfx, VRAM_OBJ);
-            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL |
-                BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL |
-                BLDCNT_BACKDROP_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
             gWrittenToBLDY_NonGameplay = 16;
             break;
 
@@ -1746,7 +1740,7 @@ u8 TourianEscapeSamusGettingShot(void)
             break;
 
         case 3:
-            write16(REG_BG0CNT, 0x1C00);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.unk_8[4] = TRUE;
             TOURIAN_ESCAPE_DATA.unk_8[5] = 2;
@@ -1780,7 +1774,7 @@ u8 TourianEscapeSamusGettingShot(void)
 
         case 336:
             DMA_SET(3, sTourianEscapeSamusGettingShotPal, PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusGettingShotPal));
-            write16(REG_BG1CNT, 0x1E09);
+            write16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG1 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.unk_8[0] = 0;
             SoundPlay(SOUND_TOURIAN_ESCAPE_DECISIVE_SHOT);
@@ -1975,7 +1969,7 @@ u8 TourianEscapeSamusGoingToCrash(void)
             break;
 
         case 3:
-            write16(REG_BG0CNT, 0x1E00);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BG0_SECOND_TARGET_PIXEL |
                 BLDCNT_BG1_SECOND_TARGET_PIXEL | BLDCNT_BG2_SECOND_TARGET_PIXEL | BLDCNT_BG3_SECOND_TARGET_PIXEL |
@@ -2062,8 +2056,8 @@ u8 TourianEscapeSamusCrashing(void)
             break;
 
         case 5:
-            write16(REG_BG0CNT, 0xE00);
-            write16(REG_BG1CNT, 0x1E09);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            write16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             break;
 
@@ -2085,9 +2079,7 @@ u8 TourianEscapeSamusCrashing(void)
             TOURIAN_ESCAPE_DATA.unk_8[0] = FALSE;
             TOURIAN_ESCAPE_DATA.oamFramePointers[1] = sTourianEscape_47ab28;
             TOURIAN_ESCAPE_DATA.unk_2++;
-            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL |
-                BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL |
-                BLDCNT_BACKDROP_FIRST_TARGET_PIXEL | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
 
             SoundPlay(SOUND_TOURIAN_ESCAPE_SAMUS_CRASHING_COLLISION);
             break;
@@ -2100,7 +2092,7 @@ u8 TourianEscapeSamusCrashing(void)
     {
         if (TOURIAN_ESCAPE_DATA.unk_5 & 1)
         {
-            if (gWrittenToBLDY_NonGameplay < 16)
+            if (gWrittenToBLDY_NonGameplay < BLDY_MAX_VALUE)
                 gWrittenToBLDY_NonGameplay++;
         }
 
@@ -2161,9 +2153,9 @@ u8 TourianEscapeSamusLookingAtSky(void)
             break;
 
         case 4:
-            write16(REG_BG0CNT, 0x1C0A);
-            write16(REG_BG1CNT, 0x1E01);
-            write16(REG_BG2CNT, 0x1F00);
+            write16(REG_BG0CNT, CREATE_BGCNT(2, 28, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256));
+            write16(REG_BG1CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
+            write16(REG_BG2CNT, CREATE_BGCNT(0, 31, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_BG1 | DCNT_BG2 | DCNT_OBJ;
 
         case 160:
@@ -2295,13 +2287,12 @@ u8 TourianEscapeSamusLookingAtMotherShip(void)
             break;
 
         case 4:
-            write16(REG_BG0CNT, 0xE00);
-            write16(REG_BG1CNT, 0x1E09);
+            write16(REG_BG0CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            write16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
 
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_BG1 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL |
-                BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT |
-                BLDCNT_BRIGHTNESS_INCREASE_EFFECT | BLDCNT_BG0_SECOND_TARGET_PIXEL | BLDCNT_BG1_SECOND_TARGET_PIXEL |
+                BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_BRIGHTNESS_DECREASE_EFFECT | BLDCNT_BG0_SECOND_TARGET_PIXEL | BLDCNT_BG1_SECOND_TARGET_PIXEL |
                 BLDCNT_BG2_SECOND_TARGET_PIXEL | BLDCNT_BG3_SECOND_TARGET_PIXEL;
 
         case 96:

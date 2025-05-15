@@ -4,7 +4,7 @@
 #include "macros.h"
 #include "constants/intro.h"
 
-const u16 sIntroEmergencyOrderTextOAM[52] = {
+const u16 sIntroEmergencyOrderTextOAM[OAM_DATA_SIZE(17)] = {
     0x11,
     OBJ_SHAPE_VERTICAL | 0xc8, 0x1b8, 0x1003,
     OBJ_SHAPE_VERTICAL | 0xc8, 0x1c0, 0x1008,
@@ -25,7 +25,7 @@ const u16 sIntroEmergencyOrderTextOAM[52] = {
     OBJ_SHAPE_VERTICAL | 0xc8, 0x38, 0x101c
 };
 
-const u16 sIntroExterminateAllTextOAM[163] = {
+const u16 sIntroExterminateAllTextOAM[OAM_DATA_SIZE(54)] = {
     0x36,
     OBJ_SHAPE_VERTICAL | 0xb8, 0x198, 0x1003,
     OBJ_SHAPE_VERTICAL | 0xb8, 0x1a0, 0x1008,
@@ -83,7 +83,7 @@ const u16 sIntroExterminateAllTextOAM[163] = {
     OBJ_SHAPE_VERTICAL | 0xd0, 0x68, 0x101f
 };
 
-const u16 sIntroDefeatTheTextOAM[157] = {
+const u16 sIntroDefeatTheTextOAM[OAM_DATA_SIZE(52)] = {
     0x34,
     OBJ_SHAPE_VERTICAL | 0xb8, 0x198, 0x1003,
     OBJ_SHAPE_VERTICAL | 0xb8, 0x1a0, 0x1004,
@@ -139,14 +139,14 @@ const u16 sIntroDefeatTheTextOAM[157] = {
     OBJ_SHAPE_VERTICAL | 0xd0, 0x60, 0x105f
 };
 
-const u16 sIntroTextMarkerOAM[10] = {
+const u16 sIntroTextMarkerOAM[OAM_DATA_SIZE(3)] = {
     0x3,
     0xf8, 0x1f8, 0x1020,
     0xf8, 0x0, 0x1021,
     0xf8, 0x8, 0x1022
 };
 
-const u16 sIntroShipFlyingTowardsCameraOam_1[19] = {
+const u16 sIntroShipFlyingTowardsCameraOam_1[OAM_DATA_SIZE(6)] = {
     0x6,
     0xd8, OBJ_SIZE_64x64 | 0x1c0, 0x3041,
     0xd8, OBJ_SIZE_64x64 | 0x0, 0x3049,
@@ -156,7 +156,7 @@ const u16 sIntroShipFlyingTowardsCameraOam_1[19] = {
     OBJ_MODE_SEMI_TRANSPARENT | 0xd8, OBJ_X_FLIP | OBJ_SIZE_64x64 | 0x1f8, 0x4052
 };
 
-const u16 sIntroShipFlyingTowardsCameraOam_2[28] = {
+const u16 sIntroShipFlyingTowardsCameraOam_2[OAM_DATA_SIZE(9)] = {
     0x9,
     0xd8, OBJ_SIZE_64x64 | 0x1c0, 0x3041,
     0xd8, OBJ_SIZE_64x64 | 0x0, 0x3049,
@@ -169,7 +169,7 @@ const u16 sIntroShipFlyingTowardsCameraOam_2[28] = {
     OBJ_MODE_SEMI_TRANSPARENT | 0xd8, OBJ_X_FLIP | OBJ_SIZE_64x64 | 0x1f8, 0x4160
 };
 
-const u16 sIntroViewOfZebesShipOAM[13] = {
+const u16 sIntroViewOfZebesShipOAM[OAM_DATA_SIZE(4)] = {
     0x4,
     OBJ_SHAPE_HORIZONTAL | 0xd8, OBJ_SIZE_64x32 | 0x1f0, 0x3040,
     OBJ_SHAPE_VERTICAL | 0xd8, OBJ_SIZE_8x32 | 0x30, 0x3048,
@@ -177,7 +177,7 @@ const u16 sIntroViewOfZebesShipOAM[13] = {
     OBJ_SHAPE_VERTICAL | 0xf8, 0x10, 0x30c4
 };
 
-const u16 sIntroViewOfZebesHeatOAM_2[37] = {
+const u16 sIntroViewOfZebesHeatOAM_2[OAM_DATA_SIZE(12)] = {
     0xc,
     0xa0, OBJ_SIZE_64x64 | 0x0, 0x4050,
     0xa0, OBJ_SIZE_64x64 | 0x40, 0x4058,
@@ -194,7 +194,7 @@ const u16 sIntroViewOfZebesHeatOAM_2[37] = {
     
 };
 
-const u16 sIntroViewOfZebesHeatOAM_1[73] = {
+const u16 sIntroViewOfZebesHeatOAM_1[OAM_DATA_SIZE(24)] = {
     0x18,
     OBJ_SHAPE_HORIZONTAL | 0xa0, OBJ_SIZE_64x32 | 0x0, 0x4210,
     OBJ_SHAPE_HORIZONTAL | 0xa0, OBJ_SIZE_64x32 | 0x40, 0x4218,
@@ -222,7 +222,7 @@ const u16 sIntroViewOfZebesHeatOAM_1[73] = {
     OBJ_SHAPE_HORIZONTAL | 0x8, OBJ_SIZE_32x8 | 0x60, 0x43bc
 };
 
-const u16 sIntroFuzzOAM[52] = {
+const u16 sIntroFuzzOAM[OAM_DATA_SIZE(17)] = {
     0x11,
     0x80, OBJ_SIZE_64x64 | 0x180, 0x0,
     0x80, OBJ_SIZE_64x64 | 0x1c0, 0x8,
@@ -277,143 +277,173 @@ const u32 sTimeAttackAntiCheatTimes[4] = {
     0 | 0 << 8 | 22 << 16 | 0 << 24
 };
 
-const u8 sArray_45fd24[3][4] = {
-    { 4, 8, 16, 32 },
-    { 8, 16, 16, 32 },
-    { 4, 4, 8, 16 }
+const u8 sSpriteXHalfRadius[3][4] = {
+    [OAM_SHAPE_SQUARE] = {
+        [OAM_SIZE_S_8x8] = 8/2,
+        [OAM_SIZE_S_16x16] = 16/2,
+        [OAM_SIZE_S_32x32] = 32/2,
+        [OAM_SIZE_S_64x64] = 64/2
+    },
+    [OAM_SHAPE_HORIZONTAL] = {
+        [OAM_SIZE_H_16x8] = 16/2,
+        [OAM_SIZE_H_32x8] = 32/2,
+        [OAM_SIZE_H_32x16] = 32/2,
+        [OAM_SIZE_H_64x32] = 64/2
+    },
+    [OAM_SHAPE_VERTICAL] = {
+        [OAM_SIZE_V_8x16] = 8/2,
+        [OAM_SIZE_V_8x32] = 8/2,
+        [OAM_SIZE_V_16x32] = 16/2,
+        [OAM_SIZE_V_32x64] = 32/2
+    }
 };
 
-const u8 sArray_45fd30[3][4] = {
-    { 4, 8, 16, 32 },
-    { 4, 4, 8, 16 },
-    { 8, 16, 16, 32 }
+const u8 sSpriteYHalfRadius[3][4] = {
+    [OAM_SHAPE_SQUARE] = {
+        [OAM_SIZE_S_8x8] = 8/2,
+        [OAM_SIZE_S_16x16] = 16/2,
+        [OAM_SIZE_S_32x32] = 32/2,
+        [OAM_SIZE_S_64x64] = 64/2
+    },
+    [OAM_SHAPE_HORIZONTAL] = {
+        [OAM_SIZE_H_16x8] = 8/2,
+        [OAM_SIZE_H_32x8] = 8/2,
+        [OAM_SIZE_H_32x16] =16/2,
+        [OAM_SIZE_H_64x32] = 32/2
+    },
+    [OAM_SHAPE_VERTICAL] = {
+        [OAM_SIZE_V_8x16] = 16/2,
+        [OAM_SIZE_V_8x32] = 32/2,
+        [OAM_SIZE_V_16x32] = 32/2,
+        [OAM_SIZE_V_32x64] = 64/2
+    }
 };
 
 const u8 sIntroEmergencyOrderActions[16] = {
     INTRO_TEXT_ACTION_START,
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // M
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // R
-    INTRO_TEXT_ACTION_NONE,     // G
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // N
-    INTRO_TEXT_ACTION_NONE,     // C
-    INTRO_TEXT_ACTION_NONE,     // Y
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // O
-    INTRO_TEXT_ACTION_NONE,     // R
-    INTRO_TEXT_ACTION_NONE,     // D
-    INTRO_TEXT_ACTION_UNKNOWN,  // E
-    INTRO_TEXT_ACTION_END,      // R
+    INTRO_TEXT_ACTION_NONE,            // E
+    INTRO_TEXT_ACTION_NONE,            // M
+    INTRO_TEXT_ACTION_NONE,            // E
+    INTRO_TEXT_ACTION_NONE,            // R
+    INTRO_TEXT_ACTION_NONE,            // G
+    INTRO_TEXT_ACTION_NONE,            // E
+    INTRO_TEXT_ACTION_NONE,            // N
+    INTRO_TEXT_ACTION_NONE,            // C
+    INTRO_TEXT_ACTION_NONE,            // Y
+    INTRO_TEXT_ACTION_SPACE,           // 
+    INTRO_TEXT_ACTION_NONE,            // O
+    INTRO_TEXT_ACTION_NONE,            // R
+    INTRO_TEXT_ACTION_NONE,            // D
+    INTRO_TEXT_ACTION_SKIP_CHARACTER,  // E
+    INTRO_TEXT_ACTION_END,             // R
 };
 
 const u8 sIntroExterminateAllActions[52] = {
     INTRO_TEXT_ACTION_START,
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // X
-    INTRO_TEXT_ACTION_NONE,     // T
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // R
-    INTRO_TEXT_ACTION_NONE,     // M
-    INTRO_TEXT_ACTION_NONE,     // I
-    INTRO_TEXT_ACTION_NONE,     // N
-    INTRO_TEXT_ACTION_NONE,     // A
-    INTRO_TEXT_ACTION_NONE,     // T
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // A
-    INTRO_TEXT_ACTION_NONE,     // L
-    INTRO_TEXT_ACTION_NONE,     // L
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // M
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // T
-    INTRO_TEXT_ACTION_NONE,     // R
-    INTRO_TEXT_ACTION_NONE,     // O
-    INTRO_TEXT_ACTION_UNKNOWN,  // I
-    INTRO_TEXT_ACTION_NEW_LINE, // D
-    INTRO_TEXT_ACTION_NONE,     // O
-    INTRO_TEXT_ACTION_NONE,     // R
-    INTRO_TEXT_ACTION_NONE,     // G
-    INTRO_TEXT_ACTION_NONE,     // A
-    INTRO_TEXT_ACTION_NONE,     // N
-    INTRO_TEXT_ACTION_NONE,     // I
-    INTRO_TEXT_ACTION_NONE,     // S
-    INTRO_TEXT_ACTION_NONE,     // M
-    INTRO_TEXT_ACTION_NONE,     // S
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // O
-    INTRO_TEXT_ACTION_NONE,     // N
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // P
-    INTRO_TEXT_ACTION_NONE,     // L
-    INTRO_TEXT_ACTION_NONE,     // A
-    INTRO_TEXT_ACTION_NONE,     // N
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // T
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // Z
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // B
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // S
-    INTRO_TEXT_ACTION_NONE,     // .
-    INTRO_TEXT_ACTION_UNKNOWN,  // .
-    INTRO_TEXT_ACTION_END,      // .
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // X
+    INTRO_TEXT_ACTION_NONE,             // T
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // R
+    INTRO_TEXT_ACTION_NONE,             // M
+    INTRO_TEXT_ACTION_NONE,             // I
+    INTRO_TEXT_ACTION_NONE,             // N
+    INTRO_TEXT_ACTION_NONE,             // A
+    INTRO_TEXT_ACTION_NONE,             // T
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // A
+    INTRO_TEXT_ACTION_NONE,             // L
+    INTRO_TEXT_ACTION_NONE,             // L
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // M
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // T
+    INTRO_TEXT_ACTION_NONE,             // R
+    INTRO_TEXT_ACTION_NONE,             // O
+    INTRO_TEXT_ACTION_SKIP_CHARACTER,   // I
+    INTRO_TEXT_ACTION_NEW_LINE,         // D
+    INTRO_TEXT_ACTION_NONE,             // O
+    INTRO_TEXT_ACTION_NONE,             // R
+    INTRO_TEXT_ACTION_NONE,             // G
+    INTRO_TEXT_ACTION_NONE,             // A
+    INTRO_TEXT_ACTION_NONE,             // N
+    INTRO_TEXT_ACTION_NONE,             // I
+    INTRO_TEXT_ACTION_NONE,             // S
+    INTRO_TEXT_ACTION_NONE,             // M
+    INTRO_TEXT_ACTION_NONE,             // S
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // O
+    INTRO_TEXT_ACTION_NONE,             // N
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // P
+    INTRO_TEXT_ACTION_NONE,             // L
+    INTRO_TEXT_ACTION_NONE,             // A
+    INTRO_TEXT_ACTION_NONE,             // N
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // T
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // Z
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // B
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // S
+    INTRO_TEXT_ACTION_NONE,             // .
+    INTRO_TEXT_ACTION_SKIP_CHARACTER,   // .
+    INTRO_TEXT_ACTION_END,              // .
 };
 
 const u8 sIntroDefeatTheActions[50] = {
     INTRO_TEXT_ACTION_START,
-    INTRO_TEXT_ACTION_NONE,     // A
-    INTRO_TEXT_ACTION_NONE,     // N
-    INTRO_TEXT_ACTION_NONE,     // D
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // D
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // F
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // A
-    INTRO_TEXT_ACTION_NONE,     // T
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // T
-    INTRO_TEXT_ACTION_NONE,     // H
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // M
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // C
-    INTRO_TEXT_ACTION_NONE,     // H
-    INTRO_TEXT_ACTION_NONE,     // A
-    INTRO_TEXT_ACTION_NONE,     // N
-    INTRO_TEXT_ACTION_NONE,     // I
-    INTRO_TEXT_ACTION_NONE,     // C
-    INTRO_TEXT_ACTION_UNKNOWN,  // A
-    INTRO_TEXT_ACTION_NEW_LINE, // L
-    INTRO_TEXT_ACTION_NONE,     // L
-    INTRO_TEXT_ACTION_NONE,     // I
-    INTRO_TEXT_ACTION_NONE,     // F
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // -
-    INTRO_TEXT_ACTION_NONE,     // F
-    INTRO_TEXT_ACTION_NONE,     // O
-    INTRO_TEXT_ACTION_NONE,     // R
-    INTRO_TEXT_ACTION_NONE,     // M
-    INTRO_TEXT_ACTION_NONE,     // ,
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // M
-    INTRO_TEXT_ACTION_NONE,     // O
-    INTRO_TEXT_ACTION_NONE,     // T
-    INTRO_TEXT_ACTION_NONE,     // H
-    INTRO_TEXT_ACTION_NONE,     // E
-    INTRO_TEXT_ACTION_NONE,     // R
-    INTRO_TEXT_ACTION_SPACE,    // 
-    INTRO_TEXT_ACTION_NONE,     // B
-    INTRO_TEXT_ACTION_NONE,     // R
-    INTRO_TEXT_ACTION_NONE,     // A
-    INTRO_TEXT_ACTION_NONE,     // I
-    INTRO_TEXT_ACTION_UNKNOWN,  // N
-    INTRO_TEXT_ACTION_END,      // .
+    INTRO_TEXT_ACTION_NONE,             // A
+    INTRO_TEXT_ACTION_NONE,             // N
+    INTRO_TEXT_ACTION_NONE,             // D
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // D
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // F
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // A
+    INTRO_TEXT_ACTION_NONE,             // T
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // T
+    INTRO_TEXT_ACTION_NONE,             // H
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // M
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // C
+    INTRO_TEXT_ACTION_NONE,             // H
+    INTRO_TEXT_ACTION_NONE,             // A
+    INTRO_TEXT_ACTION_NONE,             // N
+    INTRO_TEXT_ACTION_NONE,             // I
+    INTRO_TEXT_ACTION_NONE,             // C
+    INTRO_TEXT_ACTION_SKIP_CHARACTER,   // A
+    INTRO_TEXT_ACTION_NEW_LINE,         // 
+    INTRO_TEXT_ACTION_NONE,             // L
+    INTRO_TEXT_ACTION_NONE,             // I
+    INTRO_TEXT_ACTION_NONE,             // F
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // -
+    INTRO_TEXT_ACTION_NONE,             // F
+    INTRO_TEXT_ACTION_NONE,             // O
+    INTRO_TEXT_ACTION_NONE,             // R
+    INTRO_TEXT_ACTION_NONE,             // M
+    INTRO_TEXT_ACTION_NONE,             // ,
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // M
+    INTRO_TEXT_ACTION_NONE,             // O
+    INTRO_TEXT_ACTION_NONE,             // T
+    INTRO_TEXT_ACTION_NONE,             // H
+    INTRO_TEXT_ACTION_NONE,             // E
+    INTRO_TEXT_ACTION_NONE,             // R
+    INTRO_TEXT_ACTION_SPACE,            // 
+    INTRO_TEXT_ACTION_NONE,             // B
+    INTRO_TEXT_ACTION_NONE,             // R
+    INTRO_TEXT_ACTION_NONE,             // A
+    INTRO_TEXT_ACTION_NONE,             // I
+    INTRO_TEXT_ACTION_SKIP_CHARACTER,   // N
+    INTRO_TEXT_ACTION_END,              // .
 };
 
 

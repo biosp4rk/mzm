@@ -2,9 +2,7 @@
 
 #include "macros.h"
 
-
 #include "constants/block.h"
-#include "constants/connection.h"
 #include "constants/text.h"
 
 const struct TankList sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS] = {
@@ -87,7 +85,7 @@ const struct TankList sTankIncreaseAmount[DIFF_END] = {
     }
 };
 
-const u16 sClipdataAffectingActionDamageTypes[MAX_AMOUNT_OF_CAA] = {
+const u16 sClipdataAffectingActionDamageTypes[CAA_COUNT] = {
     [CAA_NONE] =                   CAA_DAMAGE_TYPE_NONE,
     [CAA_REMOVE_SOLID] =           CAA_DAMAGE_TYPE_NONE,
     [CAA_MAKE_SOLID_GRIPPABLE] =   CAA_DAMAGE_TYPE_NONE,
@@ -410,7 +408,7 @@ const struct BlockBehavior sBlockBehaviors[MAX_AMOUNT_OF_BLOCKS] = {
     },
 };
 
-const u16 sBlockWeaknesses[MAX_AMOUNT_OF_BLOCKS_TYPES] = {
+const u16 sBlockWeaknesses[BLOCK_TYPE_COUNT] = {
     [BLOCK_TYPE_NONE] = CAA_DAMAGE_TYPE_NONE,
     [BLOCK_TYPE_SHOT_BLOCK_REFORM] = USHORT_MAX,
     [BLOCK_TYPE_BOMB_BLOCK_REFORM] = CAA_DAMAGE_TYPE_BOMB_PISTOL | CAA_DAMAGE_TYPE_POWER_BOMB | CAA_DAMAGE_TYPE_SPEEDBOOST | CAA_DAMAGE_TYPE_SCREW_ATTACK,
@@ -435,7 +433,7 @@ const u16 sBlockWeaknesses[MAX_AMOUNT_OF_BLOCKS_TYPES] = {
     [BLOCK_TYPE_HORIZONTAL_BOMB_CHAIN4] = CAA_DAMAGE_TYPE_BOMB_CHAIN | CAA_DAMAGE_TYPE_POWER_BOMB | CAA_DAMAGE_TYPE_BOMB_PISTOL
 };
 
-const u16 sReformingBlocksTilemapValue[MAX_AMOUNT_OF_BLOCKS_TYPES] = {
+const u16 sReformingBlocksTilemapValue[BLOCK_TYPE_COUNT] = {
     [BLOCK_TYPE_NONE] =                         CLIPDATA_TILEMAP_FLAG | CLIPDATA_TILEMAP_AIR,
     [BLOCK_TYPE_SHOT_BLOCK_REFORM] =            CLIPDATA_TILEMAP_FLAG | CLIPDATA_TILEMAP_SHOT_BLOCK_REFORM,
     [BLOCK_TYPE_BOMB_BLOCK_REFORM] =            CLIPDATA_TILEMAP_FLAG | CLIPDATA_TILEMAP_BOMB_BLOCK_REFORM,
@@ -460,7 +458,7 @@ const u16 sReformingBlocksTilemapValue[MAX_AMOUNT_OF_BLOCKS_TYPES] = {
     [BLOCK_TYPE_HORIZONTAL_BOMB_CHAIN4] =       CLIPDATA_TILEMAP_FLAG | CLIPDATA_TILEMAP_HORIZONTAL_BOMB_CHAIN4
 };
 
-const u8 sBrokenBlocksTimers[MAX_AMOUNT_OF_BLOCKS_TYPES][13] = {
+const u8 sBrokenBlocksTimers[BLOCK_TYPE_COUNT][13] = {
     [BLOCK_TYPE_NONE] = {
         0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0
     },
@@ -471,13 +469,13 @@ const u8 sBrokenBlocksTimers[MAX_AMOUNT_OF_BLOCKS_TYPES][13] = {
         0, 0, 4, 4, 4, 4, 4, UCHAR_MAX, 4, 4, 4, 4, 4
     },
     [BLOCK_TYPE_SPEEDBOOSTER_BLOCK_REFORM] = {
-        0, 0, 4, 4, 4, 4, 4, 20, 4, 4, 4, 4, 4
+        0, 0, 4, 4, 4, 4, 4, ONE_THIRD_SECOND, 4, 4, 4, 4, 4
     },
     [BLOCK_TYPE_CRUMBLE] = {
-        0, 5, 4, 4, 4, 4, 4, 15, 4, 4, 4, 4, 4
+        0, 5, 4, 4, 4, 4, 4, CONVERT_SECONDS(.25f), 4, 4, 4, 4, 4
     },
     [BLOCK_TYPE_SLOW_CRUMBLE] = {
-        0, 60, 4, 4, 4, 4, 4, 30, 4, 4, 4, 4, 4
+        0, CONVERT_SECONDS(1.f), 4, 4, 4, 4, 4, CONVERT_SECONDS(.5f), 4, 4, 4, 4, 4
     },
     [BLOCK_TYPE_MISSILE_NEVER_REFORM] = {
         0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0
@@ -529,7 +527,7 @@ const u8 sBrokenBlocksTimers[MAX_AMOUNT_OF_BLOCKS_TYPES][13] = {
     }
 };
 
-const struct BombChainReverseData sBombChainReverseData[8] = {
+const struct BombChainReverseData sBombChainReverseData[BOMB_CHAIN_TYPE_END] = {
     [BOMB_CHAIN_TYPE_VERTICAL1] = {
         .typeFlag = BOMB_CHAIN_TYPE_TO_FLAG(BOMB_CHAIN_TYPE_VERTICAL1),
         .behavior = CLIP_BEHAVIOR_VERTICAL_BOMB_CHAIN1
@@ -639,9 +637,9 @@ const struct TankBehavior sTankBehaviors[MAX_AMOUNT_OF_TANK_TYPES] = {
     },
 };
 
-const u16 sHatchBehaviors[MAX_AMOUNT_OF_HATCH_TYPES][2] = {
-    // 0 : Weakness
-    // 2 : Health
+// 0 : Weakness
+// 2 : Health
+const u16 sHatchBehaviors[HATCH_COUNT][2] = {
     [HATCH_NONE] = {
         CAA_DAMAGE_TYPE_BEAM | CAA_DAMAGE_TYPE_BOMB_PISTOL | CAA_DAMAGE_TYPE_MISSILE | CAA_DAMAGE_TYPE_SUPER_MISSILE | CAA_DAMAGE_TYPE_POWER_BOMB,
         0
@@ -670,13 +668,13 @@ const u16 sHatchBehaviors[MAX_AMOUNT_OF_HATCH_TYPES][2] = {
         CAA_DAMAGE_TYPE_BEAM | CAA_DAMAGE_TYPE_BOMB_PISTOL | CAA_DAMAGE_TYPE_MISSILE | CAA_DAMAGE_TYPE_SUPER_MISSILE | CAA_DAMAGE_TYPE_POWER_BOMB,
         0
     },
-    [HATCH_LOCKED_AND_LOCK_DESTINATION] = {
+    [HATCH_LOCKED_NAVIGATION] = {
         CAA_DAMAGE_TYPE_BEAM | CAA_DAMAGE_TYPE_BOMB_PISTOL | CAA_DAMAGE_TYPE_MISSILE | CAA_DAMAGE_TYPE_SUPER_MISSILE | CAA_DAMAGE_TYPE_POWER_BOMB,
         0
     },
 };
 
-const u16 sBldalphaValuesForClipdata[11] = {
+const u16 sBldalphaValuesForClipdata[BEHAVIOR_TO_BLDALPHA(CLIP_BEHAVIOR_BG0_TRIGGER_BRIGHTER_LEVEL4) + 1] = {
     [BEHAVIOR_TO_BLDALPHA(CLIP_BEHAVIOR_BG0_TRIGGER_OPAQUE)] = 0x10,
     [BEHAVIOR_TO_BLDALPHA(CLIP_BEHAVIOR_BG0_TRIGGER_TRANSPARENT_LEVEL1)] = 0x30D,
     [BEHAVIOR_TO_BLDALPHA(CLIP_BEHAVIOR_BG0_TRIGGER_TRANSPARENT_LEVEL2)] = 0x60A,
@@ -690,26 +688,28 @@ const u16 sBldalphaValuesForClipdata[11] = {
     [BEHAVIOR_TO_BLDALPHA(CLIP_BEHAVIOR_BG0_TRIGGER_BRIGHTER_LEVEL4)] = 0x1010,
 };
 
-const s8 sSubBombChainPositionOffset[4][4] = {
-    {
+// Pairs of (x, y) coordinates
+const s8 sSubBombChainPositionOffset[SUB_BOMB_CHAIN_REQUEST_END][4] = {
+    [SUB_BOMB_CHAIN_REQUEST_HORIZONTAL_WHEN_GOING_UP] = {
         1, 1, -1, 1
     },
-    {
+    [SUB_BOMB_CHAIN_REQUEST_HORIZONTAL_WHEN_GOING_DOWN] = {
         1, -1, -1, -1
     },
-    {
+    [SUB_BOMB_CHAIN_REQUEST_VERTICAL_WHEN_GOING_LEFT] = {
         1, -1,  1, 1
     },
-    {
+    [SUB_BOMB_CHAIN_REQUEST_VERTICAL_WHEN_GOING_RIGHT] = {
         -1, -1, -1, 1
     }
 };
 
-const u8 sHatchRelated_345cee[4][2] = {
-    { 0, 0 },
-    { 0, 1 },
-    { 1, 2 },
-    { 2, 2 },
+// Offsets into y and x arrays
+const u8 sBlockTouchOffsets[4][2] = {
+    { 0, 0 }, // (center, right)
+    { 0, 1 }, // (center, left)
+    { 1, 2 }, // (bottom, center)
+    { 2, 2 }, // (top, center)
 };
 
 const u16 sMotherBrainGlassBreakingBaseTilemapValues[5] = {

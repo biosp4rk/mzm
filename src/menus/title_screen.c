@@ -2,14 +2,18 @@
 #include "macros.h"
 #include "callbacks.h"
 #include "oam_id.h"
+#include "gba/rom_header.h"
 
 #include "data/shortcut_pointers.h"
 #include "data/menus/title_screen_data.h"
 #include "data/menus/internal_title_screen_data.h"
 #include "data/menus/pause_screen_data.h"
+#include "data/text_data.h"
+#include "data/menus/game_over_data.h"
 
 #include "constants/menus/title_screen.h"
 #include "constants/audio.h"
+#include "constants/color_fading.h"
 #include "constants/demo.h"
 
 #include "structs/demo.h"
@@ -26,6 +30,7 @@ void TitleScreenSetBGCNTPageData(const struct TitleScreenPageData* const pPageDa
 {
     u16 value;
 
+    // value = CREATE_BGCNT(pPageData->graphicsPage, pPageData->tiletablePage, pPageData->priority, pPageData->screenSize);
     value = pPageData->priority | pPageData->screenSize | pPageData->tiletablePage << BGCNT_SCREEN_BASE_BLOCK_SHIFT |
         pPageData->graphicsPage << BGCNT_CHAR_BASE_BLOCK_SHIFT;
 
@@ -113,18 +118,18 @@ u32 TitleScreenFadingIn(void)
     u16* dst;
 
     ended = FALSE;
-    switch (TITLE_SCREEN_DATA.unk_10)
+    switch (TITLE_SCREEN_DATA.fadingStage)
     {
         case 0:
             TITLE_SCREEN_DATA.colorToApply = 0;
-            TITLE_SCREEN_DATA.unk_12 = FALSE;
-            TITLE_SCREEN_DATA.unk_14 = 0;
+            TITLE_SCREEN_DATA.paletteUpdated = FALSE;
+            TITLE_SCREEN_DATA.fadingTimer = 0;
 
-            TITLE_SCREEN_DATA.unk_10++;
+            TITLE_SCREEN_DATA.fadingStage++;
             break;
 
         case 1:
-            if (TITLE_SCREEN_DATA.unk_12)
+            if (TITLE_SCREEN_DATA.paletteUpdated)
                 break;
 
             if (TITLE_SCREEN_DATA.colorToApply < 32)
@@ -137,7 +142,7 @@ u32 TitleScreenFadingIn(void)
                 dst = (void*)sEwramPointer + 0x8600;
                 ApplySpecialBackgroundFadingColor(0, TITLE_SCREEN_DATA.colorToApply, &src, &dst, USHORT_MAX);
 
-                TITLE_SCREEN_DATA.unk_12 = TRUE;
+                TITLE_SCREEN_DATA.paletteUpdated = TRUE;
                 if (TITLE_SCREEN_DATA.colorToApply == 31)
                 {
                     TITLE_SCREEN_DATA.colorToApply++;
@@ -153,15 +158,15 @@ u32 TitleScreenFadingIn(void)
             }
             
             DmaTransfer(3, (void*)sEwramPointer + 0x8000, (void*)sEwramPointer + 0x8400, 0x400, 16);
-            TITLE_SCREEN_DATA.unk_12 = TRUE;
-            TITLE_SCREEN_DATA.unk_10++;
+            TITLE_SCREEN_DATA.paletteUpdated = TRUE;
+            TITLE_SCREEN_DATA.fadingStage++;
             break;
 
         case 2:
-            if (!TITLE_SCREEN_DATA.unk_12)
+            if (!TITLE_SCREEN_DATA.paletteUpdated)
             {
                 TITLE_SCREEN_DATA.colorToApply = 0;
-                TITLE_SCREEN_DATA.unk_10 = 0;
+                TITLE_SCREEN_DATA.fadingStage = 0;
                 ended = TRUE;
             }
     }
@@ -183,36 +188,36 @@ u32 TitleScreenFadingOut(u8 intensity, u8 delay)
     u16* dst;
 
     ended = FALSE;
-    TITLE_SCREEN_DATA.unk_14++;
-    switch (TITLE_SCREEN_DATA.unk_10)
+    APPLY_DELTA_TIME_INC(TITLE_SCREEN_DATA.fadingTimer);
+    switch (TITLE_SCREEN_DATA.fadingStage)
     {
         case 0:
             TITLE_SCREEN_DATA.colorToApply = 0;
-            TITLE_SCREEN_DATA.unk_12 = FALSE;
-            TITLE_SCREEN_DATA.unk_14 = 0;
+            TITLE_SCREEN_DATA.paletteUpdated = FALSE;
+            TITLE_SCREEN_DATA.fadingTimer = 0;
 
-            TITLE_SCREEN_DATA.unk_10++;
+            TITLE_SCREEN_DATA.fadingStage++;
             break;
 
         case 1:
-            if (TITLE_SCREEN_DATA.unk_12)
+            if (TITLE_SCREEN_DATA.paletteUpdated)
                 break;
 
-            if (TITLE_SCREEN_DATA.unk_14 < delay)
+            if (TITLE_SCREEN_DATA.fadingTimer < delay)
                 break;
 
-            TITLE_SCREEN_DATA.unk_14 = 0;
+            TITLE_SCREEN_DATA.fadingTimer = 0;
             if (TITLE_SCREEN_DATA.colorToApply < 32)
             {
                 src = (void*)sEwramPointer + 0x8000;
                 dst = (void*)sEwramPointer + 0x8400;
-                ApplySpecialBackgroundFadingColor(2, TITLE_SCREEN_DATA.colorToApply, &src, &dst, USHORT_MAX);
+                ApplySpecialBackgroundFadingColor(COLOR_FADING_CANCEL, TITLE_SCREEN_DATA.colorToApply, &src, &dst, USHORT_MAX);
 
                 src = (void*)sEwramPointer + 0x8200;
                 dst = (void*)sEwramPointer + 0x8600;
-                ApplySpecialBackgroundFadingColor(2, TITLE_SCREEN_DATA.colorToApply, &src, &dst, USHORT_MAX);
+                ApplySpecialBackgroundFadingColor(COLOR_FADING_CANCEL, TITLE_SCREEN_DATA.colorToApply, &src, &dst, USHORT_MAX);
 
-                TITLE_SCREEN_DATA.unk_12 = TRUE;
+                TITLE_SCREEN_DATA.paletteUpdated = TRUE;
                 if (TITLE_SCREEN_DATA.colorToApply == 31)
                 {
                     TITLE_SCREEN_DATA.colorToApply++;
@@ -228,15 +233,15 @@ u32 TitleScreenFadingOut(u8 intensity, u8 delay)
             }
             
             BitFill(3, 0, (void*)sEwramPointer + 0x8400, 0x400, 16);
-            TITLE_SCREEN_DATA.unk_12 = TRUE;
-            TITLE_SCREEN_DATA.unk_10++;
+            TITLE_SCREEN_DATA.paletteUpdated = TRUE;
+            TITLE_SCREEN_DATA.fadingStage++;
             break;
 
         case 2:
-            if (!TITLE_SCREEN_DATA.unk_12)
+            if (!TITLE_SCREEN_DATA.paletteUpdated)
             {
                 TITLE_SCREEN_DATA.colorToApply = 0;
-                TITLE_SCREEN_DATA.unk_10 = 0;
+                TITLE_SCREEN_DATA.fadingStage = 0;
                 ended = TRUE;
             }
     }
@@ -254,13 +259,13 @@ void unk_76710(u8 param_1)
     if (!param_1)
     {
         DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer + 0x8000, 0x400, 16);
-        BitFill(3, 0, PALRAM_BASE, 0x400, 16);
+        BitFill(3, 0, PALRAM_BASE, PALRAM_SIZE, 16);
         DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer + 0x8400, 0x400, 16);
     }
     else
         DmaTransfer(3, PALRAM_BASE, (void*)sEwramPointer + 0x8000, 0x400, 16);
 
-    TITLE_SCREEN_DATA.unk_10 = 0;
+    TITLE_SCREEN_DATA.fadingStage = 0;
 }
 
 /**
@@ -269,10 +274,10 @@ void unk_76710(u8 param_1)
  */
 void unk_767a4(void)
 {
-    if (TITLE_SCREEN_DATA.unk_12)
+    if (TITLE_SCREEN_DATA.paletteUpdated)
     {
         DmaTransfer(3, (void*)sEwramPointer + 0x8400, PALRAM_BASE, 0x400, 16);
-        TITLE_SCREEN_DATA.unk_12 = FALSE;
+        TITLE_SCREEN_DATA.paletteUpdated = FALSE;
     }
 }
 
@@ -322,7 +327,7 @@ void TitleScreenUpdateAnimatedPalette(void)
                     pAnim->unk_4--;
                 }
 
-                DmaTransfer(3, &sTitleScreenPal[sTitleScreenTitlePaletteRows[pAnim->paletteRow] * 16 + 1], PALRAM_BASE + 0x2, 0x1E, 16);
+                DmaTransfer(3, &sTitleScreenPal[sTitleScreenTitlePaletteRows[pAnim->paletteRow] * 16 + 1], PALRAM_BASE + 2, 0x1E, 16);
             }
         }
     }
@@ -414,16 +419,16 @@ u32 unk_76a98(void)
             TITLE_SCREEN_DATA.oamTimings[1].stage = 16;
 
             TITLE_SCREEN_DATA.dispcnt &= ~sTitleScreenPageData[0].bg;
-            TITLE_SCREEN_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+            TITLE_SCREEN_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
 
             TITLE_SCREEN_DATA.unk_E++;
             break;
 
         case 2:
             gWrittenToBLDY_NonGameplay += 4;
-            if (gWrittenToBLDY_NonGameplay >= 16)
+            if (gWrittenToBLDY_NonGameplay >= BLDY_MAX_VALUE)
             {
-                gWrittenToBLDY_NonGameplay = 16;
+                gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE;
                 TITLE_SCREEN_DATA.unk_E++;
             }
             break;
@@ -892,6 +897,22 @@ s8 TitleScreenCheckPlayEffects(void)
     else if (gChangedInput & (KEY_A | KEY_START))
         return 1;
 
+    #ifdef DEBUG
+    if (gChangedInput & KEY_L)
+        return 2;
+
+    if (gButtonInput & KEY_SELECT)
+    {
+        if (gChangedInput & KEY_RIGHT)
+            TitleScreenSetCopyrightSymbol(TITLE_SCREEN_COPYRIGHT_SYMBOL_REGISTERED_TRADEMARK);
+        else if (gChangedInput & KEY_LEFT)
+            TitleScreenSetCopyrightSymbol(TITLE_SCREEN_COPYRIGHT_SYMBOL_TRADEMARK);
+    }
+
+    if (gChangedInput & KEY_SELECT)
+        BitFill(3, 0, VRAM_BASE + 0xF800, 0x800, 16);
+    #endif // DEBUG
+
     return 0;
 }
 
@@ -934,13 +955,22 @@ u32 TitleScreenSubroutine(void)
             {
                 TITLE_SCREEN_DATA.timer = 0;
                 if (gGameModeSub2 == 2)
+                {
                     UpdateMusicPriority(4);
+                    gGameModeSub1 = 3;
+                }
+                #ifdef DEBUG
+                else if (gGameModeSub2 == 3)
+                {
+                    gGameModeSub1 = 5;
+                }
+                #endif // DEBUG
                 else
                 {
                     SoundPlay(SOUND_TITLE_SCREEN_PRESSING_START);
                     TITLE_SCREEN_DATA.animatedPalettes[2] = sTitleScreenAnimatedPaletteTemplates[3];
+                    gGameModeSub1 = 3;
                 }
-                gGameModeSub1 = 3;
 
                 if (TITLE_SCREEN_DATA.animatedPalettes[1].unk_4 != 0)
                     TITLE_SCREEN_DATA.animatedPalettes[1].unk_4 = 1;
@@ -971,6 +1001,11 @@ u32 TitleScreenSubroutine(void)
             break;
 
         case 5:
+            #ifdef DEBUG
+            unk_767a4();
+            if (TitleScreenFadingOut(2, 0))
+                leaving = TRUE;
+            #endif // DEBUG
             break;
     }
 
@@ -1085,14 +1120,13 @@ void TitleScreenInit(void)
     CallbackSetVBlank(TitleScreenVBlank_Empty);
     
     zero = 0;
-    DMA_SET(3, &zero, &gNonGameplayRAM, (DMA_ENABLE | DMA_32BIT | DMA_SRC_FIXED) << 16 | sizeof(gNonGameplayRAM) / 4);
+    DMA_SET(3, &zero, &gNonGameplayRam, (DMA_ENABLE | DMA_32BIT | DMA_SRC_FIXED) << 16 | sizeof(gNonGameplayRam) / 4);
 
-    TITLE_SCREEN_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET |
-        BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
+    TITLE_SCREEN_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
 
     write16(REG_BLDCNT, TITLE_SCREEN_DATA.bldcnt);
 
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay = 16);
+    write16(REG_BLDY, gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE);
 
     write16(REG_DISPCNT, TITLE_SCREEN_DATA.dispcnt = 0);
 
@@ -1106,8 +1140,8 @@ void TitleScreenInit(void)
     zero = 0;
     DMA_SET(3, &zero, &gSamusPhysics, C_32_2_16(DMA_ENABLE | DMA_32BIT | DMA_SRC_FIXED, sizeof(gSamusPhysics) / sizeof(u32)));
 
-    gSramErrorFlag = FALSE;
-    gDebugFlag = FALSE;
+    gBootDebugActive = FALSE;
+    gDebugMode = FALSE;
 
     StopAllMusicsAndSounds();
 
@@ -1119,7 +1153,14 @@ void TitleScreenInit(void)
     TitleScreenLoadPageData(&sTitleScreenPageData[0]);
     TitleScreenLoadPageData(&sTitleScreenPageData[1]);
 
-    unk_777d8(2);
+    #ifdef DEBUG
+    if (gLanguage >= LANGUAGE_ENGLISH)
+        TitleScreenSetCopyrightSymbol(TITLE_SCREEN_COPYRIGHT_SYMBOL_TRADEMARK);
+    else
+        TitleScreenSetCopyrightSymbol(TITLE_SCREEN_COPYRIGHT_SYMBOL_REGISTERED_TRADEMARK);
+    #else // !DEBUG
+    TitleScreenSetCopyrightSymbol(TITLE_SCREEN_COPYRIGHT_SYMBOL_TRADEMARK);
+    #endif // DEBUG
 
     CallLZ77UncompVram(sTitleScreenTitleGfx, VRAM_BASE + 0xC000);
     CallLZ77UncompVram(sTitleScreenSpaceBackgroundGfx, VRAM_BASE + 0x4000);
@@ -1133,6 +1174,11 @@ void TitleScreenInit(void)
     // Undefined
     TitleScreenSetBGCNTPageData(&sTitleScreenPageData[0]);
     TitleScreenSetBGCNTPageData(&sTitleScreenPageData[1]);
+
+    #ifdef DEBUG
+    if (sRomInfoStringPointers[0][0] != '\0')
+        TitleScreenDrawDebugText();
+    #endif // DEBUG
 
     gGameModeSub3 = 0;
     gBg0HOFS_NonGameplay = gBg0VOFS_NonGameplay = 0;
@@ -1219,11 +1265,11 @@ void TitleScreenVBlank_Empty(void)
 }
 
 /**
- * @brief 777d8 | 4c | To document
+ * @brief 777d8 | 4c | Changes the copyright symbol
  * 
- * @param param_1 To document
+ * @param symbol Which symbol to use
  */
-void unk_777d8(u8 param_1)
+void TitleScreenSetCopyrightSymbol(u8 symbol)
 {
     s32 i;
     u32 value;
@@ -1234,10 +1280,10 @@ void unk_777d8(u8 param_1)
 
     bgOffset = sTitleScreenPageData[0].tiletablePage * 2048;
 
-    if (param_1 == 0)
+    if (symbol == TITLE_SCREEN_COPYRIGHT_SYMBOL_NONE)
         return;
 
-    if (param_1 == 2)
+    if (symbol == TITLE_SCREEN_COPYRIGHT_SYMBOL_TRADEMARK)
         temp = 0x12D;
     else
         temp = 0x10D;
@@ -1256,44 +1302,86 @@ void unk_777d8(u8 param_1)
 }
 
 /**
- * @brief 77824 | a0 | Unknown (probably some tilemap manipulation)
+ * @brief 77824 | a0 | Draws a string to the title screen (for debugging purposes)
  * 
- * @param param_1 Source pointer?
- * @param param_2 Destination pointer
- * @param param_3 Palette?
+ * @param pString String pointer
+ * @param dst Destination pointer
+ * @param palette Palette
  */
-void unk_77824(u8* param_1, u16* dst, u8 palette)
+void TitleScreenDrawString(const u8* pString, u16* dst, u8 palette)
 {
-    u16 var_0;
+    u16 tile;
 
-    while (*param_1)
+    while (*pString)
     {
-        if (*param_1 != 0x20)
+        if (*pString != ' ')
         {
-            if ((u8)(*param_1 - 0x30) < 10)
-                var_0 = *param_1 - 0x30;
-            else if ((u8)(*param_1 - 0x41) < 26)
-                var_0 = *param_1 + -0x37;
-            else if (*param_1 == 0x3A)
-                var_0 = 0x24;
-            else if (*param_1 == 0x5F)
-                var_0 = 0x25;
-            else if (*param_1 == 0x2F)
-                var_0 = 0x26;
-            else if ((u8)(*param_1 - 0x61) < 26)
-                var_0 = *param_1 + -0x57;
+            if (*pString >= '0' && *pString <= '9')
+                tile = *pString - '0';
+            else if (*pString >= 'A' && *pString <= 'Z')
+                tile = *pString - 'A' + 10;
+            else if (*pString == ':')
+                tile = 0x24;
+            else if (*pString == '_')
+                tile = 0x25;
+            else if (*pString == '/')
+                tile = 0x26;
+            else if (*pString >= 'a' && *pString <= 'z')
+                tile = *pString - 'a' + 10;
             else
-                var_0 = 0x8000;
+                tile = 0x8000;
         }
         else
-            var_0 = 0x8000;
-
-        if (var_0 != 0x8000)
         {
-            *dst = (palette << 12) | (var_0 + 0x1C0);
+            tile = 0x8000;
         }
 
+        if (tile != 0x8000)
+            *dst = (palette << 0xC) | (tile + 0x1C0);
+
         dst++;
-        param_1++;
+        pString++;
     }
 }
+
+#ifdef DEBUG
+void TitleScreenDrawDebugText(void)
+{
+    s32 i;
+    u8 string[5];
+    
+    DmaTransfer(3, sCharactersGfx, VRAM_BASE + 0xF800, 0x800, 16);
+    DmaTransfer(3, sGameOverMenuPal+0x20, PALRAM_BASE + 0x1E0, 0x20, 16);
+    TitleScreenDrawString(sRomInfoStringPointers[0], VRAM_BASE + sTitleScreenPageData[0].tiletablePage * 0x800, 0xF);
+
+    for (i = 0; i < 4; i++)
+        string[i] = game_code[i];
+    string[4] = '\0';
+
+    TitleScreenDrawString(string, VRAM_BASE + 0x40 + sTitleScreenPageData[0].tiletablePage * 0x800, 0xF);
+
+    i = game_version >> 4;
+    if (i >= 0 && i < 10)
+        i += '0';
+    else if (i >= 10 && i < 16)
+        i += 'A' - 10;
+    else
+        i = ' ';
+    string[0] = i;
+    
+    i = game_version & 0xF;
+    if (i >= 0 && i < 10)
+        i += '0';
+    else if (i >= 10 && i < 16)
+        i += 'A' - 10;
+    else
+        i = ' ';
+    string[1] = i;
+
+    string[2] = '/';
+    string[3] = 'D';
+    string[4] = '\0';
+
+    TitleScreenDrawString(string, VRAM_BASE + 0x80 + sTitleScreenPageData[0].tiletablePage * 0x800, 0xF);
+}
+#endif // DEBUG

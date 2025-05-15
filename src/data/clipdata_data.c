@@ -2,8 +2,6 @@
 #include "macros.h"
 
 #include "constants/clipdata.h"
-#include "constants/connection.h"
-#include "constants/room.h"
 
 const u16 sMovementClipdataValues[16] = {
     [CLIP_BEHAVIOR_NONE] = CLIPDATA_MOVEMENT_NONE,
@@ -18,7 +16,7 @@ const u16 sMovementClipdataValues[16] = {
     [CLIP_BEHAVIOR_SPACE_PIRATE_WALLJUMP_POINT] = CLIPDATA_MOVEMENT_SPACE_PIRATE_WALLJUMP_POINT
 };
 
-const u16 sHazardsDefinitions[8][2] = {
+const u16 sHazardsDefinitions[EFFECT_HAZARD_END][2] = {
     [EFFECT_NONE] = { HAZARD_TYPE_NONE, HAZARD_TYPE_NONE },
     [EFFECT_WATER] = { HAZARD_TYPE_NONE, HAZARD_TYPE_WATER },
     [EFFECT_STRONG_LAVA] = { HAZARD_TYPE_NONE, HAZARD_TYPE_STRONG_LAVA },
@@ -47,7 +45,7 @@ const u8 sGroundEffectsClipdataValues[8] = {
     [BEHAVIOR_TO_GROUND_EFFECT(CLIP_BEHAVIOR_GROUND_EFFECT_UNUSED3)] = GROUND_EFFECT_NONE,
 };
 
-const struct ElevatorPair sElevatorRoomPairs[9] = {
+const struct ElevatorPair sElevatorRoomPairs[ELEVATOR_ROUTE_COUNT] = {
     [ELEVATOR_ROUTE_NONE] = {
         .area1 = 11,
         .room1 = 0,
@@ -154,7 +152,7 @@ const u8 sScroll_Empty[11] = {
     UCHAR_MAX
 };
 
-const struct CameraScrollVelocityCaps sScrollVelocityCaps[3] = {
+const struct CameraScrollVelocityCaps sScrollVelocityCaps[SCROLL_VELOCITY_CAP_END] = {
     [SCROLL_VELOCITY_CAP_SET_DEFAULT] = {
         .leftCap = -EIGHTH_BLOCK_SIZE,
         .rightCap = EIGHTH_BLOCK_SIZE,

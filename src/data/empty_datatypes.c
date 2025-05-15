@@ -5,6 +5,8 @@
 #include "constants/connection.h"
 #include "constants/power_bomb_explosion.h"
 
+#include "structs/screen_shake.h"
+
 // 345868
 
 const struct HatchData sHatchData_Empty = {
@@ -12,8 +14,8 @@ const struct HatchData sHatchData_Empty = {
     .currentAnimationFrame = 0,
     .facingRight = FALSE,
     .securityLevel = 0,
-    .opening = FALSE,
-    .locked = FALSE,
+    .state = HATCH_STATE_CLOSED,
+    .locked = HATCH_LOCK_STATE_UNLOCKED,
     .flashingTimer = 0,
     .hitTimer = 0,
     .hits = 0,
@@ -81,8 +83,8 @@ const struct PowerBomb sPowerBomb_Empty = {
 
 const struct ScreenShake sScreenShake_Empty = {
     .timer = 0,
-    .loopCounter = 0,
-    .unk_2 = 0,
+    .delay = 0,
+    .intensity = 0,
     .direction = 0
 };
 

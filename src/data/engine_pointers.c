@@ -22,9 +22,8 @@
 #include "tourian_escape.h"
 #include "cutscenes/cutscene_utils.h"
 
-#include "constants/animated_graphics.h"
 #include "constants/haze.h"
-#include "constants/room.h"
+#include "constants/color_fading.h"
 
 const ProjFunc_T sProcessProjectileFunctionPointers[PROJ_TYPE_END] = {
     [PROJ_TYPE_BEAM] = ProjectileProcessNormalBeam,
@@ -109,7 +108,7 @@ const ParticleFunc_T sProcessParticleFunctionPointers[PE_END] = {
     [PE_ESCAPE] = ParticleEscape,
 };
 
-const struct Door* const sAreaDoorsPointers[MAX_AMOUNT_OF_AREAS - 1] = {
+const struct Door* const sAreaDoorsPointers[AREA_NORMAL_COUNT] = {
     [AREA_BRINSTAR] = sBrinstarDoors,
     [AREA_KRAID] = sKraidDoors,
     [AREA_NORFAIR] = sNorfairDoors,
@@ -119,7 +118,7 @@ const struct Door* const sAreaDoorsPointers[MAX_AMOUNT_OF_AREAS - 1] = {
     [AREA_CHOZODIA] = sChozodiaDoors
 };
 
-const struct RoomEntryROM* const sAreaRoomEntryPointers[MAX_AMOUNT_OF_AREAS - 1] = {
+const struct RoomEntryROM* const sAreaRoomEntryPointers[AREA_NORMAL_COUNT] = {
     [AREA_BRINSTAR] = sBrinstarRoomEntries,
     [AREA_KRAID] = sKraidRoomEntries,
     [AREA_NORFAIR] = sNorfairRoomEntries,
@@ -299,7 +298,7 @@ static const u8* const sChozodiaScrolls[] = {
     sScroll_Empty
 };
 
-const u8* const * const sAreaScrollPointers[AREA_END] = {
+const u8* const * const sAreaScrollPointers[AREA_COUNT] = {
     [AREA_BRINSTAR] = sBrinstarScrolls,
     [AREA_KRAID] = sKraidScrolls,
     [AREA_NORFAIR] = sNorfairScrolls,
@@ -348,11 +347,11 @@ const BlockFunc_T sNonReformDestroyFunctionPointers[5] = {
     BlockDestroyBombChainBlock
 };
 
-const ColorFadingFunc_T sColorFadingSubroutinePointers[4] = {
-    ColorFadingSubroutine_Empty,
-    unk_5bd58,
-    unk_5bdc8,
-    unk_5be7c
+const ColorFadingFunc_T sColorFadingSubroutinePointers[COLOR_FADING_SUBROUTINE_END] = {
+    [COLOR_FADING_SUBROUTINE_EMPTY] = ColorFadingSubroutine_Empty,
+    [COLOR_FADING_SUBROUTINE_1] = unk_5bd58,
+    [COLOR_FADING_SUBROUTINE_2] = unk_5bdc8,
+    [COLOR_FADING_SUBROUTINE_3] = unk_5be7c
 };
 
 /**
@@ -363,7 +362,7 @@ const ColorFadingFunc_T sColorFadingSubroutinePointers[4] = {
  * 3 : Power bomb related
  */
 FORCE_RODATA
-u8 sHazeData[13][4] = {
+u8 sHazeData[EFFECT_HAZE_END][4] = {
     [EFFECT_NONE] = {
         HAZE_VALUE_NONE, EFFECT_NONE, FALSE, 0
     },
@@ -405,26 +404,25 @@ u8 sHazeData[13][4] = {
     }
 };
 
-// FIXME use pointer to u16[3]
-const u16* const sBackgroundEffectBehaviorPointers[9] = {
-    [0] = (const u16* const)sBackgroundEffectBehavior_Lightning,
-    [BACKGROUND_EFFECT_LIGHTNING] = (const u16* const)sBackgroundEffectBehavior_Lightning,
-    [BACKGROUND_EFFECT_SLIGHT_YELLOW] = (const u16* const)sBackgroundEffectBehavior_SlightYellow,
-    [BACKGROUND_EFFECT_HEAVY_YELLOW] = (const u16* const)sBackgroundEffectBehavior_HeavyYellow,
-    [BACKGROUND_EFFECT_EXIT_ZEBES_FADE] = (const u16* const)sBackgroundEffectBehavior_ExitZebes,
-    [BACKGROUND_EFFECT_INTRO_TEXT_FADE] = (const u16* const)sBackgroundEffectBehavior_IntroText,
-    [BACKGROUND_EFFECT_QUICK_FLASH] = (const u16* const)sBackgroundEffectBehavior_QuickFlash,
-    [BACKGROUND_EFFECT_ALL_BLACK] = (const u16* const)sBackgroundEffectBehavior_AllBlackWhite,
-    [BACKGROUND_EFFECT_ALL_WHITE] = (const u16* const)sBackgroundEffectBehavior_AllBlackWhite,
+const BackgroundEffectBehaviorEntry_T* const sBackgroundEffectBehaviorPointers[BACKGROUND_EFFECT_END] = {
+    [BACKGROUND_EFFECT_NONE] = sBackgroundEffectBehavior_Lightning,
+    [BACKGROUND_EFFECT_LIGHTNING] = sBackgroundEffectBehavior_Lightning,
+    [BACKGROUND_EFFECT_SLIGHT_YELLOW] = sBackgroundEffectBehavior_SlightYellow,
+    [BACKGROUND_EFFECT_HEAVY_YELLOW] = sBackgroundEffectBehavior_HeavyYellow,
+    [BACKGROUND_EFFECT_EXIT_ZEBES_FADE] = sBackgroundEffectBehavior_ExitZebes,
+    [BACKGROUND_EFFECT_INTRO_TEXT_FADE] = sBackgroundEffectBehavior_IntroText,
+    [BACKGROUND_EFFECT_QUICK_FLASH] = sBackgroundEffectBehavior_QuickFlash,
+    [BACKGROUND_EFFECT_ALL_BLACK] = sBackgroundEffectBehavior_AllBlackWhite,
+    [BACKGROUND_EFFECT_ALL_WHITE] = sBackgroundEffectBehavior_AllBlackWhite,
 };
 
-const struct HatchLockEvent* const sHatchLockEventsPointers[MAX_AMOUNT_OF_AREAS - 1] = {
+const struct HatchLockEvent* const sHatchLockEventsPointers[AREA_NORMAL_COUNT] = {
     [AREA_BRINSTAR] = sHatchLockEventsBrinstar,
     [AREA_KRAID] = sHatchLockEventsKraid,
-    [AREA_NORFAIR] = sHatchLockEventsNorfair,
-    [AREA_RIDLEY] = sHatchLockEventsNorfair,
-    [AREA_TOURIAN] = sHatchLockEventsNorfair,
-    [AREA_CRATERIA] = sHatchLockEventsNorfair,
+    [AREA_NORFAIR] = sHatchLockEventsCrateria,
+    [AREA_RIDLEY] = sHatchLockEventsCrateria,
+    [AREA_TOURIAN] = sHatchLockEventsCrateria,
+    [AREA_CRATERIA] = sHatchLockEventsCrateria,
     [AREA_CHOZODIA] = sHatchLockEventsChozodia
 };
 
