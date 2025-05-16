@@ -30,6 +30,7 @@ struct HudPositions {
 extern u32 gChaosRng;
 extern u32 gActiveChaosEffects;
 extern u8 gPrevOneTimeChaosEffect;
+extern u8 gCrumbleCityActive;
 extern struct HudPositions gHudPositions;
 extern const u16* gChaosTextPointer;
 extern struct ChaosEffectData gChaosEffects[MAX_NUM_CHAOS_EFFECTS];

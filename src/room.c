@@ -37,6 +37,7 @@
 #include "structs/text.h"
 #include "structs/screen_shake.h"
 #include "structs/visual_effects.h"
+#include "structs/chaos.h"
 
 /**
  * @brief 55f7c | 26c | Loads the current room
@@ -437,6 +438,8 @@ void RoomReset(void)
 
     if (gPauseScreenFlag != PAUSE_SCREEN_NONE)
         return;
+
+    gCrumbleCityActive = FALSE;
 
     gDisableScrolling = FALSE;
     gSlowScrollingTimer = 0;

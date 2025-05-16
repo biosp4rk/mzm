@@ -33,12 +33,14 @@ s32 ChaosEffectMessageBox(void);
 const u16* ChaosRandomTextPointer(void);
 s32 ChaosEffectSpawnPB(void);
 void ChaosEffectShotBlock(void);
-void ChaosEffectReplaceSolidBlocks(u16 value);
+s32 ChaosEffectReplaceSolidBlocks(u16 value);
+s32 ChaosEffectCrumbleCity(void);
 s32 ChaosEffectFreezeEnemies(void);
 s32 ChaosEffectKnockback(void);
 void ChaosEffectScreenShake(void);
 void ChaosEffectChangeEnergyAmmo(void);
 void ChaosEffectRandSound(void);
 void ChaosEffectColorEffect(void);
+s32 ChaosEffectCutscene(void);
 
 #endif /* CHAOS_H */

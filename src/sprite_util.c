@@ -6,6 +6,7 @@
 #include "sprites_AI/ridley.h"
 #include "sprites_AI/acid_worm.h"
 #include "data/sprite_data.h"
+#include "chaos.h"
 
 #include "constants/audio.h"
 #include "constants/clipdata.h"
@@ -15,6 +16,7 @@
 #include "constants/sprite_util.h"
 #include "constants/particle.h"
 #include "constants/projectile.h"
+#include "constants/chaos.h"
 
 #include "structs/clipdata.h"
 #include "structs/game_state.h"
@@ -2324,6 +2326,9 @@ u32 SpriteUtilCheckStopSpritesPose(void)
         case SPOSE_FACING_THE_FOREGROUND:
             return TRUE;
     }
+
+    if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_ENEMIES) && gFrameCounter8Bit & 1 == 0)
+        return TRUE;
     
     return FALSE;
 }

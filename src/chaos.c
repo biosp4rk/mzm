@@ -229,6 +229,10 @@ void ChaosCreateEffect(void)
                 break;
             case CHAOS_EFFECT_LONG_ECHO:
                 break; // No extra checks or setup required
+            case CHAOS_EFFECT_SLOW_ENEMIES:
+                if (SpriteUtilCheckStopSpritesPose())
+                    continue;
+                break;
             case CHAOS_EFFECT_DEACTIVATE_ABILITY:
                 if (!ChaosEffectDeactivateAbility(&gChaosEffects[effectIdx]))
                     continue;
@@ -286,7 +290,12 @@ void ChaosCreateEffect(void)
                 ChaosEffectShotBlock();
                 break;
             case CHAOS_EFFECT_WET_GROUND:
-                ChaosEffectReplaceSolidBlocks(CLIPDATA_WET_GROUND);
+                if (!ChaosEffectReplaceSolidBlocks(CLIPDATA_WET_GROUND))
+                    continue;
+                break;
+            case CHAOS_EFFECT_CRUMBLE_CITY:
+                if (!ChaosEffectCrumbleCity())
+                    continue;
                 break;
             case CHAOS_EFFECT_FREEZE_ENEMIES:
                 if (!ChaosEffectFreezeEnemies())
@@ -315,6 +324,10 @@ void ChaosCreateEffect(void)
                 break;
             case CHAOS_EFFECT_COLOR_EFFECT:
                 ChaosEffectColorEffect();
+                break;
+            case CHAOS_EFFECT_CUTSCENE:
+                if (!ChaosEffectCutscene())
+                    continue;
                 break;
         }
 
@@ -885,11 +898,14 @@ void ChaosEffectShotBlock(void)
     BgClipSetBg1BlockValue(0x46, yPos, xPos);
 }
 
-void ChaosEffectReplaceSolidBlocks(u16 value)
+s32 ChaosEffectReplaceSolidBlocks(u16 value)
 {
     s32 size;
     u16* pClipStart;
     u16* pClip;
+
+    if (gCrumbleCityActive)
+        return FALSE;
 
     size = gBgPointersAndDimensions.clipdataWidth * gBgPointersAndDimensions.clipdataHeight;
     pClipStart = gBgPointersAndDimensions.pClipDecomp;
@@ -907,6 +923,46 @@ void ChaosEffectReplaceSolidBlocks(u16 value)
                 break;
         }
     }
+
+    return TRUE;
+}
+
+s32 ChaosEffectCrumbleCity(void)
+{
+    u16 width;
+    u16* pClip;
+    u16* pClipEnd;
+
+    if (gCrumbleCityActive)
+        return FALSE;
+
+    width = gBgPointersAndDimensions.clipdataWidth;
+    // Skip top 2 and bottom 2 rows
+    pClip = gBgPointersAndDimensions.pClipDecomp + width * 2;
+    pClipEnd = pClip + width * (gBgPointersAndDimensions.clipdataHeight - 4);
+
+    for (; pClip < pClipEnd; pClip++)
+    {
+        switch (*pClip)
+        {
+            case CLIPDATA_SOLID:
+            case CLIPDATA_WET_GROUND:
+            case CLIPDATA_DUSTY_GROUND:
+            case CLIPDATA_BUBBLY_GROUND:
+            case CLIPDATA_VERY_DUSTY_GROUND:
+                // Require 2 air blocks above and 1 solid block below
+                if (gClipdataCollisionTypes[*(pClip - 2 * width)] == CLIPDATA_TYPE_AIR &&
+                    gClipdataCollisionTypes[*(pClip - width)] == CLIPDATA_TYPE_AIR &&
+                    gClipdataCollisionTypes[*(pClip + width)] == CLIPDATA_TYPE_SOLID)
+                {
+                    *pClip = CLIPDATA_SLOW_CRUMBLE;
+                }
+                break;
+        }
+    }
+
+    gCrumbleCityActive = TRUE;
+    return TRUE;
 }
 
 s32 ChaosEffectFreezeEnemies(void)
@@ -1080,4 +1136,25 @@ void ChaosEffectColorEffect(void)
 
         *pPalette = COLOR(r, g, b);
     }
+}
+
+s32 ChaosEffectCutscene(void)
+{
+    if (gPreventMovementTimer > 0)
+        return FALSE;
+    
+    switch (ChaosRandU16(0, 2))
+    {
+        case 0:
+            StartEffectForCutscene(EFFECT_CUTSCENE_RIDLEY_SPAWN);
+            break;
+        case 1:
+            StartEffectForCutscene(EFFECT_CUTSCENE_STATUE_OPENING);
+            break;
+        case 2:
+            StartEffectForCutscene(EFFECT_CUTSCENE_SAMUS_IN_BLUE_SHIP);
+            break;
+    }
+
+    return TRUE;
 }

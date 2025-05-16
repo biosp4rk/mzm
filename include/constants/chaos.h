@@ -31,6 +31,8 @@ enum ChaosEffect {
     CHAOS_EFFECT_HIGH_GRAVITY,
     // Draws long Samus echoes at all times
     CHAOS_EFFECT_LONG_ECHO,
+    // Runs enemy code every other frame
+    CHAOS_EFFECT_SLOW_ENEMIES,
 
     // ## Samus related
 
@@ -77,6 +79,8 @@ enum ChaosEffect {
     CHAOS_EFFECT_SHOT_BLOCK,
     // Makes all solid blocks wet ground
     CHAOS_EFFECT_WET_GROUND,
+    // Makes most ground blocks slow crumble blocks
+    CHAOS_EFFECT_CRUMBLE_CITY,
     // Freezes all freezable enemies in the room
     CHAOS_EFFECT_FREEZE_ENEMIES,
     // Sets the screen shake timer
@@ -93,6 +97,8 @@ enum ChaosEffect {
     CHAOS_EFFECT_RAND_SOUND,
     // Changes the background colors (brightness, monochrome)
     CHAOS_EFFECT_COLOR_EFFECT,
+    // Plays a random cutscene
+    CHAOS_EFFECT_CUTSCENE,
 
     // Marks the end of all effects
     CHAOS_EFFECT_END
@@ -106,6 +112,7 @@ enum ChaosEffect {
 #define CHAOS_FLAG_LOW_GRAVITY (1 << CHAOS_EFFECT_LOW_GRAVITY)
 #define CHAOS_FLAG_HIGH_GRAVITY (1 << CHAOS_EFFECT_HIGH_GRAVITY)
 #define CHAOS_FLAG_LONG_ECHO (1 << CHAOS_EFFECT_LONG_ECHO)
+#define CHAOS_FLAG_SLOW_ENEMIES (1 << CHAOS_EFFECT_SLOW_ENEMIES)
 #define CHAOS_FLAG_DEACTIVATE_ABILITY (1 << CHAOS_EFFECT_DEACTIVATE_ABILITY)
 #define CHAOS_FLAG_GIVE_ABILITY (1 << CHAOS_EFFECT_GIVE_ABILITY)
 #define CHAOS_FLAG_SUITLESS (1 << CHAOS_EFFECT_SUITLESS)
