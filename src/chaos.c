@@ -37,6 +37,7 @@
 #include "structs/sprite.h"
 
 #include "data/text_pointers.h"
+#include "data/projectile_data.h"
 
 // Max positions where HUD elements can be drawn when moved
 #define HUD_MAX_X (SCREEN_SIZE_X - 24)
@@ -86,6 +87,9 @@ void ChaosUpdateEffects(void)
         // Check specific effects to update
         switch (gChaosEffects[i].id)
         {
+            case CHAOS_EFFECT_MISSILE_RING:
+                ChaosEffectMissileRing();
+                break;
             case CHAOS_EFFECT_EXPLOSIONS:
                 ChaosEffectExplosions();
                 break;
@@ -246,7 +250,9 @@ void ChaosCreateEffect(void)
                     continue;
                 break;
             case CHAOS_EFFECT_SLOW_WEAPONS:
-                break; // No extra checks or setup required
+                if (ChaosIsEffectActive(CHAOS_FLAG_MISSILE_RING))
+                    continue;
+                break;
             case CHAOS_EFFECT_ARM_WEAPON:
                 if (gEquipment.suitType == SUIT_SUITLESS ||
                     (gEquipment.currentMissiles == 0 && gEquipment.currentSuperMissiles == 0))
@@ -263,6 +269,10 @@ void ChaosCreateEffect(void)
                 break;
             case CHAOS_EFFECT_SHOOT_BOMBS:
                 if (ChaosIsEffectActive(CHAOS_FLAG_CHARGED_SHOTS))
+                    continue;
+                break;
+            case CHAOS_EFFECT_MISSILE_RING:
+                if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
                     continue;
                 break;
             case CHAOS_EFFECT_MOVE_HUD:
@@ -607,6 +617,107 @@ void ChaosEffectMoveHud(void)
     gHudPositions.powerBombY = RAND_SCREEN_Y;
     gHudPositions.minimapX = RAND_SCREEN_X;
     gHudPositions.minimapY = RAND_SCREEN_Y;
+}
+
+void ChaosEffectMissileRing(void)
+{
+    u8 direction;
+    u8 right;
+    struct ProjectileData* pProj;
+    u16 status;
+
+    if (gFrameCounter8Bit % 8 != 0)
+        return;
+
+    switch ((gFrameCounter8Bit / 8) & 7)
+    {
+        case 0:
+            direction = ACD_UP;
+            right = FALSE;
+            break;
+        case 1:
+            direction = ACD_DIAGONALLY_UP;
+            right = TRUE;
+            break;
+        case 2:
+            direction = ACD_FORWARD;
+            right = TRUE;
+            break;
+        case 3:
+            direction = ACD_DIAGONALLY_DOWN;
+            right = TRUE;
+            break;
+        case 4:
+            direction = ACD_DOWN;
+            right = FALSE;
+            break;
+        case 5:
+            direction = ACD_DIAGONALLY_DOWN;
+            right = FALSE;
+            break;
+        case 6:
+            direction = ACD_FORWARD;
+            right = FALSE;
+            break;
+        case 7:
+            direction = ACD_DIAGONALLY_UP;
+            right = FALSE;
+            break;
+    }
+
+    for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
+    {
+        if (!(pProj->status & PROJ_STATUS_EXISTS))
+        {
+            status = PROJ_STATUS_EXISTS | PROJ_STATUS_ON_SCREEN | PROJ_STATUS_CAN_AFFECT_ENVIRONMENT;
+
+            if (right)
+                status |= PROJ_STATUS_X_FLIP;
+
+            pProj->status = status;
+            pProj->type = PROJ_TYPE_MISSILE;
+
+            pProj->yPosition = gSamusData.yPosition + gSamusPhysics.hitboxTop;
+            pProj->xPosition = gSamusData.xPosition;
+
+            pProj->hitboxTop = -EIGHTH_BLOCK_SIZE;
+            pProj->hitboxBottom = EIGHTH_BLOCK_SIZE;
+            pProj->hitboxLeft = -EIGHTH_BLOCK_SIZE;
+            pProj->hitboxRight = EIGHTH_BLOCK_SIZE;
+
+            pProj->movementStage = PROJECTILE_STAGE_SPAWNING;
+            pProj->timer = 0;
+            pProj->direction = direction;
+
+            switch (direction)
+            {
+                case ACD_DIAGONALLY_DOWN:
+                    pProj->status |= PROJ_STATUS_Y_FLIP;
+                case ACD_DIAGONALLY_UP:
+                    pProj->pOam = sMissileOam_Diagonal;
+                    break;
+    
+                case ACD_DOWN:
+                    pProj->status |= PROJ_STATUS_Y_FLIP;
+                case ACD_UP:
+                    pProj->pOam = sMissileOam_Vertical;
+                    break;
+    
+                default:
+                case ACD_FORWARD:
+                    pProj->pOam = sMissileOam_Horizontal;
+                    break;
+            }
+
+            pProj->animationDurationCounter = 0;
+            pProj->currentAnimationFrame = 0;
+
+            SoundPlay(SOUND_MISSILE_SHOT);
+            SoundPlay(SOUND_MISSILE_THRUST);
+
+            return;
+        }
+    }
 }
 
 void ChaosEffectExplosions(void)

@@ -2327,7 +2327,7 @@ u32 SpriteUtilCheckStopSpritesPose(void)
             return TRUE;
     }
 
-    if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_ENEMIES) && gFrameCounter8Bit & 1 == 0)
+    if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_ENEMIES) && gFrameCounter8Bit & 1 != 0)
         return TRUE;
     
     return FALSE;

@@ -25,6 +25,7 @@ s32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect);
 s32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect);
 s32 ChaosEffectSuitless(struct ChaosEffectData* pEffect);
 void ChaosEffectMoveHud(void);
+void ChaosEffectMissileRing(void);
 void ChaosEffectExplosions(void);
 
 // One time effects
