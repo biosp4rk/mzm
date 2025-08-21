@@ -2,6 +2,7 @@
 #define STATUS_SCREEN_MENU_STRUCT_H
 
 #include "types.h"
+#include "macros.h"
 
 struct StatusScreenItemData {
     u8 group;
@@ -16,5 +17,22 @@ struct StatusScreenItemAcquisitionData {
     u8 abilityOffset;
     u8 statusSlot;
 };
+
+struct PACKED StatusScreenGroupPositions {
+    u8 top;
+    u8 bottom;
+    u8 left;
+    u8 right;
+    u8 group;
+};
+
+#ifdef DEBUG
+struct PauseDebugEnergyAmmoInfo {
+    u8 type;
+    u8 is16bit;
+    u8 isMax;
+    u8 lastDigit;
+};
+#endif // DEBUG
 
 #endif /* STATUS_SCREEN_MENU_STRUCT_H */

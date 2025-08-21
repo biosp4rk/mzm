@@ -6,8 +6,11 @@
 
 #define TITLE_SCREEN_DATA sNonGameplayRamPointer->titleScreen
 
-struct TitleScrenOamTiming {
+struct TitleScreenOamTiming {
     u8 stage;
+    #ifdef REGION_EU
+    u8 menuOption;
+    #endif // REGION_EU
     u16 timer;
 };
 
@@ -47,7 +50,7 @@ struct TitleScreenData {
     u16 bldcnt;
     u16 unk_24;
     struct TitleScreenAnimatedPalette animatedPalettes[3];
-    struct TitleScrenOamTiming oamTimings[3];
+    struct TitleScreenOamTiming oamTimings[3];
     struct MenuOamData oam[7];
 };
 

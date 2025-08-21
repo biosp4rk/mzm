@@ -1,13 +1,15 @@
 MEMORY {
-    ewram : ORIGIN = 0x02000000 LENGTH = 256K
-    iwram : ORIGIN = 0x03000000 LENGTH = 32K
-    rom : ORIGIN = 0x08000000 LENGTH = 32M
+    ewram (rwx): ORIGIN = 0x02000000 LENGTH = 256K
+    iwram (rwx): ORIGIN = 0x03000000 LENGTH = 32K
+    rom    (rx): ORIGIN = 0x08000000 LENGTH = 32M
 }
 
 gNumMusicPlayers = 9;
 gUnk_Audio0x64 = 0x64;
 gUnk_Audio0x194F700 = 0x194F700;
 gUnk_Audio0x50 = 0x50;
+
+__nes_metroid_load_address = 0x87D8000;
 
 SECTIONS {
     ewram (NOLOAD) : ALIGN(4) {
@@ -29,7 +31,7 @@ SECTIONS {
         . = 0x00033800; gMinimapTilesWithObtainedItems = .;
         . = 0x00034000; gDecompressedMinimapVisitedTiles = .;
         . = 0x00034800; gDecompressedMinimapData = .;
-        . = 0x00035400; unk_02035400 = .;
+        . = 0x00035400; gUnk_02035400 = .;
         . = 0x00035c00; gNeverReformBlocks = .;
         . = 0x00036c00; gItemsCollected = .;
         . = 0x00037400; gVisitedMinimapTiles = .;
@@ -47,13 +49,13 @@ SECTIONS {
         . = 0x00000002; gFrameCounter16Bit = .;
         . = 0x00000004; gStereoFlag = .;
         . = 0x00000005; gSubGameModeStage = .;
-        . = 0x00000006; gWrittenToBLDALPHA = .;
-        . = 0x00000008; gWrittenToBLDCNT_Internal = .;
-        . = 0x0000000a; gWrittenToDISPCNT = .;
-        . = 0x0000000e; gWrittenToWININ_H = .;
-        . = 0x0000000f; gWrittenToWINOUT_L = .;
+        . = 0x00000006; gWrittenToBldalpha = .;
+        . = 0x00000008; gWrittenToBldcnt_Internal = .;
+        . = 0x0000000a; gWrittenToDispcnt = .;
+        . = 0x0000000e; gWrittenToWinIn_H = .;
+        . = 0x0000000f; gWrittenToWinOut_L = .;
         . = 0x00000010; gBackdropColor = .;
-        . = 0x00000012; gWrittenToBLDY = .;
+        . = 0x00000012; gWrittenToBldy = .;
         . = 0x00000014; gFileScreenOptionsUnlocked = .;
         . = 0x00000020; gLanguage = .;
         . = 0x00000024; gGameCompletion = .;
@@ -73,7 +75,7 @@ SECTIONS {
         . = 0x00000040; gDisableMusic = .;
         . = 0x00000041; gDisableCutscenes_Unused = .;
         . = 0x00000042; gSkipDoorTransition = .;
-        . = 0x00000043; gDisableSoftreset = .;
+        . = 0x00000043; gDisableSoftReset = .;
         . = 0x00000044; gCollectingTank = .;
         . = 0x00000045; gDisableAnimatedGraphicsTimer = .;
         . = 0x00000046; gAnimatedGraphicsToUpdate = .;
@@ -99,7 +101,7 @@ SECTIONS {
         . = 0x00000071; gScreenShakeXOffset = .;
         . = 0x00000072; gScreenShakeYOffset = .;
         . = 0x00000074; gScreenShakeRelated = .;
-        . = 0x00000076; gDISPCNTBackup = .;
+        . = 0x00000076; gDispcntBackup = .;
         . = 0x00000078; gSpriteset = .;
         . = 0x00000079; gCurrentClipdataAffectingAction = .;
         . = 0x0000007A; gSpritesetEntryUsed = .;
@@ -188,14 +190,14 @@ SECTIONS {
         . = 0x00000c1d; gIsLoadingFile = .;
         . = 0x00000c1e; gMostRecentSaveFile = .;
         . = 0x00000c1f; gHasSaved = .;
-        . = 0x00000c20; gUnk_3000c20 = .;
+        . = 0x00000c20; gUnk_3000C20 = .;
         . = 0x00000c21; gSramOperationStage = .;
         . = 0x00000c24; gSaveFilesInfo = .;
         . = 0x00000c6c; gSectionInfo = .;
         . = 0x00000c70; gMainGameMode = .;
-        . = 0x00000c72; gGameModeSub1 = .;
-        . = 0x00000c74; gGameModeSub2 = .;
-        . = 0x00000c75; gGameModeSub3 = .;
+        . = 0x00000c72; gSubGameMode1 = .;
+        . = 0x00000c74; gSubGameMode2 = .;
+        . = 0x00000c75; gSubGameMode3 = .;
         . = 0x00000c76; gVblankActive = .;
         . = 0x00000c77; gFrameCounter8Bit = .;
         . = 0x00000c78; gVBlankRequestFlag = .;
@@ -205,20 +207,20 @@ SECTIONS {
         . = 0x0000137e; gPreviousButtonInput = .;
         . = 0x00001380; gChangedInput = .;
         . = 0x00001382; gNextOamSlot = .;
-        . = 0x00001394; gWrittenToBG2X = .;
-        . = 0x00001398; gWrittenToBG2Y = .;
-        . = 0x0000139c; gWrittenToMOSAIC_H = .;
-        . = 0x0000139e; gWrittenToMOSAIC_L = .;
-        . = 0x000013A0; gBg2Scaling = .;
-        . = 0x000013A2; gUnk_30013a2 = .;
+        . = 0x00001394; gWrittenToBg2X = .;
+        . = 0x00001398; gWrittenToBg2Y = .;
+        . = 0x0000139c; gWrittenToMosaic_H = .;
+        . = 0x0000139e; gWrittenToMosaic_L = .;
+        . = 0x000013A0; gBg2XScaling = .;
+        . = 0x000013A2; gBg2YScaling = .;
         . = 0x000013A4; gBg2Rotation = .;
-        . = 0x000013A6; gWrittenToBG2PA = .;
-        . = 0x000013A8; gWrittenToBG2PB = .;
-        . = 0x000013Aa; gWrittenToBG2PC = .;
-        . = 0x000013Ac; gWrittenToBG2PD = .;
-        . = 0x000013AE; gWrittenToBLDY_NonGameplay = .;
-        . = 0x000013B0; gWrittenToBLDALPHA_L = .;
-        . = 0x000013B2; gWrittenToBLDALPHA_H = .;
+        . = 0x000013A6; gWrittenToBg2Pa = .;
+        . = 0x000013A8; gWrittenToBg2Pb = .;
+        . = 0x000013Aa; gWrittenToBg2Pc = .;
+        . = 0x000013Ac; gWrittenToBg2Pd = .;
+        . = 0x000013AE; gWrittenToBldy_NonGameplay = .;
+        . = 0x000013B0; gWrittenToBldalpha_L = .;
+        . = 0x000013B2; gWrittenToBldalpha_H = .;
         . = 0x000013B4; gBg0XPosition = .;
         . = 0x000013B6; gBg0YPosition = .;
         . = 0x000013B8; gBg1XPosition = .;
@@ -253,7 +255,7 @@ SECTIONS {
         . = 0x00001cfc; gTimer3Callback = .;
         . = 0x00001d00; gMusicInfo = .;
 
-        . = 0x0000376c; gUnk_300376c = .;
+        . = 0x0000376c; gUnk_300376C = .;
         . = 0x00003794; gPsgSounds = .;
         . = 0x00003834; gSoundChannelBackup = .;
         . = 0x000039bc; gSoundChannelTrack2Backup = .;
@@ -274,7 +276,7 @@ SECTIONS {
         . = 0x00004d98; gTrack7Variables = .;
         . = 0x00004de8; gTrack8Variables = .;
 
-        . = 0x00004fc9; gUnk_03004fc9 = .;
+        . = 0x00004fc9; gUnk_03004FC9 = .;
         . = 0x00004fca; gDemoInputData = .;
         . = 0x000051ca; gDemoInputDuration = .;
         . = 0x000053ca; gDemoInputNumber = .;
@@ -287,9 +289,9 @@ SECTIONS {
         . = 0x000053d8; gDebugVCount_AudioMax = .;
         . = 0x000053E0; gSamusPalette = .;
         . = 0x00005440; gSamusPaletteSize = .;
-        . = 0x00005448; gWrittenToWIN1H = .;
-        . = 0x0000544a; gWrittenToWIN1V = .;
-        . = 0x0000544c; gWrittenToBLDCNT = .;
+        . = 0x00005448; gWrittenToWin1H = .;
+        . = 0x0000544a; gWrittenToWin1V = .;
+        . = 0x0000544c; gWrittenToBldcnt = .;
         . = 0x00005450; gTilemapAndClipPointers = .;
         . = 0x0000545C; gHatchData = .;
         . = 0x000054DC; gNumberOfValidHatchesInRoom = .;
@@ -317,8 +319,8 @@ SECTIONS {
         . = 0x000056c4; gDefaultTransparency = .;
         . = 0x000056cc; gBldalphaData1 = .;
         . = 0x000056d4; gBldalphaData2 = .;
-        . = 0x000056dc; gBLDYData1 = .;
-        . = 0x000056e4; gBLDYData2 = .;
+        . = 0x000056dc; gBldyData1 = .;
+        . = 0x000056e4; gBldyData2 = .;
         . = 0x000056ec; gAnimatedPaletteTiming = .;
         . = 0x000056f0; gHatchFlashingAnimation = .;
         . = 0x000056f4; gAnimatedGraphicsEntry = .;
@@ -359,7 +361,7 @@ SECTIONS {
         . = 0x000058b6; gRegTm3Cnt_H_Backup = .;
         . = 0x000058b8; gRegSiocnt_Backup = .;
         . = 0x000058ba; gRegRcnt_Backup = .;
-        . = 0x000058bc; gErrorFlag = .;
+        . = 0x000058bc; gLinkStatus = .;
         . = 0x000058c0; gSendCmd = .;
         . = 0x000058c4; gRecvCmds = .;
         . = 0x000058cc; gShouldAdvanceLinkState = .;
@@ -374,8 +376,8 @@ SECTIONS {
         . = 0x000058d8; gSendNonzeroCheck = .;
         . = 0x000058da; gRecvNonzeroCheck = .;
 
-        . = 0x000058e0; src/libgcc/fp-bit-base.o(.bss);
-        . = 0x000058f8; src/libgcc/float.o(.bss);
+        . = 0x000058e0; *libgcc.a:dp-bit.o(.bss);
+        . = 0x000058f8; *libgcc.a:fp-bit.o(.bss);
         . = 0x00005910; gTrackData8 = .;
         . = 0x00005950; gTrackData3 = .;
         . = 0x00005990; gTrackData1 = .;
@@ -399,11 +401,11 @@ SECTIONS {
         . = 0x0000601C; gChaosEffects = .;
 
 
-        . = 0x00007e60; sp_sys = .;
-        . = 0x00007fa0; sp_irq = .;
+        . = 0x00007e60; gSpSys = .;
+        . = 0x00007fa0; gSpIrq = .;
         . = 0x00007ff8; gInterruptCheckFlag = .;
         . = 0x00007ffc; gIntrCodePointer = .;
-        . = 0x00007ffc; intr_vector = .;
+        . = 0x00007ffc; gIntrVector = .;
     } >iwram
 
     .text : ALIGN(2) {
@@ -412,7 +414,7 @@ SECTIONS {
         asm/intr_main.o(.text);
         src/agbmain.o(.text);
         src/init_game.o(.text);
-        src/softreset_input.o(.text);
+        src/soft_reset_input.o(.text);
         src/syscall_wrappers.o(.text);
         src/update_input.o(.text);
         src/init_helpers.o(.text);
@@ -420,11 +422,12 @@ SECTIONS {
         src/callbacks.o(.text);
         src/sram_misc.o(.text);
 
-        asm/disasm_0x080010c4.o(.text);
-        asm/disasm_0x08002a58.o(.text);
-
+        src/audio.o(.text);
+        src/audio_wrappers.o(.text);
+        src/dma.o(.text);
         src/music_wrappers.o(.text);
 
+        asm/soundcode.o(.text);
         asm/audio_internal.o(.text);
         asm/syscalls.o(.text);
 
@@ -451,7 +454,7 @@ SECTIONS {
         src/sprites_AI/zoomer.o(.text);
         src/sprites_AI/zeela.o(.text);
         src/sprites_AI/kraid.o(.text);
-        src/sprites_AI/item_banner.o(.text);
+        src/sprites_AI/message_banner.o(.text);
         src/sprites_AI/ripper.o(.text);
         src/sprites_AI/ripper2.o(.text);
         src/sprites_AI/zeb.o(.text);
@@ -564,7 +567,7 @@ SECTIONS {
         src/cutscenes/ridley_spawn.o(.text);
         src/cutscenes/mecha_sees_samus.o(.text);
         src/cutscenes/getting_fully_powered_suit.o(.text);
-        src/cutscenes/before_charlie.o(.text);
+        src/cutscenes/before_ruins_test.o(.text);
         src/cutscenes/statue_opening.o(.text);
         src/cutscenes/enter_tourian.o(.text);
         src/cutscenes/samus_in_blue_ship.o(.text);
@@ -577,6 +580,7 @@ SECTIONS {
         src/menus/status_screen.o(.text);
         src/menus/pause_screen_sub_menus.o(.text);
         src/save_file.o(.text);
+        src/save_file_load.o(.text);
 
 #ifdef DEBUG
         src/menus/boot_debug.o(.text);
@@ -587,7 +591,7 @@ SECTIONS {
         src/menus/game_over.o(.text);
         src/menus/file_select.o(.text);
 
-        src/softreset.o(.text);
+        src/soft_reset.o(.text);
         src/time_attack.o(.text);
         src/complex_oam.o(.text);
         src/intro.o(.text);
@@ -600,11 +604,21 @@ SECTIONS {
         src/transfer.o(.text);
         src/link.o(.text);
 
-        asm/libgcc.o(.text);
-        asm/disasm_0x0808af18.o(.text);
-        src/libgcc/fp-bit-base.o(.text);
-        src/libgcc/float.o(.text);
-        src/libgcc/libgcc.o(.text);
+        *libgcc.a:_call_via_rX.o(.text);
+        *libgcc.a:_divsi3.o(.text);
+        *libgcc.a:_dvmd_tls.o(.text);
+        *libgcc.a:_fixunsdfsi.o(.text);
+        *libgcc.a:_modsi3.o(.text);
+        *libgcc.a:_udivsi3.o(.text);
+        *libgcc.a:_umodsi3.o(.text);
+
+        *libgcc.a:dp-bit.o(.text);
+        *libgcc.a:fp-bit.o(.text);
+        *libgcc.a:_lshrdi3.o(.text);
+        *libgcc.a:_muldi3.o(.text);
+        *libgcc.a:_muldi3.o(.text);
+        *libgcc.a:_negdi2.o(.text);
+        *libc.a:memcpy.o(.text);
 
         src/chaos.o(.text);
     } >rom
@@ -613,323 +627,17 @@ SECTIONS {
         src/data/generic_data.o(.rodata);
         src/data/audio.o(.rodata);
 
-        audio/voice_groups/voice_group0.o(.rodata);
-        audio/voice_groups/voice_group1.o(.rodata);
-        audio/voice_groups/voice_group2.o(.rodata);
-        audio/voice_groups/voice_group3.o(.rodata);
-        audio/voice_groups/voice_group4.o(.rodata);
-        audio/voice_groups/voice_group5.o(.rodata);
-        audio/voice_groups/voice_group6.o(.rodata);
-        audio/voice_groups/voice_group7.o(.rodata);
-        audio/voice_groups/voice_group8.o(.rodata);
-        audio/voice_groups/voice_group9.o(.rodata);
-        audio/voice_groups/voice_group10.o(.rodata);
-        audio/voice_groups/voice_group11.o(.rodata);
-        audio/voice_groups/voice_group12.o(.rodata);
-        audio/voice_groups/voice_group13.o(.rodata);
-        audio/voice_groups/voice_group14.o(.rodata);
-        audio/voice_groups/voice_group15.o(.rodata);
-        audio/voice_groups/voice_group16.o(.rodata);
-        audio/voice_groups/voice_group17.o(.rodata);
-        audio/voice_groups/voice_group18.o(.rodata);
-        audio/voice_groups/voice_group19.o(.rodata);
-        audio/voice_groups/voice_group20.o(.rodata);
-        audio/voice_groups/voice_group21.o(.rodata);
-        audio/voice_groups/voice_group22.o(.rodata);
-        audio/samples/sample_0x8f244.o(.rodata);
+        sound/voice_groups.o(.rodata);
+        sound/programmable_wave_data.o(.rodata);
 
         src/data/music_track_data.o(.rodata);
-        audio/sound_entries.o(.rodata);
+        sound/sound_entries.o(.rodata);
 
-        audio/tracks/track_0.o(.rodata);
+        sound/tracks/track_0.o(.rodata);
 
-        audio/samples/sample_0x908e4.o(.rodata);
-        audio/samples/sample_0x90f2c.o(.rodata);
-        audio/samples/sample_0x9109c.o(.rodata);
-        audio/samples/sample_0x91338.o(.rodata);
-        audio/samples/sample_0x91dcc.o(.rodata);
-        audio/samples/sample_0x92240.o(.rodata);
-        audio/samples/sample_0x92560.o(.rodata);
-        audio/samples/sample_0x92c00.o(.rodata);
-        audio/samples/sample_0x92d1c.o(.rodata);
-        audio/samples/sample_0x92fdc.o(.rodata);
-        audio/samples/sample_0x93308.o(.rodata);
-        audio/samples/sample_0x934d8.o(.rodata);
-        audio/samples/sample_0x93784.o(.rodata);
-        audio/samples/sample_0x93f44.o(.rodata);
-        audio/samples/sample_0x9470c.o(.rodata);
-        audio/samples/sample_0x98ad0.o(.rodata);
-        audio/samples/sample_0x9f350.o(.rodata);
-        audio/samples/sample_0x9f8a4.o(.rodata);
-        audio/samples/sample_0xa0328.o(.rodata);
-        audio/samples/sample_0xa1120.o(.rodata);
-        audio/samples/sample_0xa1494.o(.rodata);
-        audio/samples/sample_0xa1908.o(.rodata);
-        audio/samples/sample_0xa1e4c.o(.rodata);
-        audio/samples/sample_0xa2480.o(.rodata);
-        audio/samples/sample_0xa3148.o(.rodata);
-        audio/samples/sample_0xa331c.o(.rodata);
-        audio/samples/sample_0xa3cdc.o(.rodata);
-        audio/samples/sample_0xa4af0.o(.rodata);
-        audio/samples/sample_0xa51e8.o(.rodata);
-        audio/samples/sample_0xa70ec.o(.rodata);
-        audio/samples/sample_0xa71e0.o(.rodata);
-        audio/samples/sample_0xa78f4.o(.rodata);
-        audio/samples/sample_0xa8a88.o(.rodata);
-        audio/samples/sample_0xa97f8.o(.rodata);
-        audio/samples/sample_0xa9f6c.o(.rodata);
-        audio/samples/sample_0xaa954.o(.rodata);
-        audio/samples/sample_0xab068.o(.rodata);
-        audio/samples/sample_0xabcb0.o(.rodata);
-        audio/samples/sample_0xac7c0.o(.rodata);
-        audio/samples/sample_0xad794.o(.rodata);
-        audio/samples/sample_0xaf074.o(.rodata);
-        audio/samples/sample_0xaf978.o(.rodata);
-        audio/samples/sample_0xb0e2c.o(.rodata);
-        audio/samples/sample_0xb1070.o(.rodata);
-        audio/samples/sample_0xb18fc.o(.rodata);
-        audio/samples/sample_0xb2c50.o(.rodata);
-        audio/samples/sample_0xb319c.o(.rodata);
-        audio/samples/sample_0xb4a30.o(.rodata);
-        audio/samples/sample_0xb5a04.o(.rodata);
-        audio/samples/sample_0xb7298.o(.rodata);
-        audio/samples/sample_0xb8268.o(.rodata);
-        audio/samples/sample_0xb9ae8.o(.rodata);
-        audio/samples/sample_0xbaabc.o(.rodata);
-        audio/samples/sample_0xbb304.o(.rodata);
-        audio/samples/sample_0xbc2d8.o(.rodata);
-        audio/samples/sample_0xbdb6c.o(.rodata);
-        audio/samples/sample_0xbf400.o(.rodata);
-        audio/samples/sample_0xc03d4.o(.rodata);
-        audio/samples/sample_0xc09d4.o(.rodata);
-        audio/samples/sample_0xc11c8.o(.rodata);
-        audio/samples/sample_0xc2a3c.o(.rodata);
-        audio/samples/sample_0xc3a00.o(.rodata);
-        audio/samples/sample_0xc5270.o(.rodata);
-        audio/samples/sample_0xc6214.o(.rodata);
-        audio/samples/sample_0xc6814.o(.rodata);
-        audio/samples/sample_0xc6e14.o(.rodata);
-        audio/samples/sample_0xc7414.o(.rodata);
-        audio/samples/sample_0xc76c8.o(.rodata);
-        audio/samples/sample_0xc823c.o(.rodata);
-        audio/samples/sample_0xc859c.o(.rodata);
-        audio/samples/sample_0xc8920.o(.rodata);
-        audio/samples/sample_0xc98ac.o(.rodata);
-        audio/samples/sample_0xca7e0.o(.rodata);
-        audio/samples/sample_0xcb3a4.o(.rodata);
-        audio/samples/sample_0xcbe40.o(.rodata);
-        audio/samples/sample_0xcc834.o(.rodata);
-        audio/samples/sample_0xcd3ac.o(.rodata);
-        audio/samples/sample_0xcd680.o(.rodata);
-        audio/samples/sample_0xcdc14.o(.rodata);
-        audio/samples/sample_0xcdf24.o(.rodata);
-        audio/samples/sample_0xce470.o(.rodata);
-        audio/samples/sample_0xcefe4.o(.rodata);
-        audio/samples/sample_0xcf368.o(.rodata);
-        audio/samples/sample_0xd06dc.o(.rodata);
-        audio/samples/sample_0xd0b50.o(.rodata);
-        audio/samples/sample_0xd2ca4.o(.rodata);
-        audio/samples/sample_0xd31e8.o(.rodata);
-        audio/samples/sample_0xd4114.o(.rodata);
-        audio/samples/sample_0xd60a8.o(.rodata);
-        audio/samples/sample_0xd68fc.o(.rodata);
-        audio/samples/sample_0xd6d6c.o(.rodata);
-        audio/samples/sample_0xd7264.o(.rodata);
-        audio/samples/sample_0xd7578.o(.rodata);
-        audio/samples/sample_0xd7a6c.o(.rodata);
-        audio/samples/sample_0xd7e9c.o(.rodata);
-        audio/samples/sample_0xd8238.o(.rodata);
-        audio/samples/sample_0xd854c.o(.rodata);
-        audio/samples/sample_0xd9600.o(.rodata);
-        audio/samples/sample_0xd9adc.o(.rodata);
-        audio/samples/sample_0xda120.o(.rodata);
-        audio/samples/sample_0xdaadc.o(.rodata);
-        audio/samples/sample_0xdb550.o(.rodata);
-        audio/samples/sample_0xdc898.o(.rodata);
-        audio/samples/sample_0xdd464.o(.rodata);
-        audio/samples/sample_0xdddb4.o(.rodata);
-        audio/samples/sample_0xde740.o(.rodata);
-        audio/samples/sample_0xdee48.o(.rodata);
-        audio/samples/sample_0xdf8d8.o(.rodata);
-        audio/samples/sample_0xe04c8.o(.rodata);
-        audio/samples/sample_0xe0a74.o(.rodata);
-        audio/samples/sample_0xe1838.o(.rodata);
-        audio/samples/sample_0xe1cdc.o(.rodata);
-        audio/samples/sample_0xe2644.o(.rodata);
-        audio/samples/sample_0xe3618.o(.rodata);
-        audio/samples/sample_0xe46cc.o(.rodata);
-        audio/samples/sample_0xe4a7c.o(.rodata);
-        audio/samples/sample_0xe5190.o(.rodata);
-        audio/samples/sample_0xe54c4.o(.rodata);
-        audio/samples/sample_0xe83b8.o(.rodata);
-        audio/samples/sample_0xe85dc.o(.rodata);
-        audio/samples/sample_0xe8968.o(.rodata);
-        audio/samples/sample_0xe9318.o(.rodata);
-        audio/samples/sample_0xe96e0.o(.rodata);
-        audio/samples/sample_0xe9c80.o(.rodata);
-        audio/samples/sample_0xea0fc.o(.rodata);
-        audio/samples/sample_0xeb0d0.o(.rodata);
-        audio/samples/sample_0xec044.o(.rodata);
-        audio/samples/sample_0xec318.o(.rodata);
-        audio/samples/sample_0xf3adc.o(.rodata);
-        audio/samples/sample_0xf3f50.o(.rodata);
-        audio/samples/sample_0xf5268.o(.rodata);
-        audio/samples/sample_0xfeffc.o(.rodata);
-        audio/samples/sample_0xfffd0.o(.rodata);
-        audio/samples/sample_0x100cbc.o(.rodata);
-        audio/samples/sample_0x101b40.o(.rodata);
-        audio/samples/sample_0x102a70.o(.rodata);
-        audio/samples/sample_0x103884.o(.rodata);
-        audio/samples/sample_0x1040c8.o(.rodata);
-        audio/samples/sample_0x104edc.o(.rodata);
-        audio/samples/sample_0x1059b4.o(.rodata);
-        audio/samples/sample_0x107498.o(.rodata);
-        audio/samples/sample_0x10782c.o(.rodata);
-        audio/samples/sample_0x1087a4.o(.rodata);
-        audio/samples/sample_0x10b01c.o(.rodata);
-        audio/samples/sample_0x10be30.o(.rodata);
-        audio/samples/sample_0x10c7c8.o(.rodata);
-        audio/samples/sample_0x10cd2c.o(.rodata);
-        audio/samples/sample_0x110580.o(.rodata);
-        audio/samples/sample_0x110c94.o(.rodata);
-        audio/samples/sample_0x112b3c.o(.rodata);
-        audio/samples/sample_0x11333c.o(.rodata);
-        audio/samples/sample_0x1143d0.o(.rodata);
-        audio/samples/sample_0x114f68.o(.rodata);
-        audio/samples/sample_0x115c9c.o(.rodata);
-        audio/samples/sample_0x116b8c.o(.rodata);
-        audio/samples/sample_0x119eb8.o(.rodata);
-        audio/samples/sample_0x11be4c.o(.rodata);
-        audio/samples/sample_0x11db9c.o(.rodata);
-        audio/samples/sample_0x11f5e8.o(.rodata);
-        audio/samples/sample_0x12007c.o(.rodata);
-        audio/samples/sample_0x1205d0.o(.rodata);
-        audio/samples/sample_0x121ae4.o(.rodata);
-        audio/samples/sample_0x122c40.o(.rodata);
-        audio/samples/sample_0x1236d4.o(.rodata);
-        audio/samples/sample_0x1243cc.o(.rodata);
-        audio/samples/sample_0x12586c.o(.rodata);
-        audio/samples/sample_0x126e60.o(.rodata);
-        audio/samples/sample_0x128fa0.o(.rodata);
-        audio/samples/sample_0x12b554.o(.rodata);
-        audio/samples/sample_0x12b808.o(.rodata);
-        audio/samples/sample_0x12babc.o(.rodata);
-        audio/samples/sample_0x12bd34.o(.rodata);
-        audio/samples/sample_0x12bfe8.o(.rodata);
-        audio/samples/sample_0x12c0dc.o(.rodata);
-        audio/samples/sample_0x130fb0.o(.rodata);
-        audio/samples/sample_0x131684.o(.rodata);
-        audio/samples/sample_0x13269c.o(.rodata);
-        audio/samples/sample_0x13286c.o(.rodata);
-        audio/samples/sample_0x133668.o(.rodata);
-        audio/samples/sample_0x134c34.o(.rodata);
-        audio/samples/sample_0x134de8.o(.rodata);
-        audio/samples/sample_0x135044.o(.rodata);
-        audio/samples/sample_0x135bb8.o(.rodata);
-        audio/samples/sample_0x137374.o(.rodata);
-        audio/samples/sample_0x13bec4.o(.rodata);
-        audio/samples/sample_0x13c878.o(.rodata);
-        audio/samples/sample_0x13fc00.o(.rodata);
-        audio/samples/sample_0x142c34.o(.rodata);
-        audio/samples/sample_0x142ff8.o(.rodata);
-        audio/samples/sample_0x143818.o(.rodata);
-        audio/samples/sample_0x144110.o(.rodata);
-        audio/samples/sample_0x1447e8.o(.rodata);
-        audio/samples/sample_0x145554.o(.rodata);
-        audio/samples/sample_0x146124.o(.rodata);
-        audio/samples/sample_0x146b98.o(.rodata);
-        audio/samples/sample_0x14abd4.o(.rodata);
-        audio/samples/sample_0x14d804.o(.rodata);
-        audio/samples/sample_0x14fc34.o(.rodata);
-        audio/samples/sample_0x151f34.o(.rodata);
-        audio/samples/sample_0x154230.o(.rodata);
-        audio/samples/sample_0x15596c.o(.rodata);
-        audio/samples/sample_0x157158.o(.rodata);
-        audio/samples/sample_0x157ce4.o(.rodata);
-        audio/samples/sample_0x15867c.o(.rodata);
-        audio/samples/sample_0x15a458.o(.rodata);
-        audio/samples/sample_0x15ae40.o(.rodata);
-        audio/samples/sample_0x15bd84.o(.rodata);
-        audio/samples/sample_0x15c068.o(.rodata);
-        audio/samples/sample_0x15de28.o(.rodata);
-        audio/samples/sample_0x15e1ec.o(.rodata);
-        audio/samples/sample_0x15e914.o(.rodata);
-        audio/samples/sample_0x160ac0.o(.rodata);
-        audio/samples/sample_0x1629cc.o(.rodata);
-        audio/samples/sample_0x16303c.o(.rodata);
-        audio/samples/sample_0x16463c.o(.rodata);
-        audio/samples/sample_0x166684.o(.rodata);
-        audio/samples/sample_0x166eb4.o(.rodata);
-        audio/samples/sample_0x1680dc.o(.rodata);
-        audio/samples/sample_0x1689d0.o(.rodata);
-        audio/samples/sample_0x16919c.o(.rodata);
-        audio/samples/sample_0x169a10.o(.rodata);
-        audio/samples/sample_0x16ae14.o(.rodata);
-        audio/samples/sample_0x16cc40.o(.rodata);
-        audio/samples/sample_0x16fe80.o(.rodata);
-        audio/samples/sample_0x1715f8.o(.rodata);
-        audio/samples/sample_0x172488.o(.rodata);
-        audio/samples/sample_0x17340c.o(.rodata);
-        audio/samples/sample_0x1748b8.o(.rodata);
-        audio/samples/sample_0x17728c.o(.rodata);
-        audio/samples/sample_0x177efc.o(.rodata);
-        audio/samples/sample_0x179ff0.o(.rodata);
-        audio/samples/sample_0x17aea0.o(.rodata);
-        audio/samples/sample_0x17b550.o(.rodata);
-        audio/samples/sample_0x17cf80.o(.rodata);
-        audio/samples/sample_0x17f69c.o(.rodata);
-        audio/samples/sample_0x180e20.o(.rodata);
-        audio/samples/sample_0x181858.o(.rodata);
-        audio/samples/sample_0x1839b8.o(.rodata);
-        audio/samples/sample_0x184064.o(.rodata);
-        audio/samples/sample_0x18516c.o(.rodata);
-        audio/samples/sample_0x18661c.o(.rodata);
-        audio/samples/sample_0x186754.o(.rodata);
-        audio/samples/sample_0x189c70.o(.rodata);
-        audio/samples/sample_0x18bef8.o(.rodata);
-        audio/samples/sample_0x18cff0.o(.rodata);
-        audio/samples/sample_0x18fb08.o(.rodata);
-        audio/samples/sample_0x192cc4.o(.rodata);
-        audio/samples/sample_0x193adc.o(.rodata);
-        audio/samples/sample_0x194494.o(.rodata);
-        audio/samples/sample_0x19478c.o(.rodata);
-        audio/samples/sample_0x194d48.o(.rodata);
-        audio/samples/sample_0x196730.o(.rodata);
-        audio/samples/sample_0x197620.o(.rodata);
-        audio/samples/sample_0x199e30.o(.rodata);
-        audio/samples/sample_0x19afec.o(.rodata);
-        audio/samples/sample_0x19d8bc.o(.rodata);
-        audio/samples/sample_0x19ff9c.o(.rodata);
-        audio/samples/sample_0x1a093c.o(.rodata);
-        audio/samples/sample_0x1a0c88.o(.rodata);
-        audio/samples/sample_0x1a2a80.o(.rodata);
-        audio/samples/sample_0x1a3220.o(.rodata);
-        audio/samples/sample_0x1a575c.o(.rodata);
-        audio/samples/sample_0x1a6788.o(.rodata);
-        audio/samples/sample_0x1a7cfc.o(.rodata);
-        audio/samples/sample_0x1a8ad0.o(.rodata);
-        audio/samples/sample_0x1a9fc0.o(.rodata);
-        audio/samples/sample_0x1ab7d0.o(.rodata);
-        audio/samples/sample_0x1add80.o(.rodata);
-        audio/samples/sample_0x1ae304.o(.rodata);
-        audio/samples/sample_0x1b4724.o(.rodata);
-        audio/samples/sample_0x1ba150.o(.rodata);
-        audio/samples/sample_0x1bfba4.o(.rodata);
-        audio/samples/sample_0x1c564c.o(.rodata);
-        audio/samples/sample_0x1cdf44.o(.rodata);
-        audio/samples/sample_0x1cfe88.o(.rodata);
-        audio/samples/sample_0x1d1240.o(.rodata);
-        audio/samples/sample_0x1d3554.o(.rodata);
-        audio/samples/sample_0x1d595c.o(.rodata);
-        audio/samples/sample_0x1d8574.o(.rodata);
-        audio/samples/sample_0x1dbedc.o(.rodata);
-        audio/samples/sample_0x1dea98.o(.rodata);
-        audio/samples/sample_0x1e5d40.o(.rodata);
-        audio/samples/sample_0x1f1584.o(.rodata);
-        audio/samples/sample_0x1f9388.o(.rodata);
-        audio/samples/sample_0x20ad28.o(.rodata);
+        sound/direct_sound_data.o(.rodata);
 
-        audio/track_data.o(.rodata);
+        sound/track_data.o(.rodata);
 
         src/sram/sram.o(.rodata);
 
@@ -951,7 +659,7 @@ SECTIONS {
         src/data/sprites/zoomer.o(.rodata);
         src/data/sprites/zeela.o(.rodata);
         src/data/sprites/kraid.o(.rodata);
-        src/data/sprites/item_banner.o(.rodata);
+        src/data/sprites/message_banner.o(.rodata);
         src/data/sprites/ripper.o(.rodata);
         src/data/sprites/ripper2.o(.rodata);
         src/data/sprites/zeb.o(.rodata);
@@ -1038,7 +746,7 @@ SECTIONS {
         src/data/demo_data.o(.rodata);
         src/data/default_background_data.o(.rodata);
         src/data/clipdata_types_tilemap.o(.rodata);
-        src/data/rooms/debug_rooms_data.o(.rodata);
+        src/data/rooms/test_rooms_data.o(.rodata);
 
         src/data/samus_close_up_data.o(.rodata);
         src/data/cutscenes/cutscenes_data.o(.rodata);
@@ -1050,7 +758,7 @@ SECTIONS {
         src/data/cutscenes/ridley_spawn_data.o(.rodata);
         src/data/cutscenes/mecha_sees_samus_data.o(.rodata);
         src/data/cutscenes/getting_fully_powered_suit_data.o(.rodata);
-        src/data/cutscenes/before_charlie_data.o(.rodata);
+        src/data/cutscenes/before_ruins_test_data.o(.rodata);
         src/data/cutscenes/statue_opening_data.o(.rodata);
         src/data/cutscenes/enter_tourian_data.o(.rodata);
         src/data/cutscenes/samus_in_blue_ship_data.o(.rodata);
@@ -1069,6 +777,11 @@ SECTIONS {
         src/data/menus/title_screen_data.o(.rodata);
         src/data/menus/game_over_data.o(.rodata);
         src/data/menus/file_select_data.o(.rodata);
+
+#ifdef REGION_EU
+        src/data/menus/language_select_data.o(.rodata);
+#endif
+
         src/data/intro_data.o(.rodata);
         src/data/tourian_escape_data.o(.rodata);
         src/data/fusion_gallery_data.o(.rodata);
@@ -1269,7 +982,7 @@ SECTIONS {
         src/data/rooms/ridley/Bg3.o(.rodata);
 
         src/data/tilesets/tilesets_set5.o(.rodata);
-        
+
         src/data/rooms/tourian/Tourian_0.o(.rodata);
         src/data/rooms/tourian/Tourian_1.o(.rodata);
         src/data/rooms/tourian/Tourian_2.o(.rodata);
@@ -1317,7 +1030,7 @@ SECTIONS {
         src/data/rooms/crateria/Crateria_20.o(.rodata);
         src/data/rooms/crateria/Crateria_21.o(.rodata);
         src/data/rooms/crateria/Bg3.o(.rodata);
-        
+
         src/data/tilesets/tilesets_set7.o(.rodata);
 
         src/data/rooms/chozodia/Chozodia_0.o(.rodata);
@@ -1424,39 +1137,78 @@ SECTIONS {
         src/data/animated_tiles_data.o(.rodata);
         src/data/shortcut_pointers.o(.rodata);
         src/data/cable_link_data.o(.rodata);
-        sTransferRom_After = .; 
-        src/data/samus_sprites_pointers.o(.rodata);
-        src/data/frame_data_pointers.o(.rodata);
-        src/data/engine_pointers.o(.rodata);
+        sTransferRom_After = .;
+    } >rom
 
-        src/data/cutscenes/internal_kraid_rising_data.o(.rodata);
-        src/data/cutscenes/internal_story_text_cutscene_data.o(.rodata);
-        src/data/cutscenes/internal_mother_brain_close_up_data.o(.rodata);
-        src/data/cutscenes/internal_ridley_in_space_data.o(.rodata);
-        src/data/cutscenes/internal_ridley_landing_data.o(.rodata);
-        src/data/cutscenes/internal_ridley_spawn_data.o(.rodata);
-        src/data/cutscenes/internal_mecha_sees_samus_data.o(.rodata);
-        src/data/cutscenes/internal_getting_fully_powered_suit_data.o(.rodata);
-        src/data/cutscenes/internal_before_charlie_data.o(.rodata);
-        src/data/cutscenes/internal_statue_opening_data.o(.rodata);
-        src/data/cutscenes/internal_enter_tourian_data.o(.rodata);
-        src/data/cutscenes/internal_samus_in_blue_ship_data.o(.rodata);
-        src/data/menus/internal_pause_screen_data.o(.rodata);
-        src/data/internal_text_data.o(.rodata);
-        src/data/menus/internal_status_screen_data.o(.rodata);
-        src/data/menus/internal_pause_screen_sub_menus_data.o(.rodata);
-        src/data/internal_save_file_data.o(.rodata);
-        src/data/menus/internal_erase_sram_data.o(.rodata)
-        src/data/text_pointers.o(.rodata);
-        src/data/menus/internal_title_screen_data.o(.rodata)
-        src/data/menus/internal_game_over_data.o(.rodata)
-        src/data/menus/internal_file_select_data.o(.rodata);
-        src/data/time_attack_data.o(.rodata);
-        src/data/internal_intro_data.o(.rodata);
-        src/data/internal_tourian_escape_data.o(.rodata);
-        src/data/internal_ending_and_gallery_data.o(.rodata);
-        src/data/internal_chozodia_escape_data.o(.rodata);
-        src/data/internal_io_transfer_data.o(.rodata);
+    .data : ALIGN(2) {
+        src/samus.o(.data);
+        src/sprite.o(.data);
+
+        src/sprites_AI/chozo_statue.o(.data);
+        src/sprites_AI/unknown_item_chozo_statue.o(.data);
+        src/sprites_AI/kraid.o(.data);
+        src/sprites_AI/imago_larva.o(.data);
+        src/sprites_AI/imago_cocoon.o(.data);
+        src/sprites_AI/ridley.o(.data);
+        src/sprites_AI/atomic.o(.data);
+        src/sprites_AI/mother_brain.o(.data);
+        src/sprites_AI/tangle_vine.o(.data);
+        src/sprites_AI/imago.o(.data);
+        src/sprites_AI/crocomire.o(.data);
+        src/sprites_AI/mecha_ridley.o(.data);
+
+        src/projectile_util.o(.data);
+        src/particle.o(.data);
+        src/room.o(.data);
+        src/scroll.o(.data);
+        src/block.o(.data);
+        src/color_fading.o(.data);
+        src/haze.o(.data);
+        src/animated_graphics.o(.data);
+        src/connection.o(.data);
+        src/demo.o(.data);
+
+        src/cutscenes/cutscene_utils.o(.data);
+        src/cutscenes/kraid_rising.o(.data);
+        src/cutscenes/story_text_cutscene.o(.data);
+        src/cutscenes/mother_brain_close_up.o(.data);
+        src/cutscenes/ridley_in_space.o(.data);
+        src/cutscenes/ridley_landing.o(.data);
+        src/cutscenes/ridley_spawn.o(.data);
+        src/cutscenes/mecha_sees_samus.o(.data);
+        src/cutscenes/getting_fully_powered_suit.o(.data);
+        src/cutscenes/before_ruins_test.o(.data);
+        src/cutscenes/statue_opening.o(.data);
+        src/cutscenes/enter_tourian.o(.data);
+        src/cutscenes/samus_in_blue_ship.o(.data);
+
+        src/menus/pause_screen.o(.data);
+        src/minimap.o(.data);
+        src/menus/pause_screen_map.o(.data);
+        src/text.o(.data);
+        src/menus/status_screen.o(.data);
+        src/menus/pause_screen_sub_menus.o(.data);
+        src/save_file.o(.data);
+
+#ifdef DEBUG
+        src/menus/boot_debug.o(.data);
+#endif
+
+        src/menus/erase_sram.o(.data);
+        src/data/text_data.o(.data);
+        src/menus/title_screen.o(.data);
+        src/menus/game_over.o(.data);
+        src/menus/file_select.o(.data);
+
+        src/time_attack.o(.data);
+        src/intro.o(.data);
+        src/tourian_escape.o(.data);
+        src/ending_and_gallery.o(.data);
+        src/chozodia_escape.o(.data);
+        src/cable_link.o(.data);
+    } >rom
+
+    nes_metroid_data __nes_metroid_load_address : ALIGN(2) {
         src/data/nes_metroid.o(.rodata);
     } >rom
 

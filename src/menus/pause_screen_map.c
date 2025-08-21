@@ -1,12 +1,12 @@
 #include "menus/pause_screen_map.h"
 #include "menus/pause_screen.h"
 #include "menus/status_screen.h"
+#include "dma.h"
 
 #include "data/shortcut_pointers.h"
 #include "data/block_data.h"
 #include "data/menus/pause_screen_data.h"
 #include "data/menus/pause_screen_map_data.h"
-#include "data/menus/internal_pause_screen_data.h"
 
 #include "constants/audio.h"
 #include "constants/block.h"
@@ -18,8 +18,26 @@
 #include "structs/minimap.h"
 #include "structs/menus/pause_screen.h"
 
+static u32* sPauseScreen_7602a8 = VRAM_BASE + 0xBC00;
+
+static u8 sMapDownloadLineTrailOamOffsets[4] = {
+    3, 4, 5, 6
+};
+
+static u32 sPauseScreen_7602b0[9] = {
+    0xFFFFFFFF,
+    0xFFFFFFFF ^ 0xF,
+    0xFFFFFFFF ^ 0xFF,
+    0xFFFFFFFF ^ 0xFFF,
+    0xFFFFFFFF ^ 0xFFFF,
+    0xFFFFFFFF ^ 0xFFFFF,
+    0xFFFFFFFF ^ 0xFFFFFF,
+    0xFFFFFFFF ^ 0xFFFFFFF,
+    0xFFFFFFFF ^ 0xFFFFFFFF,
+};
+
 /**
- * @brief 6cef8 | 168 | Counts the number of tanks in the crrent area
+ * @brief 6cef8 | 168 | Counts the number of tanks in the current area
  * 
  */
 void PauseScreenCountTanksInArea(void)
@@ -298,9 +316,13 @@ void PauseScreenInitMapDownload(void)
                 *ptr_2 = 0xC0;
         }
     
-        // 0x2034000 is gDecompressedMinimapVisitedTiles, direct address is required to match
-        DMA_SET(3, 0x2034000, VRAM_BASE + 0xE000,
-            C_32_2_16(DMA_ENABLE, ARRAY_SIZE(gDecompressedMinimapVisitedTiles)));
+        #ifdef REGION_EU
+        DmaTransfer(3, gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000,
+            sizeof(gDecompressedMinimapVisitedTiles), 16);
+        #else // !REGION_EU
+        DMA_SET(3, gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000,
+            C_32_2_16(DMA_ENABLE, sizeof(gDecompressedMinimapVisitedTiles) / 2));
+        #endif // REGION_EU
     }
 }
 
@@ -576,8 +598,13 @@ u32 PauseScreenMapDownload(void)
 
         case 3:
             // Fully transfer everything
+            #ifdef REGION_EU
+            DmaTransfer(3, gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000,
+                sizeof(gDecompressedMinimapVisitedTiles), 16);
+            #else // !REGION_EU
             DMA_SET(3, gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000,
                 C_32_2_16(DMA_ENABLE, ARRAY_SIZE(gDecompressedMinimapVisitedTiles)));
+            #endif // REGION_EU
 
             PAUSE_SCREEN_DATA.downloadStage++;
             PAUSE_SCREEN_DATA.downloadTimer = 0;
@@ -759,7 +786,7 @@ void PauseScreenMapGetAbsoluteMapBordersPositions(void)
     if (PAUSE_SCREEN_DATA.currentArea < AREA_NORMAL_COUNT)
         j = PAUSE_SCREEN_DATA.currentArea;
     else
-        j = AREA_DEBUG_1;
+        j = AREA_TEST;
 
     // Fetch current map pointer
     pMap = PAUSE_SCREEN_DATA.mapsDataPointer[j];
@@ -885,7 +912,7 @@ void PauseScreenGetAllMinimapData(u8 start)
 {
     s32 size;
     s32 i;
-    u8 area;
+    Area area;
 
     if (start >= MAX_AMOUNT_OF_AREAS)
     {
@@ -906,7 +933,7 @@ void PauseScreenGetAllMinimapData(u8 start)
     for (; i < size; i++)
     {
         // Get area
-        area = sMapScreenAreaIds[i];
+        area = sMapScreenAreaIds.ids[i];
 
         // Get minimap data and add the downloaded tiles
         PauseScreenGetMinimapData(area, PAUSE_SCREEN_DATA.mapsDataPointer[i]);
@@ -1048,7 +1075,7 @@ void MapScreenSubroutine(void)
     // Check switch minimap
     if (gChangedInput & KEY_SELECT)
     {
-        if (PAUSE_SCREEN_DATA.areasViewablesTotal > 1 && PAUSE_SCREEN_DATA.currentArea < AREA_NORMAL_COUNT)
+        if (PAUSE_SCREEN_DATA.areasViewableTotal > 1 && PAUSE_SCREEN_DATA.currentArea < AREA_NORMAL_COUNT)
             PAUSE_SCREEN_DATA.changingMinimapStage = 1;
     }
 }
@@ -1111,7 +1138,7 @@ void MapScreenChangeMap(void)
 {
     u32 i;
     s32 j;
-    u8 area;
+    Area area;
     u8 viewables;
     struct MenuOamData* pOam;
 
@@ -1126,7 +1153,7 @@ void MapScreenChangeMap(void)
             }
             
             // Leftover debug code?
-            while (i >= AREA_DEBUG_1);
+            while (i >= AREA_TEST);
 
             while (TRUE)
             {
@@ -1134,11 +1161,11 @@ void MapScreenChangeMap(void)
                 i++;
 
                 // Wrap around
-                if (i >= AREA_DEBUG_1)
+                if (i >= AREA_TEST)
                     i = AREA_BRINSTAR;
 
                 // Get viewables and area to test
-                viewables = PAUSE_SCREEN_DATA.areasViewables;
+                viewables = PAUSE_SCREEN_DATA.areasViewable;
                 area = sMapScreenAreasViewOrder[i];
 
                 // Check if the area can be viewed

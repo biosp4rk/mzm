@@ -216,7 +216,7 @@ struct TrackGroupROMData {
     struct TrackData* pTrack;
     struct TrackVariables* pVariables;
     u16 maxAmountOfTracks;
-    u16 unknonw_A;
+    u16 unk_A;
 };
 
 struct SoundEntry {
@@ -228,7 +228,7 @@ struct SoundEntry {
 
 struct MusicInfo {
     u8 unk_0;
-    u8 occupied;
+    boolu8 occupied;
     u8 unk_2;
     u8 unk_3;
 
@@ -250,7 +250,7 @@ struct MusicInfo {
     u16 sampleRate;
     u32 unk_14; // unused, samples per frame
     u32 pitch;
-    u16 musicTrack;
+    Sound musicTrack;
     u16 unk_1E;
     u8 unk_20;
     u8 priority;
@@ -309,7 +309,7 @@ extern u8 gSoundCodeB[164];
 extern SoundCodeCFunc_T gSoundCodeCPointer;
 extern u8 gSoundCodeC[176];
 
-extern struct PSGSoundData gUnk_300376c[];
+extern struct PSGSoundData gUnk_300376C[];
 extern struct PSGSoundData gPsgSounds[4];
 
 #endif

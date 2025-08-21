@@ -2,6 +2,9 @@
 #define PAUSE_SCREEN_MENU_H
 
 #include "types.h"
+
+#include "constants/connection.h"
+
 #include "structs/menu.h"
 #include "structs/cutscene.h"
 
@@ -17,7 +20,7 @@ u8 PauseScreenStatusScreenShouldDrawHeader(u8 samusWireframeDataIndex);
 u32 PauseScreenUpdateStatusScreenOam(u8 param_1);
 void PauseScreenUpdateWireframeSamus(u8 updateWireframeOption);
 void PauseScreenFadeWireframeSamus(void);
-void PauseScreenUpdateWorldMapHighlight(u8 area);
+void PauseScreenUpdateWorldMapHighlight(Area area);
 void PauseScreenUpdateWorldMap(u8 onWorldMap);
 void PauseScreenLoadAreaNamesAndIcons(void);
 void PauseScreenProcessOam(void);
@@ -30,7 +33,7 @@ void PauseScreenVBlank_Empty(void);
 void PauseScreenInit(void);
 void PauseScreenDetermineMapsViewable(void);
 void PauseScreenUpdateBottomVisorOverlay(u8 param_1, u8 param_2);
-void PauseScreenGetMinimapData(u8 area, u16* dst);
+void PauseScreenGetMinimapData(Area area, u16* dst);
 u32 PauseScreenCallCurrentSubroutine(void);
 void PauseScreenMoveDebugCursor(u8 allowOverflow);
 u32 unk_6b66c_Unused(u16* param_1, u16 param_2);
@@ -41,6 +44,10 @@ s32 PauseScreenStatusScreenInit(void);
 s32 PauseScreenQuitStatusScreen(void);
 s32 PauseScreenEasySleepInit(void);
 s32 PauseScreenQuitEasySleep(void);
+#ifdef REGION_EU
+void CheckForMaintainedInput(u8 speed);
+#else // !REGION_EU
 void CheckForMaintainedInput(void);
+#endif // REGION_EU
 
 #endif /* PAUSE_SCREEN_MENU_H */

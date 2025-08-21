@@ -17,8 +17,9 @@ void UpdateInput(void)
     u16 keys;
     u16 origKeys;
 
-    keys = KEY_MASK & ~read16(REG_KEY_INPUT);
+    keys = KEY_MASK & ~READ_16(REG_KEY_INPUT);
 
+#ifdef CHAOS
     if (gMainGameMode == GM_INGAME && ChaosIsEffectActive(CHAOS_FLAG_INVERTED_CONTROLS))
     {
         origKeys = keys;
@@ -27,6 +28,7 @@ void UpdateInput(void)
         if (origKeys & KEY_LEFT)
             keys = (keys & ~KEY_LEFT) | KEY_RIGHT;
     }
+#endif // CHAOS
 
     gChangedInput = keys & ~gPreviousButtonInput;
     gButtonInput = keys;

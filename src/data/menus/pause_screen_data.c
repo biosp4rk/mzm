@@ -101,6 +101,25 @@ static const u16 sMiscOam_BombHeader_Frame0[OAM_DATA_SIZE(5)] = {
     OBJ_SHAPE_HORIZONTAL | 0x0, OBJ_SIZE_32x16 | 0x20, OBJ_SPRITE_OAM | 0x336e
 };
 
+#ifdef REGION_EU
+static const u16 sMiscOam_SuitHeader_Frame0[OAM_DATA_SIZE(5)] = {
+    0x5,
+    OBJ_SHAPE_HORIZONTAL | 0x0, OBJ_SIZE_32x8 | 0x8, OBJ_SPRITE_OAM | 0x3016,
+    OBJ_SHAPE_HORIZONTAL | 0x0, 0x28, OBJ_SPRITE_OAM | 0x301a,
+    OBJ_SHAPE_HORIZONTAL | 0x0, OBJ_SIZE_32x16 | 0x0, OBJ_SPRITE_OAM | 0x336c,
+    OBJ_SHAPE_HORIZONTAL | 0x0, OBJ_SIZE_32x16 | 0x30, OBJ_SPRITE_OAM | 0x3370,
+    0x0, OBJ_SIZE_16x16 | 0x20, OBJ_SPRITE_OAM | 0x336f
+};
+
+static const u16 sMiscOam_MiscHeader_Frame0[OAM_DATA_SIZE(5)] = {
+    0x5,
+    OBJ_SHAPE_HORIZONTAL | 0x0, OBJ_SIZE_32x8 | 0x8, OBJ_SPRITE_OAM | 0x301c,
+    OBJ_SHAPE_HORIZONTAL | 0x0, 0x28, OBJ_SPRITE_OAM | 0x3020,
+    OBJ_SHAPE_HORIZONTAL | 0x0, OBJ_SIZE_32x16 | 0x0, OBJ_SPRITE_OAM | 0x336c,
+    OBJ_SHAPE_HORIZONTAL | 0x0, OBJ_SIZE_32x16 | 0x30, OBJ_SPRITE_OAM | 0x3370,
+    0x0, OBJ_SIZE_16x16 | 0x20, OBJ_SPRITE_OAM | 0x336f
+};
+#else // !REGION_EU
 static const u16 sMiscOam_SuitHeader_Frame0[OAM_DATA_SIZE(4)] = {
     0x4,
     OBJ_SHAPE_HORIZONTAL | 0x0, OBJ_SIZE_32x8 | 0x8, OBJ_SPRITE_OAM | 0x3016,
@@ -116,6 +135,7 @@ static const u16 sMiscOam_MiscHeader_Frame0[OAM_DATA_SIZE(4)] = {
     OBJ_SHAPE_HORIZONTAL | 0x0, OBJ_SIZE_32x16 | 0x30, OBJ_SPRITE_OAM | 0x3370,
     0x0, OBJ_SIZE_16x16 | 0x20, OBJ_SPRITE_OAM | 0x336f
 };
+#endif // REGION_EU
 
 static const u16 sBorderArrowOam_Unused_Frame0[OAM_DATA_SIZE(1)] = {
     0x1,
@@ -2782,7 +2802,7 @@ const u32 sRidleyMinimap[120] = INCBIN_U32("data/menus/PauseScreen/RidleyMinimap
 const u32 sTourianMinimap[91] = INCBIN_U32("data/menus/PauseScreen/TourianMinimap.tt");
 const u32 sCrateriaMinimap[114] = INCBIN_U32("data/menus/PauseScreen/CrateriaMinimap.tt");
 const u32 sChozodiaMinimap[194] = INCBIN_U32("data/menus/PauseScreen/ChozodiaMinimap.tt");
-const u32 sExtraMinimap[78] = INCBIN_U32("data/menus/PauseScreen/Extra2Minimap.tt");
+const u32 sTestMinimap[78] = INCBIN_U32("data/menus/PauseScreen/TestMinimap.tt");
 
 const u32 sDebugMenuTileParts[175] = INCBIN_U32("data/menus/PauseScreen/DebugMenuTileParts.tt");
 const u32 sMapScreenVisorOverlayTilemap[122] = INCBIN_U32("data/menus/PauseScreen/MapScreenVisorOverlay.tt");
@@ -2795,12 +2815,29 @@ const u32 sMapScreenTextBg0TileTable[92] = INCBIN_U32("data/menus/PauseScreen/Ma
 const u32 sChozoHintBackgroundTileTable[577] = INCBIN_U32("data/menus/PauseScreen/ChozoHintBackground.tt");
 
 const u32 sEquipmentNamesHiraganaGfx[411] = INCBIN_U32("data/menus/PauseScreen/EquipmentNamesHiragana.gfx.lz");
-const u32 sEquipmentNamesEnglishGfx[1900] = INCBIN_U32("data/menus/PauseScreen/EquipmentNamesEnglish.gfx.lz");
+const u32 sEquipmentNamesEnglishGfx[380] = INCBIN_U32("data/menus/PauseScreen/EquipmentNamesEnglish.gfx.lz");
+const u32 sEquipmentNamesGermanGfx[] = INCBIN_U32("data/menus/PauseScreen/EquipmentNamesGerman.gfx.lz");
+const u32 sEquipmentNamesFrenchGfx[] = INCBIN_U32("data/menus/PauseScreen/EquipmentNamesFrench.gfx.lz");
+const u32 sEquipmentNamesItalianGfx[] = INCBIN_U32("data/menus/PauseScreen/EquipmentNamesItalian.gfx.lz");
+const u32 sEquipmentNamesSpanishGfx[] = INCBIN_U32("data/menus/PauseScreen/EquipmentNamesSpanish.gfx.lz");
+
+
 const u32 sMapScreenAreaNamesHiraganaGfx[198] = INCBIN_U32("data/menus/PauseScreen/MapScreenAreaNamesHiragana.gfx.lz");
+
 const u32 sMenuNamesHiraganaGfx[113] = INCBIN_U32("data/menus/PauseScreen/MenuNamesHiragana.gfx.lz");
-const u32 sMenuNamesEnglishGfx[468] = INCBIN_U32("data/menus/PauseScreen/MenuNamesEnglish.gfx.lz");
+const u32 sMenuNamesEnglishGfx[92] = INCBIN_U32("data/menus/PauseScreen/MenuNamesEnglish.gfx.lz");
+const u32 sMenuNamesGermanGfx[97] = INCBIN_U32("data/menus/PauseScreen/MenuNamesGerman.gfx.lz");
+const u32 sMenuNamesFrenchGfx[91] = INCBIN_U32("data/menus/PauseScreen/MenuNamesFrench.gfx.lz");
+const u32 sMenuNamesItalianGfx[] = INCBIN_U32("data/menus/PauseScreen/MenuNamesItalian.gfx.lz");
+const u32 sMenuNamesSpanishGfx[] = INCBIN_U32("data/menus/PauseScreen/MenuNamesSpanish.gfx.lz");
+
 const u32 sMapScreenUnknownItemsNamesHiraganaGfx[76] = INCBIN_U32("data/menus/PauseScreen/MapScreenUnknownItemsNamesHiragana.gfx.lz");
-const u32 sMapScreenUnknownItemsNamesEnglishGfx[337] = INCBIN_U32("data/menus/PauseScreen/MapScreenUnknownItemsNamesEnglish.gfx.lz");
+const u32 sMapScreenUnknownItemsNamesEnglishGfx[65] = INCBIN_U32("data/menus/PauseScreen/MapScreenUnknownItemsNamesEnglish.gfx.lz");
+const u32 sMapScreenUnknownItemsNamesGermanGfx[] = INCBIN_U32("data/menus/PauseScreen/MapScreenUnknownItemsNamesGerman.gfx.lz");
+const u32 sMapScreenUnknownItemsNamesFrenchGfx[] = INCBIN_U32("data/menus/PauseScreen/MapScreenUnknownItemsNamesFrench.gfx.lz");
+const u32 sMapScreenUnknownItemsNamesItalianGfx[] = INCBIN_U32("data/menus/PauseScreen/MapScreenUnknownItemsNamesItalian.gfx.lz");
+const u32 sMapScreenUnknownItemsNamesSpanishGfx[] = INCBIN_U32("data/menus/PauseScreen/MapScreenUnknownItemsNamesSpanish.gfx.lz");
+
 const u32 sMapScreenChozoStatueAreaNamesHiraganaGfx[154] = INCBIN_U32("data/menus/PauseScreen/MapScreenChozoStatueAreaNamesHiragana.gfx.lz");
 
 const struct MenuOamData sMenuOamData_Empty = {
@@ -2889,11 +2926,24 @@ const struct CutsceneOamData sCutsceneOam_Empty = {
     .unk_1E = 0
 };
 
-const u8 sUnused_40d078[16] = {
-    0x20, 0, 0x50, 0x3,
-    0, 0, 0, 0,
-    0, 0, 0x37, 0x60,
-    0x4, 0, 0, 0
+const struct MenuOamData sMenuOamDataMinimapRoomInfo = {
+    .yPosition = 0x20,
+    .xPosition = 0x350,
+    .unk_4 = 0,
+    .unk_5 = 0,
+    .unk_6 = 0,
+    .unk_7 = 0,
+    .animationDurationCounter = 0,
+    .currentAnimationFrame = 0,
+    .oamID = 0x37,
+    .priority = 0,
+    .objMode = 0,
+    .ended = FALSE,
+    .notDrawn = TRUE,
+    .exists = TRUE,
+    .boundBackground = 4,
+    .rotationScaling = FALSE,
+    .unk_E = 0
 };
 
 const u16 sPauseScreen_BgCntPriority[4] = {
@@ -2953,7 +3003,7 @@ const struct PauseScreenAreaIconData sPauseScreenAreaIconsData[MAX_AMOUNT_OF_ARE
         .xPosition = BLOCK_SIZE * 13 + HALF_BLOCK_SIZE + 4,
         .yPosition = BLOCK_SIZE * 6 + HALF_BLOCK_SIZE + 4
     },
-    [AREA_DEBUG_1] = {
+    [AREA_TEST] = {
         .nameOamId = 0,
         .nameSpawningOamId = 0,
         .outlineOamId = 0,
@@ -2979,7 +3029,7 @@ const u16 sMapScreenArrowsData[4][4] = {
     }
 };
 
-const u8 sStatusScreenBeamFlagsOrder[STATUS_SCREEN_BEAM_OFFSET_END] = {
+const BeamBombFlags sStatusScreenBeamFlagsOrder[STATUS_SCREEN_BEAM_OFFSET_END] = {
     [STATUS_SCREEN_BEAM_OFFSET_LONG] = BBF_LONG_BEAM,
     [STATUS_SCREEN_BEAM_OFFSET_CHARGE] = BBF_CHARGE_BEAM,
     [STATUS_SCREEN_BEAM_OFFSET_ICE] = BBF_ICE_BEAM,
@@ -2987,16 +3037,16 @@ const u8 sStatusScreenBeamFlagsOrder[STATUS_SCREEN_BEAM_OFFSET_END] = {
     [STATUS_SCREEN_BEAM_OFFSET_PLASMA] = BBF_PLASMA_BEAM
 };
 
-const u8 sStatusScreenBombFlagsOrder[1] = {
+const BeamBombFlags sStatusScreenBombFlagsOrder[1] = {
     BBF_BOMBS
 };
 
-const u8 sStatusScreenSuitFlagsOrder[STATUS_SCREEN_SUIT_OFFSET_END] = {
+const SuitMiscFlags sStatusScreenSuitFlagsOrder[STATUS_SCREEN_SUIT_OFFSET_END] = {
     [STATUS_SCREEN_SUIT_OFFSET_VARIA] = SMF_VARIA_SUIT,
     [STATUS_SCREEN_SUIT_OFFSET_GRAVITY] = SMF_GRAVITY_SUIT
 };
 
-const u8 sStatusScreenMiscFlagsOrder[STATUS_SCREEN_MISC_OFFSET_END] = {
+const SuitMiscFlags sStatusScreenMiscFlagsOrder[STATUS_SCREEN_MISC_OFFSET_END] = {
     [STATUS_SCREEN_MISC_OFFSET_MORPH_BALL] = SMF_MORPH_BALL,
     [STATUS_SCREEN_MISC_OFFSET_POWER_GRIP] = SMF_POWER_GRIP,
     [STATUS_SCREEN_MISC_OFFSET_SPEED_BOOSTER] = SMF_SPEEDBOOSTER,
@@ -3012,7 +3062,7 @@ const u8 sStatusScreenFlagsSize[ABILITY_GROUP_STATUS_GROUPS_END] = {
     [ABILITY_GROUP_MISC] = ARRAY_SIZE(sStatusScreenMiscFlagsOrder)
 };
 
-const u16 sPauseScreen_40d102[5] = {
+const u16 sPowersOfTen[5] = {
     1, 10, 100, 1000, 10000
 };
 
@@ -3094,7 +3144,7 @@ const u8 sChozoHintAreaNamesOamIds[MAX_AMOUNT_OF_AREAS] = {
     [AREA_TOURIAN] = OVERLAY_OAM_ID_CHOZO_HINT_TOURIAN,
     [AREA_CRATERIA] = OVERLAY_OAM_ID_CHOZO_HINT_CRATERIA,
     [AREA_CHOZODIA] = OVERLAY_OAM_ID_CHOZO_HINT_CHOZODIA,
-    [AREA_DEBUG_1] = 0
+    [AREA_TEST] = 0
 };
 
 const struct WorldMapData sWorldMapData[MAX_AMOUNT_OF_AREAS - 1] = {
@@ -3793,19 +3843,33 @@ const struct OamArray sPauseScreenWorldMapOam[WORLD_MAP_OAM_ID_END] = {
 };
 
 
-const u8 sMaintainedInputDelays[8] = {
+const u8 sMaintainedInputDelays_Fast[7] = {
     20, 4, 4, 4, 4, 4, 2
 };
 
-const u8 sMapScreenAreaIds[MAX_AMOUNT_OF_AREAS] = {
-    AREA_BRINSTAR,
-    AREA_KRAID,
-    AREA_NORFAIR,
-    AREA_RIDLEY,
-    AREA_TOURIAN,
-    AREA_CRATERIA,
-    AREA_CHOZODIA,
-    0x8
+#ifdef REGION_EU
+const u8 sMaintainedInputDelays_Slow[4] = {
+    20, 8, 8, 6
+};
+
+const u8 sMaintainedInputDelaysLastSet[MAINTAINED_INPUT_SPEED_COUNT] = {
+    [MAINTAINED_INPUT_SPEED_FAST] = ARRAY_SIZE(sMaintainedInputDelays_Fast) - 1,
+    [MAINTAINED_INPUT_SPEED_SLOW] = ARRAY_SIZE(sMaintainedInputDelays_Slow) - 1
+};
+#endif // REGION_EU
+
+// NOTE: Wrapped in a struct so that it is 4 byte aligned
+const struct MapScreenAreaIds sMapScreenAreaIds = {
+    .ids = {
+        AREA_BRINSTAR,
+        AREA_KRAID,
+        AREA_NORFAIR,
+        AREA_RIDLEY,
+        AREA_TOURIAN,
+        AREA_CRATERIA,
+        AREA_CHOZODIA,
+        0x8
+    }
 };
 
 const u8 sMapScreenAreasViewOrder[MAX_AMOUNT_OF_AREAS] = {
@@ -3955,6 +4019,82 @@ u8* const sPauseScreen_IgtAndTanksVramAddresses[IGT_AND_TANKS_VRAM_ADDRESS_END] 
 
 // TODO use char defines
 const u8 sCharacterWidths[1184] = {
+    #ifdef REGION_EU
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    4, 6, 7, 7, 7, 8, 8, 4, 5, 5, 7, 7, 4, 7, 4, 7,
+    7, 5, 7, 7, 7, 7, 7, 7, 7, 7, 4, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 6, 6, 6, 6, 6, 6, 6, 6, 4, 6, 6, 6, 7, 7, 6,
+    6, 6, 6, 6, 6, 6, 7, 7, 8, 6, 6, 5, 7, 5, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 5, 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 3, 6, 5, 5,
+    5, 5, 5, 5, 5, 5, 6, 6, 6, 5, 6, 5, 3, 5, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 6, 8, 8, 8, 8, 8, 16, 8, 11, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    14, 8, 14, 8, 14, 8, 14, 8, 14, 8, 14, 8, 16, 8, 16, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 16, 8, 13, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    6, 6, 6, 6, 6, 6, 8, 6, 6, 6, 6, 6, 4, 4, 4, 4,
+    6, 6, 6, 6, 6, 6, 6, 8, 8, 6, 6, 6, 6, 6, 6, 6,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    5, 5, 5, 5, 5, 5, 8, 5, 5, 5, 5, 5, 4, 4, 4, 4,
+    8, 6, 5, 5, 5, 5, 5, 6, 8, 6, 6, 6, 6, 6, 5, 5,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 5, 7, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 7, 7, 7, 7, 7, 7, 7, 7, 6, 7, 7, 7, 7, 7, 7,
+    7, 7, 7, 7, 6, 7, 7, 7, 7, 6, 7, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 6, 6, 6, 6, 6, 5, 6, 6, 2, 5, 5, 3, 6, 6, 6,
+    6, 6, 5, 6, 5, 6, 6, 6, 6, 6, 6, 8, 8, 8, 8, 8
+    #else // !REGION_EU
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
@@ -4029,6 +4169,7 @@ const u8 sCharacterWidths[1184] = {
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
     8, 6, 6, 6, 6, 6, 5, 6, 6, 2, 5, 5, 3, 6, 6, 6,
     6, 6, 5, 6, 5, 6, 6, 6, 6, 6, 6, 8, 8, 8, 8, 8
+    #endif // REGION_EU
 };
 
 const struct Message sMessage_Empty = {
@@ -4114,6 +4255,6 @@ const u8 sMinimapAnimatedPaletteOffsets[MAX_AMOUNT_OF_AREAS + 1] = {
     [AREA_TOURIAN] = 0x9A,
     [AREA_CRATERIA] = 0x9F,
     [AREA_CHOZODIA] = 0x99,
-    [AREA_DEBUG_1] = 0x98,
+    [AREA_TEST] = 0x98,
     [MAX_AMOUNT_OF_AREAS] = 0x97
 };

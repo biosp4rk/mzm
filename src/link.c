@@ -11,6 +11,28 @@
 #include "structs/game_state.h"
 #include "structs/link.h"
 
+static u8* LinkHandleConnection(void);
+static void LinkBuildSendCmd(u16 command);
+static void LinkProcessRecvCmds(void);
+
+static void LinkDisableSerial(void);
+static void LinkEnableSerial(void);
+static void LinkResetSerial(void);
+
+static u32 LinkMain(u8* shouldAdvanceLinkState, u16 sendCmd[CMD_LENGTH], u16 recvCmds[MAX_LINK_PLAYERS][CMD_LENGTH]);
+static void LinkCheckParentOrChild(void);
+static void LinkInitTimer(void);
+static void LinkEnqueueSendCmd(u16 sendCmd[CMD_LENGTH]);
+static void LinkDequeueRecvCmds(u16 recvCmds[MAX_LINK_PLAYERS][CMD_LENGTH]);
+
+static void LinkReloadTransfer(void);
+static void LinkCommunicate(void);
+static void LinkStartTransfer(void);
+static u8 LinkDoHandshake(void);
+static void LinkDoRecv(void);
+static void LinkDoSend(void);
+static void LinkStopTimer(void);
+static void LinkSendRecvDone(void);
 
 /**
  * @brief 89e30 | 164 | Handle transfer of fusion gallery images
@@ -19,23 +41,16 @@
  */
 u8 FusionGalleryLinkProcess(void)
 {
-    u16 buffer;
-    u16* ptr;
-
     gIoTransferInfo.result = TRANSFER_RESULT_NONE;
     APPLY_DELTA_TIME_INC(gIoTransferInfo.timer);
 
     switch (gIoTransferInfo.linkStage)
     {
         case LINK_STAGE_INIT:
-            ptr = &buffer;
-            buffer = 0;
-            DMA_SET(3, ptr, gSendCmd, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, CMD_LENGTH));
+            dma_fill16(3, 0, gSendCmd, sizeof(gSendCmd));
+            dma_fill16(3, 0, gRecvCmds, sizeof(gRecvCmds));
 
-            buffer = 0;
-            DMA_SET(3, ptr, gRecvCmds, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, MAX_LINK_PLAYERS * CMD_LENGTH));
-
-            gErrorFlag = 0;
+            gLinkStatus = 0;
             gShouldAdvanceLinkState = 0;
             gLinkPlayerCount = 0;
             gLinkLocalId = 0;
@@ -97,13 +112,13 @@ u8 FusionGalleryLinkProcess(void)
  * 
  * @return u8* Garbage, contains no value/undefined behavior
  */
-u8* LinkHandleConnection(void)
+static u8* LinkHandleConnection(void)
 {
     vu32 c;
     u32* link_stat;
     
     gShouldAdvanceLinkState = gFrameCounter8Bit & 1;
-    link_stat = &gErrorFlag;
+    link_stat = &gLinkStatus;
     *link_stat = LinkMain(&gShouldAdvanceLinkState, gSendCmd, gRecvCmds);
     gLinkLocalId = *link_stat & LINK_STAT_LOCAL_ID;
     gLinkPlayerCount = EXTRACT_PLAYER_COUNT(*link_stat);
@@ -164,7 +179,7 @@ u8* LinkHandleConnection(void)
  * 
  * @param command The command to send
  */
-void LinkBuildSendCmd(u16 command)
+static void LinkBuildSendCmd(u16 command)
 {
     u32 value;
     
@@ -201,11 +216,11 @@ void LinkBuildSendCmd(u16 command)
  * @brief 8a1d4 | 8c | Process commands from the receive queue
  * 
  */
-void LinkProcessRecvCmds(void)
+static void LinkProcessRecvCmds(void)
 {
     u8 var;
 
-    if (gErrorFlag & LINK_STAT_RECEIVED_NOTHING)
+    if (gLinkStatus & LINK_STAT_RECEIVED_NOTHING)
         return;
 
     if (gRecvCmds[0][1] == LINKCMD_5500)
@@ -239,54 +254,47 @@ void LinkProcessRecvCmds(void)
  * @brief 8a260 | 68 | Disable serial transfer
  * 
  */
-void LinkDisableSerial(void)
+static void LinkDisableSerial(void)
 {
-    u32 buffer;
-
     // Disable Interrupts
-    gLinkSavedIme = read16(REG_IME);
-    write16(REG_IME, FALSE);
-    write16(REG_IE, read16(REG_IE) & ~(IF_TIMER3 | IF_SERIAL));
-    write16(REG_IME, gLinkSavedIme);
+    gLinkSavedIme = READ_16(REG_IME);
+    WRITE_16(REG_IME, FALSE);
+    WRITE_16(REG_IE, READ_16(REG_IE) & ~(IF_TIMER3 | IF_SERIAL));
+    WRITE_16(REG_IME, gLinkSavedIme);
 
-    write16(REG_SIO, SIO_MULTI_MODE);
-    write16(REG_TM3CNT_H, 0);
-    write16(REG_IF, IF_TIMER3 | IF_SERIAL);
+    WRITE_16(REG_SIO, SIO_MULTI_MODE);
+    WRITE_16(REG_TM3CNT_H, 0);
+    WRITE_16(REG_IF, IF_TIMER3 | IF_SERIAL);
 
-    buffer = 0;
-    CpuSet(&buffer, &gLink, C_32_2_16(CPU_SET_32BIT | CPU_SET_SRC_FIXED, sizeof(gLink) / sizeof(u32)));
+    CPU_FILL_32(0, &gLink, sizeof(gLink));
 }
 
 /**
  * @brief 8a2c8 | D4 | Enable serial transfer
  * 
  */
-void LinkEnableSerial(void)
+static void LinkEnableSerial(void)
 {
-    u32 buffer;
-    u32* ptr;
-
     // Disable Interrupts
-    gLinkSavedIme = read16(REG_IME);
-    write16(REG_IME, FALSE);
-    write16(REG_IE, read16(REG_IE) & ~(IF_TIMER3 | IF_SERIAL));
-    write16(REG_IME, gLinkSavedIme);
+    gLinkSavedIme = READ_16(REG_IME);
+    WRITE_16(REG_IME, FALSE);
+    WRITE_16(REG_IE, READ_16(REG_IE) & ~(IF_TIMER3 | IF_SERIAL));
+    WRITE_16(REG_IME, gLinkSavedIme);
 
-    write16(REG_RNCT, 0);
-    write16(REG_SIO, SIO_MULTI_MODE);
-    write16(REG_SIO, read16(REG_SIO) | SIO_BAUD_RATE_115200 | SIO_IRQ_ENABLE);
+    WRITE_16(REG_RNCT, 0);
+    WRITE_16(REG_SIO, SIO_MULTI_MODE);
+    WRITE_16(REG_SIO, READ_16(REG_SIO) | SIO_BAUD_RATE_115200 | SIO_IRQ_ENABLE);
 
     // Enable Interrupts
-    gLinkSavedIme = read16(REG_IME);
-    write16(REG_IME, FALSE);
-    write16(REG_IE, read16(REG_IE) | IF_SERIAL);
-    write16(REG_IME, gLinkSavedIme);
+    gLinkSavedIme = READ_16(REG_IME);
+    WRITE_16(REG_IME, FALSE);
+    WRITE_16(REG_IE, READ_16(REG_IE) | IF_SERIAL);
+    WRITE_16(REG_IME, gLinkSavedIme);
 
-    write16(REG_SIO_DATA8, 0);
-    write64(REG_SIO_MULTI, 0);
+    WRITE_16(REG_SIO_DATA8, 0);
+    WRITE_64(REG_SIO_MULTI, 0);
 
-    buffer = 0;
-    CpuSet(&buffer, &gLink, C_32_2_16(CPU_SET_32BIT | CPU_SET_SRC_FIXED, sizeof(gLink) / sizeof(u32)));
+    CPU_FILL_32(0, &gLink, sizeof(gLink));
 
     gNumVBlanksWithoutSerialIntr = 0;
     gSendBufferEmpty = 0;
@@ -302,7 +310,7 @@ void LinkEnableSerial(void)
  * @brief 8a39c | 10 | Reset the state of the serial transfer
  * 
  */
-void LinkResetSerial(void)
+static void LinkResetSerial(void)
 {
     LinkEnableSerial();
     LinkDisableSerial();
@@ -316,7 +324,7 @@ void LinkResetSerial(void)
  * @param recvCmds A queue of received commands
  * @return u32 The state of the connection
  */
-u32 LinkMain(u8* shouldAdvanceLinkState, u16 sendCmd[CMD_LENGTH], u16 recvCmds[MAX_LINK_PLAYERS][CMD_LENGTH])
+static u32 LinkMain(u8* shouldAdvanceLinkState, u16 sendCmd[CMD_LENGTH], u16 recvCmds[MAX_LINK_PLAYERS][CMD_LENGTH])
 {
     u32 retval;
     u32 receivedNothing;
@@ -352,7 +360,7 @@ u32 LinkMain(u8* shouldAdvanceLinkState, u16 sendCmd[CMD_LENGTH], u16 recvCmds[M
 
                 case 2:
                     gLink.session.state = LINK_STATE_START0;
-                    write16(REG_SIO_DATA8, 0);
+                    WRITE_16(REG_SIO_DATA8, 0);
                     break;
 
                 default:
@@ -419,11 +427,11 @@ u32 LinkMain(u8* shouldAdvanceLinkState, u16 sendCmd[CMD_LENGTH], u16 recvCmds[M
  * @brief 8a4cc | 2c | Check if the current connection is parent or child
  * 
  */
-void LinkCheckParentOrChild(void)
+static void LinkCheckParentOrChild(void)
 {
     u32 terminals;
 
-    terminals = read32(REG_SIO) & (SIO_MULTI_CONNECTION_READY | SIO_MULTI_RECEIVE_ID);
+    terminals = READ_32(REG_SIO) & (SIO_MULTI_CONNECTION_READY | SIO_MULTI_RECEIVE_ID);
     if (terminals == (SIO_MULTI_CONNECTION_READY | SIO_MULTI_PARENT) && gLink.session.localId == 0)
     {
         gLink.session.isParent = LINK_PARENT;
@@ -435,22 +443,22 @@ void LinkCheckParentOrChild(void)
 }
 
 /**
- * @brief 8a4f8 | 50 | Load timer 3 if all GBA's are ready
+ * @brief 8a4f8 | 50 | Load timer 3 if all GBAs are ready
  * 
  */
-void LinkInitTimer(void)
+static void LinkInitTimer(void)
 {
     if (gLink.session.isParent)
     {
         // Load -132 into timer 3 with 1/64 the normal frequency
-        write16(REG_TM3CNT_L, -132);
-        write16(REG_TM3CNT_H, TIMER_CONTROL_IRQ_ENABLE | 1);
+        WRITE_16(REG_TM3CNT_L, -132);
+        WRITE_16(REG_TM3CNT_H, TIMER_CONTROL_IRQ_ENABLE | 1);
 
         // Enable timer 3 interrupt, enable interrupts if already enabled
-        gLinkSavedIme = read16(REG_IME);
-        write16(REG_IME, FALSE);
-        write16(REG_IE, read16(REG_IE) | IF_TIMER3);
-        write16(REG_IME, gLinkSavedIme);
+        gLinkSavedIme = READ_16(REG_IME);
+        WRITE_16(REG_IME, FALSE);
+        WRITE_16(REG_IE, READ_16(REG_IE) | IF_TIMER3);
+        WRITE_16(REG_IME, gLinkSavedIme);
     }
 }
 
@@ -459,13 +467,13 @@ void LinkInitTimer(void)
  * 
  * @param sendCmd The commands to send
  */
-void LinkEnqueueSendCmd(u16 sendCmd[CMD_LENGTH])
+static void LinkEnqueueSendCmd(u16 sendCmd[CMD_LENGTH])
 {
     u8 offset;
     u8 i;
 
-    gLinkSavedIme = read16(REG_IME);
-    write16(REG_IME, FALSE);
+    gLinkSavedIme = READ_16(REG_IME);
+    WRITE_16(REG_IME, FALSE);
 
     if (gLink.sendQueue.count < QUEUE_CAPACITY)
     {
@@ -493,22 +501,22 @@ void LinkEnqueueSendCmd(u16 sendCmd[CMD_LENGTH])
         gSendNonzeroCheck = 0;
     }
 
-    write16(REG_IME, gLinkSavedIme);
+    WRITE_16(REG_IME, gLinkSavedIme);
     gLastSendQueueCount = gLink.sendQueue.count;
 }
 
 /**
- * @brief 8a628 | 108 | Get commands from recieve queue
+ * @brief 8a628 | 108 | Get commands from receive queue
  * 
  * @param recvCmds A queue of received commands
  */
-void LinkDequeueRecvCmds(u16 recvCmds[MAX_LINK_PLAYERS][CMD_LENGTH])
+static void LinkDequeueRecvCmds(u16 recvCmds[MAX_LINK_PLAYERS][CMD_LENGTH])
 {
     u8 i;
     u8 j;
 
-    gLinkSavedIme = read16(REG_IME);
-    write16(REG_IME, FALSE);
+    gLinkSavedIme = READ_16(REG_IME);
+    WRITE_16(REG_IME, FALSE);
 
     if (gLink.recvQueue.count == 0)
     {
@@ -543,7 +551,7 @@ void LinkDequeueRecvCmds(u16 recvCmds[MAX_LINK_PLAYERS][CMD_LENGTH])
         gLink.session.receivedNothing = FALSE;
     }
 
-    write16(REG_IME, gLinkSavedIme);
+    WRITE_16(REG_IME, gLinkSavedIme);
 }
 
 /**
@@ -606,7 +614,7 @@ void LinkVSync(void)
  * @brief 8a7a0 | 10 | Reload timer 3 and start serial transfer
  * 
  */
-void LinkReloadTransfer(void)
+static void LinkReloadTransfer(void)
 {
     // Called when timer 3 interrupts
     LinkStopTimer();
@@ -617,11 +625,11 @@ void LinkReloadTransfer(void)
  * @brief 8a7b0 | 90 | Establish a connection and send data
  * 
  */
-void LinkCommunicate(void)
+static void LinkCommunicate(void)
 {
     u32 control;
 
-    control = read32(REG_SIO);
+    control = READ_32(REG_SIO);
     gLink.session.localId = (control << 26) >> 30; // SIO_MULTI_CONNECTION_ID_FLAG
 
     switch (gLink.session.state)
@@ -663,9 +671,9 @@ void LinkCommunicate(void)
  * @brief 8a840 | 10 | Start a serial transfer
  * 
  */
-void LinkStartTransfer(void)
+static void LinkStartTransfer(void)
 {
-    write16(REG_SIO, read16(REG_SIO) | SIO_START_BIT_ACTIVE);
+    WRITE_16(REG_SIO, READ_16(REG_SIO) | SIO_START_BIT_ACTIVE);
 }
 
 /**
@@ -673,7 +681,7 @@ void LinkStartTransfer(void)
  * 
  * @return u8 bool, handshake was successfully performed
  */
-u8 LinkDoHandshake(void)
+static u8 LinkDoHandshake(void)
 {
     u16 minRecv;
     u8 i;
@@ -684,15 +692,15 @@ u8 LinkDoHandshake(void)
 
     if (gLink.connection.handshakeAsParent == TRUE)
     {
-        write16(REG_SIO_DATA8, PARENT_HANDSHAKE);
+        WRITE_16(REG_SIO_DATA8, PARENT_HANDSHAKE);
     }
     else
     {
-        write16(REG_SIO_DATA8, CHILD_HANDSHAKE);
+        WRITE_16(REG_SIO_DATA8, CHILD_HANDSHAKE);
     }
     gLink.connection.handshakeAsParent = FALSE;
 
-    write64(gLink.session.handshakeBuffer, read64(REG_SIO_MULTI));
+    WRITE_64(gLink.session.handshakeBuffer, READ_64(REG_SIO_MULTI));
 
     for (i = 0; i < MAX_LINK_PLAYERS; i++)
     {    
@@ -747,13 +755,13 @@ u8 LinkDoHandshake(void)
  * @brief 8a94c | 108 | Receive a command from the receive queue
  * 
  */
-void LinkDoRecv(void)
+static void LinkDoRecv(void)
 {
     u16 recv[4];
     u8 i;
     u8 offset;
 
-    write64(recv, read64(REG_SIO_MULTI));
+    WRITE_64(recv, READ_64(REG_SIO_MULTI));
 
     if (gLink.connection.sendCmdIndex == 0)
     {
@@ -802,11 +810,11 @@ void LinkDoRecv(void)
  * @brief 8aa54 | 9c | Send a command from the send queue
  * 
  */
-void LinkDoSend(void)
+static void LinkDoSend(void)
 {
     if (gLink.connection.sendCmdIndex == CMD_LENGTH)
     {
-        write16(REG_SIO_DATA8, gLink.connection.checksum);
+        WRITE_16(REG_SIO_DATA8, gLink.connection.checksum);
 
         if (!gSendBufferEmpty)
         {
@@ -832,11 +840,11 @@ void LinkDoSend(void)
             
         if (gSendBufferEmpty)
         {
-            write16(REG_SIO_DATA8, 0);
+            WRITE_16(REG_SIO_DATA8, 0);
         }
         else
         {
-            write16(REG_SIO_DATA8, gLink.sendQueue.data[gLink.connection.sendCmdIndex][gLink.sendQueue.pos]);
+            WRITE_16(REG_SIO_DATA8, gLink.sendQueue.data[gLink.connection.sendCmdIndex][gLink.sendQueue.pos]);
         }
 
         gLink.connection.sendCmdIndex++;
@@ -847,13 +855,13 @@ void LinkDoSend(void)
  * @brief 8aaf0 | 34 | Stops the timer for the parent
  * 
  */
-void LinkStopTimer(void)
+static void LinkStopTimer(void)
 {
     if (gLink.session.isParent)
     {
         // Turn off timer 3 and load in -132
-        write16(REG_TM3CNT_H, read16(REG_TM3CNT_H) & ~TIMER_CONTROL_ACTIVE);
-        write16(REG_TM3CNT_L, -132);
+        WRITE_16(REG_TM3CNT_H, READ_16(REG_TM3CNT_H) & ~TIMER_CONTROL_ACTIVE);
+        WRITE_16(REG_TM3CNT_L, -132);
     }
 }
 
@@ -861,7 +869,7 @@ void LinkStopTimer(void)
  * @brief 8ab24 | 30 | Send a signal that the receive command is done
  * 
  */
-void LinkSendRecvDone(void)
+static void LinkSendRecvDone(void)
 {
     if (gLink.connection.recvCmdIndex == CMD_LENGTH)
     {
@@ -870,7 +878,7 @@ void LinkSendRecvDone(void)
     }
     else if (gLink.session.isParent)
     {
-        write16(REG_TM3CNT_H, read16(REG_TM3CNT_H) | TIMER_CONTROL_ACTIVE);
+        WRITE_16(REG_TM3CNT_H, READ_16(REG_TM3CNT_H) | TIMER_CONTROL_ACTIVE);
     }
 }
 

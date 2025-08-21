@@ -1861,12 +1861,37 @@ static const struct FrameData sOptionsOam_SmallPanel[5] = {
 };
 
 const u32 sFileSelectChozoBackgroundGfx[2985] = INCBIN_U32("data/menus/FileSelect/ChozoBackground.gfx.lz");
+#ifdef REGION_EU
+const u32 sFileSelectAreaNamesGfx[331] = INCBIN_U32("data/menus/FileSelect/AreaNames.gfx.lz");
+const u32 sFileSelectBgIconsGfx[651] = INCBIN_U32("data/menus/FileSelect/BgIcons.gfx.lz");
+#else // !REGION_EU
 const u32 sFileSelectCharactersGfx[1531] = INCBIN_U32("data/menus/FileSelect/Characters.gfx.lz");
-const u32 sFileSelectTextGfx[1725] = INCBIN_U32("data/menus/FileSelect/Text.gfx.lz");
-const u32 sFileSelectIconsGfx[1722] = INCBIN_U32("data/menus/FileSelect/Icons.gfx.lz");
+#endif // REGION_EU
+
+const u32 sFileSelectOptionsTextEnglishGfx[345] = INCBIN_U32("data/menus/FileSelect/OptionsTextEnglish.gfx.lz");
+const u32 sFileSelectOptionsTextGermanGfx[] = INCBIN_U32("data/menus/FileSelect/OptionsTextGerman.gfx.lz");
+const u32 sFileSelectOptionsTextFrenchGfx[] = INCBIN_U32("data/menus/FileSelect/OptionsTextFrench.gfx.lz");
+const u32 sFileSelectOptionsTextItalianGfx[] = INCBIN_U32("data/menus/FileSelect/OptionsTextItalian.gfx.lz");
+const u32 sFileSelectOptionsTextSpanishGfx[] = INCBIN_U32("data/menus/FileSelect/OptionsTextSpanish.gfx.lz");
+
+#ifdef REGION_EU
+const u32 sFileSelectLargeTextEnglishGfx[332] = INCBIN_U32("data/menus/FileSelect/LargeTextEnglish.gfx.lz");
+const u32 sFileSelectLargeTextGermanGfx[391] = INCBIN_U32("data/menus/FileSelect/LargeTextGerman.gfx.lz");
+const u32 sFileSelectLargeTextFrenchGfx[392] = INCBIN_U32("data/menus/FileSelect/LargeTextFrench.gfx.lz");
+const u32 sFileSelectLargeTextItalianGfx[353] = INCBIN_U32("data/menus/FileSelect/LargeTextItalian.gfx.lz");
+const u32 sFileSelectLargeTextSpanishGfx[364] = INCBIN_U32("data/menus/FileSelect/LargeTextSpanish.gfx.lz");
+
+const u32 sFileSelectDifficultyTextEnglishGfx[67] = INCBIN_U32("data/menus/FileSelect/DifficultyTextEnglish.gfx.lz");
+const u32 sFileSelectDifficultyTextGermanGfx[70] = INCBIN_U32("data/menus/FileSelect/DifficultyTextGerman.gfx.lz");
+const u32 sFileSelectDifficultyTextFrenchGfx[71] = INCBIN_U32("data/menus/FileSelect/DifficultyTextFrench.gfx.lz");
+const u32 sFileSelectDifficultyTextItalianGfx[71] = INCBIN_U32("data/menus/FileSelect/DifficultyTextItalian.gfx.lz");
+const u32 sFileSelectDifficultyTextSpanishGfx[70] = INCBIN_U32("data/menus/FileSelect/DifficultyTextSpanish.gfx.lz");
+#endif // REGION_EU
+
+const u32 sFileSelectObjIconsGfx[1722] = INCBIN_U32("data/menus/FileSelect/ObjIcons.gfx.lz");
 const u32 sFileSelectChozoBackgroundTileTable[368] = INCBIN_U32("data/menus/FileSelect/ChozoBackground.tt");
-const u32 sFileSelectMenuTileTable[148] = INCBIN_U32("data/menus/FileSelect/Menu.tt");
-const u32 sFileSelectOptionsTileTable[188] = INCBIN_U32("data/menus/FileSelect/Options.tt");
+const u32 sFileSelectMenuTileTable[] = INCBIN_U32("data/menus/FileSelect/Menu.tt");
+const u32 sFileSelectOptionsTileTable[] = INCBIN_U32("data/menus/FileSelect/Options.tt");
 const u32 sFileSelect3BigPanelsTileTable[233] = INCBIN_U32("data/menus/FileSelect/3BigPanels.tt");
 const u32 sFileSelect1Small2BigPanelsTileTable[233] = INCBIN_U32("data/menus/FileSelect/1Small2BigPanels.tt");
 const u32 sFileSelect2Big1SmallPanelsTileTable[230] = INCBIN_U32("data/menus/FileSelect/2Big1SmallPanels.tt");
@@ -2167,7 +2192,7 @@ const struct OamArray sOptionsOam[OPTIONS_OAM_ID_END] = {
 };
 
 // text_id, dst_type, unk
-const u8 sFileScreenMessagesInfo[FILE_SCREEN_MESSAGE_INFO_ID_END][3] = {
+const u8 sFileScreenMessagesInfo[FILE_SCREEN_MESSAGE_INFO_ID_COUNT][3] = {
     [0] = {
         FILE_SCREEN_TEXT_START_GAME,
         0,

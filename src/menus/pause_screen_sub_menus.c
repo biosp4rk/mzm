@@ -1,6 +1,7 @@
 #include "menus/pause_screen_sub_menus.h"
 #include "menus/pause_screen.h"
 #include "menus/pause_screen_map.h"
+#include "dma.h"
 #include "syscalls.h"
 #include "oam_id.h"
 
@@ -8,7 +9,6 @@
 #include "data/clipdata_data.h"
 #include "data/menus/pause_screen_data.h"
 #include "data/menus/pause_screen_sub_menus_data.h"
-#include "data/menus/internal_pause_screen_sub_menus_data.h"
 
 #include "constants/audio.h"
 #include "constants/connection.h"
@@ -18,6 +18,15 @@
 
 #include "structs/display.h"
 #include "structs/minimap.h"
+
+static const s8* sChozoStatueTargetPathPointers[6] = {
+    [AREA_BRINSTAR] = (s8*)sChozoStatueTargetPathBrinstar,
+    [AREA_KRAID] = (s8*)sChozoStatueTargetPathKraid,
+    [AREA_NORFAIR] = (s8*)sChozoStatueTargetPathNorfair,
+    [AREA_RIDLEY] = (s8*)sChozoStatueTargetPathRidley,
+    [AREA_TOURIAN] = (s8*)NULL,
+    [AREA_CRATERIA] = (s8*)sChozoStatueTargetPathCrateria
+};
 
 /**
  * @brief 71f70 | 1da | Easy sleep menu subroutine
@@ -44,7 +53,11 @@ u32 PauseScreenEasySleepSubroutine(void)
                 // Goto YES option
                 SoundPlay(SOUND_YES_NO_CURSOR_MOVING);
                 PAUSE_SCREEN_DATA.subroutineInfo.stage = EASY_SLEEP_MENU_STAGE_YES_OPTION;
+                #ifdef REGION_EU
+                PAUSE_SCREEN_DATA.miscOam[1].xPosition = BLOCK_SIZE * 4 - QUARTER_BLOCK_SIZE;
+                #else // !REGION_EU
                 PAUSE_SCREEN_DATA.miscOam[1].xPosition = BLOCK_SIZE * 3 + QUARTER_BLOCK_SIZE;
+                #endif // REGION_EU
             }
             else if (gChangedInput & (KEY_B | KEY_L | KEY_R))
             {
@@ -91,13 +104,13 @@ u32 PauseScreenEasySleepSubroutine(void)
 
         case EASY_SLEEP_MENU_STAGE_HANDLE_SLEEP_WAKE:
             // Setup key control to exit easy sleep
-            write16(REG_KEY_CONTROL, KEY_CONTROL_ENABLE | KEY_CONTROL_ALL_INPUTS | KEY_SELECT | KEY_L | KEY_R);
+            WRITE_16(REG_KEY_CONTROL, KEY_CONTROL_ENABLE | KEY_CONTROL_ALL_INPUTS | KEY_SELECT | KEY_L | KEY_R);
 
             // Setup interrupt enable flags
-            write16(REG_IME, FALSE);
-            ie = read16(REG_IE);
-            write16(REG_IE, IF_KEYPAD | IF_GAMEPAK);
-            write16(REG_IME, TRUE);
+            WRITE_16(REG_IME, FALSE);
+            ie = READ_16(REG_IE);
+            WRITE_16(REG_IE, IF_KEYPAD | IF_GAMEPAK);
+            WRITE_16(REG_IME, TRUE);
 
             // Disable sound
             SoundBias0();
@@ -107,9 +120,9 @@ u32 PauseScreenEasySleepSubroutine(void)
             SoundBias200();
 
             // Retrieve interrupt enable flags
-            write16(REG_IME, FALSE);
-            write16(REG_IE, ie);
-            write16(REG_IME, TRUE);
+            WRITE_16(REG_IME, FALSE);
+            WRITE_16(REG_IE, ie);
+            WRITE_16(REG_IME, TRUE);
 
             // Re display screen
             PAUSE_SCREEN_DATA.dispcnt ^= DCNT_BLANK;
@@ -137,7 +150,7 @@ u32 PauseScreenEasySleepSubroutine(void)
 }
 
 /**
- * @brief 72144 | c0 | Calculates the X and Y coordiantes of the Chozo statue hint
+ * @brief 72144 | c0 | Calculates the X and Y coordinates of the Chozo statue hint
  * 
  * @param pHintMapData Chozo statue hint map data pointer
  * @return u32 New position (YYXX, in bytes)
@@ -172,10 +185,10 @@ u32 ChozoStatueHintCalculateCoordinates(struct ChozoHintMapData* pHintMapData)
 
     if (pHintMapData->yDirection != 0)
     {
-        if (pHintMapData->mapYPostion != pHintMapData->hintTargetYPosition)
+        if (pHintMapData->mapYPosition != pHintMapData->hintTargetYPosition)
         {
             yPosition = (pHintMapData->distYToHintTarget * pHintMapData->unk_10 * pHintMapData->speedMultiplier * 256) / pHintMapData->absDistToHintTarget;
-            yPosition = pHintMapData->mapYPostion + (yPosition / 256) * pHintMapData->yDirection;
+            yPosition = pHintMapData->mapYPosition + (yPosition / 256) * pHintMapData->yDirection;
             if (pHintMapData->yDirection > 0)
             {
                 if (pHintMapData->hintTargetYPosition < yPosition)
@@ -220,11 +233,11 @@ void ChozoStatueHintMovement(void)
             PAUSE_SCREEN_DATA.chozoHintTarget.activeMovementScrollingFlag |= TARGET_MOVEMENT_FLAG;
 
             PAUSE_SCREEN_DATA.chozoHintMapMovementData.mapXPosition = PAUSE_SCREEN_DATA.mapX * HALF_BLOCK_SIZE;
-            PAUSE_SCREEN_DATA.chozoHintMapMovementData.mapYPostion = PAUSE_SCREEN_DATA.mapY * HALF_BLOCK_SIZE;
+            PAUSE_SCREEN_DATA.chozoHintMapMovementData.mapYPosition = PAUSE_SCREEN_DATA.mapY * HALF_BLOCK_SIZE;
             PAUSE_SCREEN_DATA.chozoHintMapMovementData.hintTargetXPosition = PAUSE_SCREEN_DATA.hintTargetX * HALF_BLOCK_SIZE;
             PAUSE_SCREEN_DATA.chozoHintMapMovementData.hintTargetYPosition = PAUSE_SCREEN_DATA.hintTargetY * HALF_BLOCK_SIZE;
 
-            PAUSE_SCREEN_DATA.chozoHintOam[0].yPosition = PAUSE_SCREEN_DATA.chozoHintMapMovementData.mapYPostion;
+            PAUSE_SCREEN_DATA.chozoHintOam[0].yPosition = PAUSE_SCREEN_DATA.chozoHintMapMovementData.mapYPosition;
             PAUSE_SCREEN_DATA.chozoHintOam[0].xPosition = PAUSE_SCREEN_DATA.chozoHintMapMovementData.mapXPosition;
             PAUSE_SCREEN_DATA.chozoHintOam[0].oamID = sChozoStatueTargets[PAUSE_SCREEN_DATA.chozoHintTarget.index].startIcon;
 
@@ -241,7 +254,7 @@ void ChozoStatueHintMovement(void)
                 PAUSE_SCREEN_DATA.chozoHintMapMovementData.distXToHintTarget *= PAUSE_SCREEN_DATA.chozoHintMapMovementData.xDirection;
             }
 
-            PAUSE_SCREEN_DATA.chozoHintMapMovementData.distYToHintTarget = PAUSE_SCREEN_DATA.chozoHintMapMovementData.hintTargetYPosition - PAUSE_SCREEN_DATA.chozoHintMapMovementData.mapYPostion;
+            PAUSE_SCREEN_DATA.chozoHintMapMovementData.distYToHintTarget = PAUSE_SCREEN_DATA.chozoHintMapMovementData.hintTargetYPosition - PAUSE_SCREEN_DATA.chozoHintMapMovementData.mapYPosition;
 
             if (PAUSE_SCREEN_DATA.chozoHintMapMovementData.distYToHintTarget == 0)
             {
@@ -419,7 +432,7 @@ void ChozoStatueHintScrolling(void)
             PAUSE_SCREEN_DATA.chozoHintMapScrollingData.hintTargetYPosition = (0x204 - (10 - PAUSE_SCREEN_DATA.hintTargetY) * 8) * 4;
             PAUSE_SCREEN_DATA.chozoHintMapScrollingData.hintTargetXPosition = (0x204 - (15 - PAUSE_SCREEN_DATA.hintTargetX) * 8) * 4;
 
-            PAUSE_SCREEN_DATA.chozoHintMapScrollingData.mapYPostion = gBg3VOFS_NonGameplay;
+            PAUSE_SCREEN_DATA.chozoHintMapScrollingData.mapYPosition = gBg3VOFS_NonGameplay;
             PAUSE_SCREEN_DATA.chozoHintMapScrollingData.mapXPosition = gBg3HOFS_NonGameplay;
 
             PAUSE_SCREEN_DATA.chozoHintMapScrollingData.distXToHintTarget = PAUSE_SCREEN_DATA.chozoHintMapScrollingData.hintTargetXPosition - PAUSE_SCREEN_DATA.chozoHintMapScrollingData.mapXPosition;
@@ -434,7 +447,7 @@ void ChozoStatueHintScrolling(void)
                 PAUSE_SCREEN_DATA.chozoHintMapScrollingData.distXToHintTarget *= PAUSE_SCREEN_DATA.chozoHintMapScrollingData.xDirection;
             }
 
-            PAUSE_SCREEN_DATA.chozoHintMapScrollingData.distYToHintTarget = PAUSE_SCREEN_DATA.chozoHintMapScrollingData.hintTargetYPosition - PAUSE_SCREEN_DATA.chozoHintMapScrollingData.mapYPostion;
+            PAUSE_SCREEN_DATA.chozoHintMapScrollingData.distYToHintTarget = PAUSE_SCREEN_DATA.chozoHintMapScrollingData.hintTargetYPosition - PAUSE_SCREEN_DATA.chozoHintMapScrollingData.mapYPosition;
 
             if (PAUSE_SCREEN_DATA.chozoHintMapScrollingData.distYToHintTarget == 0)
             {
@@ -567,13 +580,13 @@ u32 ChozoStatueHintSubroutine(void)
             break;
 
         case CHOZO_HINT_SUBROUTINE_STAGE_UPDATE_FADE_OUT:
-            if (gWrittenToBLDALPHA_H + gWrittenToBLDALPHA_L != 0)
+            if (gWrittenToBldalpha_H + gWrittenToBldalpha_L != 0)
             {
-                if (gWrittenToBLDALPHA_H != 0)
-                    gWrittenToBLDALPHA_H--;
+                if (gWrittenToBldalpha_H != 0)
+                    gWrittenToBldalpha_H--;
 
-                if (gWrittenToBLDALPHA_L != 0)
-                    gWrittenToBLDALPHA_L--;
+                if (gWrittenToBldalpha_L != 0)
+                    gWrittenToBldalpha_L--;
             }
             else
             {
@@ -599,13 +612,13 @@ u32 ChozoStatueHintSubroutine(void)
             break;
 
         case CHOZO_HINT_SUBROUTINE_STAGE_UPDATE_FADE_IN:
-            if (PAUSE_SCREEN_DATA.targetBldAlpha != C_16_2_8(gWrittenToBLDALPHA_H, gWrittenToBLDALPHA_L))
+            if (PAUSE_SCREEN_DATA.targetBldAlpha != C_16_2_8(gWrittenToBldalpha_H, gWrittenToBldalpha_L))
             {
-                if (HIGH_BYTE(PAUSE_SCREEN_DATA.targetBldAlpha) > gWrittenToBLDALPHA_H)
-                    gWrittenToBLDALPHA_H++;
+                if (HIGH_BYTE(PAUSE_SCREEN_DATA.targetBldAlpha) > gWrittenToBldalpha_H)
+                    gWrittenToBldalpha_H++;
 
-                if (LOW_BYTE(PAUSE_SCREEN_DATA.targetBldAlpha) > gWrittenToBLDALPHA_L)
-                    gWrittenToBLDALPHA_L++;
+                if (LOW_BYTE(PAUSE_SCREEN_DATA.targetBldAlpha) > gWrittenToBldalpha_L)
+                    gWrittenToBldalpha_L++;
             }
             else
             {
@@ -910,7 +923,7 @@ void ChozoStatueHintDeterminePath(u8 param_1)
  * @brief 73050 | 7c | Checks if a target is enabled
  * 
  * @param target Target
- * @return s32 -1 = not activated, 0 = activated, 1 = de-activated
+ * @return s32 -1 = not activated, 0 = activated, 1 = deactivated
  */
 s32 ChozoStatueHintCheckTargetIsActivated(u8 target)
 {
@@ -996,7 +1009,7 @@ void PauseScreenCheckAreasWithTargets(void)
 }
 
 /**
- * @brief 73150 | f8 | Setups the boss flame data
+ * @brief 73150 | f8 | Sets up the boss flame data
  * 
  */
 void PauseScreenDrawBossFlames(void)

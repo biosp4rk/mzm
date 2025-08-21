@@ -1,9 +1,9 @@
 #include "cutscenes/statue_opening.h"
 #include "cutscenes/cutscene_utils.h"
+#include "dma.h"
 
 #include "data/shortcut_pointers.h"
 #include "data/cutscenes/statue_opening_data.h"
-#include "data/cutscenes/internal_statue_opening_data.h"
 #include "data/sprites/boss_statues.h"
 #include "data/tilesets/tilesets_set1.h"
 #include "data/rooms/brinstar_rooms_data.h"
@@ -13,15 +13,18 @@
 #include "constants/cutscene.h"
 #include "constants/event.h"
 
+#include "structs/cutscene.h"
 #include "structs/connection.h"
 #include "structs/display.h"
+
+static void StatueOpeningProcessOAM(void);
 
 /**
  * @brief 66c00 | 164 | Handles the statue opening animation
  * 
  * @return u8 
  */
-u8 StatueOpeningOpening(void)
+static u8 StatueOpeningOpening(void)
 {
     u16* pPosition;
 
@@ -126,7 +129,7 @@ u8 StatueOpeningOpening(void)
  * 
  * @return u8 FALSE
  */
-u8 StatueOpeningInit(void)
+static u8 StatueOpeningInit(void)
 {
     u8 oamId;
     const u8* ptr;
@@ -136,7 +139,7 @@ u8 StatueOpeningInit(void)
     DmaTransfer(3, sStatueOpeningPal, PALRAM_BASE, sizeof(sStatueOpeningPal), 16);
     SET_BACKDROP_COLOR(COLOR_BLACK);
 
-    CallLZ77UncompVram(sStatueOpeningRoomGfx, VRAM_BASE + 0x1800 + sStatueOpeningPageData[0].graphicsPage * 0x4000);
+    CallLZ77UncompVram(sStatueOpeningRoomGfx, BGCNT_TO_VRAM_CHAR_BASE(sStatueOpeningPageData[0].graphicsPage) + 0x1800);
 
     ptr = (const u8*)sTileset_65_Bg_Gfx;
     CallLZ77UncompVram(ptr, VRAM_BASE + 0xFDE0 - C_16_2_8(ptr[2], ptr[1])); 
@@ -154,7 +157,7 @@ u8 StatueOpeningInit(void)
     CutsceneReset();
 
     CUTSCENE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
-    gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE;
+    gWrittenToBldy_NonGameplay = BLDY_MAX_VALUE;
 
     CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[0].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE);
     CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[1].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE);
@@ -214,6 +217,21 @@ u8 StatueOpeningInit(void)
     return FALSE;
 }
 
+static struct CutsceneSubroutineData sStatueOpeningSubroutineData[3] = {
+    [0] = {
+        .pFunction = StatueOpeningInit,
+        .oamLength = 2
+    },
+    [1] = {
+        .pFunction = StatueOpeningOpening,
+        .oamLength = 2
+    },
+    [2] = {
+        .pFunction = CutsceneEndFunction,
+        .oamLength = 2
+    }
+};
+
 /**
  * @brief 67014 | 34 | Subroutine for the statue opening cutscene
  * 
@@ -235,7 +253,7 @@ u8 StatueOpeningSubroutine(void)
  * @brief 67048 | 38 | Processes the OAM for the cutscene
  * 
  */
-void StatueOpeningProcessOAM(void)
+static void StatueOpeningProcessOAM(void)
 {
     gNextOamSlot = 0;
     ProcessCutsceneOam(sStatueOpeningSubroutineData[CUTSCENE_DATA.timeInfo.stage].oamLength, CUTSCENE_DATA.oam, sStatueOpeningOam);

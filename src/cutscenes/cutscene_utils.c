@@ -1,12 +1,13 @@
 #include "cutscenes/cutscene_utils.h"
+#include "dma.h"
 #include "gba.h"
 #include "oam.h"
 #include "color_effects.h"
+#include "tourian_escape.h"
 
 #include "data/cutscenes/cutscenes_data.h"
 #include "data/menus/pause_screen_data.h"
 #include "data/shortcut_pointers.h"
-#include "data/engine_pointers.h"
 #include "data/block_data.h"
 
 #include "constants/audio.h"
@@ -24,6 +25,29 @@
 
 #define PAL_TO_FADE ((void*)(sEwramPointer))
 #define PAL_WITH_FADE ((void*)sEwramPointer + PALRAM_SIZE)
+
+static TourianEscapeFunc_T sTourianEscapeFunctionPointers[2] = {
+    CutsceneDefaultRoutine,
+    TourianEscapeCallSubroutines,
+};
+
+static s8 sCutsceneScreenShakeOffsets_Set0[2] = {
+    -1, 1
+};
+
+static s8* sCutsceneScreenShakeOffsetSetPointers[4] = {
+    sCutsceneScreenShakeOffsets_Set0,
+    sCutsceneScreenShakeOffsets_Set0,
+    sCutsceneScreenShakeOffsets_Set0,
+    sCutsceneScreenShakeOffsets_Set0
+};
+
+static u8 sCutsceneScreenShakeOffsetSetSizes[4] = {
+    ARRAY_SIZE(sCutsceneScreenShakeOffsets_Set0),
+    ARRAY_SIZE(sCutsceneScreenShakeOffsets_Set0),
+    ARRAY_SIZE(sCutsceneScreenShakeOffsets_Set0),
+    ARRAY_SIZE(sCutsceneScreenShakeOffsets_Set0)
+};
 
 /**
  * @brief 60e28 | 4 | Default subroutine for cutscenes that don't have any
@@ -49,15 +73,15 @@ u8 TourianEscapeSubroutine(void)
     {
         SET_BACKDROP_COLOR(COLOR_BLACK);
         gSubGameModeStage = 0;
-        gGameModeSub1 = 0;
-        gGameModeSub2 = 4;
+        gSubGameMode1 = 0;
+        gSubGameMode2 = 4;
 
         #ifdef DEBUG
         if (gBootDebugActive)
         {
             SET_BACKDROP_COLOR(COLOR_BLACK);
-            write16(REG_DISPCNT, 0);
-            StopAllMusicsAndSounds();
+            WRITE_16(REG_DISPCNT, 0);
+            StopAllMusicAndSounds();
             return FALSE;
         }
         #endif // DEBUG
@@ -83,7 +107,7 @@ u8 TourianEscapeSubroutine(void)
             gCurrentRoom = 0;
             gLastDoorUsed = 0;
             gCurrentCutscene = CUTSCENE_COULD_I_SURVIVE;
-            gGameModeSub2 = 10;
+            gSubGameMode2 = 10;
         }
 
         return TRUE;
@@ -140,7 +164,7 @@ void CutsceneEnd(void)
                 gCurrentArea = AREA_BRINSTAR;
                 gCurrentRoom = 0;
                 gLastDoorUsed = 0;
-                gGameModeSub3 = 0;
+                gSubGameMode3 = 0;
                 gShipLandingFlag = FALSE;
             }
             break;
@@ -238,7 +262,7 @@ u8 CutsceneSubroutine(void)
     {
         case CUTSCENE_STAGE_STARTING:
             // Set dummy empty vblank
-            CallbackSetVBlank(CutsceneLoadingVBlank);
+            CallbackSetVblank(CutsceneLoadingVBlank);
 
             // Start the pre cutscene background fading
             if (CutsceneStartBackgroundFading(sCutsceneData[gCurrentCutscene].preBgFading))
@@ -260,7 +284,7 @@ u8 CutsceneSubroutine(void)
             
         case CUTSCENE_STAGE_INIT:
             CutsceneInit();
-            CallbackSetVBlank(CutsceneVBlank);
+            CallbackSetVblank(CutsceneVBlank);
 
             gSubGameModeStage++;
             break;
@@ -315,7 +339,7 @@ u8 CutsceneSubroutine(void)
                     }
                     if (ended)
                     {
-                        StopAllMusicsAndSounds();
+                        StopAllMusicAndSounds();
                         gSubGameModeStage = 0;
                         SET_BACKDROP_COLOR(COLOR_BLACK);
                     }
@@ -379,25 +403,25 @@ void CutsceneVBlank(void)
 {
     DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, 0x100));
 
-    write16(REG_BG0HOFS, CUTSCENE_DATA.bg0hofs);
-    write16(REG_BG0VOFS, CUTSCENE_DATA.bg0vofs);
-    write16(REG_BG1HOFS, CUTSCENE_DATA.bg1hofs);
-    write16(REG_BG1VOFS, CUTSCENE_DATA.bg1vofs);
-    write16(REG_BG2HOFS, CUTSCENE_DATA.bg2hofs);
-    write16(REG_BG2VOFS, CUTSCENE_DATA.bg2vofs);
-    write16(REG_BG3HOFS, CUTSCENE_DATA.bg3hofs);
-    write16(REG_BG3VOFS, CUTSCENE_DATA.bg3vofs);
+    WRITE_16(REG_BG0HOFS, CUTSCENE_DATA.bg0hofs);
+    WRITE_16(REG_BG0VOFS, CUTSCENE_DATA.bg0vofs);
+    WRITE_16(REG_BG1HOFS, CUTSCENE_DATA.bg1hofs);
+    WRITE_16(REG_BG1VOFS, CUTSCENE_DATA.bg1vofs);
+    WRITE_16(REG_BG2HOFS, CUTSCENE_DATA.bg2hofs);
+    WRITE_16(REG_BG2VOFS, CUTSCENE_DATA.bg2vofs);
+    WRITE_16(REG_BG3HOFS, CUTSCENE_DATA.bg3hofs);
+    WRITE_16(REG_BG3VOFS, CUTSCENE_DATA.bg3vofs);
 
-    write16(REG_BG0CNT, CUTSCENE_DATA.bgcnt[0]);
-    write16(REG_BG1CNT, CUTSCENE_DATA.bgcnt[1]);
-    write16(REG_BG2CNT, CUTSCENE_DATA.bgcnt[2]);
-    write16(REG_BG3CNT, CUTSCENE_DATA.bgcnt[3]);
+    WRITE_16(REG_BG0CNT, CUTSCENE_DATA.bgcnt[0]);
+    WRITE_16(REG_BG1CNT, CUTSCENE_DATA.bgcnt[1]);
+    WRITE_16(REG_BG2CNT, CUTSCENE_DATA.bgcnt[2]);
+    WRITE_16(REG_BG3CNT, CUTSCENE_DATA.bgcnt[3]);
 
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay);
-    write16(REG_BLDALPHA, C_16_2_8(gWrittenToBLDALPHA_H, gWrittenToBLDALPHA_L));
+    WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay);
+    WRITE_16(REG_BLDALPHA, C_16_2_8(gWrittenToBldalpha_H, gWrittenToBldalpha_L));
 
-    write16(REG_BLDCNT, CUTSCENE_DATA.bldcnt);
-    write16(REG_DISPCNT, CUTSCENE_DATA.dispcnt);
+    WRITE_16(REG_BLDCNT, CUTSCENE_DATA.bldcnt);
+    WRITE_16(REG_DISPCNT, CUTSCENE_DATA.dispcnt);
 }
 
 /**
@@ -420,18 +444,27 @@ void CutsceneInit(void)
     u8 temp;
     #endif // DEBUG
 
-    CallbackSetVBlank(CutsceneLoadingVBlank);
-    BitFill(3, 0, &gNonGameplayRam, sizeof(union NonGameplayRAM), 32);
+    CallbackSetVblank(CutsceneLoadingVBlank);
+    BitFill(3, 0, &gNonGameplayRam, sizeof(union NonGameplayRam), 32);
 
     gOamXOffset_NonGameplay = gOamYOffset_NonGameplay = 0;
     gNextOamSlot = 0;
     ResetFreeOam();
 
-    write16(REG_BLDCNT, CUTSCENE_DATA.bldcnt = 0xFF);
+    #ifdef REGION_EU
+    if (sCutsceneData[gCurrentCutscene].preBgFading >= COLOR_FADING_SLOW_WHITE)
+    {
+        WRITE_16(REG_BLDCNT, CUTSCENE_DATA.bldcnt = 0xBF);
+    }
+    else
+    #endif // REGION_EU
+    {
+        WRITE_16(REG_BLDCNT, CUTSCENE_DATA.bldcnt = 0xFF);
+    }
 
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE);
+    WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay = BLDY_MAX_VALUE);
 
-    write16(REG_DISPCNT, CUTSCENE_DATA.dispcnt = 0);
+    WRITE_16(REG_DISPCNT, CUTSCENE_DATA.dispcnt = 0);
 
     #ifdef DEBUG
     if (gBootDebugActive == 0)
@@ -449,7 +482,7 @@ void CutsceneInit(void)
     }
 
     #ifdef DEBUG
-    // Written this way to produce matching code
+    // Written this way to produce matching ASM
     temp = gBootDebugActive;
     if (temp != 0)
     {
@@ -528,7 +561,7 @@ void CutsceneSetBgcnt(u16 value, u16 bg)
 /**
  * @brief 614d4 | a4 | Sets the position of a background
  * 
- * @param type Type (HOVS | VOFS)
+ * @param type Type (HOFS | VOFS)
  * @param bg Background (DISPCNT flags)
  * @param value Value
  */
@@ -987,26 +1020,26 @@ void CutsceneUpdateSpecialEffect(void)
         CUTSCENE_DATA.specialEffect.s_Timer = CUTSCENE_DATA.specialEffect.s_Interval;
 
         // Update BLDY
-        if (gWrittenToBLDY_NonGameplay != CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
+        if (gWrittenToBldy_NonGameplay != CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
         {
-            if (gWrittenToBLDY_NonGameplay < CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
+            if (gWrittenToBldy_NonGameplay < CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
             {
-                if (gWrittenToBLDY_NonGameplay + CUTSCENE_DATA.specialEffect.s_Intensity > CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
-                    gWrittenToBLDY_NonGameplay = CUTSCENE_DATA.specialEffect.s_WrittenToBLDY;
+                if (gWrittenToBldy_NonGameplay + CUTSCENE_DATA.specialEffect.s_Intensity > CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
+                    gWrittenToBldy_NonGameplay = CUTSCENE_DATA.specialEffect.s_WrittenToBLDY;
                 else
-                    gWrittenToBLDY_NonGameplay += CUTSCENE_DATA.specialEffect.s_Intensity;
+                    gWrittenToBldy_NonGameplay += CUTSCENE_DATA.specialEffect.s_Intensity;
             }
             else
             {
-                if (gWrittenToBLDY_NonGameplay - CUTSCENE_DATA.specialEffect.s_Intensity < CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
-                    gWrittenToBLDY_NonGameplay = CUTSCENE_DATA.specialEffect.s_WrittenToBLDY;
+                if (gWrittenToBldy_NonGameplay - CUTSCENE_DATA.specialEffect.s_Intensity < CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
+                    gWrittenToBldy_NonGameplay = CUTSCENE_DATA.specialEffect.s_WrittenToBLDY;
                 else
-                    gWrittenToBLDY_NonGameplay -= CUTSCENE_DATA.specialEffect.s_Intensity;
+                    gWrittenToBldy_NonGameplay -= CUTSCENE_DATA.specialEffect.s_Intensity;
             }
         }
 
         // Check reached destination value
-        if (gWrittenToBLDY_NonGameplay != CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
+        if (gWrittenToBldy_NonGameplay != CUTSCENE_DATA.specialEffect.s_WrittenToBLDY)
             return;
 
         // Mark effect as ended
@@ -1029,48 +1062,48 @@ void CutsceneUpdateSpecialEffect(void)
         CUTSCENE_DATA.specialEffect.bg_Timer = CUTSCENE_DATA.specialEffect.bg_Interval;
 
         // Update BLDALPHA L
-        if (gWrittenToBLDALPHA_L != CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
+        if (gWrittenToBldalpha_L != CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
         {
-            if (gWrittenToBLDALPHA_L < CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
+            if (gWrittenToBldalpha_L < CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
             {
-                if (gWrittenToBLDALPHA_L + CUTSCENE_DATA.specialEffect.bg_Intensity > CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
-                    gWrittenToBLDALPHA_L = CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L;
+                if (gWrittenToBldalpha_L + CUTSCENE_DATA.specialEffect.bg_Intensity > CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
+                    gWrittenToBldalpha_L = CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L;
                 else
-                    gWrittenToBLDALPHA_L += CUTSCENE_DATA.specialEffect.bg_Intensity;
+                    gWrittenToBldalpha_L += CUTSCENE_DATA.specialEffect.bg_Intensity;
             }
             else
             {
-                if (gWrittenToBLDALPHA_L - CUTSCENE_DATA.specialEffect.bg_Intensity < CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
-                    gWrittenToBLDALPHA_L = CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L;
+                if (gWrittenToBldalpha_L - CUTSCENE_DATA.specialEffect.bg_Intensity < CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
+                    gWrittenToBldalpha_L = CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L;
                 else
-                    gWrittenToBLDALPHA_L -= CUTSCENE_DATA.specialEffect.bg_Intensity;
+                    gWrittenToBldalpha_L -= CUTSCENE_DATA.specialEffect.bg_Intensity;
             }
         }
 
         // Update BLDALPHA H
-        if (gWrittenToBLDALPHA_H != CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
+        if (gWrittenToBldalpha_H != CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
         {
-            if (gWrittenToBLDALPHA_H < CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
+            if (gWrittenToBldalpha_H < CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
             {
-                if (gWrittenToBLDALPHA_H + CUTSCENE_DATA.specialEffect.bg_Intensity > CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
-                    gWrittenToBLDALPHA_H = CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H;
+                if (gWrittenToBldalpha_H + CUTSCENE_DATA.specialEffect.bg_Intensity > CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
+                    gWrittenToBldalpha_H = CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H;
                 else
-                    gWrittenToBLDALPHA_H += CUTSCENE_DATA.specialEffect.bg_Intensity;
+                    gWrittenToBldalpha_H += CUTSCENE_DATA.specialEffect.bg_Intensity;
             }
             else
             {
-                if (gWrittenToBLDALPHA_H - CUTSCENE_DATA.specialEffect.bg_Intensity < CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
-                    gWrittenToBLDALPHA_H = CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H;
+                if (gWrittenToBldalpha_H - CUTSCENE_DATA.specialEffect.bg_Intensity < CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
+                    gWrittenToBldalpha_H = CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H;
                 else
-                    gWrittenToBLDALPHA_H -= CUTSCENE_DATA.specialEffect.bg_Intensity;
+                    gWrittenToBldalpha_H -= CUTSCENE_DATA.specialEffect.bg_Intensity;
             }
         }
 
         // Check reached destination values
-        if (gWrittenToBLDALPHA_L != CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
+        if (gWrittenToBldalpha_L != CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_L)
             return;
 
-        if (gWrittenToBLDALPHA_H != CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
+        if (gWrittenToBldalpha_H != CUTSCENE_DATA.specialEffect.bg_WrittenToBldalpha_H)
             return;
 
         // Mark as ended
@@ -1112,8 +1145,8 @@ void CutsceneStartSpriteEffect(u16 bldcnt, u8 bldy, u32 interval, u8 intensity)
  * @brief 61dc8 | 70 | Starts a cutscene background effect
  * 
  * @param bldcnt Bldcnt
- * @param bldalphaL Bldqlphq L target
- * @param bldalphaH Bldqlphq H target
+ * @param bldalphaL Bldalpha L target
+ * @param bldalphaH Bldalpha H target
  * @param interval Interval between value changes
  * @param intensity Value change intensity
  */
@@ -1150,9 +1183,9 @@ void CutsceneReset(void)
 {
     s32 i;
 
-    gWrittenToBLDY_NonGameplay = 0;
-    gWrittenToBLDALPHA_L = 16;
-    gWrittenToBLDALPHA_H = 0;
+    gWrittenToBldy_NonGameplay = 0;
+    gWrittenToBldalpha_L = 16;
+    gWrittenToBldalpha_H = 0;
 
     // Clear special effect
     CUTSCENE_DATA.specialEffect.status = 0;
@@ -1180,7 +1213,7 @@ void CutsceneReset(void)
 void CutsceneFadeScreenToBlack(void)
 {
     CUTSCENE_DATA.dispcnt = 0;
-    gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE;
+    gWrittenToBldy_NonGameplay = BLDY_MAX_VALUE;
     CUTSCENE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
 }
 
@@ -1191,7 +1224,7 @@ void CutsceneFadeScreenToBlack(void)
 void CutsceneFadeScreenToWhite(void)
 {
     CUTSCENE_DATA.dispcnt = 0;
-    gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE;
+    gWrittenToBldy_NonGameplay = BLDY_MAX_VALUE;
     CUTSCENE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
 }
 
@@ -1296,14 +1329,22 @@ u8 CutsceneStartBackgroundFading(u8 type)
             CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_OUT;
             break;
 
+        #ifdef REGION_EU
+        case 10:
+        #else // !REGION_EU
         case COLOR_FADING_SLOW_WHITE:
+        #endif // REGION_EU
             CUTSCENE_DATA.fadingStage = 2;
             CUTSCENE_DATA.fadingIntensity = 2;
             CUTSCENE_DATA.fadingMaxDelay = 0;
             CUTSCENE_DATA.fadingType = COLOR_FADING_TYPE_UNK;
             break;
 
+        #ifdef REGION_EU
+        case 11:
+        #else // !REGION_EU
         case COLOR_FADING_SLOW_BLACK:
+        #endif // REGION_EU
             CUTSCENE_DATA.fadingStage = 2;
             CUTSCENE_DATA.fadingIntensity = 1;
             CUTSCENE_DATA.fadingMaxDelay = 4;

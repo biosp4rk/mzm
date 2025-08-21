@@ -2,44 +2,61 @@
 .SUFFIXES:
 
 REGION ?= us
+PAD_TO = 0x08800000
 
 ifeq ($(REGION),us)
 	TARGET = mzm_us
 	GAME_TITLE = ZEROMISSIONE
 	GAME_CODE = BMXE
 	CPPFLAGS += -DREGION_US
+	ASFLAGS += --defsym REGION_US=1
 endif
 
-# ifeq ($(REGION),us_beta)
-# 	TARGET = mzm_us_beta.gba
-# 	GAME_TITLE = ZEROMISSIONE
-# 	GAME_CODE = BMXE
-# 	CPPFLAGS += -DREGION_US_BETA
-# endif
+ifeq ($(REGION),us_beta)
+	TARGET = mzm_us_beta
+	GAME_TITLE = ZEROMISSIONE
+	GAME_CODE = BMXE
+	CPPFLAGS += -DREGION_US -DREGION_US_BETA -DDEBUG
+	ASFLAGS += --defsym REGION_US=1 --defsym REGION_US_BETA=1 --defsym DEBUG=1
+	PAD_TO = 0x09000000
+endif
 
-# ifeq ($(REGION),eu)
-# 	TARGET = mzm_eu.gba
-# 	GAME_TITLE = ZEROMISSIONP
-# 	GAME_CODE = BMXP
-# 	CPPFLAGS += -DREGION_EU
-# endif
+ifeq ($(REGION),eu)
+	TARGET = mzm_eu
+	GAME_TITLE = ZEROMISSIONP
+	GAME_CODE = BMXP
+	CPPFLAGS += -DREGION_EU
+	ASFLAGS += --defsym REGION_EU=1
+endif
 
-# ifeq ($(REGION),jp)
-# 	TARGET = mzm_jp.gba
-# 	GAME_TITLE = ZEROMISSIONJ
-# 	GAME_CODE = BMXJ
-# 	CPPFLAGS += -DREGION_JP
-# endif
+ifeq ($(REGION),eu_beta)
+	TARGET = mzm_eu_beta
+	GAME_TITLE = ZEROMISSIONP
+	GAME_CODE = BMXP
+	CPPFLAGS += -DREGION_EU -DREGION_EU_BETA -DDEBUG
+	ASFLAGS += --defsym REGION_EU=1 --defsym REGION_EU_BETA=1 --defsym DEBUG=1
+	PAD_TO = 0x09000000
+endif
+
+ifeq ($(REGION),jp)
+	TARGET = mzm_jp
+	GAME_TITLE = ZEROMISSIONJ
+	GAME_CODE = BMXJ
+	CPPFLAGS += -DREGION_JP
+	ASFLAGS += --defsym REGION_JP=1
+endif
 
 # ifeq ($(REGION),cn)
-# 	TARGET = mzm_cn.gba
+# 	TARGET = mzm_cn
 # 	GAME_TITLE = ZEROMISSIONC
 # 	GAME_CODE = BMXC
 # 	CPPFLAGS += -DREGION_CN
+#	ASFLAGS += --defsym REGION_CN=1
 # endif
 
 ifeq ($(DEBUG),1)
 	CPPFLAGS += -DDEBUG
+	ASFLAGS += --defsym DEBUG=1
 	TARGET := $(TARGET)_debug
 endif
 
@@ -80,7 +97,7 @@ EXTRACTOR = tools/extractor.py
 PREPROC = tools/preproc/preproc
 
 # Flags
-ASFLAGS = -mcpu=arm7tdmi
+ASFLAGS += -mcpu=arm7tdmi
 CFLAGS = -Werror -O2 -mthumb-interwork -fhex-asm -f2003-patch
 CPPFLAGS += -nostdinc -Iinclude/
 PREPROCFLAGS = charmap.txt
@@ -88,8 +105,16 @@ PREPROCFLAGS = charmap.txt
 # Objects
 CSRC = $(wildcard src/**.c) $(wildcard src/**/**.c) $(wildcard src/**/**/**.c) $(wildcard src/**/**/**/**.c)
 .PRECIOUS: $(CSRC:.c=.s)
-ASMSRC = $(CSRC:.c=.s) $(wildcard asm/*.s) $(wildcard audio/*.s) $(wildcard audio/**/*.s) $(wildcard audio/**/**/*.s)
+ASMSRC = $(CSRC:.c=.s) $(wildcard asm/*.s) $(wildcard sound/*.s) $(wildcard sound/**/*.s) $(wildcard sound/**/**/*.s)
 OBJ = $(ASMSRC:.s=.o) 
+
+# Dynamically find agbcc path and its lib folder
+AGBCC_BIN := $(shell which agbcc)
+AGBCC_DIR := $(dir $(AGBCC_BIN))/
+AGBCC_LIB := $(abspath $(AGBCC_DIR))
+
+LIBS := $(AGBCC_LIB)/libgcc.a $(AGBCC_LIB)/libc.a
+
 
 # Enable verbose output
 ifeq ($(V),1)
@@ -119,7 +144,7 @@ diff: $(DUMPS)
 .PHONY: extract
 extract:
 	$(MSG) Extracting
-	$Q ./tools/extractor mzm_us_baserom.gba database.txt
+	$Q python3 tools/extractor.py -r $(REGION)
 
 .PHONY: clean
 clean:
@@ -160,18 +185,18 @@ help:
 	@echo ''
 	@echo 'Flags:'
 	@echo '  V=1: enable verbose output'
-	@echo '  REGION=<region>: selects the region of the ROM, possible values are "us", "eu", "jp" and "cn"'
+	@echo '  REGION=<region>: selects the region of the ROM, possible values are "us", "eu", "jp", "cn", "us_beta", and "eu_beta"'
 	@echo '  DEBUG=1: enables the debug code'
 
 $(TARGET): $(ELF) $(GBAFIX)
 	$(MSG) OBJCOPY $@
-	$Q$(OBJCOPY) -O binary --gap-fill 0xff --pad-to 0x08800000 $< $@
+	$Q$(OBJCOPY) -O binary --gap-fill 0xff --pad-to $(PAD_TO) $< $@
 	$(MSG) GBAFIX $@
 	$Q$(GBAFIX) $@ -t$(GAME_TITLE) -c$(GAME_CODE) -m$(MAKER_CODE) -r$(GAME_REVISION)
 
 $(ELF) $(MAP): $(OBJ) $(LD_SCRIPT)
 	$(MSG) LD $@
-	$Q$(LD) $(LDFLAGS) -n -T $(LD_SCRIPT) -Map=$(MAP) -o $@
+	$Q$(LD) $(LDFLAGS) -n -T $(LD_SCRIPT) -Map=$(MAP) $(LIBS) -o $@
 
 $(LD_SCRIPT): linker.ld
 	$(MSG) CPP $@
@@ -189,38 +214,37 @@ $(LD_SCRIPT): linker.ld
 	$(MSG) CC $@
 	$Q$(PREPROC) $< $(PREPROCFLAGS) | $(CPP) $(CPPFLAGS) | $(CC) -o $@ $(CFLAGS) && printf '\t.align 2, 0 @ dont insert nops\n' >> $@
 
-src/sram/%.s: CFLAGS = -O1 -mthumb-interwork -fhex-asm
+src/dma.s: CFLAGS = -Werror -O1 -mthumb-interwork -fhex-asm -f2003-patch
+src/dma.s: src/dma.c
+
+src/sram/%.s: CFLAGS = -Werror -O1 -mthumb-interwork -fhex-asm -f2003-patch
 src/sram/%.s: src/sram/%.c
-
-src/libgcc/%.s: CFLAGS = -O2 -fhex-asm
-src/libgcc/%.s: src/libgcc/%.c
-
-src/sprites_AI/%.s: CFLAGS = -O2 -mthumb-interwork -fhex-asm
-src/sprites_AI/%.s: src/sram/%.c
 
 tools/%: tools/%.c
 	$(MSG) HOSTCC $@
 	$Q$(HOSTCC) $< $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@
 
-.PHONY: us us_debug
-# us_beta eu eu_debug jp jp_debug cn cn_debug
+.PHONY: us us_debug us_beta eu eu_debug eu_beta jp jp_debug
+# cn cn_debug
 
 us:
 	$(MAKE) REGION=us
 us_debug:
 	$(MAKE) REGION=us DEBUG=1
-# us_beta:
-# 	$(MAKE) REGION=us_beta DEBUG=1
+us_beta:
+	$(MAKE) REGION=us_beta
 
-# eu:
-# 	$(MAKE) REGION=eu
-# eu_debug:
-# 	$(MAKE) REGION=eu DEBUG=1
+eu:
+	$(MAKE) REGION=eu
+eu_debug:
+	$(MAKE) REGION=eu DEBUG=1
+eu_beta:
+	$(MAKE) REGION=eu_beta
 
-# jp:
-# 	$(MAKE) REGION=jp
-# jp_debug:
-# 	$(MAKE) REGION=jp DEBUG=1
+jp:
+	$(MAKE) REGION=jp
+jp_debug:
+	$(MAKE) REGION=jp DEBUG=1
 
 # cn:
 # 	$(MAKE) REGION=cn

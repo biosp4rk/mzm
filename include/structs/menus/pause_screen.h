@@ -2,7 +2,11 @@
 #define MAP_SCREEN_MENU_STRUCT_H
 
 #include "types.h"
+
 #include "constants/menus/status_screen.h"
+#include "constants/samus.h"
+#include "constants/text.h"
+
 #include "structs/menu.h"
 #include "structs/connection.h"
 
@@ -48,14 +52,18 @@ struct WorldMapData {
     u16 yPosition;
 };
 
+struct MapScreenAreaIds {
+    u8 ids[MAX_AMOUNT_OF_AREAS];
+};
+
 struct MinimapAreaName {
-    u8 area1;
+    Area area1;
     u8 mapX1;
     u8 mapY1;
     s8 xOffset1;
     s8 yOffset1;
 
-    u8 area2;
+    Area area2;
     u8 mapX2;
     u8 mapY2;
     s8 xOffset2;
@@ -91,7 +99,7 @@ struct ChozoHintTarget {
 };
 
 struct ChozoHintMapData {
-    u16 mapYPostion;
+    u16 mapYPosition;
     u16 mapXPosition;
     u16 hintTargetYPosition;
     u16 hintTargetXPosition;
@@ -116,10 +124,10 @@ struct StatusScreenData {
     u8 previousLeftStatusSlot;
     u8 previousRightStatusSlot;
 
-    u8 beamActivation[STATUS_SCREEN_BEAM_OFFSET_END];
-    u8 suitActivation[STATUS_SCREEN_SUIT_OFFSET_END];
-    u8 miscActivation[STATUS_SCREEN_MISC_OFFSET_END];
-    u8 bombActivation[STATUS_SCREEN_BOMB_OFFSET_END];
+    BeamBombFlags beamActivation[STATUS_SCREEN_BEAM_OFFSET_END];
+    SuitMiscFlags suitActivation[STATUS_SCREEN_SUIT_OFFSET_END];
+    SuitMiscFlags miscActivation[STATUS_SCREEN_MISC_OFFSET_END];
+    BeamBombFlags bombActivation[STATUS_SCREEN_BOMB_OFFSET_END];
     u8 missilesActivation[STATUS_SCREEN_MISSILE_OFFSET_END];
 
     u8 padding_15[3];
@@ -224,7 +232,7 @@ struct PauseScreenData {
 
     u8 unk_56;
     u8 currentStatusSlot;
-    u8 currentEquipment;
+    DescriptionTextId currentEquipment;
 
     u8 padding_59[3];
 
@@ -264,15 +272,22 @@ struct PauseScreenData {
 
     u8 areasWithVisitedTiles;
     u8 areasWithHints;
-    u8 areasViewables;
-    u8 areasViewablesTotal;
+    u8 areasViewable;
+    u8 areasViewableTotal;
 
     struct MapScreenFading mapScreenFading;
     struct StatusScreenData statusScreenData;
 
-    u8 disableDebugMenu;
+    u8 debugOnEventList;
+    u8 debugEventListStage;
+    u16 debugTopEvent;
+    u16 debugEventCursorX;
+    u16 debugSelectedEvent;
+    u16 debugPreviousChangedEvent;
+    u8 debugPreviousEventWasSet;
+    u16 debugDispcntBackup;
 
-    u8 padding_D9[16];
+    u8 padding_E6[3];
 
     s8 easySleepTextState;
     u8 notPlayingEnablingNormalItemSound;
@@ -287,7 +302,7 @@ struct PauseScreenData {
     struct MenuOamData chozoHintOam[5];
     struct MenuOamData samusIconOam[1];
     struct MenuOamData bossIconOam[1];
-    struct MenuOamData unk_418[1];
+    struct MenuOamData minimapRoomInfoOam[1];
     struct MenuOamData overlayOam[4];
     struct MenuOamData borderArrowsOam[4];
     struct MenuOamData worldMapOam[24];

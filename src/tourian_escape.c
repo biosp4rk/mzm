@@ -1,8 +1,12 @@
 #include "tourian_escape.h"
 #include "macros.h"
+#include "animated_graphics.h"
+#include "audio_wrappers.h"
 #include "fixed_point.h"
 #include "complex_oam.h"
 #include "callbacks.h"
+#include "dma.h"
+#include "room_cutscene.h"
 #include "chaos.h"
 
 #include "data/generic_data.h"
@@ -10,7 +14,6 @@
 #include "data/shortcut_pointers.h"
 #include "data/tourian_escape_data.h"
 #include "data/cutscenes/story_text_cutscene_data.h"
-#include "data/internal_tourian_escape_data.h"
 
 #include "constants/audio.h"
 #include "constants/connection.h"
@@ -25,27 +28,27 @@
  * @brief 81248 | d8 | V-blank for the tourian escape
  * 
  */
-void TourianEscapeVBLank(void)
+static void TourianEscapeVBlank(void)
 {
-    DMA_SET(3, gOamData, OAM_BASE, (DMA_ENABLE | DMA_32BIT) << 16 | OAM_SIZE / sizeof(u32));
+    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
 
-    write16(REG_DISPCNT, TOURIAN_ESCAPE_DATA.dispcnt);
-    write16(REG_BLDCNT, TOURIAN_ESCAPE_DATA.bldcnt);
+    WRITE_16(REG_DISPCNT, TOURIAN_ESCAPE_DATA.dispcnt);
+    WRITE_16(REG_BLDCNT, TOURIAN_ESCAPE_DATA.bldcnt);
 
-    write16(REG_BLDALPHA, gIoRegistersBackup.BLDALPHA_NonGameplay_EVB << 8 | gIoRegistersBackup.BLDALPHA_NonGameplay_EVA);
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay);
+    WRITE_16(REG_BLDALPHA, C_16_2_8(gIoRegistersBackup.BLDALPHA_NonGameplay_EVB, gIoRegistersBackup.BLDALPHA_NonGameplay_EVA));
+    WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay);
 
-    write16(REG_BG0HOFS, gBg0XPosition / 4);
-    write16(REG_BG0VOFS, gBg0YPosition / 4);
+    WRITE_16(REG_BG0HOFS, SUB_PIXEL_TO_PIXEL(gBg0XPosition));
+    WRITE_16(REG_BG0VOFS, SUB_PIXEL_TO_PIXEL(gBg0YPosition));
 
-    write16(REG_BG1HOFS, gBg1XPosition / 4);
-    write16(REG_BG1VOFS, gBg1YPosition / 4);
+    WRITE_16(REG_BG1HOFS, SUB_PIXEL_TO_PIXEL(gBg1XPosition));
+    WRITE_16(REG_BG1VOFS, SUB_PIXEL_TO_PIXEL(gBg1YPosition));
 
-    write16(REG_BG2HOFS, gBg2XPosition / 4);
-    write16(REG_BG2VOFS, gBg2YPosition / 4);
+    WRITE_16(REG_BG2HOFS, SUB_PIXEL_TO_PIXEL(gBg2XPosition));
+    WRITE_16(REG_BG2VOFS, SUB_PIXEL_TO_PIXEL(gBg2YPosition));
 
-    write16(REG_BG3HOFS, gBg3XPosition / 4);
-    write16(REG_BG3VOFS, gBg3YPosition / 4);
+    WRITE_16(REG_BG3HOFS, SUB_PIXEL_TO_PIXEL(gBg3XPosition));
+    WRITE_16(REG_BG3VOFS, SUB_PIXEL_TO_PIXEL(gBg3YPosition));
 
     AnimatedGraphicsTransfer();
 }
@@ -54,65 +57,65 @@ void TourianEscapeVBLank(void)
  * @brief 81320 | f8 | V-blank for the tourian escape (zebes exploding sequence)
  * 
  */
-void TourianEscapeVBLankZebesExploding(void)
+static void TourianEscapeVBlankZebesExploding(void)
 {
-    DMA_SET(3, gOamData, OAM_BASE, (DMA_ENABLE | DMA_32BIT) << 16 | OAM_SIZE / sizeof(u32));
+    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
 
-    write16(REG_DISPCNT, TOURIAN_ESCAPE_DATA.dispcnt);
-    write16(REG_BLDCNT, TOURIAN_ESCAPE_DATA.bldcnt);
+    WRITE_16(REG_DISPCNT, TOURIAN_ESCAPE_DATA.dispcnt);
+    WRITE_16(REG_BLDCNT, TOURIAN_ESCAPE_DATA.bldcnt);
 
-    write16(REG_BLDALPHA, gWrittenToBLDALPHA_H << 8 | gWrittenToBLDALPHA_L);
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay);
+    WRITE_16(REG_BLDALPHA, C_16_2_8(gWrittenToBldalpha_H, gWrittenToBldalpha_L));
+    WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay);
 
-    write16(REG_BG0HOFS, gBg0XPosition & 0x1FF);
-    write16(REG_BG0VOFS, gBg0YPosition & 0xFF);
+    WRITE_16(REG_BG0HOFS, MOD_AND(gBg0XPosition, 0x200));
+    WRITE_16(REG_BG0VOFS, MOD_AND(gBg0YPosition, 0x100));
 
-    write16(REG_BG1HOFS, gBg1XPosition & 0x1FF);
-    write16(REG_BG1VOFS, gBg1YPosition & 0xFF);
+    WRITE_16(REG_BG1HOFS, MOD_AND(gBg1XPosition, 0x200));
+    WRITE_16(REG_BG1VOFS, MOD_AND(gBg1YPosition, 0x100));
 
-    write16(REG_BG2HOFS, gBg2XPosition & 0x1FF);
-    write16(REG_BG2VOFS, gBg2YPosition & 0xFF);
+    WRITE_16(REG_BG2HOFS, MOD_AND(gBg2XPosition, 0x200));
+    WRITE_16(REG_BG2VOFS, MOD_AND(gBg2YPosition, 0x100));
 
-    write16(REG_WIN0H, TOURIAN_ESCAPE_DATA.win0h_H << 8 | TOURIAN_ESCAPE_DATA.win0h_L);
-    write16(REG_WIN0V, TOURIAN_ESCAPE_DATA.win0v_H << 8 | TOURIAN_ESCAPE_DATA.win0v_L);
+    WRITE_16(REG_WIN0H, C_16_2_8(TOURIAN_ESCAPE_DATA.win0h_H, TOURIAN_ESCAPE_DATA.win0h_L));
+    WRITE_16(REG_WIN0V, C_16_2_8(TOURIAN_ESCAPE_DATA.win0v_H, TOURIAN_ESCAPE_DATA.win0v_L));
 }
 
 /**
  * @brief 81418 | 100 | V-blank for the tourian escape (samus surrounded sequence)
  * 
  */
-void TourianEscapeVBLankSamusSurrounded(void)
+static void TourianEscapeVBlankSamusSurrounded(void)
 {
-    write16(REG_DISPCNT, TOURIAN_ESCAPE_DATA.dispcnt);
-    write16(REG_BLDCNT, TOURIAN_ESCAPE_DATA.bldcnt);
-    write16(REG_BLDALPHA, C_16_2_8(gWrittenToBLDALPHA_H, gWrittenToBLDALPHA_L));
+    WRITE_16(REG_DISPCNT, TOURIAN_ESCAPE_DATA.dispcnt);
+    WRITE_16(REG_BLDCNT, TOURIAN_ESCAPE_DATA.bldcnt);
+    WRITE_16(REG_BLDALPHA, C_16_2_8(gWrittenToBldalpha_H, gWrittenToBldalpha_L));
 
-    write16(REG_BG2PA, gWrittenToBG2PA);
-    write16(REG_BG2PB, gWrittenToBG2PB);
-    write16(REG_BG2PC, gWrittenToBG2PC);
-    write16(REG_BG2PD, gWrittenToBG2PD);
+    WRITE_16(REG_BG2PA, gWrittenToBg2Pa);
+    WRITE_16(REG_BG2PB, gWrittenToBg2Pb);
+    WRITE_16(REG_BG2PC, gWrittenToBg2Pc);
+    WRITE_16(REG_BG2PD, gWrittenToBg2Pd);
 
-    write16(REG_BG2X, gWrittenToBG2X);
-    write16(REG_BG2X + 2, (gWrittenToBG2X & (0xFFF << 16)) >> 16);
+    WRITE_16(REG_BG2X_L, gWrittenToBg2X);
+    WRITE_16(REG_BG2X_H, (gWrittenToBg2X & (0xFFF << 16)) >> 16);
 
-    write16(REG_BG2Y, gWrittenToBG2Y);
-    write16(REG_BG2Y + 2, (gWrittenToBG2Y & (0xFFF << 16)) >> 16);
+    WRITE_16(REG_BG2Y_L, gWrittenToBg2Y);
+    WRITE_16(REG_BG2Y_H, (gWrittenToBg2Y & (0xFFF << 16)) >> 16);
 
-    write16(REG_BG0HOFS, gBg0XPosition & 0x1FF);
-    write16(REG_BG0VOFS, gBg0YPosition & 0xFF);
+    WRITE_16(REG_BG0HOFS, MOD_AND(gBg0XPosition, 0x200));
+    WRITE_16(REG_BG0VOFS, MOD_AND(gBg0YPosition, 0x100));
 
-    write16(REG_BG1HOFS, gBg1XPosition & 0x1FF);
-    write16(REG_BG1VOFS, gBg1YPosition & 0xFF);
+    WRITE_16(REG_BG1HOFS, MOD_AND(gBg1XPosition, 0x200));
+    WRITE_16(REG_BG1VOFS, MOD_AND(gBg1YPosition, 0x100));
 
-    write16(REG_BG2HOFS, gBg2XPosition & 0x1FF);
-    write16(REG_BG2VOFS, gBg2YPosition & 0xFF);
+    WRITE_16(REG_BG2HOFS, MOD_AND(gBg2XPosition, 0x200));
+    WRITE_16(REG_BG2VOFS, MOD_AND(gBg2YPosition, 0x100));
 }
 
 /**
  * @brief 81518 | 16c | Processes the OAM
  * 
  */
-void TourianEscapeProcessOam(void)
+static void TourianEscapeProcessOam(void)
 {
     u16* dst;
     const u16* src;
@@ -129,12 +132,12 @@ void TourianEscapeProcessOam(void)
     
     if (TOURIAN_ESCAPE_DATA.unk_BE > 2)
     {
-        src = sTourianEscape_375cc4;
+        src = sTourianEscapeOam_375d10_Frame0;
         part = *src++;
-        nextSlot += part & 0xFF;
+        nextSlot += MOD_AND(part, 0x100);
 
-        xPosition = 128;
-        yPosition = 80;
+        xPosition = SCREEN_X_MIDDLE + 8;
+        yPosition = SCREEN_Y_MIDDLE;
 
         for (; currSlot < nextSlot; currSlot++)
         {
@@ -148,7 +151,7 @@ void TourianEscapeProcessOam(void)
             part = *src++;
             *dst++ = part;
 
-            gOamData[currSlot].split.x = (part + xPosition) & 0x1FF;
+            gOamData[currSlot].split.x = MOD_AND(part + xPosition, 0x200);
 
             *dst++ = *src++;
             *dst++;
@@ -162,7 +165,7 @@ void TourianEscapeProcessOam(void)
         
         src = TOURIAN_ESCAPE_DATA.oamFramePointers[i];
         part = *src++;
-        nextSlot += part & 0xFF;
+        nextSlot += MOD_AND(part, 0x100);
 
         xPosition = TOURIAN_ESCAPE_DATA.oamXPositions[i];
         yPosition = TOURIAN_ESCAPE_DATA.oamYPositions[i];
@@ -177,7 +180,7 @@ void TourianEscapeProcessOam(void)
             part = *src++;
             *dst++ = part;
 
-            gOamData[currSlot].split.x = (part + xPosition) & 0x1FF;
+            gOamData[currSlot].split.x = MOD_AND(part + xPosition, 0x200);
 
             *dst++ = *src++;
 
@@ -190,18 +193,18 @@ void TourianEscapeProcessOam(void)
 }
 
 /**
- * @brief 81684 | 104 | Calcultes the BG2 position and matrix parameters
+ * @brief 81684 | 104 | Calculates the BG2 position and matrix parameters
  * 
  */
-void TourianEscapeCalculateBg2(void)
+static void TourianEscapeCalculateBg2(void)
 {
-    gWrittenToBG2PA = FixedMultiplication(cos(gBg2Rotation), FixedInverse(gBg2Scaling));
-    gWrittenToBG2PB = FixedMultiplication(sin(gBg2Rotation), FixedInverse(gBg2Scaling));
-    gWrittenToBG2PC = FixedMultiplication(-sin(gBg2Rotation), FixedInverse(gUnk_30013a2));
-    gWrittenToBG2PD = gWrittenToBG2PA;
+    gWrittenToBg2Pa = FixedMultiplication(COS(gBg2Rotation), FixedInverse(gBg2XScaling));
+    gWrittenToBg2Pb = FixedMultiplication(SIN(gBg2Rotation), FixedInverse(gBg2XScaling));
+    gWrittenToBg2Pc = FixedMultiplication(-SIN(gBg2Rotation), FixedInverse(gBg2YScaling));
+    gWrittenToBg2Pd = gWrittenToBg2Pa;
 
-    gWrittenToBG2X = (120 << 8) - gWrittenToBG2PA * 120 - gWrittenToBG2PB * 80;
-    gWrittenToBG2Y = (80 << 8) - gWrittenToBG2PC * 120 - gWrittenToBG2PD * 80;
+    gWrittenToBg2X = (SCREEN_X_MIDDLE << 8) - gWrittenToBg2Pa * SCREEN_X_MIDDLE - gWrittenToBg2Pb * SCREEN_Y_MIDDLE;
+    gWrittenToBg2Y = (SCREEN_Y_MIDDLE << 8) - gWrittenToBg2Pc * SCREEN_X_MIDDLE - gWrittenToBg2Pd * SCREEN_Y_MIDDLE;
 }
 
 /**
@@ -209,7 +212,7 @@ void TourianEscapeCalculateBg2(void)
  * 
  * @param param_1 To document
  */
-void unk_81788(u8 param_1)
+static void unk_81788(u8 param_1)
 {
     s32 i;
     u32 var_0;
@@ -218,7 +221,7 @@ void unk_81788(u8 param_1)
     for (i = 4; i < TOURIAN_ESCAPE_MAX_OBJECTS; i++)
     {
         offset = TOURIAN_ESCAPE_DATA.oamTimers[i] / 4;
-        if (TOURIAN_ESCAPE_DATA.unk_8[i] & 1)
+        if (MOD_AND(TOURIAN_ESCAPE_DATA.unk_8[i], 2))
         {
             TOURIAN_ESCAPE_DATA.oamFramePointers[i] = sTourianEscape_47ce00[offset];
         }
@@ -254,14 +257,14 @@ void unk_81788(u8 param_1)
         if (var_0)
         {
             TOURIAN_ESCAPE_DATA.unk_8[i] ^= 3;
-            TOURIAN_ESCAPE_DATA.oamFrames[i] = (TOURIAN_ESCAPE_DATA.oamFrames[i] + 1) & 15;
+            TOURIAN_ESCAPE_DATA.oamFrames[i] = MOD_AND(TOURIAN_ESCAPE_DATA.oamFrames[i] + 1, 16);
 
             TOURIAN_ESCAPE_DATA.oamXPositions[i] = sTourianEscape_47ce20[TOURIAN_ESCAPE_DATA.oamFrames[i]][0];
             TOURIAN_ESCAPE_DATA.oamYPositions[i] = sTourianEscape_47ce20[TOURIAN_ESCAPE_DATA.oamFrames[i]][1];
             TOURIAN_ESCAPE_DATA.unk_96[i] = sTourianEscape_47ce20[TOURIAN_ESCAPE_DATA.oamFrames[i]][2];
         }
 
-        TOURIAN_ESCAPE_DATA.oamTimers[i] = (TOURIAN_ESCAPE_DATA.oamTimers[i] + 1) & 15;
+        TOURIAN_ESCAPE_DATA.oamTimers[i] = MOD_AND(TOURIAN_ESCAPE_DATA.oamTimers[i] + 1, 16);
     }
 }
 
@@ -269,7 +272,7 @@ void unk_81788(u8 param_1)
  * @brief 818cc | 20c | To document
  * 
  */
-void unk_818cc(void)
+static void unk_818cc(void)
 {
     u16* dst;
     const u16* src;
@@ -280,17 +283,21 @@ void unk_818cc(void)
     u16 xPosition;
     u16 i;
 
+    #ifdef BUGFIX
+    currSlot = 0;
+    #endif // BUGFIX
+
     dst = (u16*)gOamData;
 
     if (TOURIAN_ESCAPE_DATA.unk_8[0])
     {
         src = TOURIAN_ESCAPE_DATA.oamFramePointers[0];
         part = *src++;
-        nextSlot = part & 0xFF;
+        nextSlot = MOD_AND(part, 0x100);
 
         yPosition = TOURIAN_ESCAPE_DATA.oamYPositions[0];
         xPosition = TOURIAN_ESCAPE_DATA.oamXPositions[0];
-    
+        
         for (currSlot = 0; currSlot < nextSlot; currSlot++)
         {
             part = *src++;
@@ -312,7 +319,7 @@ void unk_818cc(void)
     {
         src = TOURIAN_ESCAPE_DATA.oamFramePointers[1];
         part = *src++;
-        nextSlot += part & 0xFF;
+        nextSlot += MOD_AND(part, 0x100);
 
         yPosition = TOURIAN_ESCAPE_DATA.oamYPositions[1];
         xPosition = TOURIAN_ESCAPE_DATA.oamXPositions[1];
@@ -341,7 +348,7 @@ void unk_818cc(void)
 
         src = TOURIAN_ESCAPE_DATA.oamFramePointers[i];
         part = *src++;
-        nextSlot += part & 0xFF;
+        nextSlot += MOD_AND(part, 0x100);
 
         yPosition = TOURIAN_ESCAPE_DATA.oamYPositions[i];
         xPosition = TOURIAN_ESCAPE_DATA.oamXPositions[i];
@@ -356,7 +363,7 @@ void unk_818cc(void)
             part = *src++;
             *dst++ = part;
 
-            gOamData[currSlot].split.x = (part + xPosition) & 0x1FF;
+            gOamData[currSlot].split.x = MOD_AND(part + xPosition, 0x200);
 
             *dst++ = *src++;
 
@@ -372,7 +379,7 @@ void unk_818cc(void)
  * @brief 81ad8 | 22c | To document
  * 
  */
-void unk_81ad8(void)
+static void unk_81ad8(void)
 {
     const u16* src;
     u16* dst;
@@ -401,7 +408,7 @@ void unk_81ad8(void)
     if (TOURIAN_ESCAPE_DATA.unk_8[1])
     {
         offset = TOURIAN_ESCAPE_DATA.oamTimers[1]++ / 4;
-        if (offset > 7)
+        if (offset >= ARRAY_SIZE(sTourianEscape_47ce90))
         {
             TOURIAN_ESCAPE_DATA.oamTimers[1] = 0;
             TOURIAN_ESCAPE_DATA.oamXPositions[1] = 0x6D;
@@ -430,7 +437,7 @@ void unk_81ad8(void)
         TOURIAN_ESCAPE_DATA.oamYPositions[2] -= sTourianEscape_47ce90[offset];
     }
 
-    if ((TOURIAN_ESCAPE_DATA.timer & 7) < 4)
+    if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 8) < 4)
     {
         pal = sTourianEscape_479f00 - 16;
     }
@@ -439,7 +446,11 @@ void unk_81ad8(void)
         pal = sTourianEscape_479f00;
     }
 
-    DMA_SET(3, pal, PALRAM_OBJ + 0xA0, DMA_ENABLE << 16 | 16);
+    #ifdef REGION_EU
+    DmaTransfer(3, pal, PALRAM_OBJ + 5 * PAL_ROW_SIZE, PAL_ROW_SIZE, 16);
+    #else // !REGION_EU
+    DMA_SET(3, pal, PALRAM_OBJ + 5 * PAL_ROW_SIZE, C_32_2_16(DMA_ENABLE, PAL_ROW));
+    #endif // REGION_EU
 
     dst = (u16*)gOamData;
     nextSlot = 0;
@@ -452,7 +463,7 @@ void unk_81ad8(void)
 
         src = TOURIAN_ESCAPE_DATA.oamFramePointers[i];
         part = *src++;
-        nextSlot += part & 0xFF;
+        nextSlot += MOD_AND(part, 0x100);
         
         xPosition = TOURIAN_ESCAPE_DATA.oamXPositions[i];
         yPosition = TOURIAN_ESCAPE_DATA.oamYPositions[i];
@@ -468,7 +479,7 @@ void unk_81ad8(void)
             part = *src++;
             *dst++ = part;
 
-            gOamData[currSlot].split.x = (part + xPosition) & 0x1FF;
+            gOamData[currSlot].split.x = MOD_AND(part + xPosition, 0x200);
 
             *dst++ = *src++;
             dst++;
@@ -482,46 +493,47 @@ void unk_81ad8(void)
  * @brief 81d04 | 12c | Initializes the tourian escape
  * 
  */
-void TourianEscapeInit(void)
+static void TourianEscapeInit(void)
 {
-    u32 zero;
+    WRITE_16(REG_IME, FALSE);
+    WRITE_16(REG_DISPSTAT, READ_16(REG_DISPSTAT) & ~DSTAT_IF_HBLANK);
+    WRITE_16(REG_IE, READ_16(REG_IE) & ~IF_HBLANK);
+    WRITE_16(REG_IF, IF_HBLANK);
 
-    write16(REG_IME, FALSE);
-    write16(REG_DISPSTAT, read16(REG_DISPSTAT) & ~DSTAT_IF_HBLANK);
-    write16(REG_IE, read16(REG_IE) & ~IF_HBLANK);
-    write16(REG_IF, IF_HBLANK);
+    WRITE_16(REG_IME, TRUE);
+    WRITE_16(REG_DISPCNT, 0);
+    WRITE_16(REG_BLDCNT, 0);
 
-    write16(REG_IME, TRUE);
-    write16(REG_DISPCNT, 0);
-    write16(REG_BLDCNT, 0);
+    gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE;
+    gWrittenToBldalpha_H = 0;
+    gWrittenToBldy_NonGameplay = 0;
 
-    gWrittenToBLDALPHA_L = 16;
-    gWrittenToBLDALPHA_H = 0;
-    gWrittenToBLDY_NonGameplay = 0;
+    WRITE_16(REG_IME, FALSE);
+    CallbackSetVblank(NULL);
+    WRITE_16(REG_IME, TRUE);
 
-    write16(REG_IME, FALSE);
-    CallbackSetVBlank(NULL);
-    write16(REG_IME, TRUE);
-
-    zero = 0;
-    DMA_SET(3, &zero, &gNonGameplayRam, (DMA_ENABLE | DMA_32BIT | DMA_SRC_FIXED) << 16 | sizeof(gNonGameplayRam) / 4);
+    DMA_FILL_32(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam));
     ClearGfxRam();
 
     LZ77UncompVRAM(sMotherShipBlowingUpExplosionsGfx, VRAM_OBJ);
     LZ77UncompVRAM(sTourianEscapeDebrisGfx, VRAM_BASE + 0x13000);
 
-    DMA_SET(3, sMotherShipBlowingUpExplosionsPal, PALRAM_OBJ, DMA_ENABLE << 16 | ARRAY_SIZE(sMotherShipBlowingUpExplosionsPal));
+    #ifdef REGION_EU
+    DmaTransfer(3, sMotherShipBlowingUpExplosionsPal, PALRAM_OBJ, sizeof(sMotherShipBlowingUpExplosionsPal), 16);
+    #else // !REGION_EU
+    DMA_SET(3, sMotherShipBlowingUpExplosionsPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sMotherShipBlowingUpExplosionsPal)));
+    #endif // REGION_EU
 
     LoadRoomCutscene(AREA_TOURIAN, 4 + 1, BLOCK_SIZE * 5, BLOCK_SIZE * 10);
 
-    write16(REG_IME, FALSE);
-    CallbackSetVBlank(TourianEscapeVBLank);
-    write16(REG_IME, TRUE);
+    WRITE_16(REG_IME, FALSE);
+    CallbackSetVblank(TourianEscapeVBlank);
+    WRITE_16(REG_IME, TRUE);
     gNextOamSlot = 0;
     ResetFreeOam();
 
     TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG1 | DCNT_BG2 | DCNT_BG3 | DCNT_OBJ;
-    TourianEscapeVBLank();
+    TourianEscapeVBlank();
 }
 
 /**
@@ -529,7 +541,7 @@ void TourianEscapeInit(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeZebesExploding(void)
+static u8 TourianEscapeZebesExploding(void)
 {
     u8 ended;
     s32 var_0;
@@ -624,9 +636,9 @@ u8 TourianEscapeZebesExploding(void)
             break;
 
         case 246:
-            write16(REG_IME, FALSE);
-            CallbackSetVBlank(TourianEscapeVBLankZebesExploding);
-            write16(REG_IME, TRUE);
+            WRITE_16(REG_IME, FALSE);
+            CallbackSetVblank(TourianEscapeVBlankZebesExploding);
+            WRITE_16(REG_IME, TRUE);
 
             LZ77UncompVRAM(sTourianEscapeZebesGfx, VRAM_BASE);
             break;
@@ -664,13 +676,18 @@ u8 TourianEscapeZebesExploding(void)
         case 248:
             LZ77UncompVRAM(sTourianEscapeZebesTileTable, VRAM_BASE + 0xF000);
 
-            DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeExplodingPal));
-            DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_OBJ, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeExplodingPal));
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeExplodingPal, PALRAM_BASE, sizeof(sTourianEscapeExplodingPal), 16);
+            DmaTransfer(3, sTourianEscapeExplodingPal, PALRAM_OBJ, sizeof(sTourianEscapeExplodingPal), 16);
+            #else // !REGION_EU
+            DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeExplodingPal)));
+            DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeExplodingPal)));
+            #endif // REGION_EU
 
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
-            gWrittenToBLDALPHA_L = 10;
-            gWrittenToBLDALPHA_H = 6;
+            gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE / 2 + 2;
+            gWrittenToBldalpha_H = BLDALPHA_MAX_VALUE / 2 - 2;
 
             var_0 = 2;
             SoundPlay(SOUND_TOURIAN_ESCAPE_SAMUS_LEAVING_PLANET);
@@ -683,7 +700,7 @@ u8 TourianEscapeZebesExploding(void)
             break;
     }
 
-    if (TOURIAN_ESCAPE_DATA.timer < 60 * 4)
+    if (TOURIAN_ESCAPE_DATA.timer < CONVERT_SECONDS(4.f))
         AnimatedGraphicsUpdate();
 
     if (var_0)
@@ -692,18 +709,18 @@ u8 TourianEscapeZebesExploding(void)
             BLDCNT_BG2_SECOND_TARGET_PIXEL | BLDCNT_BG3_SECOND_TARGET_PIXEL | BLDCNT_OBJ_SECOND_TARGET_PIXEL |
             BLDCNT_BACKDROP_SECOND_TARGET_PIXEL;
 
-        gWrittenToBLDY_NonGameplay = 0;
+        gWrittenToBldy_NonGameplay = 0;
         TOURIAN_ESCAPE_DATA.unk_1 = 0;
     }
 
     if (TOURIAN_ESCAPE_DATA.unk_1)
     {
-        if (TOURIAN_ESCAPE_DATA.timer >= 256)
+        if (TOURIAN_ESCAPE_DATA.timer > CONVERT_SECONDS(4.25f))
         {
             if (TOURIAN_ESCAPE_DATA.unk_5++ > 5)
             {
-                if (gWrittenToBLDY_NonGameplay < BLDY_MAX_VALUE)
-                    gWrittenToBLDY_NonGameplay++;
+                if (gWrittenToBldy_NonGameplay < BLDY_MAX_VALUE)
+                    gWrittenToBldy_NonGameplay++;
 
                 TOURIAN_ESCAPE_DATA.unk_5 = 0;
             }
@@ -712,20 +729,20 @@ u8 TourianEscapeZebesExploding(void)
         {
             if (TOURIAN_ESCAPE_DATA.unk_5++ & 1)
             {
-                if (gWrittenToBLDY_NonGameplay < BLDY_MAX_VALUE)
-                    gWrittenToBLDY_NonGameplay++;
+                if (gWrittenToBldy_NonGameplay < BLDY_MAX_VALUE)
+                    gWrittenToBldy_NonGameplay++;
             }
         }
     }
 
     if (TOURIAN_ESCAPE_DATA.unk_2)
     {
-        if ((TOURIAN_ESCAPE_DATA.timer & 7) < 4)
+        if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 8) < 4)
             TOURIAN_ESCAPE_DATA.oamFramePointers[0] = sTourianEscape_47a4e0;
         else
             TOURIAN_ESCAPE_DATA.oamFramePointers[0] = sTourianEscape_47a506;
 
-        if ((TOURIAN_ESCAPE_DATA.timer & 3) < 2)
+        if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 4) < 2)
             TOURIAN_ESCAPE_DATA.oamFramePointers[1] = sTourianEscape_47a52c;
         else
             TOURIAN_ESCAPE_DATA.oamFramePointers[1] = sTourianEscape_47a540;
@@ -751,7 +768,7 @@ u8 TourianEscapeZebesExploding(void)
             if (sTourianEscapeOam_HugeShipExplosion[TOURIAN_ESCAPE_DATA.oamFrames[0]].timer == 0)
             {
                 TOURIAN_ESCAPE_DATA.oamFrames[0] = 0;
-                TOURIAN_ESCAPE_DATA.unk_8[0] = ((TOURIAN_ESCAPE_DATA.unk_8[0] + 1) & 7) + 1;
+                TOURIAN_ESCAPE_DATA.unk_8[0] = MOD_AND(TOURIAN_ESCAPE_DATA.unk_8[0] + 1, 8) + 1;
 
                 offset = TOURIAN_ESCAPE_DATA.unk_8[0] - 1;
                 TOURIAN_ESCAPE_DATA.oamXPositions[0] = sTourianEscape_47ced0[offset][0];
@@ -767,7 +784,7 @@ u8 TourianEscapeZebesExploding(void)
             if (sChozodiaEscapeOam_47cc64[TOURIAN_ESCAPE_DATA.oamFrames[1]].timer == 0)
             {
                 TOURIAN_ESCAPE_DATA.oamFrames[1] = 0;
-                TOURIAN_ESCAPE_DATA.unk_8[1] = ((TOURIAN_ESCAPE_DATA.unk_8[1] + 1) & 7) + 1;
+                TOURIAN_ESCAPE_DATA.unk_8[1] = MOD_AND(TOURIAN_ESCAPE_DATA.unk_8[1] + 1, 8) + 1;
 
                 offset = TOURIAN_ESCAPE_DATA.unk_8[1] - 1;
                 TOURIAN_ESCAPE_DATA.oamXPositions[1] = sTourianEscape_47cef0[offset][0];
@@ -783,7 +800,7 @@ u8 TourianEscapeZebesExploding(void)
             if (sChozodiaEscapeOam_47ccbc[TOURIAN_ESCAPE_DATA.oamFrames[2]].timer == 0)
             {
                 TOURIAN_ESCAPE_DATA.oamFrames[2] = 0;
-                TOURIAN_ESCAPE_DATA.unk_8[2] = ((TOURIAN_ESCAPE_DATA.unk_8[2] + 1) & 7) + 1;
+                TOURIAN_ESCAPE_DATA.unk_8[2] = MOD_AND(TOURIAN_ESCAPE_DATA.unk_8[2] + 1, 8) + 1;
 
                 offset = TOURIAN_ESCAPE_DATA.unk_8[2] - 1;
                 TOURIAN_ESCAPE_DATA.oamXPositions[2] = sTourianEscape_47cf10[offset][0];
@@ -799,7 +816,7 @@ u8 TourianEscapeZebesExploding(void)
             if (sTourianEscapeOam_HugeShipExplosion[TOURIAN_ESCAPE_DATA.oamFrames[3]].timer == 0)
             {
                 TOURIAN_ESCAPE_DATA.oamFrames[3] = 0;
-                TOURIAN_ESCAPE_DATA.unk_8[3] = ((TOURIAN_ESCAPE_DATA.unk_8[3] + 1) & 7) + 1;
+                TOURIAN_ESCAPE_DATA.unk_8[3] = MOD_AND(TOURIAN_ESCAPE_DATA.unk_8[3] + 1, 8) + 1;
 
                 offset = TOURIAN_ESCAPE_DATA.unk_8[3] - 1;
                 TOURIAN_ESCAPE_DATA.oamXPositions[3] = sTourianEscape_47cf30[offset][0];
@@ -819,15 +836,15 @@ u8 TourianEscapeZebesExploding(void)
 
         for (i = 4; i < TOURIAN_ESCAPE_MAX_OBJECTS - 1; i++)
         {
-            if (TOURIAN_ESCAPE_DATA.oamTimers[i] < 15)
+            if (TOURIAN_ESCAPE_DATA.oamTimers[i] < CONVERT_SECONDS(.25f))
                 TOURIAN_ESCAPE_DATA.oamTimers[i]++;
 
             offset = TOURIAN_ESCAPE_DATA.oamTimers[i] / 4;
             TOURIAN_ESCAPE_DATA.oamFramePointers[i] = sTourianEscape_47cec0[offset];
-            TOURIAN_ESCAPE_DATA.oamYPositions[i] += 4;
+            TOURIAN_ESCAPE_DATA.oamYPositions[i] += PIXEL_SIZE;
         }
 
-        i = TOURIAN_ESCAPE_DATA.timer & 7;
+        i = MOD_AND(TOURIAN_ESCAPE_DATA.timer, 8);
 
         if (i == 1)
         {
@@ -872,7 +889,7 @@ u8 TourianEscapeZebesExploding(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusInHerShip(void)
+static u8 TourianEscapeSamusInHerShip(void)
 {
     u8 ended;
 
@@ -894,43 +911,51 @@ u8 TourianEscapeSamusInHerShip(void)
 
             if (gEquipment.suitMiscActivation & SMF_VARIA_SUIT)
             {
+                #ifdef REGION_EU
+                DmaTransfer(3, sTourianEscapeSamusInHerShipVariaSuitPal, PALRAM_BASE,
+                    sizeof(sTourianEscapeSamusInHerShipVariaSuitPal), 16);
+                #else // !REGION_EU
                 DMA_SET(3, sTourianEscapeSamusInHerShipVariaSuitPal, PALRAM_BASE,
-                    DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusInHerShipVariaSuitPal));
+                    C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusInHerShipVariaSuitPal)));
+                #endif // REGION_EU
             }
             else
             {
+                #ifdef REGION_EU
+                DmaTransfer(3, sTourianEscapeSamusInHerShipPowerSuitPal, PALRAM_BASE,
+                    sizeof(sTourianEscapeSamusInHerShipPowerSuitPal), 16);
+                #else // !REGION_EU
                 DMA_SET(3, sTourianEscapeSamusInHerShipPowerSuitPal, PALRAM_BASE,
-                    DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusInHerShipPowerSuitPal));
+                    C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusInHerShipPowerSuitPal)));
+                #endif // REGION_EU
             }
             break;
 
         case 3:
-            write16(REG_BG0CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
-            write16(REG_BG1CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG1CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
 
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG1 | DCNT_OBJ;
-            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_SECOND_TARGET_PIXEL | BLDCNT_BG1_SECOND_TARGET_PIXEL |
-                BLDCNT_BG2_SECOND_TARGET_PIXEL | BLDCNT_BG3_SECOND_TARGET_PIXEL | BLDCNT_OBJ_SECOND_TARGET_PIXEL |
-                BLDCNT_BACKDROP_SECOND_TARGET_PIXEL;
+            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_SCREEN_SECOND_TARGET;
 
-            gWrittenToBLDALPHA_L = 16;
-            gWrittenToBLDALPHA_H = 0;
-            gWrittenToBLDY_NonGameplay = 0;
+            gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE;
+            gWrittenToBldalpha_H = 0;
+            gWrittenToBldy_NonGameplay = 0;
             break;
 
         case 56:
             TOURIAN_ESCAPE_DATA.dispcnt |= DCNT_WIN0;
             TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_INCREASE_EFFECT;
 
-            gWrittenToBLDY_NonGameplay = 10;
+            gWrittenToBldy_NonGameplay = 10;
 
-            write16(REG_WININ, 0x3F);
-            write16(REG_WINOUT, 0x1F);
+            WRITE_16(REG_WININ, WIN0_ALL);
+            WRITE_16(REG_WINOUT, WIN0_ALL_NO_COLOR_EFFECT);
 
-            TOURIAN_ESCAPE_DATA.win0h_H = 0x77;
-            TOURIAN_ESCAPE_DATA.win0h_L = 0x79;
-            TOURIAN_ESCAPE_DATA.win0v_H = 0x4F;
-            TOURIAN_ESCAPE_DATA.win0v_L = 0x51;
+            TOURIAN_ESCAPE_DATA.win0h_H = SCREEN_X_MIDDLE - 1;
+            TOURIAN_ESCAPE_DATA.win0h_L = SCREEN_X_MIDDLE + 1;
+            TOURIAN_ESCAPE_DATA.win0v_H = SCREEN_Y_MIDDLE - 1;
+            TOURIAN_ESCAPE_DATA.win0v_L = SCREEN_Y_MIDDLE + 1;
 
             TOURIAN_ESCAPE_DATA.unk_2++;
             SoundPlay(SOUND_TOURIAN_ESCAPE_SAMUS_REMOVING_SUIT_1);
@@ -944,8 +969,13 @@ u8 TourianEscapeSamusInHerShip(void)
             LZ77UncompVRAM(sTourianEscapeSamusInHerShipSuitlessTileTable, VRAM_BASE + 0x7000);
             LZ77UncompVRAM(sTourianEscapeSamusInHerShipSuitlessEyesOpenedTileTable, VRAM_BASE + 0x7800);
 
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusInHerShipSuitlessPal, PALRAM_BASE,
+                sizeof(sTourianEscapeSamusInHerShipSuitlessPal), 16);
+            #else // !REGION_EU
             DMA_SET(3, sTourianEscapeSamusInHerShipSuitlessPal, PALRAM_BASE,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusInHerShipSuitlessPal));
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusInHerShipSuitlessPal)));
+            #endif // REGION_EU
             break;
 
         case 162:
@@ -957,22 +987,22 @@ u8 TourianEscapeSamusInHerShip(void)
 
         case 200:
             TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BG1_SECOND_TARGET_PIXEL;
-            gWrittenToBLDALPHA_L = 16;
+            gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE;
 
             TOURIAN_ESCAPE_DATA.unk_2++;
             SoundPlay(SOUND_TOURIAN_ESCAPE_SAMUS_REMOVING_SUIT_3);
             break;
 
         case 352:
-            write16(REG_BG1CNT, CREATE_BGCNT(0, 15, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG1CNT, CREATE_BGCNT(0, 15, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             break;
 
         case 372:
             TOURIAN_ESCAPE_DATA.dispcnt = 0;
             TOURIAN_ESCAPE_DATA.bldcnt = 0;
-            gWrittenToBLDALPHA_L = 16;
-            gWrittenToBLDALPHA_H = 0;
-            gWrittenToBLDY_NonGameplay = 0;
+            gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE;
+            gWrittenToBldalpha_H = 0;
+            gWrittenToBldy_NonGameplay = 0;
             ended = TRUE;
     }
 
@@ -992,37 +1022,37 @@ u8 TourianEscapeSamusInHerShip(void)
         if (TOURIAN_ESCAPE_DATA.win0v_H < 0)
             TOURIAN_ESCAPE_DATA.win0v_H = 0;
 
-        if (TOURIAN_ESCAPE_DATA.win0v_L > 160)
-            TOURIAN_ESCAPE_DATA.win0v_L = 160;
+        if (TOURIAN_ESCAPE_DATA.win0v_L > SCREEN_SIZE_Y)
+            TOURIAN_ESCAPE_DATA.win0v_L = SCREEN_SIZE_Y;
 
         if (TOURIAN_ESCAPE_DATA.win0h_H < 0)
             TOURIAN_ESCAPE_DATA.win0h_H = 0;
 
-        if (TOURIAN_ESCAPE_DATA.win0h_L > 240)
-            TOURIAN_ESCAPE_DATA.win0h_L = 240;
+        if (TOURIAN_ESCAPE_DATA.win0h_L > SCREEN_SIZE_X)
+            TOURIAN_ESCAPE_DATA.win0h_L = SCREEN_SIZE_X;
 
-        if (TOURIAN_ESCAPE_DATA.timer >= 128 && TOURIAN_ESCAPE_DATA.timer & 1)
+        if (TOURIAN_ESCAPE_DATA.timer >= 128 && MOD_AND(TOURIAN_ESCAPE_DATA.timer, 2))
         {
-            if (gWrittenToBLDY_NonGameplay < BLDY_MAX_VALUE)
-                gWrittenToBLDY_NonGameplay++;
+            if (gWrittenToBldy_NonGameplay < BLDY_MAX_VALUE)
+                gWrittenToBldy_NonGameplay++;
         }
     }
     else if (TOURIAN_ESCAPE_DATA.unk_2 == 2)
     {
-        if (TOURIAN_ESCAPE_DATA.timer & 1)
+        if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 2))
         {
-            if (gWrittenToBLDY_NonGameplay != 0)
-                gWrittenToBLDY_NonGameplay--;
+            if (gWrittenToBldy_NonGameplay != 0)
+                gWrittenToBldy_NonGameplay--;
         }
     }
     else if (TOURIAN_ESCAPE_DATA.unk_2 != 0)
     {
-        if (!(TOURIAN_ESCAPE_DATA.timer & 3))
+        if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 4) == 0)
         {
-            if (gWrittenToBLDALPHA_L != 0)
+            if (gWrittenToBldalpha_L != 0)
             {
-                gWrittenToBLDALPHA_L--;
-                gWrittenToBLDALPHA_H = 16 - gWrittenToBLDALPHA_L;
+                gWrittenToBldalpha_L--;
+                gWrittenToBldalpha_H = 16 - gWrittenToBldalpha_L;
             }
         }
     }
@@ -1035,7 +1065,7 @@ u8 TourianEscapeSamusInHerShip(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusLookingAround(void)
+static u8 TourianEscapeSamusLookingAround(void)
 {
     u8 ended;
 
@@ -1050,8 +1080,8 @@ u8 TourianEscapeSamusLookingAround(void)
         case 1:
             LZ77UncompVRAM(sTourianEscapeSamusSamusInHerShipLookingGfx, VRAM_OBJ);
 
-            gWrittenToBLDALPHA_L = 8;
-            gWrittenToBLDALPHA_H = 8;
+            gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE / 2;
+            gWrittenToBldalpha_H = BLDALPHA_MAX_VALUE / 2;
 
             TOURIAN_ESCAPE_DATA.unk_8[0] = TRUE;
             TOURIAN_ESCAPE_DATA.oamFramePointers[0] = sTourianEscape_47a554;
@@ -1068,15 +1098,21 @@ u8 TourianEscapeSamusLookingAround(void)
             LZ77UncompVRAM(sTourianEscapeSamusSamusInHerShipLookingLeftTileTable, VRAM_BASE + 0x8000);
             LZ77UncompVRAM(sTourianEscapeSamusSamusInHerShipLookingRightTileTable, VRAM_BASE + 0x8800);
 
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusLookingAroundPal, PALRAM_BASE,
+                sizeof(sTourianEscapeSamusLookingAroundPal), 16);
+            DmaTransfer(3, sTourianEscapeSamusLookingAroundPal, PALRAM_OBJ,
+                sizeof(sTourianEscapeSamusLookingAroundPal), 16);
+            #else // !REGION_EU
             DMA_SET(3, sTourianEscapeSamusLookingAroundPal, PALRAM_BASE,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusLookingAroundPal));
-
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAroundPal)));
             DMA_SET(3, sTourianEscapeSamusLookingAroundPal, PALRAM_OBJ,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusLookingAroundPal));
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAroundPal)));
+            #endif // REGION_EU
             break;
 
         case 3:
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 16, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 16, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BG0_SECOND_TARGET_PIXEL;
             break;
@@ -1086,7 +1122,7 @@ u8 TourianEscapeSamusLookingAround(void)
             break;
 
         case 32:
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 17, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 17, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             break;
 
         case 56:
@@ -1094,15 +1130,15 @@ u8 TourianEscapeSamusLookingAround(void)
             TOURIAN_ESCAPE_DATA.bldcnt = 0;
 
             gBg2Rotation = 0;
-            gBg2Scaling = 0x600;
-            gUnk_30013a2 = 0x600;
+            gBg2XScaling = Q_16_16(96.f / 4096.f);
+            gBg2YScaling = Q_16_16(96.f / 4096.f);
             ended++;
             break;
     }
 
     if (TOURIAN_ESCAPE_DATA.unk_2)
     {
-        if (TOURIAN_ESCAPE_DATA.oamYPositions[0] < 80)
+        if (TOURIAN_ESCAPE_DATA.oamYPositions[0] < SCREEN_Y_MIDDLE)
         {
             TOURIAN_ESCAPE_DATA.oamYPositions[0] += 8;
             TOURIAN_ESCAPE_DATA.oamYPositions[1] -= 8;
@@ -1119,7 +1155,7 @@ u8 TourianEscapeSamusLookingAround(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusSurrounded(void)
+static u8 TourianEscapeSamusSurrounded(void)
 {
     u8 ended;
 
@@ -1139,25 +1175,29 @@ u8 TourianEscapeSamusSurrounded(void)
             LZ77UncompVRAM(sTourianEscapeSamusSurroundedBackgroundTileTable, VRAM_BASE + 0x7000);
             LZ77UncompVRAM(sTourianEscape_49fb70, VRAM_BASE + 0x7800);
 
-            DMA_SET(3, sTourianEscapeSamusSurroundedPal, PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusSurroundedPal));
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusSurroundedPal, PALRAM_BASE, sizeof(sTourianEscapeSamusSurroundedPal), 16);
+            #else // !REGION_EU
+            DMA_SET(3, sTourianEscapeSamusSurroundedPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusSurroundedPal)));
+            #endif // REGION_EU
 
             gBg0XPosition = 0;
             gBg0YPosition = 0;
 
-            gWrittenToBLDALPHA_L = 16;
-            gWrittenToBLDALPHA_H = 0;
+            gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE;
+            gWrittenToBldalpha_H = 0;
             break;
 
         case 3:
-            write16(REG_IME, FALSE);
-            CallbackSetVBlank(TourianEscapeVBLankSamusSurrounded);
-            write16(REG_IME, TRUE);
+            WRITE_16(REG_IME, FALSE);
+            CallbackSetVblank(TourianEscapeVBlankSamusSurrounded);
+            WRITE_16(REG_IME, TRUE);
             break;
 
         case 4:
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
-            write16(REG_BG1CNT, CREATE_BGCNT(0, 14, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256));
-            write16(REG_BG2CNT, CREATE_BGCNT(2, 15, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_512x256) | (1 << 7));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG1CNT, CREATE_BGCNT(0, 14, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG2CNT, CREATE_BGCNT(2, 15, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_512x256) | (1 << 7));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_MODE_1 | DCNT_BG0 | DCNT_BG2 | DCNT_OBJ;
             break;
 
@@ -1167,24 +1207,22 @@ u8 TourianEscapeSamusSurrounded(void)
 
         case 112:
             TOURIAN_ESCAPE_DATA.dispcnt = 0;
-            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_SECOND_TARGET_PIXEL | BLDCNT_BG1_SECOND_TARGET_PIXEL |
-                BLDCNT_BG2_SECOND_TARGET_PIXEL | BLDCNT_BG3_SECOND_TARGET_PIXEL | BLDCNT_OBJ_SECOND_TARGET_PIXEL |
-                BLDCNT_BACKDROP_SECOND_TARGET_PIXEL;
+            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_SCREEN_SECOND_TARGET;
             ended = TRUE;
             break;
     }
 
     if (TOURIAN_ESCAPE_DATA.unk_2)
     {
-        if (gBg2Scaling > 256)
+        if (gBg2XScaling > Q_16_16(16.f / 4096.f))
         {
-            gBg2Scaling -= 80;
-            gUnk_30013a2 -= 80;
+            gBg2XScaling -= Q_16_16(5.f / 4096.f);
+            gBg2YScaling -= Q_16_16(5.f / 4096.f);
         }
         else
         {
-            gBg2Scaling = 256;
-            gUnk_30013a2 = 256;
+            gBg2XScaling = Q_16_16(16.f / 4096.f);
+            gBg2YScaling = Q_16_16(16.f / 4096.f);
         }
     }
 
@@ -1198,7 +1236,7 @@ u8 TourianEscapeSamusSurrounded(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusFlyingIn(void)
+static u8 TourianEscapeSamusFlyingIn(void)
 {
     u8 ended;
 
@@ -1207,9 +1245,9 @@ u8 TourianEscapeSamusFlyingIn(void)
     switch (TOURIAN_ESCAPE_DATA.timer++)
     {
         case 0:
-            write16(REG_IME, FALSE);
-            CallbackSetVBlank(TourianEscapeVBLankZebesExploding);
-            write16(REG_IME, TRUE);
+            WRITE_16(REG_IME, FALSE);
+            CallbackSetVblank(TourianEscapeVBlankZebesExploding);
+            WRITE_16(REG_IME, TRUE);
 
             LZ77UncompVRAM(sIntroTextAndShipFlyingInGfx, VRAM_OBJ);
             SoundPlay(SOUND_TOURIAN_ESCAPE_SAMUS_FLYING_IN);
@@ -1222,19 +1260,24 @@ u8 TourianEscapeSamusFlyingIn(void)
         case 2:
             LZ77UncompVRAM(sIntroSpaceBackgroundTileTable, VRAM_BASE + 0xF000);
 
-            DMA_SET(3, sIntroTextAndShipPal, PALRAM_BASE, DMA_ENABLE << 16 | sizeof(sIntroTextAndShipPal) / 2 + 16);
-            DMA_SET(3, sIntroTextAndShipPal, PALRAM_OBJ, DMA_ENABLE << 16 | sizeof(sIntroTextAndShipPal) / 2 + 16);
+            #ifdef REGION_EU
+            DmaTransfer(3, sIntroTextAndShipPal, PALRAM_BASE, sizeof(sIntroTextAndShipPal) + PAL_ROW_SIZE, 16);
+            DmaTransfer(3, sIntroTextAndShipPal, PALRAM_OBJ, sizeof(sIntroTextAndShipPal) + PAL_ROW_SIZE, 16);
+            #else // !REGION_EU
+            DMA_SET(3, sIntroTextAndShipPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW));
+            DMA_SET(3, sIntroTextAndShipPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW));
+            #endif // REGION_EU
 
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
 
-            gWrittenToBLDALPHA_L = 9;
-            gWrittenToBLDALPHA_H = 7;
+            gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE / 2 + 1;
+            gWrittenToBldalpha_H = BLDALPHA_MAX_VALUE / 2 - 1;
 
             TOURIAN_ESCAPE_DATA.unk_8[0] = TRUE;
             TOURIAN_ESCAPE_DATA.unk_82 = 32;
-            TOURIAN_ESCAPE_DATA.oamXPositions[0] = 0x78;
-            TOURIAN_ESCAPE_DATA.oamYPositions[0] = 0x1C;
+            TOURIAN_ESCAPE_DATA.oamXPositions[0] = SCREEN_X_MIDDLE;
+            TOURIAN_ESCAPE_DATA.oamYPositions[0] = SCREEN_SIZE_Y / 8 + 8;
             TOURIAN_ESCAPE_DATA.oamTimers[0] = 0;
             break;
 
@@ -1281,7 +1324,7 @@ u8 TourianEscapeSamusFlyingIn(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusChasedByPirates(void)
+static u8 TourianEscapeSamusChasedByPirates(void)
 {
     u8 ended;
     u8 i;
@@ -1301,10 +1344,17 @@ u8 TourianEscapeSamusChasedByPirates(void)
         case 2:
             LZ77UncompVRAM(sTourianEscapeSamusChasedBackgroundTileTable, VRAM_BASE + 0xE000);
 
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusChasedBackgroundPal, PALRAM_BASE,
+                sizeof(sTourianEscapeSamusChasedBackgroundPal), 16);
+            DmaTransfer(3, sTourianEscapeSamusChasedShipsPal, PALRAM_OBJ,
+                sizeof(sTourianEscapeSamusChasedShipsPal), 16);
+            #else // !REGION_EU
             DMA_SET(3, sTourianEscapeSamusChasedBackgroundPal, PALRAM_BASE,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusChasedBackgroundPal));
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusChasedBackgroundPal)));
             DMA_SET(3, sTourianEscapeSamusChasedShipsPal, PALRAM_OBJ,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusChasedShipsPal));
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusChasedShipsPal)));
+            #endif // REGION_EU
 
             TOURIAN_ESCAPE_DATA.unk_8[0] = FALSE;
             TOURIAN_ESCAPE_DATA.oamFramePointers[0] = sTourianEscape_47a602;
@@ -1360,7 +1410,7 @@ u8 TourianEscapeSamusChasedByPirates(void)
             break;
 
         case 3:
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             break;
 
@@ -1481,7 +1531,7 @@ u8 TourianEscapeSamusChasedByPirates(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusChasedByPiratesFiring(void)
+static u8 TourianEscapeSamusChasedByPiratesFiring(void)
 {
     u8 ended;
     s32 velocity;
@@ -1497,8 +1547,13 @@ u8 TourianEscapeSamusChasedByPiratesFiring(void)
             break;
 
         case 1:
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusChasedByPiratesFiringPal, PALRAM_OBJ,
+                sizeof(sTourianEscapeSamusChasedByPiratesFiringPal), 16);
+            #else // !REGION_EU
             DMA_SET(3, sTourianEscapeSamusChasedByPiratesFiringPal, PALRAM_OBJ,
                 DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusChasedByPiratesFiringPal));
+            #endif // REGION_EU
 
             TOURIAN_ESCAPE_DATA.unk_8[0] = TRUE;
             TOURIAN_ESCAPE_DATA.oamXPositions[0] = 0x78;
@@ -1559,7 +1614,7 @@ u8 TourianEscapeSamusChasedByPiratesFiring(void)
             ended = TRUE;
     }
 
-    if (!(TOURIAN_ESCAPE_DATA.timer & 7))
+    if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 8) == 0)
         gBg0YPosition--;
 
     if (TOURIAN_ESCAPE_DATA.unk_8[0])
@@ -1575,7 +1630,7 @@ u8 TourianEscapeSamusChasedByPiratesFiring(void)
                 velocity = -48;
 
             TOURIAN_ESCAPE_DATA.oamXPositions[2] += velocity;
-            TOURIAN_ESCAPE_DATA.oamXPositions[0] = TOURIAN_ESCAPE_DATA.oamXPositions[2] >> 3;
+            TOURIAN_ESCAPE_DATA.oamXPositions[0] = DIV_SHIFT(TOURIAN_ESCAPE_DATA.oamXPositions[2], 8);
 
             velocity = TOURIAN_ESCAPE_DATA.unk_AE;
 
@@ -1586,7 +1641,7 @@ u8 TourianEscapeSamusChasedByPiratesFiring(void)
                 velocity = -24;
 
             TOURIAN_ESCAPE_DATA.oamYPositions[2] += velocity;
-            TOURIAN_ESCAPE_DATA.oamYPositions[0] = TOURIAN_ESCAPE_DATA.oamYPositions[2] >> 3;
+            TOURIAN_ESCAPE_DATA.oamYPositions[0] = DIV_SHIFT(TOURIAN_ESCAPE_DATA.oamYPositions[2], 8);
 
             TOURIAN_ESCAPE_DATA.unk_96[2] += TOURIAN_ESCAPE_DATA.unk_96[3];
             TOURIAN_ESCAPE_DATA.unk_AE += TOURIAN_ESCAPE_DATA.unk_B0;
@@ -1602,7 +1657,7 @@ u8 TourianEscapeSamusChasedByPiratesFiring(void)
 
                 case 1:
                 case 3:
-                    if (TOURIAN_ESCAPE_DATA.oamTimers[2]++ > 19)
+                    if (TOURIAN_ESCAPE_DATA.oamTimers[2]++ >= ONE_THIRD_SECOND)
                     {
                         TOURIAN_ESCAPE_DATA.oamTimers[2] = 0;
                         var_0 = 2;
@@ -1710,7 +1765,7 @@ u8 TourianEscapeSamusChasedByPiratesFiring(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusGettingShot(void)
+static u8 TourianEscapeSamusGettingShot(void)
 {
     u8 ended;
     s32 velocity;
@@ -1727,12 +1782,16 @@ u8 TourianEscapeSamusGettingShot(void)
         case 1:
             LZ77UncompVRAM(sTourianEscapeSamusGettingShotShipGfx, VRAM_OBJ);
             TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
-            gWrittenToBLDY_NonGameplay = 16;
+            gWrittenToBldy_NonGameplay = BLDY_MAX_VALUE;
             break;
 
         case 2:
             LZ77UncompVRAM(sTourianEscapeSamusGettingShotTileTable, VRAM_BASE + 0xF000);
-            DMA_SET(3, sTourianEscapeSamusGettingShotPal, PALRAM_OBJ, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusGettingShotPal));
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusGettingShotPal, PALRAM_OBJ, sizeof(sTourianEscapeSamusGettingShotPal), 16);
+            #else // !REGION_EU
+            DMA_SET(3, sTourianEscapeSamusGettingShotPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusGettingShotPal)));
+            #endif // REGION_EU
 
             gBg0XPosition = BLOCK_SIZE + HALF_BLOCK_SIZE;
             gBg0YPosition = BLOCK_SIZE - QUARTER_BLOCK_SIZE;
@@ -1740,7 +1799,7 @@ u8 TourianEscapeSamusGettingShot(void)
             break;
 
         case 3:
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.unk_8[4] = TRUE;
             TOURIAN_ESCAPE_DATA.unk_8[5] = 2;
@@ -1773,8 +1832,12 @@ u8 TourianEscapeSamusGettingShot(void)
             break;
 
         case 336:
-            DMA_SET(3, sTourianEscapeSamusGettingShotPal, PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusGettingShotPal));
-            write16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusGettingShotPal, PALRAM_BASE, sizeof(sTourianEscapeSamusGettingShotPal), 16);
+            #else // !REGION_EU
+            DMA_SET(3, sTourianEscapeSamusGettingShotPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusGettingShotPal)));
+            #endif // REGION_EU
+            WRITE_16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG1 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.unk_8[0] = 0;
             SoundPlay(SOUND_TOURIAN_ESCAPE_DECISIVE_SHOT);
@@ -1787,10 +1850,10 @@ u8 TourianEscapeSamusGettingShot(void)
 
     if (TOURIAN_ESCAPE_DATA.unk_1)
     {
-        if (gWrittenToBLDY_NonGameplay != 0)
+        if (gWrittenToBldy_NonGameplay != 0)
         {
-            if (!(TOURIAN_ESCAPE_DATA.timer & 7))
-                gWrittenToBLDY_NonGameplay--;
+            if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 8) == 0)
+                gWrittenToBldy_NonGameplay--;
         }
         else
         {
@@ -1799,7 +1862,7 @@ u8 TourianEscapeSamusGettingShot(void)
         }
     }
 
-    if (!(TOURIAN_ESCAPE_DATA.timer & 7))
+    if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 8) == 0)
         gBg0XPosition--;
 
     if (TOURIAN_ESCAPE_DATA.unk_8[4])
@@ -1807,7 +1870,7 @@ u8 TourianEscapeSamusGettingShot(void)
 
     if (TOURIAN_ESCAPE_DATA.unk_8[0] == 1)
     {
-        if (TOURIAN_ESCAPE_DATA.timer > 0x6F)
+        if (TOURIAN_ESCAPE_DATA.timer > 111)
         {
             TOURIAN_ESCAPE_DATA.unk_96[1]--;
             if (TOURIAN_ESCAPE_DATA.timer & 1)
@@ -1932,7 +1995,7 @@ u8 TourianEscapeSamusGettingShot(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusGoingToCrash(void)
+static u8 TourianEscapeSamusGoingToCrash(void)
 {
     u8 ended;
 
@@ -1949,16 +2012,24 @@ u8 TourianEscapeSamusGoingToCrash(void)
             gBg0XPosition = 16;
             gBg0YPosition = 0;
 
-            gWrittenToBLDALPHA_L = 9;
-            gWrittenToBLDALPHA_H = 7;
+            gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE / 2 + 1;
+            gWrittenToBldalpha_H = BLDALPHA_MAX_VALUE / 2 - 1;
             break;
 
         case 2:
             LZ77UncompVRAM(sTourianEscapeZebesTileTable, VRAM_BASE + 0xF000);
 
-            DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeExplodingPal));
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeExplodingPal, PALRAM_BASE,
+                sizeof(sTourianEscapeExplodingPal), 16);
+            DmaTransfer(3, sTourianEscapeSamusGoingToCrashPal, PALRAM_OBJ,
+                sizeof(sTourianEscapeSamusGoingToCrashPal), 16);
+            #else // !REGION_EU
+            DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_BASE,
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeExplodingPal)));
             DMA_SET(3, sTourianEscapeSamusGoingToCrashPal, PALRAM_OBJ,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusGoingToCrashPal));
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusGoingToCrashPal)));
+            #endif // REGION_EU
 
             TOURIAN_ESCAPE_DATA.unk_8[0] = TRUE;
             TOURIAN_ESCAPE_DATA.oamFramePointers[0] = sTourianEscape_47a98a;
@@ -1969,11 +2040,9 @@ u8 TourianEscapeSamusGoingToCrash(void)
             break;
 
         case 3:
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
-            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_BG0_SECOND_TARGET_PIXEL |
-                BLDCNT_BG1_SECOND_TARGET_PIXEL | BLDCNT_BG2_SECOND_TARGET_PIXEL | BLDCNT_BG3_SECOND_TARGET_PIXEL |
-                BLDCNT_OBJ_SECOND_TARGET_PIXEL | BLDCNT_BACKDROP_SECOND_TARGET_PIXEL;
+            TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_SCREEN_SECOND_TARGET | BLDCNT_ALPHA_BLENDING_EFFECT;
             SoundPlay(SOUND_TOURIAN_ESCAPE_SHIP_FREE_FALLING);
             break;
 
@@ -2011,7 +2080,7 @@ u8 TourianEscapeSamusGoingToCrash(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusCrashing(void)
+static u8 TourianEscapeSamusCrashing(void)
 {
     u8 ended;
 
@@ -2035,13 +2104,23 @@ u8 TourianEscapeSamusCrashing(void)
             LZ77UncompVRAM(sTourianEscapeShipCrashingForegroundTileTable, VRAM_BASE + 0x7000);
             LZ77UncompVRAM(sTourianEscapeShipCrashingExplosionTileTable, VRAM_BASE + 0xF000);
 
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusCrashingForegroundPal, PALRAM_BASE,
+                sizeof(sTourianEscapeSamusCrashingForegroundPal), 16);
+            #else // !REGION_EU
             DMA_SET(3, sTourianEscapeSamusCrashingForegroundPal, PALRAM_BASE,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusCrashingForegroundPal));
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusCrashingForegroundPal)));
+            #endif // REGION_EU
             break;
 
         case 4:
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeShipCrashingBackgroundAndShipPal, PALRAM_OBJ,
+                sizeof(sTourianEscapeShipCrashingBackgroundAndShipPal), 16);
+            #else // !REGION_EU
             DMA_SET(3, sTourianEscapeShipCrashingBackgroundAndShipPal, PALRAM_OBJ,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeShipCrashingBackgroundAndShipPal));
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeShipCrashingBackgroundAndShipPal)));
+            #endif // REGION_EU
 
             TOURIAN_ESCAPE_DATA.unk_8[1] = TRUE;
             TOURIAN_ESCAPE_DATA.oamFramePointers[1] = sTourianEscape_47aa96;
@@ -2056,8 +2135,8 @@ u8 TourianEscapeSamusCrashing(void)
             break;
 
         case 5:
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
-            write16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_OBJ;
             break;
 
@@ -2073,7 +2152,11 @@ u8 TourianEscapeSamusCrashing(void)
             break;
 
         case 104:
-            DMA_SET(3, sTourianEscape_479f80, PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscape_479f80));
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscape_479f80, PALRAM_BASE, sizeof(sTourianEscape_479f80), 16);
+            #else // !REGION_EU
+            DMA_SET(3, sTourianEscape_479f80, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscape_479f80)));
+            #endif // REGION_EU
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_BG1 | DCNT_OBJ;
             
             TOURIAN_ESCAPE_DATA.unk_8[0] = FALSE;
@@ -2092,8 +2175,8 @@ u8 TourianEscapeSamusCrashing(void)
     {
         if (TOURIAN_ESCAPE_DATA.unk_5 & 1)
         {
-            if (gWrittenToBLDY_NonGameplay < BLDY_MAX_VALUE)
-                gWrittenToBLDY_NonGameplay++;
+            if (gWrittenToBldy_NonGameplay < BLDY_MAX_VALUE)
+                gWrittenToBldy_NonGameplay++;
         }
 
         TOURIAN_ESCAPE_DATA.unk_5++;
@@ -2101,7 +2184,7 @@ u8 TourianEscapeSamusCrashing(void)
 
     if (TOURIAN_ESCAPE_DATA.unk_8[0])
     {
-        TOURIAN_ESCAPE_DATA.oamFrames[0] = (TOURIAN_ESCAPE_DATA.oamTimers[0] & 31) / 8;
+        TOURIAN_ESCAPE_DATA.oamFrames[0] = MOD_AND(TOURIAN_ESCAPE_DATA.oamTimers[0], 32) / 8;
         TOURIAN_ESCAPE_DATA.oamFramePointers[0] = sTourianEscape_47cfe4[TOURIAN_ESCAPE_DATA.oamFrames[0]];
         TOURIAN_ESCAPE_DATA.oamXPositions[0] -= 4;
         TOURIAN_ESCAPE_DATA.oamYPositions[0] += 2;
@@ -2118,7 +2201,7 @@ u8 TourianEscapeSamusCrashing(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusLookingAtSky(void)
+static u8 TourianEscapeSamusLookingAtSky(void)
 {
     u8 ended;
     u8 i;
@@ -2144,8 +2227,13 @@ u8 TourianEscapeSamusLookingAtSky(void)
             LZ77UncompVRAM(sTourianEscapeSamusLookingAtSkyTopTileTable, VRAM_BASE + 0xF000);
             LZ77UncompVRAM(sTourianEscapeSamusLookingAtSkyBottomTileTable, VRAM_BASE + 0xF800);
 
-            DMA_SET(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusLookingAtSkyPal));
-            DMA_SET(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_OBJ, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusLookingAtSkyPal));
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_BASE, sizeof(sTourianEscapeSamusLookingAtSkyPal), 16);
+            DmaTransfer(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_OBJ, sizeof(sTourianEscapeSamusLookingAtSkyPal), 16);
+            #else // !REGION_EU
+            DMA_SET(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAtSkyPal)));
+            DMA_SET(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAtSkyPal)));
+            #endif // REGION_EU
 
             gBg0YPosition = 0;
             gBg1YPosition = 0;
@@ -2153,9 +2241,9 @@ u8 TourianEscapeSamusLookingAtSky(void)
             break;
 
         case 4:
-            write16(REG_BG0CNT, CREATE_BGCNT(2, 28, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256));
-            write16(REG_BG1CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
-            write16(REG_BG2CNT, CREATE_BGCNT(0, 31, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(2, 28, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG1CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG2CNT, CREATE_BGCNT(0, 31, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_BG1 | DCNT_BG2 | DCNT_OBJ;
 
         case 160:
@@ -2198,10 +2286,10 @@ u8 TourianEscapeSamusLookingAtSky(void)
 
     if (TOURIAN_ESCAPE_DATA.unk_2 == 1)
     {
-        if (TOURIAN_ESCAPE_DATA.timer & 1)
+        if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 2))
         {
-            if (gWrittenToBLDY_NonGameplay != 0)
-                gWrittenToBLDY_NonGameplay--;
+            if (gWrittenToBldy_NonGameplay != 0)
+                gWrittenToBldy_NonGameplay--;
             else
                 TOURIAN_ESCAPE_DATA.bldcnt = 0;
         }
@@ -2214,7 +2302,7 @@ u8 TourianEscapeSamusLookingAtSky(void)
         if (gBg0YPosition >= 96)
             gBg2YPosition++;
 
-        if ((gBg2YPosition & 0xFF) == 160)
+        if (MOD_AND(gBg2YPosition, 0x100) == SCREEN_SIZE_Y)
             TOURIAN_ESCAPE_DATA.unk_2 = 0;
     }
 
@@ -2237,7 +2325,7 @@ u8 TourianEscapeSamusLookingAtSky(void)
  * 
  * @return u8 bool, ended
  */
-u8 TourianEscapeSamusLookingAtMotherShip(void)
+static u8 TourianEscapeSamusLookingAtMotherShip(void)
 {
     u8 ended;
     u8 i;
@@ -2259,8 +2347,13 @@ u8 TourianEscapeSamusLookingAtMotherShip(void)
             LZ77UncompVRAM(sTourianEscapeSamusLookingAtMotherShipTileTable, VRAM_BASE + 0x7000);
             LZ77UncompVRAM(sTourianEscapeSamusLookingAtMotherShipMotherShipTileTable, VRAM_BASE + 0xF000);
 
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeSamusLookingAtMotherShipPal, PALRAM_BASE,
+                sizeof(sTourianEscapeSamusLookingAtMotherShipPal), 16);
+            #else // !REGION_EU
             DMA_SET(3, sTourianEscapeSamusLookingAtMotherShipPal, PALRAM_BASE,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusLookingAtMotherShipPal));
+                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAtMotherShipPal)));
+            #endif // REGION_EU
 
             gBg0XPosition = 16;
             gBg1XPosition = 0;
@@ -2269,8 +2362,13 @@ u8 TourianEscapeSamusLookingAtMotherShip(void)
         case 3:
             BitFill(3, 0, VRAM_OBJ, 0x8000, 32);
             LZ77UncompVRAM(sTourianEscapeRainGfx, VRAM_OBJ);
-            DMA_SET(3, sTourianEscapeRainPal, PALRAM_OBJ, DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeRainPal));
-            DMA_SET(3, sStoryTextCutscenePal, PALRAM_OBJ + PALRAM_SIZE / 2 - 16 * 2, DMA_ENABLE << 16 | ARRAY_SIZE(sStoryTextCutscenePal));
+            #ifdef REGION_EU
+            DmaTransfer(3, sTourianEscapeRainPal, PALRAM_OBJ, sizeof(sTourianEscapeRainPal), 16);
+            DmaTransfer(3, sStoryTextCutscenePal, PALRAM_OBJ + 15 * PAL_ROW_SIZE, sizeof(sStoryTextCutscenePal), 16);
+            #else // !REGION_EU
+            DMA_SET(3, sTourianEscapeRainPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeRainPal)));
+            DMA_SET(3, sStoryTextCutscenePal, PALRAM_OBJ + 15 * PAL_ROW_SIZE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sStoryTextCutscenePal)));
+            #endif // REGION_EU
 
             for (i = 0; i < TOURIAN_ESCAPE_MAX_OBJECTS; i++)
             {
@@ -2281,14 +2379,14 @@ u8 TourianEscapeSamusLookingAtMotherShip(void)
                 TOURIAN_ESCAPE_DATA.oamPriorities[i] = 0;
             }
 
-            gWrittenToBLDALPHA_L = 0;
-            gWrittenToBLDALPHA_H = 16;
-            gWrittenToBLDY_NonGameplay = 0;
+            gWrittenToBldalpha_L = 0;
+            gWrittenToBldalpha_H = BLDALPHA_MAX_VALUE;
+            gWrittenToBldy_NonGameplay = 0;
             break;
 
         case 4:
-            write16(REG_BG0CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
-            write16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 14, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
+            WRITE_16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
 
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_BG1 | DCNT_OBJ;
             TOURIAN_ESCAPE_DATA.bldcnt = BLDCNT_BG0_FIRST_TARGET_PIXEL | BLDCNT_BG1_FIRST_TARGET_PIXEL |
@@ -2314,7 +2412,7 @@ u8 TourianEscapeSamusLookingAtMotherShip(void)
             break;
     }
 
-    if (TOURIAN_ESCAPE_DATA.timer >= 448 && gChangedInput & (KEY_A | KEY_B))
+    if (TOURIAN_ESCAPE_DATA.timer > CONVERT_SECONDS(7.45f) && gChangedInput & (KEY_A | KEY_B))
         ended = TRUE + 1;
 
     if (TOURIAN_ESCAPE_DATA.unk_BE == 1)
@@ -2324,19 +2422,19 @@ u8 TourianEscapeSamusLookingAtMotherShip(void)
     }
     else if (TOURIAN_ESCAPE_DATA.unk_BE == 3)
     {
-        if (!(TOURIAN_ESCAPE_DATA.unk_BF++ & 3))
+        if (MOD_AND(TOURIAN_ESCAPE_DATA.unk_BF++, 4) == 0)
         {
-            if (gWrittenToBLDALPHA_L < 16)
+            if (gWrittenToBldalpha_L < BLDALPHA_MAX_VALUE)
             {
-                gWrittenToBLDALPHA_L++;
-                gWrittenToBLDALPHA_H = 16 - gWrittenToBLDALPHA_L;
+                gWrittenToBldalpha_L++;
+                gWrittenToBldalpha_H = BLDALPHA_MAX_VALUE - gWrittenToBldalpha_L;
             }
         }
     }
 
     if (TOURIAN_ESCAPE_DATA.unk_2 < 2)
     {
-        i = TOURIAN_ESCAPE_DATA.unk_5++ & 15;
+        i = MOD_AND(TOURIAN_ESCAPE_DATA.unk_5++, 16);
         if (i == 0)
         {
             gBg0XPosition--;
@@ -2347,10 +2445,10 @@ u8 TourianEscapeSamusLookingAtMotherShip(void)
             gBg1XPosition++;
     }
 
-    if (TOURIAN_ESCAPE_DATA.unk_2 == 3 && TOURIAN_ESCAPE_DATA.timer & 1)
+    if (TOURIAN_ESCAPE_DATA.unk_2 == 3 && MOD_AND(TOURIAN_ESCAPE_DATA.timer, 2))
     {
-        if (gWrittenToBLDY_NonGameplay < 4)
-            gWrittenToBLDY_NonGameplay++;
+        if (gWrittenToBldy_NonGameplay < 4)
+            gWrittenToBldy_NonGameplay++;
     }
 
     for (i = 0; i < TOURIAN_ESCAPE_MAX_OBJECTS; i++)
@@ -2386,6 +2484,21 @@ u8 TourianEscapeSamusLookingAtMotherShip(void)
     return ended;
 }
 
+static TourianEscapeFunc_T sTourianEscapeSubroutinePointers[12] = {
+    [0]  = TourianEscapeZebesExploding,
+    [1]  = TourianEscapeSamusInHerShip,
+    [2]  = TourianEscapeSamusLookingAround,
+    [3]  = TourianEscapeSamusSurrounded,
+    [4]  = TourianEscapeSamusFlyingIn,
+    [5]  = TourianEscapeSamusChasedByPirates,
+    [6]  = TourianEscapeSamusChasedByPiratesFiring,
+    [7]  = TourianEscapeSamusGettingShot,
+    [8]  = TourianEscapeSamusGoingToCrash,
+    [9]  = TourianEscapeSamusCrashing,
+    [10] = TourianEscapeSamusLookingAtSky,
+    [11] = TourianEscapeSamusLookingAtMotherShip
+};
+
 /**
  * @brief 84714 | e4 | Executes the current tourian escape subroutine
  * 
@@ -2400,25 +2513,25 @@ u8 TourianEscapeCallSubroutines(void)
     ended = FALSE;
     gNextOamSlot = 0;
 
-    switch (gGameModeSub1)
+    switch (gSubGameMode1)
     {
         case 0:
             // Make sure Samus isn't suitless
             ChaosEndEquipmentEffects();
             
             TourianEscapeInit();
-            gGameModeSub1++;
+            gSubGameMode1++;
             break;
 
         case 1:
-            if (gWrittenToBLDY_NonGameplay != 0)
+            if (gWrittenToBldy_NonGameplay != 0)
             {
-                gWrittenToBLDY_NonGameplay--;
+                gWrittenToBldy_NonGameplay--;
                 break;
             }
 
             TOURIAN_ESCAPE_DATA.bldcnt = 0;
-            gGameModeSub1++;
+            gSubGameMode1++;
             break;
 
         case 2:
@@ -2443,7 +2556,7 @@ u8 TourianEscapeCallSubroutines(void)
                 }
             }
             else if (result)
-                gGameModeSub1++;
+                gSubGameMode1++;
 
             ResetFreeOam();
             break;

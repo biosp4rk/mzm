@@ -16,11 +16,11 @@
 #define CHOZO_BALL_FLICKER_TIMER work0
 
 /**
- * 162b0 | 94 | Spawns an item banner depending on the chozo statue sprite ID
+ * 162b0 | 94 | Spawns an message banner depending on the chozo statue sprite ID
  * 
  * @param spriteId Chozo statue sprite ID
  */
-void ChozoBallSpawnItemBanner(u8 spriteId)
+static void ChozoBallSpawnMessageBanner(u8 spriteId)
 {
     u8 text;
 
@@ -71,7 +71,8 @@ void ChozoBallSpawnItemBanner(u8 spriteId)
             break;
     }
 
-    SpriteSpawnPrimary(PSPRITE_ITEM_BANNER, text, 6, gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
+    SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, text, SPRITE_GFX_SLOT_SPECIAL,
+        gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
 }
 
 /**
@@ -79,7 +80,7 @@ void ChozoBallSpawnItemBanner(u8 spriteId)
  * 
  * @param spriteId Chozo statue sprite ID
  */
-void ChozoBallSetClosedOam(u8 spriteId)
+static void ChozoBallSetClosedOam(u8 spriteId)
 {
     // Check whether to use the normal of unknown version
     switch (spriteId)
@@ -117,7 +118,7 @@ void ChozoBallSetClosedOam(u8 spriteId)
  * 
  * @param spriteId Chozo statue sprite ID
  */
-void ChozoBallSetRevealingOam(u8 spriteId)
+static void ChozoBallSetRevealingOam(u8 spriteId)
 {
     // Check whether to use the normal of unknown version
     switch (spriteId)
@@ -155,7 +156,7 @@ void ChozoBallSetRevealingOam(u8 spriteId)
  * 
  * @param spriteId Chozo statue sprite ID
  */
-void ChozoBallSetRevealedOam(u8 spriteId)
+static void ChozoBallSetRevealedOam(u8 spriteId)
 {
     // Check whether to use the normal of unknown version
     switch (spriteId)
@@ -192,7 +193,7 @@ void ChozoBallSetRevealedOam(u8 spriteId)
  * 16470 | 74 | Initializes a chozo ball sprite
  * 
  */
-void ChozoBallInit(void)
+static void ChozoBallInit(void)
 {
     gCurrentSprite.status &= ~SPRITE_STATUS_NOT_DRAWN;
 
@@ -201,9 +202,9 @@ void ChozoBallInit(void)
     gCurrentSprite.hitboxLeft = -(QUARTER_BLOCK_SIZE + PIXEL_SIZE * 3);
     gCurrentSprite.hitboxRight = (QUARTER_BLOCK_SIZE + PIXEL_SIZE * 3);
 
-    gCurrentSprite.drawDistanceTop = SUB_PIXEL_TO_PIXEL(QUARTER_BLOCK_SIZE * 3);
-    gCurrentSprite.drawDistanceBottom = SUB_PIXEL_TO_PIXEL(QUARTER_BLOCK_SIZE * 3);
-    gCurrentSprite.drawDistanceHorizontal = SUB_PIXEL_TO_PIXEL(QUARTER_BLOCK_SIZE * 3);
+    gCurrentSprite.drawDistanceTop = SUB_PIXEL_TO_PIXEL(THREE_QUARTER_BLOCK_SIZE);
+    gCurrentSprite.drawDistanceBottom = SUB_PIXEL_TO_PIXEL(THREE_QUARTER_BLOCK_SIZE);
+    gCurrentSprite.drawDistanceHorizontal = SUB_PIXEL_TO_PIXEL(THREE_QUARTER_BLOCK_SIZE);
 
     gCurrentSprite.animationDurationCounter = 0;
     gCurrentSprite.currentAnimationFrame = 0;
@@ -219,7 +220,7 @@ void ChozoBallInit(void)
  * 164e4 | 4 | Empty function
  * 
  */
-void ChozoBallEmpty(void)
+static void ChozoBallEmpty(void)
 {
     return;
 }
@@ -228,7 +229,7 @@ void ChozoBallEmpty(void)
  * 164e8 | 70 | Initializes a chozo ball to be revealing
  * 
  */
-void ChozoBallRevealingInit(void)
+static void ChozoBallRevealingInit(void)
 {
     gCurrentSprite.properties |= SP_IMMUNE_TO_PROJECTILES;
     gCurrentSprite.health = 1;
@@ -249,9 +250,9 @@ void ChozoBallRevealingInit(void)
  * 16558 | 3c | Checks if the revealing animation has ended
  * 
  */
-void ChozoBallCheckRevealingAnimEnded(void)
+static void ChozoBallCheckRevealingAnimEnded(void)
 {
-    if (SpriteUtilCheckEndCurrentSpriteAnim())
+    if (SpriteUtilHasCurrentAnimationEnded())
     {
         gCurrentSprite.pose = CHOZO_BALL_POSE_IDLE;
 
@@ -262,10 +263,10 @@ void ChozoBallCheckRevealingAnimEnded(void)
 }
 
 /**
- * 16594 | 1c | Registers the item grabbed and calls ChozoBallSpawnItemBanner
+ * 16594 | 1c | Registers the item grabbed and calls ChozoBallSpawnMessageBanner
  * 
  */
-void ChozoBallRegisterItem(void)
+static void ChozoBallRegisterItem(void)
 {
     u8 spriteId;
 
@@ -280,7 +281,7 @@ void ChozoBallRegisterItem(void)
 
         spriteId = gSpriteData[gCurrentSprite.primarySpriteRamSlot].spriteId;
         ChozoStatueRegisterItem(spriteId);
-        ChozoBallSpawnItemBanner(spriteId);
+        ChozoBallSpawnMessageBanner(spriteId);
     }
 }
 
@@ -288,7 +289,7 @@ void ChozoBallRegisterItem(void)
  * 16600 | 3c | Handles the flashing animation when the item gets grabbed 
  * 
  */
-void ChozoBallFlashAnimation(void)
+static void ChozoBallFlashAnimation(void)
 {
     gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
     // Missing a timer increment?

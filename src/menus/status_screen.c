@@ -1,21 +1,25 @@
+#include "event.h"
 #include "menus/status_screen.h"
 #include "menus/pause_screen.h"
+#include "dma.h"
 #include "chaos.h"
 
+#include "data/block_data.h"
 #include "data/shortcut_pointers.h"
 #include "data/menus/status_screen_data.h"
 #include "data/menus/pause_screen_data.h"
-#include "data/menus/internal_pause_screen_data.h"
-#include "data/menus/internal_status_screen_data.h"
+#include "data/menus/pause_screen_map_data.h"
 
 #include "constants/audio.h"
 #include "constants/connection.h"
 #include "constants/demo.h"
+#include "constants/event.h"
 #include "constants/samus.h"
 #include "constants/text.h"
 #include "constants/game_state.h"
 #include "constants/menus/pause_screen.h"
 #include "constants/menus/status_screen.h"
+#include "constants/game_region.h"
 #include "constants/chaos.h"
 
 #include "structs/demo.h"
@@ -23,6 +27,136 @@
 #include "structs/samus.h"
 #include "structs/text.h"
 #include "structs/menus/pause_screen.h"
+
+extern const u8* sStatusScreenFlagsOrderPointers[4];
+
+#ifdef DEBUG
+static const u8* sPauseDebugEventNamePointers[EVENT_COUNT] = {
+    [EVENT_NONE] = sPauseDebug_Event00_Text,
+    [EVENT_EASY] = sPauseDebug_Event01_Text,
+    [EVENT_HARD] = sPauseDebug_Event02_Text,
+    [EVENT_ENTER_NORFAIR_DEMO_PLAYED] = sPauseDebug_Event03_Text,
+    [EVENT_EXIT_KRAID_DEMO_PLAYED] = sPauseDebug_Event04_Text,
+    [EVENT_ENTER_RIDLEY_DEMO_PLAYED] = sPauseDebug_Event05_Text,
+    [EVENT_ENTER_MOTHERSHIP_DEMO_PLAYED] = sPauseDebug_Event06_Text,
+    [EVENT_ENTER_TOURIAN_DEMO_PLAYED] = sPauseDebug_Event07_Text,
+    [EVENT_STATUE_LONG_BEAM_GRABBED] = sPauseDebug_Event08_Text,
+    [EVENT_STATUE_BOMBS_GRABBED] = sPauseDebug_Event09_Text,
+    [EVENT_STATUE_ICE_BEAM_GRABBED] = sPauseDebug_Event0A_Text,
+    [EVENT_STATUE_SPEEDBOOSTER_GRABBED] = sPauseDebug_Event0B_Text,
+    [EVENT_STATUE_HIGH_JUMP_GRABBED] = sPauseDebug_Event0C_Text,
+    [EVENT_STATUE_VARIA_SUIT_GRABBED] = sPauseDebug_Event0D_Text,
+    [EVENT_STATUE_WAVE_BEAM_GRABBED] = sPauseDebug_Event0E_Text,
+    [EVENT_STATUE_SCREW_ATTACK_GRABBED] = sPauseDebug_Event0F_Text,
+    [EVENT_POWER_GRIP_OBTAINED] = sPauseDebug_Event10_Text,
+    [EVENT_CHOZO_PILLAR_FULLY_EXTENDED] = sPauseDebug_Event11_Text,
+    [EVENT_HIGH_JUMP_OBTAINED] = sPauseDebug_Event12_Text,
+    [EVENT_VARIA_SUIT_OBTAINED] = sPauseDebug_Event13_Text,
+    [EVENT_CHARGE_BEAM_OBTAINED] = sPauseDebug_Event14_Text,
+    [EVENT_SCREW_ATTACK_OBTAINED] = sPauseDebug_Event15_Text,
+    [EVENT_SPACE_JUMP_OBTAINED] = sPauseDebug_Event16_Text,
+    [EVENT_GRAVITY_SUIT_OBTAINED] = sPauseDebug_Event17_Text,
+    [EVENT_PLASMA_BEAM_OBTAINED] = sPauseDebug_Event18_Text,
+    [EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED] = sPauseDebug_Event19_Text,
+    [EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED] = sPauseDebug_Event1A_Text,
+    [EVENT_DEOREM_KILLED_AT_SECOND_LOCATION] = sPauseDebug_Event1B_Text,
+    [EVENT_ACID_WORM_KILLED] = sPauseDebug_Event1C_Text,
+    [EVENT_KRAID_GADORA_KILLED] = sPauseDebug_Event1D_Text,
+    [EVENT_KRAID_KILLED] = sPauseDebug_Event1E_Text,
+    [EVENT_KRAID_ELEVATOR_STATUE_DESTROYED] = sPauseDebug_Event1F_Text,
+    [EVENT_CATERPILLAR_KILLED] = sPauseDebug_Event20_Text,
+    [EVENT_IMAGO_TUNNEL_DISCOVERED] = sPauseDebug_Event21_Text,
+    [EVENT_IMAGO_COCOON_KILLED] = sPauseDebug_Event22_Text,
+    [EVENT_IMAGO_KILLED] = sPauseDebug_Event23_Text,
+    [EVENT_RIDLEY_GADORA_KILLED] = sPauseDebug_Event24_Text,
+    [EVENT_RIDLEY_KILLED] = sPauseDebug_Event25_Text,
+    [EVENT_RIDLEY_ELEVATOR_STATUE_DESTROYED] = sPauseDebug_Event26_Text,
+    [EVENT_MOTHER_BRAIN_KILLED] = sPauseDebug_Event27_Text,
+    [EVENT_CROCOMIRE_KILLED] = sPauseDebug_Event28_Text,
+    [EVENT_REPEL_MACHINE_KILLED] = sPauseDebug_Event29_Text,
+    [EVENT_VIEWED_STATUE_ROOM] = sPauseDebug_Event2A_Text,
+    [EVENT_LONG_BEAM_DESSGEEGA_KILLED] = sPauseDebug_Event2B_Text,
+    [EVENT_THREE_HIVES_DESTROYED] = sPauseDebug_Event2C_Text,
+    [EVENT_BUGS_KILLED] = sPauseDebug_Event2D_Text,
+    [EVENT_ZIPLINES_ACTIVATED] = sPauseDebug_Event2E_Text,
+    [EVENT_PLANT_DESTROYED_LAVA] = sPauseDebug_Event2F_Text,
+    [EVENT_PLANT_DESTROYED_POST_VARIA] = sPauseDebug_Event30_Text,
+    [EVENT_PLANT_DESTROYED_VARIA2] = sPauseDebug_Event31_Text,
+    [EVENT_PLANT_DESTROYED_VARIA3] = sPauseDebug_Event32_Text,
+    [EVENT_PLANT_DESTROYED_VARIA1] = sPauseDebug_Event33_Text,
+    [EVENT_KRAID_BARISTUTES_KILLED] = sPauseDebug_Event34_Text,
+    [EVENT_KRAID_STATUE_OPENED] = sPauseDebug_Event35_Text,
+    [EVENT_RIDLEY_STATUE_OPENED] = sPauseDebug_Event36_Text,
+    [EVENT_FIRST_METROID_ROOM_CLEARED] = sPauseDebug_Event37_Text,
+    [EVENT_THIRD_METROID_ROOM_CLEARED] = sPauseDebug_Event38_Text,
+    [EVENT_FIFTH_METROID_ROOM_CLEARED] = sPauseDebug_Event39_Text,
+    [EVENT_SECOND_METROID_ROOM_CLEARED] = sPauseDebug_Event3A_Text,
+    [EVENT_SIXTH_METROID_ROOM_CLEARED] = sPauseDebug_Event3B_Text,
+    [EVENT_FOURTH_METROID_ROOM_CLEARED] = sPauseDebug_Event3C_Text,
+    [EVENT_ZEBETITE_ONE_DESTROYED] = sPauseDebug_Event3D_Text,
+    [EVENT_ZEBETITE_TWO_DESTROYED] = sPauseDebug_Event3E_Text,
+    [EVENT_ZEBETITE_THREE_DESTROYED] = sPauseDebug_Event3F_Text,
+    [EVENT_ZEBETITE_FOUR_DESTROYED] = sPauseDebug_Event40_Text,
+    [EVENT_ESCAPED_ZEBES] = sPauseDebug_Event41_Text,
+    [EVENT_MARKER_BETWEEN_ZEBES_AND_MOTHERSHIP] = sPauseDebug_Event42_Text,
+    [EVENT_FULLY_POWERED_SUIT_OBTAINED] = sPauseDebug_Event43_Text,
+    [EVENT_SKIPPED_VARIA_SUIT] = sPauseDebug_Event44_Text,
+    [EVENT_CHOZOBLOCK] = sPauseDebug_Event45_Text,
+    [EVENT_POWER_BOMB_STOLEN] = sPauseDebug_Event46_Text,
+    [EVENT_SPACE_PIRATE_WITH_POWER_BOMB_ONE] = sPauseDebug_Event47_Text,
+    [EVENT_SPACE_PIRATE_WITH_POWER_BOMB_TWO] = sPauseDebug_Event48_Text,
+    [EVENT_GLASS_TUBE_BROKEN] = sPauseDebug_Event49_Text,
+    [EVENT_MECHA_RIDLEY_KILLED] = sPauseDebug_Event4A_Text,
+    [EVENT_ESCAPED_CHOZODIA] = sPauseDebug_Event4B_Text,
+    [EVENT_AKI] = sPauseDebug_Event4C_Text,
+    [EVENT_BOMBATE] = sPauseDebug_Event4D_Text,
+    [EVENT_END_UNUSED] = sPauseDebug_Event4E_Text
+};
+#endif // DEBUG
+
+// ability_group, nbr_rows, nbr_cols
+static u8 sStatusScreenGroupsDimensions[6][3] = {
+    [0] = {
+        [0] = ABILITY_GROUP_CURRENT_ENERGY,
+        [1] = 1,
+        [2] = 9
+    },
+    [1] = {
+        [0] = ABILITY_GROUP_BOMBS,
+        [1] = 4,
+        [2] = 12
+    },
+    [2] = {
+        [0] = ABILITY_GROUP_BEAMS,
+        [1] = 7,
+        [2] = 8
+    },
+    [3] = {
+        [0] = ABILITY_GROUP_SUITS,
+        [1] = 4,
+        [2] = 10
+    },
+    [4] = {
+        [0] = ABILITY_GROUP_MISC,
+        [1] = 8,
+        [2] = 10
+    },
+    [5] = {
+        [0] = ABILITY_GROUP_MISSILES,
+        [1] = 6,
+        [2] = 9
+    },
+};
+
+// bomb column offset?
+static u8 sPauseScreen_7603ea[6] = {
+    [0] = 0,
+    [1] = 1,
+    [2] = 3,
+    [3] = 0,
+    [4] = 0,
+    [5] = 0
+};
 
 /**
  * @brief 6fd00 | 118 | Updates the minimap animated palette
@@ -99,7 +233,7 @@ void LoadPauseScreenBgPalette(void)
 
     for (i = 0; i < MAX_AMOUNT_OF_AREAS - 1; i++)
     {
-        if ((PAUSE_SCREEN_DATA.areasViewables >> i) & 1)
+        if ((PAUSE_SCREEN_DATA.areasViewable >> i) & 1)
             continue;
 
         PAUSE_SCREEN_EWRAM.backgroundPalette[sMinimapAnimatedPaletteOffsets[i]] = 0;
@@ -108,12 +242,1510 @@ void LoadPauseScreenBgPalette(void)
     if (gCurrentArea < MAX_AMOUNT_OF_AREAS)
         PAUSE_SCREEN_EWRAM.backgroundPalette[sMinimapAnimatedPaletteOffsets[gCurrentArea]] = sMinimapAnimatedPalette[0];
 
-    PAUSE_SCREEN_EWRAM.backgroundPalette[sMinimapAnimatedPaletteOffsets[AREA_DEBUG_1]] = 0;
+    PAUSE_SCREEN_EWRAM.backgroundPalette[sMinimapAnimatedPaletteOffsets[AREA_TEST]] = 0;
     PAUSE_SCREEN_EWRAM.backgroundPalette[sMinimapAnimatedPaletteOffsets[MAX_AMOUNT_OF_AREAS]] = 0;
 
     DmaTransfer(3, &PAUSE_SCREEN_EWRAM.backgroundPalette[sMinimapAnimatedPaletteOffsets[MAX_AMOUNT_OF_AREAS]],
         PALRAM_BASE + sMinimapAnimatedPaletteOffsets[MAX_AMOUNT_OF_AREAS] * sizeof(u16), 16 + 2, 16);
 }
+
+#ifdef DEBUG
+
+/**
+ * @brief Updates graphics related to the map screen
+ * 
+ * @param param_0 TODO
+ * @param area Area
+ */
+void PauseDebugUpdateMapOverlay(u8 param_0, Area area)
+{
+    switch (param_0)
+    {
+        case 1:
+            CallLZ77UncompWram(sMapScreenOverlayTilemap, (void*)sEwramPointer + 0x9800);
+            CallLZ77UncompWram(sWorldMapOverlayTilemap, (void*)sEwramPointer + 0xA000);
+            PauseScreenDetermineMapsViewable();
+            LoadPauseScreenBgPalette();
+            DmaTransfer(3, (void*)sEwramPointer + 0x9800, VRAM_BASE + 0xD000, 0x800, 16);
+            PauseScreenGetAllMinimapData(area);
+
+            if (PAUSE_SCREEN_DATA.currentArea == area)
+            {
+                DmaTransfer(3, *PAUSE_SCREEN_DATA.mapsDataPointer + (PAUSE_SCREEN_DATA.currentArea * 0x400), VRAM_BASE + 0xE000, 0x800, 16);
+                PauseScreenMapSetSpawnPosition(PAUSE_SCREEN_DATA.currentArea != gCurrentArea ? 2 : 0);
+                PauseScreenUpdateBossIcons();
+            }
+            break;
+
+        case 0:
+        case 2:
+            ChozoStatueHintDeterminePath(0);
+            CallLZ77UncompWram(sMapScreenOverlayTilemap, (void*)sEwramPointer + 0x9800);
+            CallLZ77UncompWram(sWorldMapOverlayTilemap, (void*)sEwramPointer + 0xA000);
+            PauseScreenCheckAreasWithTargets();
+            PauseScreenDetermineMapsViewable();
+            LoadPauseScreenBgPalette();
+            DmaTransfer(3, (void*)sEwramPointer + 0x9800, VRAM_BASE + 0xD000, 0x800, 16);
+            
+            PauseScreenMapSetSpawnPosition(PAUSE_SCREEN_DATA.currentArea != gCurrentArea ? 2 : 0);
+            PauseScreenUpdateWorldMap(2);
+            break;
+    }
+}
+
+/**
+ * @brief Activates all obtained abilities if fully powered
+ * 
+ */
+void PauseDebugActivateAbilities(void)
+{
+    if (gEquipment.suitType == SUIT_FULLY_POWERED && PAUSE_SCREEN_DATA.typeFlags & PAUSE_SCREEN_TYPE_DEBUG)
+    {
+        gEquipment.beamBombsActivation = gEquipment.beamBombs;
+        gEquipment.suitMiscActivation = gEquipment.suitMisc;
+    }
+}
+
+/**
+ * @brief Main function for pause debug menu
+ * 
+ * @return u32 Leaving
+ */
+u32 PauseDebugSubroutine(void)
+{
+    if (!PAUSE_SCREEN_DATA.debugOnEventList)
+    {
+        if (gChangedInput == KEY_NONE)
+            return FALSE;
+
+        if (gChangedInput & (gButtonAssignments.pause | KEY_B) && PAUSE_SCREEN_DATA.subroutineInfo.stage == 0)
+            return TRUE;
+
+        if (gChangedInput & (KEY_L | KEY_R) && PAUSE_SCREEN_DATA.subroutineInfo.stage == 0)
+        {
+            PAUSE_SCREEN_DATA.subroutineInfo.currentSubroutine = 0xC;
+            PAUSE_SCREEN_DATA.subroutineInfo.timer = 0;
+            PAUSE_SCREEN_DATA.subroutineInfo.stage = 0;
+        }
+        else if (gChangedInput & KEY_SELECT && PAUSE_SCREEN_DATA.subroutineInfo.stage == 0)
+        {
+            PAUSE_SCREEN_DATA.debugOnEventList = TRUE;
+            PAUSE_SCREEN_DATA.debugEventListStage = 0;
+        }
+        else
+        {
+            PauseDebugStatusScreen();
+        }
+    }
+    else
+    {
+        PauseDebugEventList();
+    }
+
+    return FALSE;
+}
+
+/**
+ * @brief Toggles a single ability
+ * 
+ * @param isActivation Whether activation is being toggled
+ * @param group Pause debug group
+ * @param abilityNum Ability number within the group
+ */
+void PauseDebugToggleAbility(u8 isActivation, u8 group, u8 abilityNum)
+{
+    s32 abilityGroup;
+    s32 start;
+    u8 flag;
+    s32 toggle;
+    u8* pActivation;
+    u8* pAbility;
+
+    if (gEquipment.suitType == SUIT_SUITLESS)
+        return;
+
+    start = PAUSE_DEBUG_GROUP_BEAM;
+    flag = sStatusScreenFlagsOrderPointers[group - start][abilityNum];
+    toggle = TRUE;
+    
+    if (group < start)
+        return;
+
+    if (group - start <= PAUSE_DEBUG_GROUP_BOMB - start)
+    {
+        pActivation = &gEquipment.beamBombsActivation;
+        pAbility = &gEquipment.beamBombs;
+        if (isActivation && gEquipment.suitType != SUIT_FULLY_POWERED && flag & BBF_PLASMA_BEAM)
+            toggle = FALSE;
+    }
+    else if (group - start <= PAUSE_DEBUG_GROUP_MISC - start)
+    {
+        pActivation = &gEquipment.suitMiscActivation;
+        pAbility = &gEquipment.suitMisc;
+        if (isActivation && gEquipment.suitType != SUIT_FULLY_POWERED && flag & (SMF_SPACE_JUMP | SMF_GRAVITY_SUIT))
+            toggle = FALSE;
+    }
+    else
+    {
+        return;
+    }
+
+    if (toggle)
+    {
+        if (!isActivation)
+        {
+            *pAbility ^= flag;
+            if (!(*pAbility & flag))
+                *pActivation &= ~flag;
+        }
+        else
+        {
+            *pActivation ^= flag;
+            if (*pActivation & flag)
+                *pAbility |= flag;
+        }
+    }
+    else
+    {
+        *pAbility |= flag;
+    }
+}
+
+/**
+ * @brief Main function for pause debug status screen
+ * 
+ */
+void PauseDebugStatusScreen(void)
+{
+    s32 xPos;
+    s32 yPos;
+    s32 i;
+    s32 work1;
+    s32 work2;
+    s32 work3;
+
+    work1 = FALSE;
+    yPos = PAUSE_SCREEN_DATA.miscOam[0].yPosition / 32;
+    xPos = PAUSE_SCREEN_DATA.miscOam[0].xPosition / 32;
+
+    for (i = 0; i < PAUSE_DEBUG_GROUP_END; i++)
+    {
+        if (sPauseDebugGroupsPositions[i].top <= yPos && sPauseDebugGroupsPositions[i].bottom >= yPos &&
+            sPauseDebugGroupsPositions[i].left <= xPos && sPauseDebugGroupsPositions[i].right >= xPos)
+        {
+            work1 = TRUE;
+            break;
+        }
+    }
+
+    if (!work1)
+        return;
+
+    if (sPauseDebugGroupsPositions[i].group != PAUSE_DEBUG_GROUP_EQUIP_TANK && gChangedInput & KEY_B && PAUSE_SCREEN_DATA.subroutineInfo.stage != 0)
+    {
+        PAUSE_SCREEN_DATA.subroutineInfo.stage = 0;
+        UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x35);
+        if (sPauseDebugGroupsPositions[i].group == PAUSE_DEBUG_GROUP_TIME)
+            gMaxInGameTimerFlag = 0;
+        return;
+    }
+
+    yPos = yPos - sPauseDebugGroupsPositions[i].top;
+    work2 = sPauseDebugGroupsPositions[i].left != xPos;
+    xPos = sPauseDebugGroupsPositions[i].right - xPos;
+
+    switch (sPauseDebugGroupsPositions[i].group)
+    {
+        case PAUSE_DEBUG_GROUP_BEAM:
+        case PAUSE_DEBUG_GROUP_BOMB:
+        case PAUSE_DEBUG_GROUP_SUIT:
+        case PAUSE_DEBUG_GROUP_MISC:
+            if (gChangedInput & KEY_A)
+            {
+                PauseDebugToggleAbility(work2, sPauseDebugGroupsPositions[i].group, yPos);
+                PauseDebugUpdateMapOverlay(0, PAUSE_SCREEN_DATA.currentArea);
+                PauseDebugDrawAffectedGroups(1 << sPauseDebugGroupsPositions[i].group);
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_CURRENT_ENERGY:
+        case PAUSE_DEBUG_GROUP_MAX_ENERGY:
+        case PAUSE_DEBUG_GROUP_CURRENT_MISSILES:
+        case PAUSE_DEBUG_GROUP_MAX_MISSILES:
+        case PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES:
+        case PAUSE_DEBUG_GROUP_MAX_SUPER_MISSILES:
+        case PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS:
+        case PAUSE_DEBUG_GROUP_MAX_POWER_BOMBS:
+            if (gChangedInput & KEY_A)
+            {
+                UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x36);
+                PAUSE_SCREEN_DATA.subroutineInfo.stage = 1;
+            }
+            else if (PAUSE_SCREEN_DATA.subroutineInfo.stage != 0 && PauseDebugEnergyAmmoInput(xPos, sPauseDebugGroupsPositions[i].group))
+            {
+                PauseDebugDrawAffectedGroups(1 << sPauseDebugGroupsPositions[i].group);
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_GET_MAP:
+            if (!(gChangedInput & KEY_A))
+                break;
+            
+            work2 = TRUE;
+            if (xPos == 3)
+                break;
+            
+            if (xPos > 3)
+                work3 = yPos;
+            else if (yPos == 0)
+                work3 = 6;
+            else
+                work2 = FALSE;
+
+            if (work2)
+            {
+                if (((gEquipment.downloadedMapStatus >> work3) & 1) != 0 && PAUSE_SCREEN_DATA.currentArea == work3 &&
+                    (((PAUSE_SCREEN_DATA.areasWithHints | PAUSE_SCREEN_DATA.areasWithVisitedTiles) >> work3) & 1) == 0)
+                {
+                    work2 = FALSE;
+                }
+
+                if (work2)
+                {
+                    gEquipment.downloadedMapStatus ^= (1 << work3);
+                    gAreaBeforeTransition = 0xFF;
+                    gSectionInfo.downloadedMaps = gEquipment.downloadedMapStatus;
+                    PauseDebugUpdateMapOverlay(1, work3);
+                    PauseDebugDrawAffectedGroups(1 << PAUSE_DEBUG_GROUP_GET_MAP);
+                }
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_EQUIP_TANK:
+            if (PAUSE_SCREEN_DATA.subroutineInfo.stage == 0)
+            {
+                if (gChangedInput & KEY_A)
+                {
+                    PAUSE_SCREEN_DATA.subroutineInfo.stage = 1;
+                    UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x36);
+                    break;
+                }
+            }
+            else if (gChangedInput & (KEY_A | KEY_B))
+            {
+                PAUSE_SCREEN_DATA.subroutineInfo.stage = 0;
+                UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x35);
+                break;
+            }
+            
+            if (PAUSE_SCREEN_DATA.subroutineInfo.stage != 0)
+            {
+                if (gChangedInput & KEY_RIGHT)
+                {
+                    if (xPos != 0)
+                        PAUSE_SCREEN_DATA.miscOam[0].xPosition += 32;
+                }
+                else if (gChangedInput & KEY_LEFT)
+                {
+                    if (xPos < 9)
+                        PAUSE_SCREEN_DATA.miscOam[0].xPosition -= 32;
+                }
+                else if (xPos != 4)
+                {
+                    work3 = xPos > 4;
+                    PauseDebugEquipTank(work3);
+                }
+            }
+            break;
+        
+        case PAUSE_DEBUG_GROUP_S_EVENT:
+            work3 = FALSE;
+            if (PAUSE_SCREEN_DATA.subroutineInfo.stage == 0)
+            {
+                if (gChangedInput & KEY_A)
+                {
+                    PAUSE_SCREEN_DATA.subroutineInfo.stage = 1;
+                    UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x36);
+                }
+            }
+            else if (gChangedInput & (KEY_A | KEY_B))
+            {
+                PAUSE_SCREEN_DATA.subroutineInfo.stage = 0;
+                UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x35);
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_TIME:
+            if (PAUSE_SCREEN_DATA.subroutineInfo.stage == 0)
+            {
+                if (gChangedInput & KEY_A) {
+                    UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x36);
+                    PAUSE_SCREEN_DATA.subroutineInfo.stage = 1;
+                    gMaxInGameTimerFlag = 1;
+                }
+                break;
+            }
+            
+            work3 = FALSE;
+            if (gChangedInput & KEY_DOWN)
+            {
+                work3 = TRUE;
+                if (xPos - 6 >= 0 && xPos - 6 < 2)
+                {
+                    if (gInGameTimer.hours + sPowersOfTen[xPos - 6] > 99)
+                        gInGameTimer.hours = 99;
+                    else
+                        gInGameTimer.hours += sPowersOfTen[xPos - 6];
+                }
+                else if (xPos - 3 >= 0 && xPos - 3 < 2)
+                {
+                    if (gInGameTimer.minutes + sPowersOfTen[xPos - 3] > 59)
+                        gInGameTimer.minutes = 59;
+                    else
+                        gInGameTimer.minutes += sPowersOfTen[xPos - 3];
+                }
+                else if (xPos >= 0 && xPos < 2)
+                {
+                    if (gInGameTimer.seconds + sPowersOfTen[xPos] > 59)
+                        gInGameTimer.seconds = 59;
+                    else
+                        gInGameTimer.seconds += sPowersOfTen[xPos];
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else if (gChangedInput & KEY_UP)
+            {
+                work3 = TRUE;
+                if (xPos - 6 >= 0 && xPos - 6 < 2)
+                {
+                    if (gInGameTimer.hours - sPowersOfTen[xPos - 6] < 0)
+                        gInGameTimer.hours = 0;
+                    else
+                        gInGameTimer.hours -= sPowersOfTen[xPos - 6];
+                }
+                else if (xPos - 3 >= 0 && xPos - 3 < 2)
+                {
+                    if (gInGameTimer.minutes - sPowersOfTen[xPos - 3] < 0)
+                        gInGameTimer.minutes = 0;
+                    else
+                        gInGameTimer.minutes -= sPowersOfTen[xPos - 3];
+                }
+                else if (xPos >= 0 && xPos < 2)
+                {
+                    if (gInGameTimer.seconds - sPowersOfTen[xPos] < 0)
+                        gInGameTimer.seconds = 0;
+                    else
+                        gInGameTimer.seconds -= sPowersOfTen[xPos];
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else if (gChangedInput & KEY_RIGHT)
+            {
+                if (xPos != 0)
+                    PAUSE_SCREEN_DATA.miscOam[0].xPosition += 32;
+            }
+            else if (gChangedInput & KEY_LEFT)
+            {
+                if (xPos < 7)
+                    PAUSE_SCREEN_DATA.miscOam[0].xPosition -= 32;
+            }
+            
+            if (work3)
+            {
+                gInGameTimer.frames = 0;
+                PauseDebugDrawAffectedGroups(1 << PAUSE_DEBUG_GROUP_TIME);
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_SAVE:
+            if (gSramCorruptFlag == 0 && gChangedInput & KEY_A)
+            {
+                while (!SramSaveFile());
+                PauseDebugDrawAffectedGroups(1 << PAUSE_DEBUG_GROUP_SAVE);
+                BootDebugWriteSram(TRUE);
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_DOOR_UNLOCK:
+            if (gDoorUnlockTimer != 0 && gChangedInput & KEY_A)
+            {
+                gDoorUnlockTimer = -CONVERT_SECONDS(4.f / 15);
+                PauseDebugDrawAffectedGroups(1 << PAUSE_DEBUG_GROUP_DOOR_UNLOCK);
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_WRITE_DEMO_RAM:
+            if (gChangedInput & KEY_A)
+            {
+                SramWrite_ToEwram_DemoRam();
+                SoundPlay(SOUND_GAME_BOY_BOOT);
+                WRITE_16(VRAM_BASE + 0xB000 +
+                    (sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_WRITE_DEMO_RAM].top * 32 +
+                    sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_WRITE_DEMO_RAM].left) * 2, 0xB3BA);
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_LANGUAGE:
+            if (PAUSE_SCREEN_DATA.subroutineInfo.stage == 0)
+            {
+                if (gChangedInput & KEY_A)
+                {
+                    UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x36);
+                    PAUSE_SCREEN_DATA.subroutineInfo.stage = 1;
+                }
+            }
+            else
+            {
+                work3 = 0;
+                if (gChangedInput != 0)
+                {
+                    if (gChangedInput & KEY_UP)
+                        work3 = -1;
+                    else if (gChangedInput & KEY_DOWN)
+                        work3 = 1;
+                }
+                if (gLanguage + work3 < 0 || gLanguage + work3 >= LANGUAGE_END)
+                    work3 = 0;
+                if (work3 != 0)
+                {
+                    gLanguage += work3;
+                    gGameCompletion.language = gLanguage;
+                    PauseDebugDrawAffectedGroups(1 << PAUSE_DEBUG_GROUP_LANGUAGE);
+                }
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_DIFFICULTY:
+            if (PAUSE_SCREEN_DATA.subroutineInfo.stage == 0)
+            {
+                if (gChangedInput & KEY_A)
+                {
+                    UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x36);
+                    PAUSE_SCREEN_DATA.subroutineInfo.stage = 1;
+                }
+            }
+            else
+            {
+                work3 = 0;
+                if (gChangedInput != 0)
+                {
+                    if (gChangedInput & KEY_UP)
+                        work3 = -1;
+                    else if (gChangedInput & KEY_DOWN)
+                        work3 = 1;
+                }
+                if (gDifficulty + work3 < 0 || gDifficulty + work3 >= DIFF_END)
+                    work3 = 0;
+                if (work3 != 0)
+                {
+                    gDifficulty += work3;
+                    PauseDebugDrawAffectedGroups(1 << PAUSE_DEBUG_GROUP_DIFFICULTY);
+                    EventFunction(sEasyHardEventActions[gDifficulty][0], EVENT_EASY);
+                    EventFunction(sEasyHardEventActions[gDifficulty][1], EVENT_HARD);
+                    PauseDebugDrawEventList();
+                }
+            }
+            break;
+
+        case PAUSE_DEBUG_GROUP_SUIT_TYPE:
+            if (gChangedInput & KEY_A && gEquipment.suitType != yPos && yPos < SUIT_END)
+            {
+                work1 = 1 << PAUSE_DEBUG_GROUP_SUIT_TYPE;
+                work2 = FALSE;
+                if (yPos == SUIT_SUITLESS)
+                {
+                    if (gEquipment.suitType != SUIT_SUITLESS)
+                        work2 = TRUE;
+                }
+                else if (yPos == SUIT_NORMAL)
+                {
+                    if (gEquipment.suitType != SUIT_NORMAL)
+                        work2 = TRUE;
+                }
+                else if (yPos == SUIT_FULLY_POWERED)
+                {
+                    if (gEquipment.suitType != SUIT_FULLY_POWERED)
+                        work2 = TRUE;
+                }
+
+                if (work2)
+                {
+                    UpdateSuitType(yPos);
+                    PauseDebugActivateAbilities();
+                    PAUSE_SCREEN_DATA.samusIconOam[0].oamID = gEquipment.suitType != SUIT_SUITLESS ? 1 : 2;
+                    work1 |= (1 << PAUSE_DEBUG_GROUP_BEAM) | (1 << PAUSE_DEBUG_GROUP_SUIT) | (1 << PAUSE_DEBUG_GROUP_MISC) |
+                        (1 << PAUSE_DEBUG_GROUP_CURRENT_ENERGY) | (1 << PAUSE_DEBUG_GROUP_CURRENT_MISSILES) |
+                        (1 << PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES) | (1 << PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS);
+                }
+                PauseDebugDrawAffectedGroups(work1);
+            }
+            break;
+
+        default:
+            break;
+    }
+}
+
+/**
+ * @brief Draws one of the pause debug ability groups
+ * 
+ * @param group Pause debug group to draw
+ */
+void PauseDebugDrawAbilityGroup(u8 group)
+{
+    u8* pActivation;
+    u8* pAbility;
+    s32 i;
+    u16* dst;
+    s32 tmp1;
+    s32 palette;
+    s32 tmp2;
+    s32 j;
+
+    if (group == PAUSE_DEBUG_GROUP_BEAM)
+    {
+        pActivation = &gEquipment.beamBombsActivation;
+        pAbility = &gEquipment.beamBombs;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_BOMB)
+    {
+        pActivation = &gEquipment.beamBombsActivation;
+        pAbility = &gEquipment.beamBombs;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_SUIT)
+    {
+        pActivation = &gEquipment.suitMiscActivation;
+        pAbility = &gEquipment.suitMisc;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_MISC)
+    {
+        pActivation = &gEquipment.suitMiscActivation;
+        pAbility = &gEquipment.suitMisc;
+    }
+    else
+    {
+        return;
+    }
+
+    for (i = 0; i < sStatusScreenFlagsSize[group]; i++)
+    {
+        dst = VRAM_BASE + 0xB000 + (sPauseDebugGroupsPositions[group].top + i) * 64 +
+            sPauseDebugGroupsPositions[group].left * 2;
+        
+        if (*pAbility & sStatusScreenFlagsOrderPointers[group][i])
+            tmp1 = 9;
+        else
+            tmp1 = 11;
+        palette = tmp1;
+        *dst++ = (*dst & 0xFFF) | (palette << 12);
+
+        if (*pActivation & sStatusScreenFlagsOrderPointers[group][i])
+            tmp2 = 9;
+        else
+            tmp2 = 11;
+        palette = tmp2;
+        for (j = 0; j < sPauseDebugGroupsPositions[group].right - sPauseDebugGroupsPositions[group].left; j++)
+            *dst++ = (*dst & 0xFFF) | (palette << 12);
+    }
+}
+
+/**
+ * @brief Draws multiple pause debug groups
+ * 
+ * @param groups Bit flags of groups to redraw
+ */
+void PauseDebugDrawAffectedGroups(u32 groups)
+{
+    s32 i;
+    s32 j;
+    u16* dst;
+    u16 palette;
+    u16 mapPal;
+    s32 divisor;
+    s32 tmp;
+
+    if (groups & (1 << PAUSE_DEBUG_GROUP_BEAM))
+        PauseDebugDrawAbilityGroup(PAUSE_DEBUG_GROUP_BEAM);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_BOMB))
+        PauseDebugDrawAbilityGroup(PAUSE_DEBUG_GROUP_BOMB);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_SUIT))
+        PauseDebugDrawAbilityGroup(PAUSE_DEBUG_GROUP_SUIT);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_MISC))
+        PauseDebugDrawAbilityGroup(PAUSE_DEBUG_GROUP_MISC);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_CURRENT_ENERGY))
+        PauseDebugDrawEnergyAmmoGroup(PAUSE_DEBUG_GROUP_CURRENT_ENERGY);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_MAX_ENERGY))
+        PauseDebugDrawEnergyAmmoGroup(PAUSE_DEBUG_GROUP_MAX_ENERGY);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_CURRENT_MISSILES))
+        PauseDebugDrawEnergyAmmoGroup(PAUSE_DEBUG_GROUP_CURRENT_MISSILES);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_MAX_MISSILES))
+        PauseDebugDrawEnergyAmmoGroup(PAUSE_DEBUG_GROUP_MAX_MISSILES);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES))
+        PauseDebugDrawEnergyAmmoGroup(PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_MAX_SUPER_MISSILES))
+        PauseDebugDrawEnergyAmmoGroup(PAUSE_DEBUG_GROUP_MAX_SUPER_MISSILES);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS))
+        PauseDebugDrawEnergyAmmoGroup(PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_MAX_POWER_BOMBS))
+        PauseDebugDrawEnergyAmmoGroup(PAUSE_DEBUG_GROUP_MAX_POWER_BOMBS);
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_GET_MAP))
+    {
+        i = 0;
+        dst = VRAM_BASE + 0xB000;
+        while (i < 11)
+        {
+            if (i > 5)
+            {
+                dst += (sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_GET_MAP].top + (i - 6)) * 32 +
+                    sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_GET_MAP].left + 4;
+            }
+            else
+            {
+                dst += (sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_GET_MAP].top + i) * 32 +
+                    sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_GET_MAP].left;
+            }
+
+            if ((gEquipment.downloadedMapStatus >> i) & 1)
+                mapPal = 9;
+            else
+                mapPal = 11;
+
+            i++;
+            for (j = 0; j < 3; j++)
+                *dst++ = (*dst & 0xFFF) | (mapPal << 12);
+
+            if (i > 7)
+                break;
+
+            palette = 0xB000;
+            dst = VRAM_BASE + palette;
+        }
+    }
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_TIME))
+    {
+        dst = VRAM_BASE + 0xB000 +
+            sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_TIME].top * 64 +
+            sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_TIME].left * 2;
+        // Hours
+        divisor = 10;
+        while (divisor > 0)
+        {
+            j = (gInGameTimer.hours / divisor) % 10;
+            if (divisor != 100)
+                *dst++ = j + 0xB080;
+            else if (j == 0)
+                *dst++ = 0xB08C;
+            else
+                *dst++ = j + 0xB080;
+            divisor /= 10;
+        }
+        // Minutes
+        dst++;
+        divisor = 10;
+        while (divisor > 0)
+        {
+            j = (gInGameTimer.minutes / divisor) % 10;
+            *dst++ = j + 0xB080;
+            divisor /= 10;
+        }
+        // Seconds
+        dst++;
+        divisor = 10;
+        while (divisor > 0)
+        {
+            j = (gInGameTimer.seconds / divisor) % 10;
+            *dst++ = j + 0xB080;
+            divisor /= 10;
+        }
+    }
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_SAVE))
+    {
+        dst = VRAM_BASE + 0xB000;
+        dst += sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_SAVE].top * 32 +
+            sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_SAVE].left;
+        for (j = 4; j > 0; j--, dst++)
+            *dst = (*dst & 0xFFF) | 0x9000;
+    }
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_DOOR_UNLOCK))
+    {
+        if (gDoorUnlockTimer != 0 || gHatchesState.unlocking != 0)
+        {
+            if (gDoorUnlockTimer < 0)
+                i = 1;
+            else if (gDoorUnlockTimer != 0)
+                i = 0;
+            else if (gHatchesState.unlocking != 0)
+                i = 1;
+            else
+                i = -1;
+
+            if (i >= 0)
+            {
+                dst = VRAM_BASE + 0xB000;
+                dst += sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_DOOR_UNLOCK].top * 32 +
+                    sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_DOOR_UNLOCK].left;
+                for (j = 0; j < ARRAY_SIZE(sPauseDebug_ShutOpen_Text[0]); j++)
+                    *dst++ = (sPauseDebug_ShutOpen_Text[i][j] + 0x360) | 0xB000;
+            }
+        }
+    }
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_LANGUAGE))
+    {
+        if (gLanguage < LANGUAGE_END)
+            i = gLanguage;
+        else
+            i = LANGUAGE_END;
+
+        dst = VRAM_BASE + 0xB000;
+        dst += sPauseDebugLanguagePosition[0] * 32 + sPauseDebugLanguagePosition[1];
+        for (j = 0; j < ARRAY_SIZE(sPauseDebug_Language_Text[0]); j++)
+            *dst++ = (sPauseDebug_Language_Text[i][j] + 0x360) | 0xB000;
+    }
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_DIFFICULTY))
+    {
+        if (gDifficulty < DIFF_END)
+            i = gDifficulty;
+        else
+            i = DIFF_END;
+
+        dst = VRAM_BASE + 0xB000;
+        dst += sPauseDebugDifficultyPosition[0] * 32 + sPauseDebugDifficultyPosition[1];
+        for (j = 0; j < ARRAY_SIZE(sPauseDebug_Difficulty_Text[0]); j++)
+            *dst++ = (sPauseDebug_Difficulty_Text[i][j] + 0x360) | 0xB000;
+    }
+    
+    if (groups & (1 << PAUSE_DEBUG_GROUP_SUIT_TYPE))
+    {
+        if (gEquipment.suitType < SUIT_END)
+        {
+            for (i = 0; i < SUIT_END; i++)
+            {
+                dst = VRAM_BASE + 0xB000 + (sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_SUIT_TYPE].top + i) * 64 +
+                    sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_SUIT_TYPE].left * 2;
+                palette = i == gEquipment.suitType ? 9 : 11;
+                for (j = 0; j <= sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_SUIT_TYPE].right - sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_SUIT_TYPE].left; j++)
+                    *dst++ = (*dst & 0xFFF) | (palette << 12);
+            }
+        }
+    }
+}
+
+/**
+ * @brief Draws the area ID, room ID, door ID, region, and save color
+ * 
+ */
+void PauseDebugDrawStaticInfo(void)
+{
+    u16* dst;
+    s32 i;
+    s32 value;
+    u16* regionDst;
+
+    // Area
+    dst = VRAM_BASE + 0xB000 + sPauseDebugAreaRoomDoorPositions[0][0] * 64 +
+        sPauseDebugAreaRoomDoorPositions[0][1] * 2;
+    for (i = 0; i < 3; i++)
+    {
+        value = sPauseDebug_Area_Text[gCurrentArea][i];
+        if (value > '@')
+            *dst++ = (value + 0x360) | 0xB000;
+        else
+            *dst++ = (value + 0x50) | 0xB000;
+    }
+
+    // Room
+    dst = VRAM_BASE + 0xB000 + sPauseDebugAreaRoomDoorPositions[1][0] * 64 +
+        sPauseDebugAreaRoomDoorPositions[1][1] * 2;
+    i = 100;
+    while (i > 0)
+    {
+        value = ((gCurrentRoom + 1) / i) % 10;
+        *dst++ = ((value + 0xB080) & 0xFFF) | 0xB000;
+        i /= 10;
+    }
+
+    // Door
+    dst = VRAM_BASE + 0xB000 + sPauseDebugAreaRoomDoorPositions[2][0] * 64 +
+        sPauseDebugAreaRoomDoorPositions[2][1] * 2;
+    i = 100;
+    while (i > 0)
+    {
+        value = (gLastDoorUsed / i) % 10;
+        *dst++ = ((value + 0xB080) & 0xFFF) | 0xB000;
+        i /= 10;
+    }
+
+    // Region
+    regionDst = VRAM_BASE + 0xB000 + sPauseDebugLanguagePosition[0] * 64 +
+        sPauseDebugLanguagePosition[1] * 2;
+    regionDst[4] = (sPauseDebug_Region_Text[GAME_REGION][0] + 0x360) | 0xB000;
+    regionDst[5] = (sPauseDebug_Region_Text[GAME_REGION][1] + 0x360) | 0xB000;
+
+    // Save
+    dst = VRAM_BASE + 0xB000 + sPauseDebugSaveHightlightPosition[0] * 64 +
+        sPauseDebugSaveHightlightPosition[1] * 2 + gMostRecentSaveFile * 2;
+    *dst = (*dst & 0xFFF) | 0x9000;
+}
+
+/**
+ * @brief Handles input for the enery and ammo pause debug groups
+ * 
+ * @param xOffset X offset from right edge of group
+ * @param group Pause debug group
+ * @return u8 Value changed
+ */
+u8 PauseDebugEnergyAmmoInput(u8 xOffset, u8 group)
+{
+    u8 ammoGroup;
+    u8 valueChanged;
+    u16* changeValue16;
+    u16* otherValue16;
+    u8* changeValue8;
+    u8* otherValue8;
+    s32 maxValue;
+    s32 increase;
+    s32 starting;
+    s32 total;
+
+    ammoGroup = group - PAUSE_DEBUG_GROUP_CURRENT_ENERGY;
+    valueChanged = FALSE;
+    
+    if (group == PAUSE_DEBUG_GROUP_CURRENT_ENERGY)
+    {
+        changeValue16 = &gEquipment.currentEnergy;
+        otherValue16 = &gEquipment.maxEnergy;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_MAX_ENERGY)
+    {
+        changeValue16 = &gEquipment.maxEnergy;
+        otherValue16 = &gEquipment.currentEnergy;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_CURRENT_MISSILES)
+    {
+        changeValue16 = &gEquipment.currentMissiles;
+        otherValue16 = &gEquipment.maxMissiles;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_MAX_MISSILES)
+    {
+        changeValue16 = &gEquipment.maxMissiles;
+        otherValue16 = &gEquipment.currentMissiles;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES)
+    {
+        changeValue8 = &gEquipment.currentSuperMissiles;
+        otherValue8 = &gEquipment.maxSuperMissiles;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_MAX_SUPER_MISSILES)
+    {
+        changeValue8 = &gEquipment.maxSuperMissiles;
+        otherValue8 = &gEquipment.currentSuperMissiles;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS)
+    {
+        changeValue8 = &gEquipment.currentPowerBombs;
+        otherValue8 = &gEquipment.maxPowerBombs;
+    }
+    else if (group == PAUSE_DEBUG_GROUP_MAX_POWER_BOMBS)
+    {
+        changeValue8 = &gEquipment.maxPowerBombs;
+        otherValue8 = &gEquipment.currentPowerBombs;
+    }
+    else
+    {
+        return FALSE;
+    }
+
+    if (gChangedInput & KEY_RIGHT)
+    {
+        if (xOffset != 0)
+            PAUSE_SCREEN_DATA.miscOam[0].xPosition += 32;
+        return FALSE;
+    }
+    else if (gChangedInput & KEY_LEFT)
+    {
+        if (xOffset < sPauseDebugEnergyAmmoInfo[ammoGroup].lastDigit)
+            PAUSE_SCREEN_DATA.miscOam[0].xPosition -= 32;
+        return FALSE;
+    }
+
+    maxValue = sPowersOfTen[
+        sPauseDebugGroupsPositions[group].right -
+        sPauseDebugGroupsPositions[group].left + 1] - 1;
+    
+    if (sPauseDebugEnergyAmmoInfo[ammoGroup].type == 0)
+    {
+        increase = sTankIncreaseAmount[gDifficulty].energy;
+        starting = sStartingHealthAmmo.energy;
+        total = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].energy * increase + starting;
+    }
+    else if (sPauseDebugEnergyAmmoInfo[ammoGroup].type == 1)
+    {
+        increase = sTankIncreaseAmount[gDifficulty].missile;
+        starting = sStartingHealthAmmo.missile;
+        total = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].missile * increase + starting;
+    }
+    else if (sPauseDebugEnergyAmmoInfo[ammoGroup].type == 2)
+    {
+        increase = sTankIncreaseAmount[gDifficulty].superMissile;
+        starting = sStartingHealthAmmo.superMissile;
+        total = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].superMissile * increase + starting;
+    }
+    else
+    {
+        increase = sTankIncreaseAmount[gDifficulty].powerBomb;
+        starting = sStartingHealthAmmo.powerBomb;
+        total = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].powerBomb * increase + starting;
+    }
+
+    if (maxValue > total)
+        maxValue = total;
+
+    if (!sPauseDebugEnergyAmmoInfo[ammoGroup].isMax)
+    {
+        starting = 0;
+        total = increase;
+        increase = 1;
+    }
+
+    if (increase < sPowersOfTen[xOffset])
+        increase = sPowersOfTen[xOffset];
+
+    if (sPauseDebugEnergyAmmoInfo[ammoGroup].is16bit)
+    {
+        if (gChangedInput & KEY_DOWN)
+        {
+            if (*changeValue16 + increase > maxValue)
+                *changeValue16 = maxValue;
+            else
+                *changeValue16 += increase;
+
+            valueChanged = TRUE;
+        }
+        else if (gChangedInput & KEY_UP)
+        {
+            if (*changeValue16 - increase < starting)
+                *changeValue16 = starting;
+            else
+                *changeValue16 -= increase;
+
+            valueChanged = TRUE;
+        }
+
+        if (sPauseDebugEnergyAmmoInfo[ammoGroup].isMax)
+        {
+            if (*changeValue16 <= *otherValue16)
+                *otherValue16 = *changeValue16;
+        }
+        else
+        {
+            while (*otherValue16 < *changeValue16)
+                *otherValue16 += total;
+        }
+    }
+    else
+    {
+        if (gChangedInput & KEY_DOWN)
+        {
+            if (*changeValue8 + increase > maxValue)
+                *changeValue8 = maxValue;
+            else
+                *changeValue8 += increase;
+
+            valueChanged = TRUE;
+        }
+        else if (gChangedInput & KEY_UP)
+        {
+            if (*changeValue8 - increase < starting)
+                *changeValue8 = starting;
+            else
+                *changeValue8 -= increase;
+
+            valueChanged = TRUE;
+        }
+
+        if (sPauseDebugEnergyAmmoInfo[ammoGroup].isMax)
+        {
+            if (*changeValue8 <= *otherValue8)
+                *otherValue8 = *changeValue8;
+        }
+        else
+        {
+            while (*otherValue8 < *changeValue8)
+                *otherValue8 += total;
+        }
+    }
+
+    return valueChanged;
+}
+
+/**
+ * @brief Draws one of the enery or ammo pause debug groups
+ * 
+ * @param group Pause debug group to draw
+ */
+void PauseDebugDrawEnergyAmmoGroup(u8 group)
+{
+    switch (group)
+    {
+        case PAUSE_DEBUG_GROUP_CURRENT_ENERGY:  
+        case PAUSE_DEBUG_GROUP_MAX_ENERGY:
+            PauseDebugDrawEnergyAmmoNumber(gEquipment.currentEnergy, PAUSE_DEBUG_GROUP_CURRENT_ENERGY);
+            PauseDebugDrawEnergyAmmoNumber(gEquipment.maxEnergy, PAUSE_DEBUG_GROUP_MAX_ENERGY);
+            break;
+
+        case PAUSE_DEBUG_GROUP_CURRENT_MISSILES:
+        case PAUSE_DEBUG_GROUP_MAX_MISSILES:
+            PauseDebugDrawEnergyAmmoNumber(gEquipment.currentMissiles, PAUSE_DEBUG_GROUP_CURRENT_MISSILES);
+            PauseDebugDrawEnergyAmmoNumber(gEquipment.maxMissiles, PAUSE_DEBUG_GROUP_MAX_MISSILES);
+            break;
+
+        case PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES:
+        case PAUSE_DEBUG_GROUP_MAX_SUPER_MISSILES:
+            PauseDebugDrawEnergyAmmoNumber(gEquipment.currentSuperMissiles, PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES);
+            PauseDebugDrawEnergyAmmoNumber(gEquipment.maxSuperMissiles, PAUSE_DEBUG_GROUP_MAX_SUPER_MISSILES);
+            break;
+        
+        case PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS:
+        case PAUSE_DEBUG_GROUP_MAX_POWER_BOMBS:
+            PauseDebugDrawEnergyAmmoNumber(gEquipment.currentPowerBombs, PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS);
+            PauseDebugDrawEnergyAmmoNumber(gEquipment.maxPowerBombs, PAUSE_DEBUG_GROUP_MAX_POWER_BOMBS);
+            break;
+        
+        case PAUSE_DEBUG_GROUP_S_EVENT:
+            PauseDebugDrawEnergyAmmoNumber(0, PAUSE_DEBUG_GROUP_S_EVENT);
+            break;
+    }
+}
+
+/**
+ * @brief Draws a number for one of the enery or ammo pause debug groups
+ * 
+ * @param number Number to draw
+ * @param group Pause debug group
+ */
+void PauseDebugDrawEnergyAmmoNumber(u16 number, u8 group)
+{
+    u16* dst;
+    s32 divisor;
+    s32 draw;
+    s32 digit;
+    s32 tmp;
+    
+    dst = VRAM_BASE + 0xB000;
+    dst += sPauseDebugGroupsPositions[group].top * 32 + sPauseDebugGroupsPositions[group].left;
+    divisor = sPowersOfTen[sPauseDebugGroupsPositions[group].right - sPauseDebugGroupsPositions[group].left];
+    draw = FALSE;
+
+    while (divisor > 0)
+    {
+        digit = (number / divisor) % 10;
+        if (digit != 0)
+        {
+            *dst = digit + 0xB080;
+            draw = TRUE;
+        }
+        else if (divisor == 1 || draw)
+        {
+            *dst = digit + 0xB080;
+        }
+        else
+        {
+            *dst = 0xB3A0;
+        }
+
+        divisor /= 10;
+        dst++;
+    }
+}
+
+/**
+ * @brief Handles input for the EQUIP:TANK pause debug group
+ * 
+ * @param tankOrEquip Whether tank or equip is selected
+ */
+void PauseDebugEquipTank(u8 tankOrEquip)
+{
+    s32 change;
+
+    change = 0;
+    
+    if (tankOrEquip == 0)
+    {
+        if (gChangedInput & (KEY_R | KEY_START))
+        {
+            gEquipment.maxEnergy = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].energy *
+                sTankIncreaseAmount[gDifficulty].energy + sStartingHealthAmmo.energy;
+            gEquipment.maxMissiles = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].missile *
+                sTankIncreaseAmount[gDifficulty].missile + sStartingHealthAmmo.missile;
+            gEquipment.maxSuperMissiles = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].superMissile *
+                sTankIncreaseAmount[gDifficulty].superMissile + sStartingHealthAmmo.superMissile;
+            gEquipment.maxPowerBombs = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].powerBomb *
+                sTankIncreaseAmount[gDifficulty].powerBomb + sStartingHealthAmmo.powerBomb;
+
+            gEquipment.suitMisc |= SMF_MORPH_BALL | SMF_POWER_GRIP;
+            gEquipment.beamBombs |= BBF_BOMBS;
+
+            change = 1;
+        }
+        else if (gChangedInput & (KEY_L | KEY_SELECT))
+        {
+            gEquipment.maxEnergy = sStartingHealthAmmo.energy;
+            gEquipment.maxMissiles = sStartingHealthAmmo.missile;
+            gEquipment.maxSuperMissiles = sStartingHealthAmmo.superMissile;
+            gEquipment.maxPowerBombs = sStartingHealthAmmo.powerBomb;
+
+            change = 1;
+        }
+    }
+    else
+    {
+        if (gChangedInput & (KEY_R | KEY_START))
+        {
+            gEquipment.suitMisc = SMF_HIGH_JUMP | SMF_SPEEDBOOSTER | SMF_SPACE_JUMP | SMF_SCREW_ATTACK | SMF_VARIA_SUIT | SMF_GRAVITY_SUIT | SMF_MORPH_BALL | SMF_POWER_GRIP;
+            gEquipment.beamBombs = BBF_LONG_BEAM | BBF_ICE_BEAM | BBF_WAVE_BEAM | BBF_PLASMA_BEAM | BBF_CHARGE_BEAM | BBF_BOMBS;
+            
+            change = 2;
+        }
+        else if (gChangedInput & (KEY_L | KEY_SELECT))
+        {
+            gEquipment.suitMisc = SMF_NONE;
+            gEquipment.beamBombs = BBF_NONE;
+            
+            change = 2;
+        }
+    }
+
+    if (change != 0)
+    {
+        UpdateSuitType(gEquipment.suitType);
+        PauseDebugActivateAbilities();
+    }
+
+    if (change == 1)
+    {
+        gEquipment.currentEnergy = gEquipment.maxEnergy;
+        gEquipment.currentMissiles = gEquipment.maxMissiles;
+        gEquipment.currentSuperMissiles = gEquipment.maxSuperMissiles;
+        gEquipment.currentPowerBombs = gEquipment.maxPowerBombs;
+
+        PauseDebugDrawAffectedGroups((1 << PAUSE_DEBUG_GROUP_BOMB) | (1 << PAUSE_DEBUG_GROUP_MISC) |
+            (1 << PAUSE_DEBUG_GROUP_CURRENT_ENERGY) | (1 << PAUSE_DEBUG_GROUP_CURRENT_MISSILES) |
+            (1 << PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES) | (1 << PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS));
+    }
+    else if (change == 2)
+    {
+        PauseDebugDrawAffectedGroups((1 << PAUSE_DEBUG_GROUP_BEAM) | (1 << PAUSE_DEBUG_GROUP_BOMB) |
+            (1 << PAUSE_DEBUG_GROUP_SUIT) | (1 << PAUSE_DEBUG_GROUP_MISC));
+    }
+}
+
+/**
+ * @brief Draws every pause debug group
+ * 
+ */
+void PauseDebugDrawAllGroups(void)
+{
+    if (!PAUSE_SCREEN_DATA.debugOnEventList)
+    {
+        PauseDebugDrawAffectedGroups(~(1 << PAUSE_DEBUG_GROUP_SAVE));
+        PauseDebugDrawStaticInfo();
+    }
+}
+
+/**
+ * @brief Initializes the cursor for the pause debug menu
+ * 
+ */
+void PauseDebugInitCursor(void)
+{
+    UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x35);
+    PAUSE_SCREEN_DATA.miscOam[0].yPosition = sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_EQUIP_TANK].top * 32;
+    PAUSE_SCREEN_DATA.miscOam[0].xPosition = sPauseDebugGroupsPositions[PAUSE_DEBUG_GROUP_EQUIP_TANK].right * 32;
+}
+
+/**
+ * @brief Draws the pause debug event list
+ * 
+ */
+void PauseDebugDrawEventList(void)
+{
+    s32 i;
+
+    for (i = 0; i < 32; i++)
+        PauseDebugDrawEventName(i, (void*)sEwramPointer + 0xD000);
+}
+
+/**
+ * @brief Main function for the pause debug event list
+ * 
+ */
+void PauseDebugEventList(void)
+{
+    switch (PAUSE_SCREEN_DATA.debugEventListStage)
+    {
+        case 0:
+            PAUSE_SCREEN_DATA.debugDispcntBackup = PAUSE_SCREEN_DATA.dispcnt;
+            PAUSE_SCREEN_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1 | DCNT_BG2 | DCNT_BG3 | DCNT_OBJ);
+            PAUSE_SCREEN_DATA.debugEventListStage++;
+            break;
+
+        case 1:
+            UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0xB);
+            PAUSE_SCREEN_DATA.debugEventCursorX = 15;
+            DmaTransfer(3, VRAM_BASE + 0xB000, (void*)sEwramPointer + 0xC800, 0x800, 16);
+            DmaTransfer(3, (void*)sEwramPointer + 0xD000, VRAM_BASE + 0xB000, 0x800, 16);
+            CallLZ77UncompVram(sPauseDebugEventListTextGfx, VRAM_BASE + 0x8000);
+            DMA_SET(3, sPauseDebugEventListBgPalette, PALRAM_BASE + 0x1C0, C_32_2_16(DMA_ENABLE, 0x20));
+            PAUSE_SCREEN_DATA.bg2cnt = PAUSE_SCREEN_DATA.unk_7A;
+            PauseDebugEventListInput();
+            PAUSE_SCREEN_DATA.debugEventListStage++;
+            break;
+
+        case 2:
+            PAUSE_SCREEN_DATA.dispcnt = PAUSE_SCREEN_DATA.debugDispcntBackup;
+            PAUSE_SCREEN_DATA.debugEventListStage++;
+            break;
+
+        case 3:
+            if (gChangedInput & (KEY_B | KEY_SELECT) && PAUSE_SCREEN_DATA.subroutineInfo.stage == 0)
+                PAUSE_SCREEN_DATA.debugEventListStage++;
+            else
+                PauseDebugEventListInput();
+            break;
+
+        case 4:
+            PAUSE_SCREEN_DATA.debugDispcntBackup = PAUSE_SCREEN_DATA.dispcnt;
+            PAUSE_SCREEN_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1 | DCNT_BG2 | DCNT_BG3 | DCNT_OBJ);
+            PAUSE_SCREEN_DATA.debugEventListStage++;
+            break;
+
+        case 5:
+            UpdateMenuOamDataID(&PAUSE_SCREEN_DATA.miscOam[0], 0x35);
+            DmaTransfer(3, VRAM_BASE + 0xB000, (void*)sEwramPointer + 0xD000, 0x800, 16);
+            DmaTransfer(3, (void*)sEwramPointer + 0xC800, VRAM_BASE + 0xB000, 0x800, 16);
+            DmaTransfer(3, sMinimapTilesGfx, VRAM_BASE + 0x8000, 0x1C00, 16);
+            PAUSE_SCREEN_DATA.bg2cnt = PAUSE_SCREEN_DATA.unk_78;
+            DmaTransfer(3, sPauseScreen_3fcef0 + PAL_ROW * 9, PALRAM_BASE + PAL_ROW_SIZE * 14, PAL_ROW_SIZE * 2, 16);
+            gBg2VOFS_NonGameplay = 0;
+            PAUSE_SCREEN_DATA.debugEventListStage++;
+            break;
+
+        case 6:
+            PAUSE_SCREEN_DATA.dispcnt = PAUSE_SCREEN_DATA.debugDispcntBackup;
+            PAUSE_SCREEN_DATA.debugOnEventList = FALSE;
+            PAUSE_SCREEN_DATA.debugEventListStage = 0;
+            break;
+    }
+}
+
+/**
+ * @brief Handles input for the pause debug event list
+ * 
+ */
+void PauseDebugEventListInput(void)
+{
+    s32 event;
+    s32 move;
+    s32 change;
+    s32 topEvent;
+    
+    if (gChangedInput & KEY_A)
+    {
+        event = EventFunction(EVENT_ACTION_TOGGLING, PAUSE_SCREEN_DATA.debugSelectedEvent);
+        PauseDebugDrawEventName(PAUSE_SCREEN_DATA.debugSelectedEvent, VRAM_BASE + 0xB000);
+
+        if (PAUSE_SCREEN_DATA.debugSelectedEvent >= EVENT_STATUE_LONG_BEAM_GRABBED && PAUSE_SCREEN_DATA.debugSelectedEvent <= EVENT_STATUE_SCREW_ATTACK_GRABBED)
+            PauseDebugUpdateMapOverlay(2, PAUSE_SCREEN_DATA.currentArea);
+
+        PAUSE_SCREEN_DATA.debugPreviousChangedEvent = PAUSE_SCREEN_DATA.debugSelectedEvent;
+        PAUSE_SCREEN_DATA.debugPreviousEventWasSet = event;
+        return;
+    }
+    else if (gButtonInput & KEY_A && PAUSE_SCREEN_DATA.debugPreviousChangedEvent != PAUSE_SCREEN_DATA.debugSelectedEvent)
+    {
+        if (EventFunction(PAUSE_SCREEN_DATA.debugPreviousEventWasSet, PAUSE_SCREEN_DATA.debugSelectedEvent))
+        {
+            PauseDebugDrawEventName(PAUSE_SCREEN_DATA.debugSelectedEvent, VRAM_BASE + 0xB000);
+
+            if (PAUSE_SCREEN_DATA.debugSelectedEvent >= EVENT_STATUE_LONG_BEAM_GRABBED && PAUSE_SCREEN_DATA.debugSelectedEvent <= EVENT_STATUE_SCREW_ATTACK_GRABBED)
+                PauseDebugUpdateMapOverlay(2, PAUSE_SCREEN_DATA.currentArea);
+        }
+        
+        PAUSE_SCREEN_DATA.debugPreviousChangedEvent = PAUSE_SCREEN_DATA.debugSelectedEvent;
+    }
+
+    move = 0;
+
+    if (gChangedInput & KEY_UP)
+    {
+        if (PAUSE_SCREEN_DATA.debugSelectedEvent != 0)
+        {
+            change = -1;
+            move = 2;
+        }
+    }
+    else if (gChangedInput & KEY_DOWN)
+    {
+        if (PAUSE_SCREEN_DATA.debugSelectedEvent < EVENT_COUNT - 1)
+        {
+            change = 1;
+            move = 2;
+        }
+    }
+    else if (gChangedInput & KEY_LEFT)
+    {
+        if (PAUSE_SCREEN_DATA.debugSelectedEvent - 10 >= 0)
+        {
+            change = -10;
+            move = 3;
+        }
+        else if (PAUSE_SCREEN_DATA.debugSelectedEvent != 0)
+        {
+            change = -PAUSE_SCREEN_DATA.debugSelectedEvent;
+            move = 3;
+        }
+    }
+    else if (gChangedInput & KEY_RIGHT)
+    {
+        if (PAUSE_SCREEN_DATA.debugSelectedEvent + 10 < EVENT_COUNT)
+        {
+            change = 10;
+            move = 3;
+        }
+        else if (PAUSE_SCREEN_DATA.debugSelectedEvent != EVENT_COUNT - 1)
+        {
+            change = EVENT_COUNT - 1 - PAUSE_SCREEN_DATA.debugSelectedEvent;
+            move = 3;
+        }
+    }
+
+    if (move > 1)
+    {
+        // Update selected event and top event
+        PAUSE_SCREEN_DATA.debugSelectedEvent += change;
+
+        if (PAUSE_SCREEN_DATA.debugSelectedEvent - PAUSE_SCREEN_DATA.debugTopEvent > PAUSE_DEBUG_EVENTS_PER_SCREEN - 1
+            || PAUSE_SCREEN_DATA.debugSelectedEvent < PAUSE_SCREEN_DATA.debugTopEvent)
+        {
+            if (PAUSE_SCREEN_DATA.debugTopEvent + change > EVENT_COUNT - PAUSE_DEBUG_EVENTS_PER_SCREEN)
+                PAUSE_SCREEN_DATA.debugTopEvent = EVENT_COUNT - PAUSE_DEBUG_EVENTS_PER_SCREEN;
+            else if (PAUSE_SCREEN_DATA.debugTopEvent + change < 0)
+                PAUSE_SCREEN_DATA.debugTopEvent = 0;
+            else
+                PAUSE_SCREEN_DATA.debugTopEvent += change;
+        }
+    }
+
+    // Update cursor position
+    PAUSE_SCREEN_DATA.miscOam[0].xPosition = (PAUSE_SCREEN_DATA.debugEventCursorX & 31) * 32;
+    PAUSE_SCREEN_DATA.miscOam[0].yPosition = ((PAUSE_SCREEN_DATA.debugSelectedEvent - PAUSE_SCREEN_DATA.debugTopEvent) & 31) * 32 + 12;
+    
+    if (move == 2)
+    {
+        event = PAUSE_SCREEN_DATA.debugSelectedEvent;
+        if (change < 0)
+        {
+            if (event != 0)
+                event--;
+            else
+                move = 0;
+        }
+        else if (change > 0)
+        {
+            if (event < EVENT_COUNT - 1)
+                event++;
+            else
+                move = 0;
+        }
+
+        if (move != 0)
+            PauseDebugDrawEventName(event, VRAM_BASE + 0xB000);
+    }
+    else if (move == 3)
+    {
+        event = PAUSE_SCREEN_DATA.debugTopEvent;
+        for (move = 0; move < PAUSE_DEBUG_EVENTS_PER_SCREEN; move++, event++)
+            PauseDebugDrawEventName(event, VRAM_BASE + 0xB000);
+    }
+
+    gBg2VOFS_NonGameplay = PAUSE_SCREEN_DATA.debugTopEvent * 32 + 4;
+}
+
+/**
+ * @brief Draws a single event name in the pause debug event list
+ * 
+ * @param event Event
+ * @param dst Destination address
+ */
+void PauseDebugDrawEventName(u16 event, u16* dst)
+{
+    s32 tmp;
+    s32 palette;
+    s32 draw;
+    s32 divisor;
+    s32 digit;
+    const u8* pName;
+
+    if (event >= EVENT_COUNT)
+        return;
+
+    if (EventFunction(EVENT_ACTION_CHECKING, event))
+        tmp = 14 << 12;
+    else
+        tmp = 15 << 12;
+    palette = tmp;
+
+    dst += (event % 32) * 32;
+    draw = FALSE;
+    divisor = 100;
+    while (divisor > 0)
+    {
+        digit = (event / divisor) % 10;
+        if (draw != 0 || divisor == 1)
+            draw = TRUE; // Always draw last digit
+        else
+            draw = digit != 0; // Draw if non-zero
+
+        if (draw)
+            *dst = (digit + '0') | palette;
+        else
+            *dst = '\0' | palette;
+
+        divisor /= 10;
+        dst++;
+    }
+
+    *dst++ = '\0' | palette;
+
+    pName = sPauseDebugEventNamePointers[event];
+    while (*pName != '\0')
+        *dst++ = *pName++ | palette;
+}
+
+#endif // DEBUG
 
 /**
  * @brief 6fee4 | 68 | Updates the current suit type
@@ -121,7 +1753,7 @@ void LoadPauseScreenBgPalette(void)
  * @param newSuit New suit type
  * @param chaos bool, changed via chaos code
  */
-void UpdateSuitType(u8 newSuit, u8 chaos)
+void UpdateSuitType(SuitType newSuit, u8 chaos)
 {
     if (gEquipment.suitType != newSuit)
         gEquipment.suitType = newSuit;
@@ -163,7 +1795,7 @@ void UpdateSuitType(u8 newSuit, u8 chaos)
 /**
  * @brief 6ff4c | d4 | Draws the status screen row provided
  * 
- * @param u8 row Row to draw
+ * @param row Row to draw
  * @return u32 bool, done drawing
  */
 u32 StatusScreenDrawItems(u8 row)
@@ -172,7 +1804,7 @@ u32 StatusScreenDrawItems(u8 row)
     s32 j;
     u32 position;
     u16* dst;
-    const u8 (*tmp)[3];
+    u8 (*tmp)[3];
     u8 tmp2;
 
     // max of 8 rows
@@ -185,8 +1817,8 @@ u32 StatusScreenDrawItems(u8 row)
             continue;
 
         tmp2 = FALSE; // Needed to produce matching ASM.
-        position = (sStatusScreenGroupsPositions[sStatusScreenGroupsDimensions[i][0]][0] + row) * HALF_BLOCK_SIZE +
-            sStatusScreenGroupsPositions[sStatusScreenGroupsDimensions[i][0]][2];
+        position = (sStatusScreenGroupsPositions[sStatusScreenGroupsDimensions[i][0]].top + row) * HALF_BLOCK_SIZE +
+            sStatusScreenGroupsPositions[sStatusScreenGroupsDimensions[i][0]].left;
     
         if (sStatusScreenGroupsDimensions[i][1] <= row)
             continue;
@@ -239,6 +1871,11 @@ u8 StatusScreenGetSlotForNewItem(u8 param_1, u8 item)
     // only expansions and bombs don't equal three
     else if (sStatusScreenItemsAcquisitionData[item].unk_0 != 3)
         return sStatusScreenItemsAcquisitionData[item].statusSlot;
+
+    #ifdef BUGFIX
+    pActivation = NULL;
+    pStatusActivation = NULL;
+    #endif // BUGFIX
 
     flag = 0;
     slot = sStatusScreenItemsAcquisitionData[item].statusSlot;
@@ -377,12 +2014,12 @@ void StatusScreenSetPistolVisibility(u16* pTilemap)
 
     pActivation = PAUSE_SCREEN_DATA.statusScreenData.beamActivation;
 
-    positionStart = (sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][0] + 1) * 32 + sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][2];
-    positionEnd = sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS][0] * 32 + sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS][2];
+    positionStart = (sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].top + 1) * 32 + sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].left;
+    positionEnd = sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS].top * 32 + sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS].left;
 
     pActivation[STATUS_SCREEN_BEAM_OFFSET_LONG] = sStatusScreenFlagsOrderPointers[ABILITY_GROUP_BEAMS][STATUS_SCREEN_BEAM_OFFSET_LONG];
 
-    size = sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][2];
+    size = sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].left;
 
     for (i = 0; i <= size; i++)
     {
@@ -401,10 +2038,10 @@ void StatusScreenSetPistolVisibility(u16* pTilemap)
         PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot = STATUS_SLOT_BEAM;
 
     row++;
-    positionStart = (sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][0] + row) * HALF_BLOCK_SIZE + sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][2];
-    positionEnd = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS][0] + 1) * HALF_BLOCK_SIZE + sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS][2];
+    positionStart = (sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].top + row) * HALF_BLOCK_SIZE + sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].left;
+    positionEnd = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS].top + 1) * HALF_BLOCK_SIZE + sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS].left;
 
-    size = sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][2];
+    size = sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].left;
     for (i = 0; i <= size; i++)
     {
         pTilemap[positionStart + i] = pTilemap[positionEnd + i];
@@ -436,10 +2073,10 @@ void StatusScreenDrawSingleTankAmount(u8 group, u16 amount, u8 palette, u8 isMax
         baseTile = 0xB08C;
 
     pTilemap = PAUSE_SCREEN_EWRAM.statusScreenTilemap;
-    position = sStatusScreenGroupsPositions[group][0] * HALF_BLOCK_SIZE + sStatusScreenGroupsPositions[group][2];
+    position = sStatusScreenGroupsPositions[group].top * HALF_BLOCK_SIZE + sStatusScreenGroupsPositions[group].left;
     pTilemap = &pTilemap[position];
-    var_1 = sStatusScreenGroupsPositions[group][3] - sStatusScreenGroupsPositions[group][2];
-    value = sPauseScreen_40d102[var_1];
+    var_1 = sStatusScreenGroupsPositions[group].right - sStatusScreenGroupsPositions[group].left;
+    value = sPowersOfTen[var_1];
     var_1++;
 
     var_0 = FALSE;
@@ -528,18 +2165,22 @@ void StatusScreenSetBeamsVisibility(u16* pTilemap)
             srcPosition = 10;
         }
 
-        srcPosition += (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS][0] + j) * HALF_BLOCK_SIZE +
-            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS][2];
+        srcPosition += (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS].top + j) * HALF_BLOCK_SIZE +
+            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS].left;
 
-        tmp = sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][0] + 1;
+        tmp = sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].top + 1;
         dstPosition = (tmp + row) * HALF_BLOCK_SIZE +
-            sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][2];
+            sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].left;
 
         if (gEquipment.beamBombs & sStatusScreenFlagsOrderPointers[ABILITY_GROUP_BEAMS][i])
         {
+            #ifdef BUGFIX
+            ptr = NULL;
+            #endif // BUGFIX
+
             pVisibility[row] = sStatusScreenFlagsOrderPointers[ABILITY_GROUP_BEAMS][i];
 
-            for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][2]; j++)
+            for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].left; j++)
             {
                 ptr = &gEquipment.beamBombsActivation;
                 pTilemap[dstPosition + j] = pTilemap[srcPosition + j];
@@ -560,13 +2201,13 @@ void StatusScreenSetBeamsVisibility(u16* pTilemap)
             PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot = STATUS_SLOT_BEAM;
 
         row++;
-        dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][0] + row) * HALF_BLOCK_SIZE +
-            sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][2];
+        dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].top + row) * HALF_BLOCK_SIZE +
+            sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].left;
 
-        srcPosition = sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS][1] * HALF_BLOCK_SIZE +
-            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS][2];
+        srcPosition = sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS].bottom * HALF_BLOCK_SIZE +
+            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BEAMS].left;
         
-        for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS][2]; j++)
+        for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_BEAMS].left; j++)
         {
             pTilemap[dstPosition + j] = pTilemap[srcPosition + j];
         }
@@ -613,18 +2254,22 @@ void StatusScreenSetSuitsVisibility(u16* pTilemap)
             j = 3;
         }
 
-        srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_SUITS][0] + j) * HALF_BLOCK_SIZE +
-            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_SUITS][2];
+        srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_SUITS].top + j) * HALF_BLOCK_SIZE +
+            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_SUITS].left;
 
-        tmp = sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS][0] + 1;
+        tmp = sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS].top + 1;
         dstPosition = (tmp + row) * HALF_BLOCK_SIZE +
-            sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS][2];
+            sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS].left;
 
         if (gEquipment.suitMisc & sStatusScreenFlagsOrderPointers[ABILITY_GROUP_SUITS][i])
         {
+            #ifdef BUGFIX
+            ptr = NULL;
+            #endif // BUGFIX
+
             pVisibility[row] = sStatusScreenFlagsOrderPointers[ABILITY_GROUP_SUITS][i];
 
-            for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS][2]; j++)
+            for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS].left; j++)
             {
                 ptr = &gEquipment.suitMiscActivation;
                 pTilemap[dstPosition + j] = pTilemap[srcPosition + j];
@@ -646,13 +2291,13 @@ void StatusScreenSetSuitsVisibility(u16* pTilemap)
         PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot = STATUS_SLOT_SUIT;
 
     row++;
-    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS][0] + row) * HALF_BLOCK_SIZE +
-        sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS][2];
+    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS].top + row) * HALF_BLOCK_SIZE +
+        sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS].left;
 
-    srcPosition = sStatusScreenUnknownItemsPositions[ABILITY_GROUP_SUITS][1] * HALF_BLOCK_SIZE +
-        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_SUITS][2];
+    srcPosition = sStatusScreenUnknownItemsPositions[ABILITY_GROUP_SUITS].bottom * HALF_BLOCK_SIZE +
+        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_SUITS].left;
     
-    for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS][2]; j++)
+    for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_SUITS].left; j++)
     {
         pTilemap[dstPosition + j] = pTilemap[srcPosition + j];
     }
@@ -687,18 +2332,18 @@ void StatusScreenSetMiscsVisibility(u16* pTilemap)
                 k = -1;
         }
 
-        srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC][0] + k) * HALF_BLOCK_SIZE +
-            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC][2];
+        srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC].top + k) * HALF_BLOCK_SIZE +
+            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC].left;
 
-        tmp = sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][0] + 1;
+        tmp = sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].top + 1;
         dstPosition = (tmp + j) * HALF_BLOCK_SIZE +
-            sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][2];
+            sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].left;
 
         if (gEquipment.suitMisc & sStatusScreenFlagsOrderPointers[ABILITY_GROUP_MISC][i])
         {
             PAUSE_SCREEN_DATA.statusScreenData.miscActivation[j] = sStatusScreenFlagsOrderPointers[ABILITY_GROUP_MISC][i];
 
-            for (k = 0; k <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][2]; k++)
+            for (k = 0; k <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].right - sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].left; k++)
             {
                 pTilemap[dstPosition + k] = pTilemap[srcPosition + k];
             }
@@ -718,25 +2363,25 @@ void StatusScreenSetMiscsVisibility(u16* pTilemap)
     if (PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot == STATUS_SLOT_0)
         PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot = STATUS_SLOT_MISC;
 
-    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][0]) * HALF_BLOCK_SIZE +
-        sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][2];
+    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].top) * HALF_BLOCK_SIZE +
+        sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].left;
     
-    srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC][0]) * HALF_BLOCK_SIZE +
-        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC][2];
+    srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC].top) * HALF_BLOCK_SIZE +
+        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC].left;
 
-    for (k = 0; k <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][2]; k++)
+    for (k = 0; k <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].right - sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].left; k++)
     {
         pTilemap[dstPosition + k] = pTilemap[srcPosition + k];
     }
 
     j++;
-    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][0] + j) * HALF_BLOCK_SIZE +
-        sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][2];
+    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].top + j) * HALF_BLOCK_SIZE +
+        sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].left;
     
-    srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC][1]) * HALF_BLOCK_SIZE +
-        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC][2];
+    srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC].bottom) * HALF_BLOCK_SIZE +
+        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISC].left;
 
-    for (k = 0; k <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_MISC][2]; k++)
+    for (k = 0; k <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].right - sStatusScreenGroupsPositions[ABILITY_GROUP_MISC].left; k++)
     {
         pTilemap[dstPosition + k] = pTilemap[srcPosition + k];
     }
@@ -781,13 +2426,13 @@ void StatusScreenSetBombsVisibility(u16* pTilemap)
 
     for (i = 0; i < nbrToProcess; i++)
     {
-        dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS][0] + i) * HALF_BLOCK_SIZE +
-            sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS][2];
+        dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].top + i) * HALF_BLOCK_SIZE +
+            sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].left;
         
-        srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS][0] + sPauseScreen_7603ea[i]) * HALF_BLOCK_SIZE;
-        srcPosition += sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS][2];
+        srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS].top + sPauseScreen_7603ea[i]) * HALF_BLOCK_SIZE;
+        srcPosition += sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS].left;
 
-        for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS][2]; j++)
+        for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].left; j++)
         {
             pTilemap[dstPosition + j] = dup[srcPosition + j];
         }
@@ -836,16 +2481,16 @@ void StatusScreenSetBombsVisibility(u16* pTilemap)
         StatusScreenUpdateRow(ABILITY_GROUP_BOMBS, i, j, FALSE);
     }
 
-    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS][0] + nbrToProcess) * HALF_BLOCK_SIZE +
-        sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS][2];
+    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].top + nbrToProcess) * HALF_BLOCK_SIZE +
+        sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].left;
     
     if (nbrToProcess != 2)
         nbrToProcess++;
 
-    srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS][0] + nbrToProcess) * HALF_BLOCK_SIZE +
-        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS][2];
+    srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS].top + nbrToProcess) * HALF_BLOCK_SIZE +
+        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS].left;
 
-    for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS][2]; j++)
+    for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].left; j++)
     {
         pTilemap[dstPosition + j] = dup[srcPosition + j];
     }
@@ -886,13 +2531,13 @@ void StatusScreenSetMissilesVisibility(u16* pTilemap)
 
     for (i = 0; i < nbrToProcess; i++)
     {
-        dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES][0] + i) * HALF_BLOCK_SIZE +
-            sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES][2];
+        dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES].top + i) * HALF_BLOCK_SIZE +
+            sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES].left;
         
-        srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISSILES][0] + i) * HALF_BLOCK_SIZE +
-            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISSILES][2];
+        srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISSILES].top + i) * HALF_BLOCK_SIZE +
+            sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISSILES].left;
 
-        for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES][2]; j++)
+        for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES].right - sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES].left; j++)
         {
             pTilemap[dstPosition + j] = pTilemap[srcPosition + j];
         }
@@ -935,13 +2580,13 @@ void StatusScreenSetMissilesVisibility(u16* pTilemap)
         StatusScreenUpdateRow(ABILITY_GROUP_MISSILES, i, j, FALSE);        
     }
 
-    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES][0] + nbrToProcess) * HALF_BLOCK_SIZE +
-        sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES][2];
+    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES].top + nbrToProcess) * HALF_BLOCK_SIZE +
+        sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES].left;
     
-    srcPosition = sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISSILES][1] * HALF_BLOCK_SIZE +
-        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISSILES][2];
+    srcPosition = sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISSILES].bottom * HALF_BLOCK_SIZE +
+        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_MISSILES].left;
 
-    for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES][3] - sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES][2]; j++)
+    for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES].right - sStatusScreenGroupsPositions[ABILITY_GROUP_MISSILES].left; j++)
     {
         pTilemap[dstPosition + j] = pTilemap[srcPosition + j];
     }
@@ -967,8 +2612,8 @@ void StatusScreenUpdateRow(u8 group, u8 row, u8 isActivated, u8 drawUpdate)
     u16* pTilemap;
     u16* pEwram;
 
-    position = (row + sStatusScreenGroupsPositions[group][0]) * HALF_BLOCK_SIZE + sStatusScreenGroupsPositions[group][2];
-    size = sStatusScreenGroupsPositions[group][3] - sStatusScreenGroupsPositions[group][2];
+    position = (row + sStatusScreenGroupsPositions[group].top) * HALF_BLOCK_SIZE + sStatusScreenGroupsPositions[group].left;
+    size = sStatusScreenGroupsPositions[group].right - sStatusScreenGroupsPositions[group].left;
 
     baseTile = isActivated ? (11 << 12) : (12 << 12);
     
@@ -1011,7 +2656,7 @@ void StatusScreenEnableUnknownItem(u8 group, u8 row)
         case ABILITY_GROUP_BEAMS:
         case ABILITY_GROUP_SUITS:
         case ABILITY_GROUP_MISC:
-            position = (sStatusScreenUnknownItemsPositions[group][1] - 1) * HALF_BLOCK_SIZE + sStatusScreenUnknownItemsPositions[group][2];
+            position = (sStatusScreenUnknownItemsPositions[group].bottom - 1) * HALF_BLOCK_SIZE + sStatusScreenUnknownItemsPositions[group].left;
             break;
 
         default:
@@ -1021,8 +2666,8 @@ void StatusScreenEnableUnknownItem(u8 group, u8 row)
     if (position == 0)
         return;
 
-    i = (sStatusScreenGroupsPositions[group][0] + row) * HALF_BLOCK_SIZE + sStatusScreenGroupsPositions[group][2];
-    size = sStatusScreenGroupsPositions[group][3] - sStatusScreenGroupsPositions[group][2];
+    i = (sStatusScreenGroupsPositions[group].top + row) * HALF_BLOCK_SIZE + sStatusScreenGroupsPositions[group].left;
+    size = sStatusScreenGroupsPositions[group].right - sStatusScreenGroupsPositions[group].left;
     
     dst = (u16*)(VRAM_BASE + 0xC002) + i;
 
@@ -1040,7 +2685,7 @@ void StatusScreenEnableUnknownItem(u8 group, u8 row)
  * @param button Input flag
  * @return u32 bool, pressed
  */
-u32 StatusScreenCheckitemToggleInput(u16 button)
+u32 StatusScreenCheckItemToggleInput(u16 button)
 {
     return (gChangedInput & button) != 0;
 }
@@ -1475,11 +3120,11 @@ u32 StatusScreenFullyPoweredItems(void)
 
             // Set position (same calculations as cursor)
             PAUSE_SCREEN_DATA.miscOam[10].yPosition = (sStatusScreenGroupsPositions[sStatusScreenItemsData[
-                PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot].group][0] + 
+                PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot].group].top + 
                 sStatusScreenItemsData[PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot].row) * HALF_BLOCK_SIZE;
 
             PAUSE_SCREEN_DATA.miscOam[10].xPosition = (sStatusScreenGroupsPositions[sStatusScreenItemsData[
-                PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot].group][2] + 1) * HALF_BLOCK_SIZE;
+                PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot].group].left + 1) * HALF_BLOCK_SIZE;
 
             StatusScreenUpdateUnknownItemPalette(0);
             SoundPlay(SOUND_ENABLING_UNKNOWN_ITEM);
@@ -1614,7 +3259,7 @@ void StatusScreenSubroutine(void)
         else if (PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot != STATUS_SLOT_0)
         {
             // Check toggling item
-            if (StatusScreenCheckitemToggleInput(KEY_SELECT))
+            if (StatusScreenCheckItemToggleInput(KEY_SELECT))
             {
                 // Toggle item
                 toggleResult = StatusScreenToggleItem(PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot, ITEM_TOGGLE_TOGGLING);
@@ -1642,9 +3287,9 @@ void StatusScreenSubroutine(void)
  * @param statusSlot Status slot
  * @return u8 Equipment id (description text id)
  */
-u8 StatusScreenGetCurrentEquipmentSelected(u8 statusSlot)
+DescriptionTextId StatusScreenGetCurrentEquipmentSelected(u8 statusSlot)
 {
-    u8 descriptionTextId;
+    DescriptionTextId descriptionTextId;
     u32 activation;
     u8 slot;
 
@@ -1813,9 +3458,9 @@ u32 StatusScreenUpdateCursorPosition(u8 statusSlot)
     u16 xPosition;
 
     // Y position of group + row of item
-    yPosition = sStatusScreenGroupsPositions[sStatusScreenItemsData[statusSlot].group][0] + sStatusScreenItemsData[statusSlot].row;
+    yPosition = sStatusScreenGroupsPositions[sStatusScreenItemsData[statusSlot].group].top + sStatusScreenItemsData[statusSlot].row;
     // X position of group + 1 tile
-    xPosition = sStatusScreenGroupsPositions[sStatusScreenItemsData[statusSlot].group][2] + 1;
+    xPosition = sStatusScreenGroupsPositions[sStatusScreenItemsData[statusSlot].group].left + 1;
 
     // Convert position to tilemap tiles
     PAUSE_SCREEN_DATA.miscOam[0].yPosition = yPosition * HALF_BLOCK_SIZE;
@@ -1883,7 +3528,11 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
     u8 i;
     u8 isActivated;
     u8 subActivated;
-    
+
+    #ifdef BUGFIX
+    pActivation = NULL;
+    #endif // BUGFIX
+
     flag = 0;
     switch (sStatusScreenItemsData[statusSlot].group)
     {

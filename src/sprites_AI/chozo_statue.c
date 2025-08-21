@@ -1,7 +1,6 @@
 #include "sprites_AI/chozo_statue.h"
 #include "sprites_AI/unknown_item_chozo_statue.h"
 
-#include "data/frame_data_pointers.h"
 #include "data/sprites/chozo_statue.h"
 
 #include "constants/audio.h"
@@ -20,6 +19,8 @@
 #include "structs/samus.h"
 #include "structs/scroll.h"
 
+#define CHOZO_STATUE_REFILL_POSE_IDLE 0x9
+
 #define CHOZO_STATUE_HAND_X_OFFSET (BLOCK_SIZE - EIGHTH_BLOCK_SIZE)
 #define CHOZO_STATUE_HAND_Y_OFFSET (QUARTER_BLOCK_SIZE + ONE_SUB_PIXEL)
 
@@ -28,11 +29,30 @@
 
 #define DELAY_BEFORE_HINT (CONVERT_SECONDS(2.f))
 
+static const struct FrameData* sChozoStatueFrameDataPointers[CHOZO_STATUE_OAM_END] = {
+    [CHOZO_STATUE_OAM_LEG_STANDING] = sChozoStatuePartOam_LegStanding,
+    [CHOZO_STATUE_OAM_LEG_SITTING] = sChozoStatuePartOam_LegSitting,
+    [CHOZO_STATUE_OAM_LEG_SEATED] = sChozoStatuePartOam_LegSeated,
+    [CHOZO_STATUE_OAM_IDLE] = sChozoStatueOam_Idle,
+    [CHOZO_STATUE_OAM_EYE_OPENED] = sChozoStatuePartOam_EyeOpened,
+    [CHOZO_STATUE_OAM_EYE_CLOSING] = sChozoStatuePartOam_EyeClosing,
+    [CHOZO_STATUE_OAM_EYE_OPENING] = sChozoStatuePartOam_EyeOpening,
+    [CHOZO_STATUE_OAM_EYE_CLOSED] = sChozoStatuePartOam_EyeClosed,
+    [CHOZO_STATUE_OAM_ARM_IDLE] = sChozoStatuePartOam_ArmIdle,
+    [CHOZO_STATUE_OAM_ARM_GLOW] = sChozoStatuePartOam_ArmGlow,
+    [CHOZO_STATUE_OAM_ARM_SAMUS_GRABBED] = sChozoStatuePartOam_ArmSamusGrabbed,
+    [CHOZO_STATUE_OAM_BALL_NORMAL_CLOSED] = sChozoBallOam_NormalClosed,
+    [CHOZO_STATUE_OAM_BALL_NORMAL_REVEALING] = sChozoBallOam_NormalRevealing,
+    [CHOZO_STATUE_OAM_BALL_NORMAL_REVEALED] = sChozoBallOam_NormalRevealed,
+    [CHOZO_STATUE_OAM_REFILL] = sChozoStatueRefillOam,
+    [CHOZO_STATUE_OAM_REFILL_GLOW_IDLE] = sChozoStatuePartOam_GlowIdle,
+};
+
 /**
  * @brief 13850 | 88 | Synchronize the sub sprites of a chozo statue
  * 
  */
-void ChozoStatueSyncSubSprites(void)
+static void ChozoStatueSyncSubSprites(void)
 {
     MultiSpriteDataInfo_T pData;
     u16 oamIdx;
@@ -307,7 +327,7 @@ u8 ChozoStatueGetBehavior(u8 spriteId)
  * @brief 1409c | 1f8 | Initializes a Chozo statue sprite
  * 
  */
-void ChozoStatueInit(void)
+static void ChozoStatueInit(void)
 {
     u8 behavior;
     u8 gfxSlot;
@@ -342,8 +362,8 @@ void ChozoStatueInit(void)
     gSubSpriteData1.animationDurationCounter = 0;
     gSubSpriteData1.currentAnimationFrame = 0;
 
-    gSubSpriteData1.workVariable2 = 0;
-    gSubSpriteData1.workVariable3 = FALSE;
+    gSubSpriteData1.work2 = 0;
+    gSubSpriteData1.work3 = FALSE;
 
     behavior = ChozoStatueGetBehavior(gCurrentSprite.spriteId);
     if (behavior > CHOZO_STATUE_BEHAVIOR_REFILL)
@@ -354,21 +374,21 @@ void ChozoStatueInit(void)
         {
             // Set seated
             gSubSpriteData1.pMultiOam = sChozoStatueMultiSpriteData_Seated;
-            ChozoStatueSeatedChangeCcaa(CAA_MAKE_NON_POWER_GRIP);
+            ChozoStatueSeatedChangeClipdata(CAA_MAKE_NON_POWER_GRIP);
         }
         else
         {
             // Set standing
-            gSubSpriteData1.workVariable3 = TRUE;
+            gSubSpriteData1.work3 = TRUE;
             gSubSpriteData1.pMultiOam = sChozoStatueMultiSpriteData_Standing;
-            ChozoStatueStandingChangeCcaa(CAA_MAKE_NON_POWER_GRIP, CAA_MAKE_SOLID_GRIPPABLE);
+            ChozoStatueStandingChangeClipdata(CAA_MAKE_NON_POWER_GRIP, CAA_MAKE_SOLID_GRIPPABLE);
         }
     }
     else
     {
         // Is item
         gSubSpriteData1.pMultiOam = sChozoStatueMultiSpriteData_Seated;
-        ChozoStatueSeatedChangeCcaa(CAA_MAKE_NON_POWER_GRIP);
+        ChozoStatueSeatedChangeClipdata(CAA_MAKE_NON_POWER_GRIP);
 
         if (behavior == CHOZO_STATUE_BEHAVIOR_ITEM)
         {
@@ -426,7 +446,7 @@ void ChozoStatueInit(void)
  * @brief 14294 | 4 | Empty function
  * 
  */
-void ChozoStatue_Empty(void)
+static void ChozoStatue_Empty(void)
 {
     return;
 }
@@ -435,7 +455,7 @@ void ChozoStatue_Empty(void)
  * @brief 14298 | 64 | Registers the hint
  * 
  */
-void ChozoStatueRegisterHint(void)
+static void ChozoStatueRegisterHint(void)
 {
     u8 eyeSlot;
 
@@ -466,7 +486,7 @@ void ChozoStatueRegisterHint(void)
  * @brief 142fc | bc | Handles the flashing before a chozo statue hint
  * 
  */
-void ChozoStatueHintFlashing(void)
+static void ChozoStatueHintFlashing(void)
 {
     u8 eyeSlot;
 
@@ -522,7 +542,7 @@ void ChozoStatueHintFlashing(void)
  * @brief 143b8 | 40 | Initializes a Chozo statue to be sitting
  * 
  */
-void ChozoStatueSittingInit(void)
+static void ChozoStatueSittingInit(void)
 {
     gCurrentSprite.pose = CHOZO_STATUE_POSE_SITTING;
 
@@ -530,7 +550,7 @@ void ChozoStatueSittingInit(void)
     gSubSpriteData1.animationDurationCounter = 0;
     gSubSpriteData1.currentAnimationFrame = 0;
 
-    ChozoStatueStandingChangeCcaa(CAA_REMOVE_SOLID, CAA_REMOVE_SOLID);
+    ChozoStatueStandingChangeClipdata(CAA_REMOVE_SOLID, CAA_REMOVE_SOLID);
     SoundPlay(SOUND_CHOZO_STATUE_SITTING_DOWN);
 
     gSlowScrollingTimer = CONVERT_SECONDS(1.f);
@@ -540,13 +560,13 @@ void ChozoStatueSittingInit(void)
  * @brief 143f8 | 4c | Handles a chozo statue sitting
  * 
  */
-void ChozoStatueSitting(void)
+static void ChozoStatueSitting(void)
 {
     SpriteUtilUpdateSubSprite1Timer();
-    if (gSubSpriteData1.workVariable2 != 0)
-        SpawnChozoStatueMovement(gSubSpriteData1.workVariable2);
+    if (gSubSpriteData1.work2 != 0)
+        SpawnChozoStatueMovement(gSubSpriteData1.work2);
 
-    if (SpriteUtilCheckEndSubSprite1Anim())
+    if (SpriteUtilHasSubSprite1AnimationEnded())
     {
         gSubSpriteData1.pMultiOam = sChozoStatueMultiSpriteData_Seated;
         gSubSpriteData1.animationDurationCounter = 0;
@@ -555,7 +575,7 @@ void ChozoStatueSitting(void)
         gCurrentSprite.pose = CHOZO_STATUE_POSE_DELAY_AFTER_SITTING;
         gCurrentSprite.work0 = CONVERT_SECONDS(.5f);
 
-        ChozoStatueSeatedChangeCcaa(CAA_MAKE_NON_POWER_GRIP);
+        ChozoStatueSeatedChangeClipdata(CAA_MAKE_NON_POWER_GRIP);
     }
 }
 
@@ -563,7 +583,7 @@ void ChozoStatueSitting(void)
  * @brief 14444 | 24 | Handles the delay before the refill after the statue sat down
  * 
  */
-void ChozoStatueDelayBeforeRefillAfterHint(void)
+static void ChozoStatueDelayBeforeRefillAfterHint(void)
 {
     APPLY_DELTA_TIME_DEC(gCurrentSprite.work0);
     if (gCurrentSprite.work0 == 0)
@@ -574,7 +594,7 @@ void ChozoStatueDelayBeforeRefillAfterHint(void)
  * @brief 14468 | 2c | Waits for the item to be grabbed
  * 
  */
-void ChozoStatueWaitForItemToBeCollected(void)
+static void ChozoStatueWaitForItemToBeCollected(void)
 {
     // Check behavior
     if (ChozoStatueGetBehavior(gCurrentSprite.spriteId) == CHOZO_STATUE_BEHAVIOR_REFILL)
@@ -589,7 +609,7 @@ void ChozoStatueWaitForItemToBeCollected(void)
  * @brief 14494 | 24 | Timer after the item is grabbed, unknown purpose
  * 
  */
-void ChozoStatueTimerAfterItemGrabbed(void)
+static void ChozoStatueTimerAfterItemGrabbed(void)
 {
     APPLY_DELTA_TIME_DEC(gCurrentSprite.work0);
     if (gCurrentSprite.work0 == 0)
@@ -600,7 +620,7 @@ void ChozoStatueTimerAfterItemGrabbed(void)
  * @brief 144b8 | 48 | Initializes a chozo statue for a refill
  * 
  */
-void ChozoStatueRefillInit(void)
+static void ChozoStatueRefillInit(void)
 {
     gCurrentSprite.pose = CHOZO_STATUE_POSE_REFILL;
     gCurrentSprite.work2 = CONVERT_SECONDS(1.f / 15);
@@ -614,7 +634,7 @@ void ChozoStatueRefillInit(void)
  * @brief 14500 | 4c | Handles a chozo statue refilling Samus
  * 
  */
-void ChozoStatueRefillSamus(void)
+static void ChozoStatueRefillSamus(void)
 {
     // Update palette
     APPLY_DELTA_TIME_DEC(gCurrentSprite.work2);
@@ -638,7 +658,7 @@ void ChozoStatueRefillSamus(void)
  * @brief 1454c | 20 | Initializes a chozos statue to be sleeping
  * 
  */
-void ChozoStatueSleepingInit(void)
+static void ChozoStatueSleepingInit(void)
 {
     gCurrentSprite.pose = CHOZO_STATUE_POSE_SLEEPING;
     gCurrentSprite.paletteRow = 0;
@@ -649,7 +669,7 @@ void ChozoStatueSleepingInit(void)
  * @brief 1456c | 58 | Handles a chozo statue going to sleep
  * 
  */
-void ChozoStatueSleeping(void)
+static void ChozoStatueSleeping(void)
 {
     u8 eyeSlot;
 
@@ -663,7 +683,7 @@ void ChozoStatueSleeping(void)
         gCurrentSprite.pose = CHOZO_STATUE_POSE_DO_NOTHING;
 
         // Replay room music if hint
-        if (gSubSpriteData1.workVariable3)
+        if (gSubSpriteData1.work3)
             PlayMusic(gMusicTrackInfo.currentRoomTrack, 0);
     }
 }
@@ -672,7 +692,7 @@ void ChozoStatueSleeping(void)
  * @brief 145c4 | 174 | Initializes a chozo statue part sprite
  * 
  */
-void ChozoStatuePartInit(void)
+static void ChozoStatuePartInit(void)
 {
     u8 ramSlot;
     u8 behavior;
@@ -743,7 +763,7 @@ void ChozoStatuePartInit(void)
         case CHOZO_STATUE_PART_GLOW:
             gCurrentSprite.drawDistanceTop = SUB_PIXEL_TO_PIXEL(BLOCK_SIZE);
             gCurrentSprite.drawDistanceBottom = SUB_PIXEL_TO_PIXEL(PIXEL_SIZE);
-            gCurrentSprite.drawDistanceHorizontal = SUB_PIXEL_TO_PIXEL(HALF_BLOCK_SIZE + QUARTER_BLOCK_SIZE);
+            gCurrentSprite.drawDistanceHorizontal = SUB_PIXEL_TO_PIXEL(THREE_QUARTER_BLOCK_SIZE);
 
             gCurrentSprite.pOam = sChozoStatuePartOam_GlowIdle;
             gCurrentSprite.animationDurationCounter = 0;
@@ -762,7 +782,7 @@ void ChozoStatuePartInit(void)
  * @brief 14738 | 5c | Handles the glow being idle
  * 
  */
-void ChozoStatuePartGlowIdle(void)
+static void ChozoStatuePartGlowIdle(void)
 {
     u8 ramSlot;
 
@@ -790,7 +810,7 @@ void ChozoStatuePartGlowIdle(void)
  * @brief 14794 | a0 | Detects if Samus in in the hand (for a hint)
  * 
  */
-void ChozoStatuePartArmCheckGrabSamusHint(void)
+static void ChozoStatuePartArmCheckGrabSamusHint(void)
 {
     u8 ramSlot;
     u16 xPosition;
@@ -832,10 +852,10 @@ void ChozoStatuePartArmCheckGrabSamusHint(void)
 }
 
 /**
- * @brief 14834 | 30 | Synchronizes Samus' position with the hand position
+ * @brief 14834 | 30 | Synchronizes Samus's position with the hand position
  * 
  */
-void ChozoStatuePartSyncSamusPosition(void)
+static void ChozoStatuePartSyncSamusPosition(void)
 {
     gSamusData.yPosition = gCurrentSprite.yPosition - CHOZO_STATUE_HAND_Y_OFFSET;
 
@@ -849,7 +869,7 @@ void ChozoStatuePartSyncSamusPosition(void)
  * @brief 14864 | 44 | Handles the arm part sitting
  * 
  */
-void ChozoStatuePartArmSitting(void)
+static void ChozoStatuePartArmSitting(void)
 {
     u8 ramSlot;
 
@@ -862,15 +882,15 @@ void ChozoStatuePartArmSitting(void)
     ChozoStatuePartSyncSamusPosition();
 
     // Spawn echo
-    if (gSubSpriteData1.workVariable2)
-        SpawnChozoStatueMovement(gSubSpriteData1.workVariable2);
+    if (gSubSpriteData1.work2)
+        SpawnChozoStatueMovement(gSubSpriteData1.work2);
 }
 
 /**
  * @brief 148a8 | 40 | Handles the arm part being seated
  * 
  */
-void ChozoStatuePartArmSeated(void)
+static void ChozoStatuePartArmSeated(void)
 {
     u8 ramSlot;
 
@@ -889,7 +909,7 @@ void ChozoStatuePartArmSeated(void)
  * @brief 148e8 | fc | Detects if Samus in in the hand (for a refill)
  * 
  */
-void ChozoStatuePartArmCheckGrabSamusRefill(void)
+static void ChozoStatuePartArmCheckGrabSamusRefill(void)
 {
     u8 ramSlot;
     u8 isGrabbed;
@@ -920,12 +940,20 @@ void ChozoStatuePartArmCheckGrabSamusRefill(void)
     {
         if (gSamusData.pose == SPOSE_MORPH_BALL)
         {
-            // Set grabbed
-            SamusSetPose(SPOSE_GRABBED_BY_CHOZO_STATUE);
-            isGrabbed++;
+            #ifdef BUGFIX
+            if (gPreventMovementTimer == 0)
+            #endif // BUGFIX
+            {
+                // Set grabbed
+                SamusSetPose(SPOSE_GRABBED_BY_CHOZO_STATUE);
+                isGrabbed++;
+            }
         }
         else if (gSamusData.pose == SPOSE_GRABBED_BY_CHOZO_STATUE)
-            isGrabbed++; // Already grabbed
+        {
+            // Already grabbed
+            isGrabbed++;
+        }
 
         if (isGrabbed)
         {
@@ -947,7 +975,7 @@ void ChozoStatuePartArmCheckGrabSamusRefill(void)
  * @brief 149e4 | 140 | Refills Samus
  * 
  */
-void ChozoStatuePartArmRefill(void)
+static void ChozoStatuePartArmRefill(void)
 {
     u8 ramSlot;
 
@@ -1024,13 +1052,13 @@ void ChozoStatuePartArmRefill(void)
                 if (gEquipment.maxMissiles == 0 && gEquipment.maxSuperMissiles == 0 && gEquipment.maxPowerBombs == 0)
                 {
                     // Only energy
-                    SpriteSpawnPrimary(PSPRITE_ITEM_BANNER, MESSAGE_ENERGY_TANK_RECHARGE_COMPLETE, 6,
+                    SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_ENERGY_TANK_RECHARGE_COMPLETE, SPRITE_GFX_SLOT_SPECIAL,
                         gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
                 }
                 else
                 {
                     // Energy and weapons
-                    SpriteSpawnPrimary(PSPRITE_ITEM_BANNER, MESSAGE_WEAPONS_AND_ENERGY_RESTORED, 6,
+                    SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_WEAPONS_AND_ENERGY_RESTORED, SPRITE_GFX_SLOT_SPECIAL,
                         gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
                 }
             }
@@ -1042,7 +1070,7 @@ void ChozoStatuePartArmRefill(void)
  * @brief 14b24 | 4 | Empty function
  * 
  */
-void ChozoStatuePart_Empty(void)
+static void ChozoStatuePart_Empty(void)
 {
     return;
 }
@@ -1051,7 +1079,7 @@ void ChozoStatuePart_Empty(void)
  * @brief 14b28 | 30 | Initializes the arm part to be sleeping
  * 
  */
-void ChozoStatuePartSleepingInit(void)
+static void ChozoStatuePartSleepingInit(void)
 {
     u8 ramSlot;
 
@@ -1065,7 +1093,7 @@ void ChozoStatuePartSleepingInit(void)
  * @brief 14b58 | 38 | Handles the arm part sleeping
  * 
  */
-void ChozoStatuePartArmSleeping(void)
+static void ChozoStatuePartArmSleeping(void)
 {
     // Check release samus
     if (gPreventMovementTimer == 0 && gCurrentSprite.pOam == sChozoStatuePartOam_ArmSamusGrabbed)
@@ -1083,7 +1111,7 @@ void ChozoStatuePartArmSleeping(void)
  * @brief 14b90 | 20 | Initializes the eye part to be opening
  * 
  */
-void ChozoStatuePartEyeOpeningInit(void)
+static void ChozoStatuePartEyeOpeningInit(void)
 {
     gCurrentSprite.pose = CHOZO_STATUE_PART_POSE_EYE_OPENING;
 
@@ -1096,9 +1124,9 @@ void ChozoStatuePartEyeOpeningInit(void)
  * @brief 14bb0 | 2c | Handles the eye part opening
  * 
  */
-void ChozoStatuePartEyeOpening(void)
+static void ChozoStatuePartEyeOpening(void)
 {
-    if (SpriteUtilCheckEndCurrentSpriteAnim())
+    if (SpriteUtilHasCurrentAnimationEnded())
     {
         gCurrentSprite.pose = CHOZO_STATUE_PART_POSE_DO_NOTHING;
 
@@ -1113,7 +1141,7 @@ void ChozoStatuePartEyeOpening(void)
  * @brief 14bdc | 20 | Initializes the eye part to be closing
  * 
  */
-void ChozoStatuePartEyeClosingInit(void)
+static void ChozoStatuePartEyeClosingInit(void)
 {
     gCurrentSprite.pose = CHOZO_STATUE_PART_POSE_EYE_CLOSING;
 
@@ -1126,9 +1154,9 @@ void ChozoStatuePartEyeClosingInit(void)
  * @brief 14bfc | 2c | Handles the eye part closing
  * 
  */
-void ChozoStatuePartEyeClosing(void)
+static void ChozoStatuePartEyeClosing(void)
 {
-    if (SpriteUtilCheckEndCurrentSpriteAnim())
+    if (SpriteUtilHasCurrentAnimationEnded())
     {
         gCurrentSprite.pose = CHOZO_STATUE_PART_POSE_DO_NOTHING;
 
@@ -1143,7 +1171,7 @@ void ChozoStatuePartEyeClosing(void)
  * @brief 14c28 | 48 | Handles the leg part being idle
  * 
  */
-void ChozoStatuePartLegIdle(void)
+static void ChozoStatuePartLegIdle(void)
 {
     u8 ramSlot;
 
@@ -1152,8 +1180,8 @@ void ChozoStatuePartLegIdle(void)
     if (gSpriteData[ramSlot].pose == CHOZO_STATUE_POSE_SITTING)
     {
         // Spawn echo
-        if (gSubSpriteData1.workVariable2 != 0)
-            SpawnChozoStatueMovement(gSubSpriteData1.workVariable2);
+        if (gSubSpriteData1.work2 != 0)
+            SpawnChozoStatueMovement(gSubSpriteData1.work2);
     }
     else if (gSpriteData[ramSlot].pose == CHOZO_STATUE_POSE_DELAY_AFTER_SITTING)
     {
@@ -1336,7 +1364,7 @@ void ChozoStatueRefill(void)
         gCurrentSprite.hitboxLeft = PIXEL_SIZE;
         gCurrentSprite.hitboxRight = PIXEL_SIZE;
 
-        gCurrentSprite.pose = 0x9;
+        gCurrentSprite.pose = CHOZO_STATUE_REFILL_POSE_IDLE;
 
         gCurrentSprite.animationDurationCounter = 0;
         gCurrentSprite.currentAnimationFrame = 0;

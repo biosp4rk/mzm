@@ -1,15 +1,17 @@
 #include "menus/boot_debug.h"
+#include "dma.h"
 
 #include "data/menus/boot_debug_data.h"
 #include "data/shortcut_pointers.h"
 #include "data/menus/pause_screen_data.h"
 #include "data/menus/pause_screen_map_data.h"
-#include "data/menus/internal_pause_screen_data.h"
-#include "data/engine_pointers.h"
+#include "data/menus/status_screen_data.h"
 #include "data/io_transfer_data.h"
 #include "data/clipdata_data.h"
 
 #include "constants/menus/boot_debug.h"
+#include "constants/connection.h"
+#include "constants/cutscene.h"
 #include "constants/event.h"
 
 #include "structs/menus/boot_debug.h"
@@ -19,6 +21,47 @@
 #include "structs/audio.h"
 
 #ifdef DEBUG
+
+extern const struct Door* sAreaDoorsPointers[AREA_ENTRY_COUNT];
+extern const struct RoomEntryRom* sAreaRoomEntryPointers[AREA_ENTRY_COUNT];
+
+extern const u32* sMinimapDataPointers[AREA_COUNT];
+
+static const u8* sBootDebugCutsceneBTextPointers[CUTSCENE_END] = {
+    [CUTSCENE_NONE] =                    sBootDebug_Cutscene_Blank_Text,
+    [CUTSCENE_INTRO_TEXT] =              sBootDebug_CutsceneB_StartMonologue_Text,
+    [CUTSCENE_MOTHERSHIP_MONOLOGUE] =    sBootDebug_CutsceneB_ShotDownMonologue1_Text,
+    [CUTSCENE_COULD_I_SURVIVE] =         sBootDebug_CutsceneB_ShotDownMonologue2_Text,
+    [CUTSCENE_MOTHER_BRAIN_CLOSE_UP] =   sBootDebug_CutsceneB_MotherBrain_Text,
+    [CUTSCENE_KRAID_RISING] =            sBootDebug_CutsceneB_KraidFight_Text,
+    [CUTSCENE_STATUE_OPENING] =          sBootDebug_CutsceneB_BossStatues_Text,
+    [CUTSCENE_RIDLEY_IN_SPACE] =         sBootDebug_CutsceneB_MotherShipReturning_Text,
+    [CUTSCENE_RIDLEY_LANDING] =          sBootDebug_CutsceneB_MotherShipLanding_Text,
+    [CUTSCENE_RIDLEY_SPAWNING] =         sBootDebug_CutsceneB_RidleyFight_Text,
+    [CUTSCENE_ENTER_TOURIAN] =           sBootDebug_CutsceneB_Metroids_Text,
+    [CUTSCENE_BEFORE_RUINS_TEST] =          sBootDebug_CutsceneB_ChozoMural_Text,
+    [CUTSCENE_GETTING_FULLY_POWERED] =   sBootDebug_CutsceneB_PoweredSuit_Text,
+    [CUTSCENE_MECHA_RIDLEY_SEES_SAMUS] = sBootDebug_CutsceneB_MechaRidley_Text,
+    [CUTSCENE_SAMUS_IN_BLUE_SHIP] =      sBootDebug_CutsceneB_EscapeShip_Text
+};
+
+static const u8* sBootDebugCutsceneATextPointers[2] = {
+    sBootDebug_Cutscene_Blank_Text,
+    sBootDebug_CutsceneA_ShotDown_Text
+};
+
+static const u8* sBootDebugDemoStateTextPointers[5] = {
+    sBootDebug_DemoState_Blank_Text,
+    sBootDebug_DemoState_Free_Text,
+    sBootDebug_DemoState_GetKey_Text,
+    sBootDebug_DemoState_RamRun_Text,
+    sBootDebug_DemoState_RomRun_Text
+};
+
+static u8 sBootDebugTextToggleColors[2][2] = {
+    [FALSE] = { BOOT_DEBUG_COLOR_BLACK, BOOT_DEBUG_COLOR_YELLOW },
+    [TRUE] = { BOOT_DEBUG_COLOR_YELLOW, BOOT_DEBUG_COLOR_BLACK }
+};
 
 /**
  * @brief Updates all of the boot debug menu's OAM
@@ -275,9 +318,6 @@ void BootDebugUpdateNonCursorOam(void)
  */
 void BootDebugUpdateMapScreenPosition(void)
 {
-    // TODO: Match this function
-    // https://decomp.me/scratch/9GEWC
-
     s32 xOffset;
     s32 yOffset;
     u16 mapX;
@@ -295,6 +335,8 @@ void BootDebugUpdateMapScreenPosition(void)
             xOffset = 4;
     }
 
+    // Written this way to produce matching ASM
+    gLastDoorUsed = gLastDoorUsed;
     mapX = sAreaRoomEntryPointers[gSectionInfo.sectionIndex][gCurrentRoom].mapX;
     mapY = sAreaRoomEntryPointers[gSectionInfo.sectionIndex][gCurrentRoom].mapY;
     mapX += (sAreaDoorsPointers[gSectionInfo.sectionIndex][gLastDoorUsed].xStart - xOffset) / SCREEN_SIZE_X_BLOCKS;
@@ -394,27 +436,29 @@ void BootDebugReadSram(void)
 void BootDebugWriteSram(u8 selectSaveFile)
 {
     u8* dst;
+    struct SaveBootDebug* pSave;
 
-    dst = gSram.bootDebugSave.zeroSaveText;
+    pSave = &gSram.bootDebugSave;
+    dst = pSave->zeroSaveText;
     DmaTransfer(3, &sZeroSaveText, dst, ARRAY_SIZE(sZeroSaveText), 8);
-    gSram.bootDebugSave.debugMode = gDebugMode;
+    pSave->debugMode = gDebugMode;
 
     if (selectSaveFile)
     {
         if (gMostRecentSaveFile == 0)
-            gSram.bootDebugSave.sectionIndex = BOOT_DEBUG_SECTION_SAVE_A;
+            pSave->sectionIndex = BOOT_DEBUG_SECTION_SAVE_A;
         else if (gMostRecentSaveFile == 1)
-            gSram.bootDebugSave.sectionIndex = BOOT_DEBUG_SECTION_SAVE_B;
+            pSave->sectionIndex = BOOT_DEBUG_SECTION_SAVE_B;
         else if (gMostRecentSaveFile == 2)
-            gSram.bootDebugSave.sectionIndex = BOOT_DEBUG_SECTION_SAVE_C;
+            pSave->sectionIndex = BOOT_DEBUG_SECTION_SAVE_C;
         else
-            gSram.bootDebugSave.sectionIndex = 0;
+            pSave->sectionIndex = 0;
     }
     else
     {
-        gSram.bootDebugSave.sectionIndex = gCurrentArea;
+        pSave->sectionIndex = gCurrentArea;
     }
-    
+
     DoSramOperation(SRAM_OPERATION_SAVE_BOOT_DEBUG_RAM);
 }
 
@@ -430,24 +474,24 @@ s32 BootDebugSubroutine(void)
 
     changing = FALSE;
 
-    switch (gGameModeSub1)
+    switch (gSubGameMode1)
     {
         case 0:
             BootDebugSetupMenu();
-            gGameModeSub1++;
+            gSubGameMode1++;
             break;
 
         case 1:
-            if (gWrittenToBLDY_NonGameplay != 0)
+            if (gWrittenToBldy_NonGameplay != 0)
             {
-                if (gWrittenToBLDY_NonGameplay > 4)
-                    gWrittenToBLDY_NonGameplay -= 4;
+                if (gWrittenToBldy_NonGameplay > 4)
+                    gWrittenToBldy_NonGameplay -= 4;
                 else
-                    gWrittenToBLDY_NonGameplay = 0;
+                    gWrittenToBldy_NonGameplay = 0;
             }
             else
             {
-                gGameModeSub1++;
+                gSubGameMode1++;
             }
             break;
 
@@ -457,14 +501,14 @@ s32 BootDebugSubroutine(void)
             {
                 if (inputResult == 2)
                 {
-                    write16(REG_BLDCNT, BLDCNT_BRIGHTNESS_INCREASE_EFFECT | BLDCNT_BACKDROP_FIRST_TARGET_PIXEL |
+                    WRITE_16(REG_BLDCNT, BLDCNT_BRIGHTNESS_INCREASE_EFFECT | BLDCNT_BACKDROP_FIRST_TARGET_PIXEL |
                             BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_BG3_FIRST_TARGET_PIXEL | BLDCNT_BG2_FIRST_TARGET_PIXEL |
                             BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_BG0_FIRST_TARGET_PIXEL);
-                    gGameModeSub1 = 4;
+                    gSubGameMode1 = 4;
                 }
                 else
                 {
-                    switch (gGameModeSub2)
+                    switch (gSubGameMode2)
                     {
                         case 1:
                         case 3:
@@ -489,7 +533,7 @@ s32 BootDebugSubroutine(void)
                     
                     BootDebugWriteSram(FALSE);
 
-                    if (gGameModeSub2 == 1)
+                    if (gSubGameMode2 == 1)
                     {
                         if (gIsLoadingFile == TRUE)
                         {
@@ -504,32 +548,32 @@ s32 BootDebugSubroutine(void)
                         }
                     }
                     
-                    gGameModeSub1++;
+                    gSubGameMode1++;
                 }
             }
             break;
         case 3:
-            if (gWrittenToBLDY_NonGameplay <= 0xF)
+            if (gWrittenToBldy_NonGameplay <= 0xF)
             {
-                if (gWrittenToBLDY_NonGameplay <= 0xB)
-                    gWrittenToBLDY_NonGameplay += 4;
+                if (gWrittenToBldy_NonGameplay <= 0xB)
+                    gWrittenToBldy_NonGameplay += 4;
                 else
-                    gWrittenToBLDY_NonGameplay = 0x10;
+                    gWrittenToBldy_NonGameplay = 0x10;
             }
             else
             {
-                write16(PALRAM_BASE, 0);
+                WRITE_16(PALRAM_BASE, 0);
                 changing = TRUE;
-                gGameModeSub1 = 0;
+                gSubGameMode1 = 0;
             }
             break;
         case 4:
-            if (gWrittenToBLDY_NonGameplay <= 0xF)
+            if (gWrittenToBldy_NonGameplay <= 0xF)
             {
-                if (gWrittenToBLDY_NonGameplay <= 0xB)
-                    gWrittenToBLDY_NonGameplay += 4;
+                if (gWrittenToBldy_NonGameplay <= 0xB)
+                    gWrittenToBldy_NonGameplay += 4;
                 else
-                    gWrittenToBLDY_NonGameplay = 0x10;
+                    gWrittenToBldy_NonGameplay = 0x10;
             }
             else
             {
@@ -537,9 +581,9 @@ s32 BootDebugSubroutine(void)
                 RestartSound();
                 EraseSram();
                 gResetGame = TRUE;
-                write16(PALRAM_BASE, 0);
+                WRITE_16(PALRAM_BASE, 0);
                 changing = TRUE;
-                gGameModeSub1 = 0;
+                gSubGameMode1 = 0;
             }
             break;
     }
@@ -553,7 +597,7 @@ s32 BootDebugSubroutine(void)
  */
 void BootDebugSetVBlankCodePtr(void)
 {
-    CallbackSetVBlank(VBlankCodeDuringBootDebug);
+    CallbackSetVblank(VBlankCodeDuringBootDebug);
 }
 
 /**
@@ -566,14 +610,14 @@ void VBlankCodeDuringBootDebug(void)
 
     DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
 
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay);
+    WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay);
 
-    write16(REG_BG3VOFS, SUB_PIXEL_TO_PIXEL(gBg3VOFS_NonGameplay) & 0x1FF);
-    write16(REG_BG2VOFS, SUB_PIXEL_TO_PIXEL(gBg2VOFS_NonGameplay) & 0x1FF);
-    write16(REG_BG0VOFS, SUB_PIXEL_TO_PIXEL(gBg0VOFS_NonGameplay) & 0x1FF);
-    write16(REG_BG0HOFS, SUB_PIXEL_TO_PIXEL(gBg0HOFS_NonGameplay) & 0x1FF);
+    WRITE_16(REG_BG3VOFS, SUB_PIXEL_TO_PIXEL(gBg3VOFS_NonGameplay) & 0x1FF);
+    WRITE_16(REG_BG2VOFS, SUB_PIXEL_TO_PIXEL(gBg2VOFS_NonGameplay) & 0x1FF);
+    WRITE_16(REG_BG0VOFS, SUB_PIXEL_TO_PIXEL(gBg0VOFS_NonGameplay) & 0x1FF);
+    WRITE_16(REG_BG0HOFS, SUB_PIXEL_TO_PIXEL(gBg0HOFS_NonGameplay) & 0x1FF);
 
-    write16(REG_DISPCNT, BOOT_DEBUG_DATA.dispcnt);
+    WRITE_16(REG_DISPCNT, BOOT_DEBUG_DATA.dispcnt);
 }
 
 /**
@@ -581,24 +625,24 @@ void VBlankCodeDuringBootDebug(void)
  */
 void BootDebugSetupMenu(void)
 {
-    write16(REG_IE, read16(REG_IE) ^ IF_VBLANK);
-    write16(REG_IME, FALSE);
-    write16(REG_DISPSTAT, read16(REG_DISPSTAT) & ~DSTAT_IF_HBLANK);
+    WRITE_16(REG_IE, READ_16(REG_IE) ^ IF_VBLANK);
+    WRITE_16(REG_IME, FALSE);
+    WRITE_16(REG_DISPSTAT, READ_16(REG_DISPSTAT) & ~DSTAT_IF_HBLANK);
 
-    write16(REG_IE, read16(REG_IE) & ~IF_HBLANK);
-    write16(REG_IF, IF_HBLANK);
-    write16(REG_IME, TRUE);
+    WRITE_16(REG_IE, READ_16(REG_IE) & ~IF_HBLANK);
+    WRITE_16(REG_IF, IF_HBLANK);
+    WRITE_16(REG_IME, TRUE);
 
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE);
-    write16(REG_BLDCNT, BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT);
-    write16(REG_DISPCNT, 0);
+    WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay = BLDY_MAX_VALUE);
+    WRITE_16(REG_BLDCNT, BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT);
+    WRITE_16(REG_DISPCNT, 0);
 
-    StopAllMusicsAndSounds();
+    StopAllMusicAndSounds();
     DoSoundAction(SOUND_ACTION_DISABLE_STEREO | SOUND_ACTION_PWM(9) | SOUND_ACTION_FREQ_INDEX(SOUND_MODE_FREQ_13379) |
         SOUND_ACTION_VOLUME(15) | SOUND_ACTION_MAX_CHANNELS(7) | SOUND_ACTION_ENABLE_REVERB);
     UpdateMusicPriority(0);
 
-    gGameModeSub2 = 0;
+    gSubGameMode2 = 0;
     gNextOamSlot = 0;
     ResetFreeOam();
     BitFill(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam), 32);
@@ -617,26 +661,33 @@ void BootDebugSetupMenu(void)
     
     LZ77UncompVRAM(sBootDebugObjGfx, VRAM_OBJ);
     LZ77UncompVRAM(sBootDebugBgGfx, VRAM_BASE);
-    DMA_SET(3, sMinimapTilesGfx, BGCNT_TO_VRAM_CHAR_BASE(1), C_32_2_16(DMA_ENABLE, 0x1800));
 
-    DMA_SET(3, sMinimapTilesPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, 0x50));
-    DMA_SET(3, sBootDebugBgPal, PALRAM_BASE + 0x100, C_32_2_16(DMA_ENABLE, 0x80));
-    DMA_SET(3, sBootDebugObjPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, 0x30));
+    #ifdef REGION_EU
+    DmaTransfer(3, sMinimapTilesGfx, BGCNT_TO_VRAM_CHAR_BASE(1), 0x3000, 16);
+    DmaTransfer(3, sMinimapTilesPal, PALRAM_BASE, 5 * PAL_ROW_SIZE, 16);
+    DmaTransfer(3, sBootDebugBgPal, PALRAM_BASE + 8 * PAL_ROW_SIZE, 8 * PAL_ROW_SIZE, 16);
+    DmaTransfer(3, sBootDebugObjPal, PALRAM_OBJ, 3 * PAL_ROW_SIZE, 16);
+    #else // !REGION_EU
+    DMA_SET(3, sMinimapTilesGfx, BGCNT_TO_VRAM_CHAR_BASE(1), C_32_2_16(DMA_ENABLE, 0x3000 / sizeof(u16)));
+    DMA_SET(3, sMinimapTilesPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, 5 * PAL_ROW));
+    DMA_SET(3, sBootDebugBgPal, PALRAM_BASE + 8 * PAL_ROW_SIZE, C_32_2_16(DMA_ENABLE, 8 * PAL_ROW));
+    DMA_SET(3, sBootDebugObjPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, 3 * PAL_ROW));
+    #endif // REGION_EU
 
     BitFill(3, 0xD040, BGCNT_TO_VRAM_TILE_BASE(30), BGCNT_VRAM_TILE_SIZE * 2, 16);
     BitFill(3, 0x8040, BGCNT_TO_VRAM_TILE_BASE(28), BGCNT_VRAM_TILE_SIZE * 2, 16);
     BitFill(3, 0xE040, BGCNT_TO_VRAM_TILE_BASE(26), BGCNT_VRAM_TILE_SIZE * 2, 16);
     BitFill(3, 0x1140, BGCNT_TO_VRAM_TILE_BASE(23), BGCNT_VRAM_TILE_SIZE * 3, 16);
 
-    gWrittenToBLDY_NonGameplay = 0x10;
-    write16(REG_BG0VOFS, 0);
-    write16(REG_BG0HOFS, 0);
-    write16(REG_BG1VOFS, -QUARTER_BLOCK_SIZE);
-    write16(REG_BG1HOFS, -(BLOCK_SIZE * 2 + HALF_BLOCK_SIZE + EIGHTH_BLOCK_SIZE));
-    write16(REG_BG2VOFS, (gBg2VOFS_NonGameplay / 4) & 0x1FF);
-    write16(REG_BG2HOFS, (gBg2HOFS_NonGameplay / 4) & 0x1FF);
-    write16(REG_BG3VOFS, (gBg3VOFS_NonGameplay / 4) & 0x1FF);
-    write16(REG_BG3HOFS, 0);
+    gWrittenToBldy_NonGameplay = 0x10;
+    WRITE_16(REG_BG0VOFS, 0);
+    WRITE_16(REG_BG0HOFS, 0);
+    WRITE_16(REG_BG1VOFS, -QUARTER_BLOCK_SIZE);
+    WRITE_16(REG_BG1HOFS, -(BLOCK_SIZE * 2 + HALF_BLOCK_SIZE + EIGHTH_BLOCK_SIZE));
+    WRITE_16(REG_BG2VOFS, (gBg2VOFS_NonGameplay / 4) & 0x1FF);
+    WRITE_16(REG_BG2HOFS, (gBg2HOFS_NonGameplay / 4) & 0x1FF);
+    WRITE_16(REG_BG3VOFS, (gBg3VOFS_NonGameplay / 4) & 0x1FF);
+    WRITE_16(REG_BG3HOFS, 0);
 
     gIoTransferInfo = sIoTransferInfo_Empty;
     gIoTransferInfo.pFunction = BootDebugUpdateMenuOam;
@@ -654,26 +705,26 @@ void BootDebugSetupMenu(void)
     BootDebugDrawMenuNames();
 
     // Dimensions of the lighter blue square that holds the menu data
-    write16(REG_WIN1H, C_16_2_8(SCREEN_SIZE_X * .35, SCREEN_SIZE_X - 4));
-    write16(REG_WIN1V, C_16_2_8(SCREEN_SIZE_Y * .125, SCREEN_SIZE_Y * .975));
+    WRITE_16(REG_WIN1H, C_16_2_8(SCREEN_SIZE_X * .35, SCREEN_SIZE_X - 4));
+    WRITE_16(REG_WIN1V, C_16_2_8(SCREEN_SIZE_Y * .125, SCREEN_SIZE_Y * .975));
 
-    write16(REG_WINOUT, WIN0_BG0 | WIN0_BG3 | WIN0_OBJ | WIN0_COLOR_EFFECT);
-    write8(REG_WININ + 1, (WIN1_BG0 | WIN1_BG2 | WIN1_BG3 | WIN1_OBJ | WIN1_COLOR_EFFECT) >> 8);
-    write8(REG_WININ, WIN0_BG1 | WIN0_OBJ | WIN0_COLOR_EFFECT);
+    WRITE_16(REG_WINOUT, WIN0_BG0 | WIN0_BG3 | WIN0_OBJ | WIN0_COLOR_EFFECT);
+    WRITE_8(REG_WININ + 1, (WIN1_BG0 | WIN1_BG2 | WIN1_BG3 | WIN1_OBJ | WIN1_COLOR_EFFECT) >> 8);
+    WRITE_8(REG_WININ, WIN0_BG1 | WIN0_OBJ | WIN0_COLOR_EFFECT);
 
-    write16(REG_BG3CNT, CREATE_BGCNT(0, 30, BGCNT_LOW_PRIORITY, BGCNT_SIZE_256x512));
-    write16(REG_BG2CNT, CREATE_BGCNT(0, 28, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x512));
-    write16(REG_BG1CNT, CREATE_BGCNT(0, 26, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x512));
-    write16(REG_BG0CNT, CREATE_BGCNT(1, 22, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_512x512) | BGCNT_SCREEN_OVERFLOW);
+    WRITE_16(REG_BG3CNT, CREATE_BGCNT(0, 30, BGCNT_LOW_PRIORITY, BGCNT_SIZE_256x512));
+    WRITE_16(REG_BG2CNT, CREATE_BGCNT(0, 28, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x512));
+    WRITE_16(REG_BG1CNT, CREATE_BGCNT(0, 26, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x512));
+    WRITE_16(REG_BG0CNT, CREATE_BGCNT(1, 22, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_512x512) | BGCNT_SCREEN_OVERFLOW);
 
     BOOT_DEBUG_DATA.dispcnt = DCNT_BG2 | DCNT_BG3 | DCNT_OBJ | DCNT_WIN1;
-    write16(REG_DISPCNT, DCNT_BG2 | DCNT_BG3 | DCNT_OBJ | DCNT_WIN1);
+    WRITE_16(REG_DISPCNT, DCNT_BG2 | DCNT_BG3 | DCNT_OBJ | DCNT_WIN1);
 
     if (BOOT_DEBUG_DATA.menuCursor == BOOT_DEBUG_SUB_MENU_SECTION && BOOT_DEBUG_DATA.subMenuOption != BOOT_DEBUG_SECTION_BRINSTAR)
         BootDebugSectionMapDrawRoomAndDoorIds(FALSE);
 
     BootDebugSetVBlankCodePtr();
-    write16(REG_IE, read16(REG_IE) | IF_VBLANK);
+    WRITE_16(REG_IE, READ_16(REG_IE) | IF_VBLANK);
 }
 
 /**
@@ -691,11 +742,15 @@ s32 BootDebugHandleInput(void)
     subMenuResult = TRUE;
     tempResult = 0;
 
+    #ifdef REGION_EU
+    CheckForMaintainedInput(MAINTAINED_INPUT_SPEED_FAST);
+    #else // !REGION_EU
     CheckForMaintainedInput();
+    #endif // REGION_EU
 
     if (BOOT_DEBUG_DATA.menuDepth == BOOT_DEBUG_MENU_MAIN && gChangedInput & KEY_R)
     {
-        gGameModeSub2 = 2;
+        gSubGameMode2 = 2;
         return 1;
     }
 
@@ -704,7 +759,7 @@ s32 BootDebugHandleInput(void)
     {
         if (gSectionInfo.sectionIndex == BOOT_DEBUG_SECTION_TITLE)
         {
-            gGameModeSub2 = 2;
+            gSubGameMode2 = 2;
             result = 1;
         }
         else if (gSectionInfo.sectionIndex >= BOOT_DEBUG_SECTION_SAVE_A && gSectionInfo.sectionIndex <= BOOT_DEBUG_SECTION_SAVE_C)
@@ -720,14 +775,14 @@ s32 BootDebugHandleInput(void)
             {
                 gCurrentArea = gSectionInfo.sectionIndex;
                 gIsLoadingFile = TRUE;
-                gGameModeSub2 = 1;
+                gSubGameMode2 = 1;
                 result = 1;
             }
         }
         else if (gSectionInfo.sectionIndex != BOOT_DEBUG_SECTION_BLANK)
         {
             result = 1;
-            gGameModeSub2 = 1;
+            gSubGameMode2 = 1;
             gIsLoadingFile = FALSE;
         
             if (gCurrentArea != gSectionInfo.sectionIndex && !gSectionInfo.onMapScreen)
@@ -841,19 +896,19 @@ s32 BootDebugHandleInput(void)
                 {
                     if (tempResult == 1)
                     {
-                        gGameModeSub2 = 7;
+                        gSubGameMode2 = 7;
                         gBootDebugActive = GM_DEBUG_MENU;
                     }
                     else if (tempResult == 2)
                     {
-                        gGameModeSub2 = 8;
+                        gSubGameMode2 = 8;
                         gBootDebugActive = GM_DEBUG_MENU;
                     }
                     else
                     {
-                        gCurrentDemo.noDemoShuffle = 1;
+                        gCurrentDemo.noDemoShuffle = TRUE;
                         DemoInit();
-                        gGameModeSub2 = gDemoState != DEMO_STATE_NONE ? 6 : 1;
+                        gSubGameMode2 = gDemoState != DEMO_STATE_NONE ? 6 : 1;
                     }
                     result = 1;
                 }
@@ -863,7 +918,7 @@ s32 BootDebugHandleInput(void)
                 gBootDebugActive = BootDebugEtcSubroutine();
                 if (gBootDebugActive != 0)
                 {
-                    gGameModeSub2 = gBootDebugActive == 1 ? 4 : 5;
+                    gSubGameMode2 = gBootDebugActive == 1 ? 4 : 5;
                     gBootDebugActive = 1;
                     result = 1;
                 }
@@ -998,8 +1053,8 @@ s32 BootDebugSectionSubroutine(void)
     {
         if (gChangedInput & (KEY_B | KEY_SELECT))
         {
-            write16(REG_WIN0H, 0);
-            write16(REG_WIN0V, 0);
+            WRITE_16(REG_WIN0H, 0);
+            WRITE_16(REG_WIN0V, 0);
             BOOT_DEBUG_DATA.dispcnt ^= DCNT_BG0 | DCNT_BG1 | DCNT_WIN0;
             BOOT_DEBUG_DATA.menuOam[3].exists = 0;
             BOOT_DEBUG_DATA.subMenuOption = 0;
@@ -1055,6 +1110,7 @@ s32 BootDebugSectionSubroutine(void)
  * 
  * @param roomOrDoor Value updated (-1 = loading, 0 = room, 1 = door)
  */
+#ifdef NON_MATCHING
 void BootDebugSectionMapRoomOrDoorUpdated(u8 roomOrDoor)
 {
     s32 doorCount;
@@ -1136,6 +1192,171 @@ void BootDebugSectionMapRoomOrDoorUpdated(u8 roomOrDoor)
         gCurrentRoom = pDoor->sourceRoom;
     }
 }
+#else // !NON_MATCHING
+NAKED_FUNCTION
+void BootDebugSectionMapRoomOrDoorUpdated(u8 roomOrDoor)
+{
+    asm(" \n\
+    push    {r4-r7,r14} \n\
+    mov     r7,r10 \n\
+    mov     r6,r9 \n\
+    mov     r5,r8 \n\
+    push    {r5-r7} \n\
+    lsl     r0,r0,#0x18 \n\
+    lsr     r7,r0,#0x18 \n\
+    ldr     r1,=sAreaDoorsPointers \n\
+    ldr     r2,=gSectionInfo \n\
+    ldrb    r0,[r2] \n\
+    lsl     r0,r0,#2 \n\
+    add     r0,r0,r1 \n\
+    ldr     r4,[r0] \n\
+    mov     r5,#0 \n\
+    mov     r3,#0 \n\
+    ldrb    r0,[r4] \n\
+    mov     r9,r1 \n\
+    ldr     r1,=gCurrentRoom \n\
+    mov     r10,r1 \n\
+    ldr     r1,=gLastDoorUsed \n\
+    mov     r8,r1 \n\
+    cmp     r0,#0 \n\
+    beq     lbl_080795f4 \n\
+lbl_080795e2: \n\
+    ldrb    r0,[r4,#1] \n\
+    cmp     r3,r0 \n\
+    bgt     lbl_080795ea \n\
+    mov     r3,r0 \n\
+lbl_080795ea: \n\
+    add     r5,#1 \n\
+    add     r4,#0xC \n\
+    ldrb    r0,[r4] \n\
+    cmp     r0,#0 \n\
+    bne     lbl_080795e2 \n\
+lbl_080795f4: \n\
+    mov     r6,r10 \n\
+    ldrb    r0,[r6] \n\
+    cmp     r0,r3 \n\
+    ble     lbl_08079604 \n\
+    strb    r3,[r6] \n\
+    ldr     r1,=gPauseScreenFlag \n\
+    mov     r0,#0 \n\
+    strb    r0,[r1] \n\
+lbl_08079604: \n\
+    mov     r3,r8 \n\
+    ldrb    r0,[r3] \n\
+    sub     r1,r5,#1 \n\
+    cmp     r0,r1 \n\
+    ble     lbl_08079616 \n\
+    strb    r1,[r3] \n\
+    ldr     r1,=gPauseScreenFlag \n\
+    mov     r0,#0 \n\
+    strb    r0,[r1] \n\
+lbl_08079616: \n\
+    cmp     r7,#0 \n\
+    bne     lbl_080796c6 \n\
+    ldrb    r0,[r2] \n\
+    lsl     r0,r0,#2 \n\
+    add     r0,r9 \n\
+    ldr     r4,[r0] \n\
+    mov     r7,#0 \n\
+    ldrb    r0,[r4] \n\
+    cmp     r0,#0 \n\
+    beq     lbl_080796e0 \n\
+    mov     r12,r6 \n\
+    ldrb    r5,[r6] \n\
+    mov     r10,r5 \n\
+    mov     r8,r2 \n\
+    mov     r9,r3 \n\
+lbl_08079634: \n\
+    ldrb    r3,[r4,#1] \n\
+    cmp     r3,r10 \n\
+    bne     lbl_080796ba \n\
+    mov     r2,#1 \n\
+    ldr     r0,=sElevatorRoomPairs \n\
+    ldrb    r1,[r0,#8] \n\
+    mov     r6,r0 \n\
+    mov     r0,r8 \n\
+    ldrb    r0,[r0] \n\
+    cmp     r1,r0 \n\
+    bne     lbl_08079652 \n\
+    ldr     r1,=sElevatorRoomPairs+0x8 \n\
+    ldrb    r0,[r1,#1] \n\
+    cmp     r0,r3 \n\
+    beq     lbl_08079684 \n\
+lbl_08079652: \n\
+    lsl     r0,r2,#3 \n\
+    add     r1,r0,r6 \n\
+    ldrb    r0,[r1,#4] \n\
+    mov     r5,r8 \n\
+    ldrb    r3,[r5] \n\
+    cmp     r0,r3 \n\
+    bne     lbl_0807966a \n\
+    ldrb    r0,[r1,#5] \n\
+    mov     r1,r12 \n\
+    ldrb    r1,[r1] \n\
+    cmp     r0,r1 \n\
+    beq     lbl_08079684 \n\
+lbl_0807966a: \n\
+    add     r2,#1 \n\
+    cmp     r2,#8 \n\
+    bgt     lbl_080796b4 \n\
+    lsl     r0,r2,#3 \n\
+    add     r1,r0,r6 \n\
+    ldrb    r0,[r1] \n\
+    cmp     r0,r3 \n\
+    bne     lbl_08079652 \n\
+    ldrb    r0,[r1,#1] \n\
+    mov     r3,r12 \n\
+    ldrb    r3,[r3] \n\
+    cmp     r0,r3 \n\
+    bne     lbl_08079652 \n\
+lbl_08079684: \n\
+    cmp     r2,#8 \n\
+    bgt     lbl_080796b4 \n\
+    ldrb    r1,[r4] \n\
+    mov     r0,#0xF \n\
+    and     r0,r1 \n\
+    cmp     r0,#2 \n\
+    bls     lbl_080796ba \n\
+    mov     r5,r9 \n\
+    strb    r7,[r5] \n\
+    b       lbl_080796e0 \n\
+    .pool \n\
+lbl_080796b4: \n\
+    mov     r0,r9 \n\
+    strb    r7,[r0] \n\
+    b       lbl_080796e0 \n\
+lbl_080796ba: \n\
+    add     r4,#0xC \n\
+    add     r7,#1 \n\
+    ldrb    r0,[r4] \n\
+    cmp     r0,#0 \n\
+    bne     lbl_08079634 \n\
+    b       lbl_080796e0 \n\
+lbl_080796c6: \n\
+    ldrb    r0,[r2] \n\
+    lsl     r0,r0,#2 \n\
+    add     r0,r9 \n\
+    ldr     r4,[r0] \n\
+    mov     r3,r8 \n\
+    ldrb    r1,[r3] \n\
+    lsl     r0,r1,#1 \n\
+    add     r0,r0,r1 \n\
+    lsl     r0,r0,#2 \n\
+    add     r4,r4,r0 \n\
+    ldrb    r0,[r4,#1] \n\
+    mov     r5,r10 \n\
+    strb    r0,[r5] \n\
+lbl_080796e0: \n\
+    pop     {r3-r5} \n\
+    mov     r8,r3 \n\
+    mov     r9,r4 \n\
+    mov     r10,r5 \n\
+    pop     {r4-r7} \n\
+    pop     {r0} \n\
+    bx      r0 \n\
+    ");
+}
+#endif // NON_MATCHING
 
 /**
  * @brief Draws the room and door IDs for the interactive area map
@@ -1159,8 +1380,8 @@ void BootDebugSectionMapDrawRoomAndDoorIds(u8 initialized)
         gBg0VOFS_NonGameplay = BOOT_DEBUG_DATA.bg0vofs;
         gBg0HOFS_NonGameplay = BOOT_DEBUG_DATA.bg0hofs;
         
-        write16(REG_WIN0H, C_16_2_8(SCREEN_SIZE_X * .65, SCREEN_SIZE_X - 4));
-        write16(REG_WIN0V, C_16_2_8(SCREEN_SIZE_Y * .1, SCREEN_SIZE_Y * .2));
+        WRITE_16(REG_WIN0H, C_16_2_8(SCREEN_SIZE_X * .65, SCREEN_SIZE_X - 4));
+        WRITE_16(REG_WIN0V, C_16_2_8(SCREEN_SIZE_Y * .1, SCREEN_SIZE_Y * .2));
         BOOT_DEBUG_DATA.dispcnt |= DCNT_BG0 | DCNT_BG1 | DCNT_WIN0;
         BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MAP_CURSOR].exists = OAM_ID_CHANGED_FLAG;
     }
@@ -1226,6 +1447,10 @@ void BootDebugModeSubroutine(void)
 {
     s32 updateTextAndEvents;
 
+    #ifdef BUGFIX
+    updateTextAndEvents = FALSE;
+    #endif // BUGFIX
+    
     if (BOOT_DEBUG_DATA.menuDepth == BOOT_DEBUG_MENU_SUB)
     {
         if (gChangedInput & KEY_A)
@@ -1385,7 +1610,7 @@ void BootDebugSaveSubroutine(void)
                 }
                 else if (gChangedInput & KEY_A)
                 {
-                    BOOT_DEBUG_DATA.fileScreenOptions.soundTestAndOgMetroid ^= 1 << BOOT_DEBUG_DATA.optionCursor;
+                    BOOT_DEBUG_DATA.fileScreenOptions.soundTestAndOrigMetroid ^= 1 << BOOT_DEBUG_DATA.optionCursor;
                     value = TRUE;
                 }
                 else if (gChangedInput & KEY_RIGHT)
@@ -1462,7 +1687,7 @@ void BootDebugSaveUpdateText(u8 subMenuOption, struct FileScreenOptionsUnlocked*
             offset += 12;
             for (i = 0; i < 3; i++, offset += 2)
             {
-                enabled = (pOptions->soundTestAndOgMetroid >> i) & 1;
+                enabled = (pOptions->soundTestAndOrigMetroid >> i) & 1;
                 dst[offset] = (dst[offset] & 0x3FF) | (sBootDebugTextToggleColors[enabled][0] << 12);
                 dst[offset + 0x20] = (dst[offset + 0x20] & 0x3FF) | (sBootDebugTextToggleColors[enabled][0] << 12);
             }
@@ -1658,6 +1883,10 @@ void BootDebugSoundSubroutine(void)
     s32 updateText;
     s32 value;
     
+    #ifdef BUGFIX
+    updateText = FALSE;
+    #endif // BUGFIX
+
     if (BOOT_DEBUG_DATA.menuDepth == BOOT_DEBUG_MENU_SUB)
     {
         if (gChangedInput & (KEY_RIGHT | KEY_A))
@@ -2264,8 +2493,9 @@ void BootDebugDrawSubMenuOptionText(u8 subMenu, u8 subMenuOption)
     s32 offset;
     s32 flag;
     s32 i;
-    s32 tile;
+    s32 tmp;
     s32 index;
+    s32 digit;
 
     switch (subMenu)
     {
@@ -2301,11 +2531,11 @@ void BootDebugDrawSubMenuOptionText(u8 subMenu, u8 subMenuOption)
                 for (i = 0; i < 7; i++)
                 {
                     if (gEquipment.downloadedMapStatus & flag)
-                        index = 0xC0CF;
+                        tmp = 0xC0CF;
                     else
-                        index = 0xC04D;
-                    dst[offset] = index;
-                    dst[offset + 0x20] = index + 0x20;
+                        tmp = 0xC04D;
+                    dst[offset] = tmp;
+                    dst[offset + 0x20] = tmp + 0x20;
                     flag <<= 1;
                     offset--;
                 }
@@ -2366,32 +2596,32 @@ void BootDebugDrawSubMenuOptionText(u8 subMenu, u8 subMenuOption)
             }
             else if (subMenuOption == BOOT_DEBUG_SOUND_TEST)
             {
-                tile = (BOOT_DEBUG_DATA.soundTestId / 100) % 10;
-                dst[offset + 0x20] = 0x8000 | tile;
-                tile = (BOOT_DEBUG_DATA.soundTestId / 10) % 10;
-                dst[offset + 0x21] = 0x8000 | tile;
-                tile = BOOT_DEBUG_DATA.soundTestId % 10;
-                dst[offset + 0x22] = 0x8000 | tile;
+                digit = (BOOT_DEBUG_DATA.soundTestId / 100) % 10;
+                dst[offset + 0x20] = 0x8000 | digit;
+                digit = (BOOT_DEBUG_DATA.soundTestId / 10) % 10;
+                dst[offset + 0x21] = 0x8000 | digit;
+                digit = BOOT_DEBUG_DATA.soundTestId % 10;
+                dst[offset + 0x22] = 0x8000 | digit;
             }
             else if (subMenuOption == BOOT_DEBUG_SOUND_STEREO)
             {
                 offset -= 6;
                 // Set mono text color
-                tile = gStereoFlag ? 0xF000 : 0x8000;
+                index = gStereoFlag ? 0xF000 : 0x8000;
                 i = 0;
                 while (i < 4)
                 {
-                    dst[offset] = (dst[offset] & 0x3FF) | tile;
-                    dst[offset + 0x20] = (dst[offset + 0x20] & 0x3FF) | tile;
+                    dst[offset] = (dst[offset] & 0x3FF) | index;
+                    dst[offset + 0x20] = (dst[offset + 0x20] & 0x3FF) | index;
                     i++;
                     offset++;
                 }
                 // Set stereo text color
-                tile = !gStereoFlag ? 0xF000 : 0x8000;
+                index = !gStereoFlag ? 0xF000 : 0x8000;
                 while (i < 9)
                 {
-                    dst[offset] = (dst[offset] & 0x3FF) | tile;
-                    dst[offset + 0x20] = (dst[offset + 0x20] & 0x3FF) | tile;
+                    dst[offset] = (dst[offset] & 0x3FF) | index;
+                    dst[offset + 0x20] = (dst[offset + 0x20] & 0x3FF) | index;
                     i++;
                     offset++;
                 }

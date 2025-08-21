@@ -1,4 +1,5 @@
 #include "menus/file_select.h"
+#include "dma.h"
 #include "oam_id.h"
 #include "macros.h"
 #include "callbacks.h"
@@ -10,23 +11,287 @@
 #include "data/shortcut_pointers.h"
 #include "data/text_data.h"
 #include "data/nes_metroid.h"
-#include "data/text_pointers.h"
 #include "data/io_transfer_data.h"
 #include "data/menus/file_select_data.h"
-#include "data/menus/internal_file_select_data.h"
 
 #include "constants/audio.h"
 #include "constants/cable_link.h"
 #include "constants/color_fading.h"
+#include "constants/connection.h"
 #include "constants/text.h"
 #include "constants/game_state.h"
 #include "constants/menus/file_select.h"
+#include "constants/menus/pause_screen.h"
 
 #include "structs/audio.h"
 #include "structs/cable_link.h"
 #include "structs/display.h"
 #include "structs/game_state.h"
 #include "structs/menus/file_select.h"
+
+static void OptionsUpdateStereoOam(u16 flags);
+static void FileSelectResetIOTransferInfo(void);
+static u8 OptionsNesMetroidSubroutine(void);
+static u8 OptionsSubMenu_Empty(void);
+static u8 OptionsGallerySubroutine(void);
+static u8 OptionsStereoSubroutine(void);
+static u8 OptionsSoundTestSubroutine(void);
+static u32 OptionsSoundTestCheckNotAlreadyPlaying(void);
+static void OptionsSoundTestUpdateIdGfx(void);
+static u8 OptionsTimeAttackRecordsSubroutine(void);
+#ifndef REGION_US_BETA
+static void OptionsTimeAttackLoadBestTimeMessage(void);
+#endif // !REGION_US_BETA
+static void OptionsTimeAttackLoadRecord(u8 id);
+static void unk_7b854(void);
+static void OptionsTimeAttackLoadPassword(u8 part);
+static u8 OptionsMetroidFusionLinkSubroutine(void);
+static u32 FileSelectUpdateFading(void);
+static void FileSelectInitFading(u8 fadingOut);
+static void FileSelectApplyFading(void);
+static void FileSelectInit(void);
+static void FileSelectVBlank(void);
+static void FileSelectVBlank_Empty(void);
+static void FileSelectDisplaySaveFileInfo(void);
+static void FileSelectDisplaySaveFileHealth(u8 file);
+static void FileSelectDisplaySaveFileTimer(u8 file);
+static void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file);
+static void FileScreenSetEnabledMenuFlags(void);
+static u8 FileSelectApplyMenuSelectInput(u8 set, u8* pFileNumber);
+static void FileSelectFindFirstNonEmptyFile(u8* pFileNumber);
+static u8 FileSelectUpdateSubMenu(void);
+static u8 FileSelectProcessFileSelection(void);
+static void unk_7e3fc(u8 param_1, u8 param_2);
+static u32 FileSelectUpdateTilemap(u8 request);
+static void unk_7eedc(u16* pTilemap);
+
+static s8 sSaveFileAreasId[12] = {
+    [0] = AREA_KRAID,
+    [1] = AREA_NORFAIR,
+    [2] = AREA_RIDLEY,
+    [3] = AREA_TOURIAN,
+    [4] = AREA_CRATERIA,
+    [5] = AREA_BRINSTAR,
+    [6] = AREA_CHOZODIA,
+    [7] = AREA_NONE,
+    [8] = AREA_NONE,
+    [9] = AREA_NONE,
+    [10] = AREA_NONE,
+    [11] = AREA_BRINSTAR,
+};
+
+static const u32* sFileSelectOptionsTextGfxPointers[LANGUAGE_END - LANGUAGE_ENGLISH] = {
+    [LANGUAGE_ENGLISH - LANGUAGE_ENGLISH] = sFileSelectOptionsTextEnglishGfx,
+    #if defined(DEBUG) || defined(REGION_EU)
+    [LANGUAGE_GERMAN - LANGUAGE_ENGLISH] = sFileSelectOptionsTextGermanGfx,
+    [LANGUAGE_FRENCH - LANGUAGE_ENGLISH] = sFileSelectOptionsTextFrenchGfx,
+    [LANGUAGE_ITALIAN - LANGUAGE_ENGLISH] = sFileSelectOptionsTextItalianGfx,
+    [LANGUAGE_SPANISH - LANGUAGE_ENGLISH] = sFileSelectOptionsTextSpanishGfx
+    #else // !(DEBUG || REGION_EU)
+    [LANGUAGE_GERMAN - LANGUAGE_ENGLISH] = sFileSelectOptionsTextEnglishGfx,
+    [LANGUAGE_FRENCH - LANGUAGE_ENGLISH] = sFileSelectOptionsTextEnglishGfx,
+    [LANGUAGE_ITALIAN - LANGUAGE_ENGLISH] = sFileSelectOptionsTextEnglishGfx,
+    [LANGUAGE_SPANISH - LANGUAGE_ENGLISH] = sFileSelectOptionsTextEnglishGfx
+    #endif // DEBUG || REGION_EU
+};
+
+#ifdef REGION_EU
+static const u32* sFileSelectLargeTextGfxPointers[LANGUAGE_END - LANGUAGE_ENGLISH] = {
+    [LANGUAGE_ENGLISH - LANGUAGE_ENGLISH] = sFileSelectLargeTextEnglishGfx,
+    [LANGUAGE_GERMAN - LANGUAGE_ENGLISH] = sFileSelectLargeTextGermanGfx,
+    [LANGUAGE_FRENCH - LANGUAGE_ENGLISH] = sFileSelectLargeTextFrenchGfx,
+    [LANGUAGE_ITALIAN - LANGUAGE_ENGLISH] = sFileSelectLargeTextItalianGfx,
+    [LANGUAGE_SPANISH - LANGUAGE_ENGLISH] = sFileSelectLargeTextSpanishGfx
+};
+
+static const u32* sFileSelectDifficultyTextGfxPointers[LANGUAGE_END - LANGUAGE_ENGLISH] = {
+    [LANGUAGE_ENGLISH - LANGUAGE_ENGLISH] = sFileSelectDifficultyTextEnglishGfx,
+    [LANGUAGE_GERMAN - LANGUAGE_ENGLISH] = sFileSelectDifficultyTextGermanGfx,
+    [LANGUAGE_FRENCH - LANGUAGE_ENGLISH] = sFileSelectDifficultyTextFrenchGfx,
+    [LANGUAGE_ITALIAN - LANGUAGE_ENGLISH] = sFileSelectDifficultyTextItalianGfx,
+    [LANGUAGE_SPANISH - LANGUAGE_ENGLISH] = sFileSelectDifficultyTextSpanishGfx
+};
+#endif // REGION_EU
+
+static struct FileSelectMenuCursors sFileSelectMenuCursors_Empty = {
+    .confirmCopy = 1,
+    .confirmErase = 1,
+    .startGame = 0,
+    .completedFileOptions = 0,
+    .confirmOverwritingCompleted = 1,
+    .japaneseText = 0,
+    .difficulty = 1,
+};
+
+static struct FileSelectCursorOamData sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_END] = {
+    [FILE_SELECT_CURSOR_POSITION_FILE_A] = {
+        .xPosition = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        .yPosition = BLOCK_SIZE * 2 - QUARTER_BLOCK_SIZE + 12,
+        .oamFileMarkerId = FILE_SELECT_OAM_ID_FILE_A_MARKER_IDLE,
+        .oamIds = {
+            [SUIT_NORMAL] = FILE_SELECT_OAM_ID_SAMUS_HEAD_TURNING_ON,
+            [SUIT_FULLY_POWERED] = FILE_SELECT_OAM_ID_SAMUS_HEAD_TURNING_ON,
+            [SUIT_SUITLESS] = FILE_SELECT_OAM_ID_SAMUS_SUITLESS_HEAD_TURNING_ON
+        }
+    },
+    [FILE_SELECT_CURSOR_POSITION_FILE_B] = {
+        .xPosition = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        .yPosition = BLOCK_SIZE * 3 + QUARTER_BLOCK_SIZE + 12,
+        .oamFileMarkerId = FILE_SELECT_OAM_ID_FILE_B_MARKER_IDLE,
+        .oamIds = {
+            [SUIT_NORMAL] = FILE_SELECT_OAM_ID_SAMUS_HEAD_TURNING_ON,
+            [SUIT_FULLY_POWERED] = FILE_SELECT_OAM_ID_SAMUS_HEAD_TURNING_ON,
+            [SUIT_SUITLESS] = FILE_SELECT_OAM_ID_SAMUS_SUITLESS_HEAD_TURNING_ON
+        }
+    },
+    [FILE_SELECT_CURSOR_POSITION_FILE_C] = {
+        .xPosition = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        .yPosition = BLOCK_SIZE * 5 - QUARTER_BLOCK_SIZE + 12,
+        .oamFileMarkerId = FILE_SELECT_OAM_ID_FILE_C_MARKER_IDLE,
+        .oamIds = {
+            [SUIT_NORMAL] = FILE_SELECT_OAM_ID_SAMUS_HEAD_TURNING_ON,
+            [SUIT_FULLY_POWERED] = FILE_SELECT_OAM_ID_SAMUS_HEAD_TURNING_ON,
+            [SUIT_SUITLESS] = FILE_SELECT_OAM_ID_SAMUS_SUITLESS_HEAD_TURNING_ON
+        }
+    },
+    [FILE_SELECT_CURSOR_POSITION_COPY] = {
+        .xPosition = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        .yPosition = BLOCK_SIZE * 7 - QUARTER_BLOCK_SIZE + 8,
+        .oamFileMarkerId = 0,
+        .oamIds = {
+            [SUIT_NORMAL] = FILE_SELECT_OAM_ID_CURSOR,
+            [SUIT_FULLY_POWERED] = FILE_SELECT_OAM_ID_CURSOR,
+            [SUIT_SUITLESS] = FILE_SELECT_OAM_ID_CURSOR
+        }
+    },
+    [FILE_SELECT_CURSOR_POSITION_ERASE] = {
+        .xPosition = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        .yPosition = BLOCK_SIZE * 8 - QUARTER_BLOCK_SIZE + 8,
+        .oamFileMarkerId = 0,
+        .oamIds = {
+            [SUIT_NORMAL] = FILE_SELECT_OAM_ID_CURSOR,
+            [SUIT_FULLY_POWERED] = FILE_SELECT_OAM_ID_CURSOR,
+            [SUIT_SUITLESS] = FILE_SELECT_OAM_ID_CURSOR
+        }
+    },
+    [FILE_SELECT_CURSOR_POSITION_OPTIONS] = {
+        .xPosition = BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        .yPosition = BLOCK_SIZE * 9 - QUARTER_BLOCK_SIZE + 8,
+        .oamFileMarkerId = 0,
+        .oamIds = {
+            [SUIT_NORMAL] = FILE_SELECT_OAM_ID_CURSOR,
+            [SUIT_FULLY_POWERED] = FILE_SELECT_OAM_ID_CURSOR,
+            [SUIT_SUITLESS] = FILE_SELECT_OAM_ID_CURSOR
+        }
+    },
+};
+
+static u8 sFileSelectCopyFileArrowsOamIds[3][3] = {
+    [0] = {
+        [0] = 0,
+        [1] = FILE_SELECT_OAM_ID_COPY_ARROW_ONE_DOWN_ACTIVE,
+        [2] = FILE_SELECT_OAM_ID_COPY_ARROW_TWO_DOWN_ACTIVE
+    },
+    [1] = {
+        [0] = FILE_SELECT_OAM_ID_COPY_ARROW_ONE_UP_ACTIVE,
+        [1] = 0,
+        [2] = FILE_SELECT_OAM_ID_COPY_ARROW_ONE_DOWN_ACTIVE
+    },
+    [2] = {
+        [0] = FILE_SELECT_OAM_ID_COPY_ARROW_TWO_UP_ACTIVE,
+        [1] = FILE_SELECT_OAM_ID_COPY_ARROW_ONE_UP_ACTIVE,
+        [2] = 0
+    },
+};
+
+static u8 sFileSelectFileOamOffsets[3][2] = {
+    [0] = {
+        [0] = FILE_SELECT_OAM_FILE_A_MARKER,
+        [1] = FILE_SELECT_OAM_FILE_A_LOGO
+    },
+    [1] = {
+        [0] = FILE_SELECT_OAM_FILE_B_MARKER,
+        [1] = FILE_SELECT_OAM_FILE_B_LOGO
+    },
+    [2] = {
+        [0] = FILE_SELECT_OAM_FILE_C_MARKER,
+        [1] = FILE_SELECT_OAM_FILE_C_LOGO
+    }
+};
+
+static u16 sOptionsCursorPosition[7][2] = {
+    [0] = {
+        BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE + 8
+    },
+    [1] = {
+        BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        BLOCK_SIZE * 3 + QUARTER_BLOCK_SIZE + 8
+    },
+    [2] = {
+        BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        BLOCK_SIZE * 4 + QUARTER_BLOCK_SIZE + 8
+    },
+    [3] = {
+        BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        BLOCK_SIZE * 5 + QUARTER_BLOCK_SIZE + 8
+    },
+    [4] = {
+        BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        BLOCK_SIZE * 6 + QUARTER_BLOCK_SIZE + 8
+    },
+    [5] = {
+        BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        BLOCK_SIZE * 7 + QUARTER_BLOCK_SIZE + 8
+    },
+    [6] = {
+        BLOCK_SIZE * 2 + QUARTER_BLOCK_SIZE,
+        BLOCK_SIZE * 8 + QUARTER_BLOCK_SIZE + 8
+    }
+};
+
+// x_pos, y_pos, idle_id, active_id
+static u16 sStereoOamData[2][4] = {
+    [FALSE] = {
+        BLOCK_SIZE * 7 + HALF_BLOCK_SIZE,
+        BLOCK_SIZE * 2 + HALF_BLOCK_SIZE,
+        OPTIONS_OAM_ID_GBA_IDLE,
+        OPTIONS_OAM_ID_GBA_ACTIVE
+    },
+    [TRUE] = {
+        BLOCK_SIZE * 11,
+        BLOCK_SIZE * 2 + HALF_BLOCK_SIZE,
+        OPTIONS_OAM_ID_SPEAKERS_IDLE,
+        OPTIONS_OAM_ID_SPEAKERS_ACTIVE
+    }
+};
+
+static u16 sSoundTestSoundIds[24] = {
+    [0] = MUSIC_NONE,
+    [1] = MUSIC_FILE_SELECT,
+    [2] = MUSIC_BRINSTAR,
+    [3] = MUSIC_TITLE_SCREEN,
+    [4] = MUSIC_WORMS_BATTLE,
+    [5] = MUSIC_NORFAIR,
+    [6] = MUSIC_CHOZO_RUINS_DEPTH,
+    [7] = MUSIC_CHOZO_RUINS,
+    [8] = MUSIC_KRAID,
+    [9] = MUSIC_KRAID_BATTLE,
+    [10] = MUSIC_STATUE_ROOM,
+    [11] = MUSIC_CATTERPILLARS_BATTLE,
+    [12] = MUSIC_IMAGO_COCOON_BATTLE,
+    [13] = MUSIC_RIDLEY,
+    [14] = MUSIC_IMAGO_BATTLE,
+    [15] = MUSIC_RIDLEY_BATTLE_2,
+    [16] = MUSIC_TOURIAN,
+    [17] = MUSIC_ESCAPE,
+    [18] = MUSIC_STEALTH,
+    [19] = MUSIC_MAP_ROOM,
+    [20] = MUSIC_ALARM_ACTIVATED,
+    [21] = MUSIC_RUINS_TEST_BATTLE,
+    [22] = MUSIC_MECHA_RIDLEY_BATTLE_2,
+    [23] = MUSIC_CREDITS,
+};
 
 /**
  * @brief 78228 | 24 | Applies the stereo settings
@@ -55,7 +320,7 @@ void FileSelectProcessOAM(void)
 {
     gNextOamSlot = 0;
 
-    switch (gGameModeSub1)
+    switch (gSubGameMode1)
     {
         case 0:
         case 1:
@@ -83,7 +348,7 @@ void FileSelectProcessOAM(void)
  * @brief 782ac | 258 | Initializes the OAM for the file and options screens
  * 
  */
-void FileSelectResetOAM(void)
+static void FileSelectResetOAM(void)
 {
     s32 i;
     struct MenuOamData* pOam;
@@ -170,7 +435,7 @@ void FileSelectResetOAM(void)
  * @param cursorPose Cursor pose
  * @param position Cursor position
  */
-void FileSelectUpdateCursor(u8 cursorPose, u8 position)
+static void FileSelectUpdateCursor(u8 cursorPose, u8 position)
 {
     u32 oamId;
 
@@ -273,7 +538,7 @@ void FileSelectUpdateCursor(u8 cursorPose, u8 position)
  * @param cursorPose Cursor pose
  * @param fileNumber File number
  */
-void FileSelectUpdateCopyCursor(u8 cursorPose, u8 fileNumber)
+static void FileSelectUpdateCopyCursor(u8 cursorPose, u8 fileNumber)
 {
     u32 oamId;
 
@@ -344,12 +609,12 @@ void FileSelectUpdateCopyCursor(u8 cursorPose, u8 fileNumber)
 }
 
 /**
- * @brief 788d4 | 140 | Updates the copy arraow and file marker OAM
+ * @brief 788d4 | 140 | Updates the copy arrow and file marker OAM
  * 
  * @param arrowPose Arrow pose
  * @param dstFileNumber Destination file number
  */
-void FileSelectUpdateCopyArrow(u8 arrowPose, u8 dstFileNumber)
+static void FileSelectUpdateCopyArrow(u8 arrowPose, u8 dstFileNumber)
 {
     u32 oamId;
 
@@ -441,7 +706,7 @@ void FileSelectUpdateCopyArrow(u8 arrowPose, u8 dstFileNumber)
  * @param cursorPose Cursor pose
  * @param fileNumber File number
  */
-void FileSelectUpdateEraseCursor(u8 cursorPose, u8 fileNumber)
+static void FileSelectUpdateEraseCursor(u8 cursorPose, u8 fileNumber)
 {
     u32 oamId;
 
@@ -516,7 +781,7 @@ void FileSelectUpdateEraseCursor(u8 cursorPose, u8 fileNumber)
  * 
  * @param cursorPose Cursor pose
  */
-void OptionsUpdateCursor(u8 cursorPose)
+static void OptionsUpdateCursor(u8 cursorPose)
 {
     switch (cursorPose)
     {
@@ -553,7 +818,7 @@ void OptionsUpdateCursor(u8 cursorPose)
  * 
  * @param flags Update flags
  */
-void OptionsUpdateStereoOam(u16 flags)
+static void OptionsUpdateStereoOam(u16 flags)
 {
     u32 offset;
 
@@ -582,25 +847,38 @@ void OptionsUpdateStereoOam(u16 flags)
         FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].xPosition = FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].xPosition;
         FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].yPosition = FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].yPosition;
 
+        #ifdef REGION_EU
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].priority = BGCNT_LOW_MID_PRIORITY;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW].priority = BGCNT_LOW_MID_PRIORITY;
+        FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].priority = BGCNT_LOW_MID_PRIORITY;
+        #else // !REGION_EU
         FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].priority = BGCNT_LOW_PRIORITY;
         FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW].priority = BGCNT_LOW_PRIORITY;
         FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].priority = BGCNT_LOW_PRIORITY;
+        #endif // REGION_EU
     }
 }
+
+static u32* sFileSelect_760bdc[4] = {
+    VRAM_BASE + 0x5800,
+    VRAM_BASE + 0x6000,
+    VRAM_BASE + 0x6200,
+    VRAM_BASE + 0x7000
+};
 
 /**
  * @brief 78da0 | 32c | Processes the current file screen text
  * 
  */
-void FileScreenProcessText(void)
+static void FileScreenProcessText(void)
 {
     u8 newIdQueue[2];
     u32* dst;
-    vu16 buffer;
     s32 var_0;
-    u8 result;
-    u32 dstType;
+    #ifdef REGION_EU
+    s32 i;
     u32 flag;
+    #endif // REGION_EU
 
     switch (FILE_SELECT_DATA.processTextStage)
     {
@@ -616,42 +894,108 @@ void FileScreenProcessText(void)
             else
                 var_0 = 0;
 
-            dstType = sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1];
-
-            if (dstType == 3 || dstType == 1)
+            if (sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1] == 3 ||
+                sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1] == 1)
             {
-                buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x1000 / sizeof(u16)));
+                #ifdef REGION_EU
+                BitFill(3, (u16)var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], 0x1000, 16);
+                #else // !REGION_EU
+                dma_fill16(3, var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], 0x1000);
+                #endif // REGION_EU
             }
-            else if (dstType == 2)
+            else if (sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1] == 2)
             {
-                buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x200 / sizeof(u16)));
-
-                buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x400, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x200 / sizeof(u16)));
-
-                buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x600, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x800 / sizeof(u16)));
+                #ifdef REGION_EU
+                BitFill(3, (u16)var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], 0x200, 16);
+                BitFill(3, (u16)var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x100, 0x200, 16);
+                BitFill(3, (u16)var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x180, 0x800, 16);
+                #else // !REGION_EU
+                dma_fill16(3, var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], 0x200);
+                dma_fill16(3, var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x400, 0x200);
+                dma_fill16(3, var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x600, 0x800);
+                #endif // REGION_EU
             }
             else
             {
-                buffer = var_0;
-                DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x800 / sizeof(u16)));
+                #ifdef REGION_EU
+                BitFill(3, (u16)var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], 0x800, 16);
+                #else // !REGION_EU
+                dma_fill16(3, var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]], 0x800);
+                #endif // REGION_EU
 
                 if (sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][2] == 3)
                 {
-                    buffer = var_0;
-                    DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x800, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x200 / sizeof(u16)));
-
-                    buffer = var_0;
-                    DMA_SET(3, &buffer, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0xC00, C_32_2_16(DMA_ENABLE | DMA_SRC_FIXED, 0x200 / sizeof(u16)));
+                    #ifdef REGION_EU
+                    BitFill(3, (u16)var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x200, 0x200, 16);
+                    BitFill(3, (u16)var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x300, 0x200, 16);
+                    #else // !REGION_EU
+                    dma_fill16(3, var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0x800, 0x200);
+                    dma_fill16(3, var_0, sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]] + 0xC00, 0x200);
+                    #endif // REGION_EU
                 }
             }
 
             FILE_SELECT_DATA.processTextStage++;
             break;
 
+        #ifdef REGION_EU
+        case FILE_SCREEN_PROCESS_TEXT_STAGE_LINE:
+            i = 8;
+
+            if (gCurrentMessage.line > 3 || gCurrentMessage.messageEnded)
+            {
+                i = 0;
+            }
+            else
+            {
+                dst = sFileSelect_760bdc[sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1]];
+
+                if (gCurrentMessage.line & 2)
+                    dst += 0x200;
+    
+                if (gCurrentMessage.line & 1)
+                {
+                    dst += 0x80;
+                
+                    if (sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][1] == 2)
+                        dst += 0x100;
+                }
+            }
+
+            if (i == 0)
+            {
+                gCurrentMessage.stage = 3;
+                break;
+            }
+
+            while (i != 0)
+            {
+                var_0 = TextProcessCurrentMessage(&gCurrentMessage, sFileScreenTextPointers[gLanguage][sFileScreenMessagesInfo[FILE_SELECT_DATA.messageInfoIdQueue[0]][0]], dst);
+
+                switch (var_0)
+                {
+                    case TEXT_STATE_ENDED:
+                        FILE_SELECT_DATA.processTextStage++;
+
+                    case TEXT_STATE_NEW_LINE:
+                        gCurrentMessage.indent = 0;
+                        flag = TRUE;
+                        break;
+
+                    default:
+                        flag = FALSE;
+                }
+                if (flag)
+                    break;
+                
+                if (gCurrentMessage.line > 3)
+                    break;
+
+                i--;
+            }
+            break;
+
+        #else // !REGION_EU
         case FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_1:
         case FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_2:
         case FILE_SCREEN_PROCESS_TEXT_STAGE_LINE_3:
@@ -691,6 +1035,7 @@ void FileScreenProcessText(void)
                 }
             }
             break;
+        #endif // REGION_EU
 
         case FILE_SCREEN_PROCESS_TEXT_STAGE_UPDATE_QUEUE:
             FILE_SELECT_DATA.messageInfoIdQueue[0] = UCHAR_MAX;
@@ -726,7 +1071,7 @@ void FileScreenProcessText(void)
  * @param newMessageInfoId ID for new message info
  * @return u32 Bool, result of update, option 0: added to queue, option 1: not in queue, option 2: always true
  */
-u32 FileScreenUpdateMessageInfoIdQueue(u8 updateOption, u8 newMessageInfoId)
+static u32 FileScreenUpdateMessageInfoIdQueue(u8 updateOption, u8 newMessageInfoId)
 {
     u32 result;
 
@@ -779,7 +1124,7 @@ u32 FileScreenUpdateMessageInfoIdQueue(u8 updateOption, u8 newMessageInfoId)
  * @brief 79178 | 98 | Selects a file to be used as a copy destination
  * 
  */
-void FileSelectFileCopyChooseBaseDestinationFile(void)
+static void FileSelectFileCopyChooseBaseDestinationFile(void)
 {
     s32 file;
 
@@ -812,7 +1157,7 @@ void FileSelectFileCopyChooseBaseDestinationFile(void)
 }
 
 #ifdef NON_MATCHING
-u32 FileSelectCopyFileSubroutine(void)
+static u32 FileSelectCopyFileSubroutine(void)
 {
     // https://decomp.me/scratch/Rz4bp
 
@@ -1096,7 +1441,7 @@ u32 FileSelectCopyFileSubroutine(void)
 }
 #else
 NAKED_FUNCTION
-u32 FileSelectCopyFileSubroutine(void)
+static u32 FileSelectCopyFileSubroutine(void)
 {
     asm(" \n\
     push {r4, r5, r6, r7, lr} \n\
@@ -1773,7 +2118,7 @@ lbl_08079794: \n\
  * 
  * @return u32 bool, ended
  */
-u32 FileSelectEraseFileSubroutine(void)
+static u32 FileSelectEraseFileSubroutine(void)
 {
     u32 ended;
     u32 action;
@@ -1971,7 +2316,7 @@ u32 FileSelectEraseFileSubroutine(void)
  * 
  * @return u32 bool, ended
  */
-u32 FileSelectCorruptedFileSubroutine(void)
+static u32 FileSelectCorruptedFileSubroutine(void)
 {
     u8 done;
 
@@ -2064,7 +2409,7 @@ u32 FileSelectCorruptedFileSubroutine(void)
         case 4:
             if (gChangedInput & KEY_A)
             {
-                gUnk_3000c20 = 0;
+                gUnk_3000C20 = 0;
 
                 gMostRecentSaveFile = FILE_SELECT_DATA.corruptFile;
                 FILE_SELECT_DATA.subroutineStage++;
@@ -2074,7 +2419,7 @@ u32 FileSelectCorruptedFileSubroutine(void)
         case 5:
             if (unk_fbc(0x0))
             {
-                gUnk_3000c20 = 0;
+                gUnk_3000C20 = 0;
 
                 if (gSaveFilesInfo[gMostRecentSaveFile].corruptionFlag == CORRUPTED_FILE_FLAG_CURRENT)
                 {
@@ -2089,7 +2434,7 @@ u32 FileSelectCorruptedFileSubroutine(void)
         case 6:
             if (unk_fbc(0x1))
             {
-                gUnk_3000c20 = 0;
+                gUnk_3000C20 = 0;
                 FILE_SELECT_DATA.subroutineStage++;
             }
             break;
@@ -2148,7 +2493,7 @@ u32 FileSelectCorruptedFileSubroutine(void)
  * @brief 79ecc | ec | To document
  * 
  */
-void unk_79ecc(void)
+static void unk_79ecc(void)
 {
     DmaTransfer(3, (void*)sEwramPointer + 0x5100, VRAM_BASE + 0xF000, 0x800, 16);
 
@@ -2170,11 +2515,22 @@ void unk_79ecc(void)
     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].notDrawn = TRUE;
 }
 
+static u16 sOptionsOptionsTilemapOffsets[OPTION_END] = {
+    [OPTION_NONE] = 0,
+    [OPTION_STEREO_SELECT] = 0,
+    [OPTION_SOUND_TEST] = BLOCK_SIZE * 10,
+    [OPTION_TIME_ATTACK] = BLOCK_SIZE * 11,
+    [OPTION_GALLERY] = BLOCK_SIZE * 12,
+    [OPTION_FUSION_GALLERY] = BLOCK_SIZE * 14,
+    [OPTION_FUSION_LINK] = BLOCK_SIZE * 13,
+    [OPTION_NES_METROID] = BLOCK_SIZE * 15
+};
+
 /**
  * @brief 79fb8 | 1ec | Sets up the options tile table and determines which options are unlocked
  * 
  */
-void OptionsSetupTiletable(void)
+static void OptionsSetupTiletable(void)
 {
     u8 i;
     s32 j;
@@ -2182,7 +2538,11 @@ void OptionsSetupTiletable(void)
     u16* dst;
 
     // Decomp tile table
+    #ifdef REGION_EU
+    CallLZ77UncompWram(sFileSelectMenuTileTable, (void*)sEwramPointer + 0x5100);
+    #else // !REGION_EU
     CallLZ77UncompWram(sFileSelectOptionsTileTable, (void*)sEwramPointer + 0x5100);
+    #endif // REGION_EU
 
     // Clear all the options
     for (i = 0; i < ARRAY_SIZE(FILE_SELECT_DATA.optionsUnlocked); i++)
@@ -2198,7 +2558,7 @@ void OptionsSetupTiletable(void)
         {
             case OPTION_SOUND_TEST:
                 // Check beat the game in hard mode
-                if (gFileScreenOptionsUnlocked.soundTestAndOgMetroid & (1 << DIFF_HARD))
+                if (gFileScreenOptionsUnlocked.soundTestAndOrigMetroid & (1 << DIFF_HARD))
                     *pOptions++ = i;
                 break;
 
@@ -2262,7 +2622,7 @@ void OptionsSetupTiletable(void)
                 // Check has either any image beat the game in any difficulty
                 if (gFileScreenOptionsUnlocked.galleryImages)
                     *pOptions++ = i;
-                else if (gFileScreenOptionsUnlocked.soundTestAndOgMetroid)
+                else if (gFileScreenOptionsUnlocked.soundTestAndOrigMetroid)
                     *pOptions++ = i;
                 break;
         }
@@ -2287,7 +2647,7 @@ void OptionsSetupTiletable(void)
  * @brief 7a1a4 | 118 | Copies the time attack best times to RAM
  * 
  */
-void FileSelectCopyTimeAttackTime(void)
+static void FileSelectCopyTimeAttackTime(void)
 {
     s32 value;
 
@@ -2345,7 +2705,7 @@ void FileSelectCopyTimeAttackTime(void)
  * @param leavingOptions Leaving options flag
  * @return u8 bool, ended
  */
-u8 FileSelectOptionTransition(u8 leavingOptions)
+static u8 FileSelectOptionTransition(u8 leavingOptions)
 {
     u16 bgPos;
     u32 fadeEnded;
@@ -2366,8 +2726,8 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
             if (FILE_SELECT_DATA.subroutineTimer < CONVERT_SECONDS(1.f / 6))
                 break;
             
-            gWrittenToBLDALPHA_H = 0;
-            gWrittenToBLDALPHA_L = BLDALPHA_MAX_VALUE;
+            gWrittenToBldalpha_H = 0;
+            gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE;
 
             FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET;
 
@@ -2397,22 +2757,22 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
             // Update background fade
             fadeEnded = TRUE;
 
-            if (gWrittenToBLDALPHA_L != 0)
+            if (gWrittenToBldalpha_L != 0)
             {
                 fadeEnded = FALSE;
-                if (gWrittenToBLDALPHA_L - 2 < 0)
-                    gWrittenToBLDALPHA_L = 0;
+                if (gWrittenToBldalpha_L - 2 < 0)
+                    gWrittenToBldalpha_L = 0;
                 else
-                    gWrittenToBLDALPHA_L -= 2;
+                    gWrittenToBldalpha_L -= 2;
             }
 
-            if (gWrittenToBLDALPHA_H != 16)
+            if (gWrittenToBldalpha_H != 16)
             {
                 fadeEnded = FALSE;
-                if (gWrittenToBLDALPHA_H + 2 > 16)
-                    gWrittenToBLDALPHA_H = 16;
+                if (gWrittenToBldalpha_H + 2 > 16)
+                    gWrittenToBldalpha_H = 16;
                 else
-                    gWrittenToBLDALPHA_H += 2;
+                    gWrittenToBldalpha_H += 2;
             }
 
             if (!fadeEnded)
@@ -2456,22 +2816,22 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
             // Update background fade
             fadeEnded = TRUE;
 
-            if (gWrittenToBLDALPHA_L != 16)
+            if (gWrittenToBldalpha_L != 16)
             {
                 fadeEnded = FALSE;
-                if (gWrittenToBLDALPHA_L + 2 > 16)
-                    gWrittenToBLDALPHA_L = 16;
+                if (gWrittenToBldalpha_L + 2 > 16)
+                    gWrittenToBldalpha_L = 16;
                 else
-                    gWrittenToBLDALPHA_L += 2;
+                    gWrittenToBldalpha_L += 2;
             }
 
-            if (gWrittenToBLDALPHA_H != 0)
+            if (gWrittenToBldalpha_H != 0)
             {
                 fadeEnded = FALSE;
-                if (gWrittenToBLDALPHA_H - 2 < 0)
-                    gWrittenToBLDALPHA_H = 0;
+                if (gWrittenToBldalpha_H - 2 < 0)
+                    gWrittenToBldalpha_H = 0;
                 else
-                    gWrittenToBLDALPHA_H -= 2;
+                    gWrittenToBldalpha_H -= 2;
             }
 
             if (!fadeEnded)
@@ -2499,8 +2859,8 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
 
             FILE_SELECT_DATA.bldcnt = BLDCNT_BG2_FIRST_TARGET_PIXEL | BLDCNT_OBJ_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET; 
 
-            gWrittenToBLDALPHA_H = 0;
-            gWrittenToBLDALPHA_L = 16;
+            gWrittenToBldalpha_H = 0;
+            gWrittenToBldalpha_L = 16;
 
             gBg1HOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
             gBg1VOFS_NonGameplay = NON_GAMEPLAY_START_BG_POS;
@@ -2514,22 +2874,22 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
             // Update background fade
             fadeEnded = TRUE;
 
-            if (gWrittenToBLDALPHA_L != 0)
+            if (gWrittenToBldalpha_L != 0)
             {
                 fadeEnded = FALSE;
-                if (gWrittenToBLDALPHA_L - 2 < 0)
-                    gWrittenToBLDALPHA_L = 0;
+                if (gWrittenToBldalpha_L - 2 < 0)
+                    gWrittenToBldalpha_L = 0;
                 else
-                    gWrittenToBLDALPHA_L -= 2;
+                    gWrittenToBldalpha_L -= 2;
             }
 
-            if (gWrittenToBLDALPHA_H != 16)
+            if (gWrittenToBldalpha_H != 16)
             {
                 fadeEnded = FALSE;
-                if (gWrittenToBLDALPHA_H + 2 > 16)
-                    gWrittenToBLDALPHA_H = 16;
+                if (gWrittenToBldalpha_H + 2 > 16)
+                    gWrittenToBldalpha_H = 16;
                 else
-                    gWrittenToBLDALPHA_H += 2;
+                    gWrittenToBldalpha_H += 2;
             }
 
             if (!fadeEnded)
@@ -2577,22 +2937,22 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
             // Update background fade
             fadeEnded = TRUE;
 
-            if (gWrittenToBLDALPHA_H != 0)
+            if (gWrittenToBldalpha_H != 0)
             {
                 fadeEnded = FALSE;
-                if (gWrittenToBLDALPHA_H - 2 < 0)
-                    gWrittenToBLDALPHA_H = 0;
+                if (gWrittenToBldalpha_H - 2 < 0)
+                    gWrittenToBldalpha_H = 0;
                 else
-                    gWrittenToBLDALPHA_H -= 2;
+                    gWrittenToBldalpha_H -= 2;
             }
 
-            if (gWrittenToBLDALPHA_L != 16)
+            if (gWrittenToBldalpha_L != 16)
             {
                 fadeEnded = FALSE;
-                if (gWrittenToBLDALPHA_L + 2 > 16)
-                    gWrittenToBLDALPHA_L = 16;
+                if (gWrittenToBldalpha_L + 2 > 16)
+                    gWrittenToBldalpha_L = 16;
                 else
-                    gWrittenToBLDALPHA_L += 2;
+                    gWrittenToBldalpha_L += 2;
             }
 
             if (!fadeEnded)
@@ -2616,19 +2976,58 @@ u8 FileSelectOptionTransition(u8 leavingOptions)
             gBg0HOFS_NonGameplay = BLOCK_SIZE * 32;
             gBg0VOFS_NonGameplay = BLOCK_SIZE * 32;
 
-            gGameModeSub2 = 0;
+            gSubGameMode2 = 0;
             return TRUE;
     }
 
     return FALSE;
 }
 
+static struct OptionsSubroutineInfo sOptionsSubroutineInfo[OPTION_END + 1] = {
+    [OPTION_NONE] = {
+        .pFunction = OptionsSubMenu_Empty,
+        .gameMode = 0
+    },
+    [OPTION_STEREO_SELECT] = {
+        .pFunction = OptionsStereoSubroutine,
+        .gameMode = 0
+    },
+    [OPTION_SOUND_TEST] = {
+        .pFunction = OptionsSoundTestSubroutine,
+        .gameMode = 0
+    },
+    [OPTION_TIME_ATTACK] = {
+        .pFunction = OptionsTimeAttackRecordsSubroutine,
+        .gameMode = 0
+    },
+    [OPTION_GALLERY] = {
+        .pFunction = OptionsGallerySubroutine,
+        .gameMode = 5
+    },
+    [OPTION_FUSION_GALLERY] = {
+        .pFunction = OptionsMetroidFusionLinkSubroutine,
+        .gameMode = 4
+    },
+    [OPTION_FUSION_LINK] = {
+        .pFunction = OptionsMetroidFusionLinkSubroutine,
+        .gameMode = 0
+    },
+    [OPTION_NES_METROID] = {
+        .pFunction = OptionsNesMetroidSubroutine,
+        .gameMode = 0
+    },
+    [8] = {
+        .pFunction = OptionsSubMenu_Empty,
+        .gameMode = 0
+    }
+};
+
 /**
  * @brief 7a7e4 | 248 | Subroutine for the options
  * 
  * @return u8 bool, leaving
  */
-u8 OptionsSubroutine(void)
+static u8 OptionsSubroutine(void)
 {
     u8 result;
 
@@ -2657,7 +3056,11 @@ u8 OptionsSubroutine(void)
             break;
 
         case 2:
+            #ifdef REGION_EU
+            CheckForMaintainedInput(MAINTAINED_INPUT_SPEED_FAST);
+            #else // !REGION_EU
             CheckForMaintainedInput();
+            #endif // REGION_EU
 
             if (!gChangedInput)
                 break;
@@ -2715,11 +3118,11 @@ u8 OptionsSubroutine(void)
                 break;
 
             if (result == 2)
-                gGameModeSub2 = sOptionsSubroutineInfo[FILE_SELECT_DATA.optionsUnlocked[gOptionsOptionSelected]].gameMode;
+                gSubGameMode2 = sOptionsSubroutineInfo[FILE_SELECT_DATA.optionsUnlocked[gOptionsOptionSelected]].gameMode;
             else
-                gGameModeSub2 = 0;
+                gSubGameMode2 = 0;
 
-            if (gGameModeSub2)
+            if (gSubGameMode2)
             {
                 FILE_SELECT_DATA.currentSubMenu = 5;
             }
@@ -2734,7 +3137,7 @@ u8 OptionsSubroutine(void)
         case 4:
             FILE_SELECT_DATA.soundTestId = 0;        
             CheckReplayFileSelectMusic(CONVERT_SECONDS(1.f / 6));
-            gGameModeSub2 = 0;
+            gSubGameMode2 = 0;
             return TRUE;
 
         case 5:
@@ -2750,7 +3153,7 @@ u8 OptionsSubroutine(void)
  * @brief 7aa2c | 48 | Resets the IO transfer info
  * 
  */
-void FileSelectResetIOTransferInfo(void)
+static void FileSelectResetIOTransferInfo(void)
 {
     switch (FILE_SELECT_DATA.optionsUnlocked[gOptionsOptionSelected])
     {
@@ -2766,7 +3169,7 @@ void FileSelectResetIOTransferInfo(void)
  * 
  * @return u8 bool, leaving
  */
-u8 OptionsNesMetroidSubroutine(void)
+static u8 OptionsNesMetroidSubroutine(void)
 {
     u8 i;
     NesEmuFunc_T func;
@@ -2809,7 +3212,7 @@ u8 OptionsNesMetroidSubroutine(void)
 
             // Start screen fade
             FILE_SELECT_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
-            gWrittenToBLDY_NonGameplay = 0;
+            gWrittenToBldy_NonGameplay = 0;
 
             FILE_SELECT_DATA.subroutineStage++;
             FILE_SELECT_DATA.subroutineTimer = 0;
@@ -2817,13 +3220,13 @@ u8 OptionsNesMetroidSubroutine(void)
 
         case 3:
             // Apply fade
-            gWrittenToBLDY_NonGameplay += 2;
-            if (gWrittenToBLDY_NonGameplay >= BLDY_MAX_VALUE)
+            gWrittenToBldy_NonGameplay += 2;
+            if (gWrittenToBldy_NonGameplay >= BLDY_MAX_VALUE)
             {
                 SET_BACKDROP_COLOR(COLOR_BLACK);
 
                 FILE_SELECT_DATA.bldcnt = 0;
-                gWrittenToBLDY_NonGameplay = 0;
+                gWrittenToBldy_NonGameplay = 0;
 
                 // Black out screen
                 FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1 | DCNT_BG2 | DCNT_BG3 | DCNT_OBJ);
@@ -2833,8 +3236,8 @@ u8 OptionsNesMetroidSubroutine(void)
             break;
 
         case 4:
-            write16(REG_IME, FALSE);
-            write16(REG_IF, USHORT_MAX);
+            WRITE_16(REG_IME, FALSE);
+            WRITE_16(REG_IF, USHORT_MAX);
 
             // Give control to some sort of bootloader?
             // Signature : void Func_T(void*)
@@ -2852,7 +3255,7 @@ u8 OptionsNesMetroidSubroutine(void)
  * 
  * @return u8 bool, leaving
  */
-u8 OptionsSubMenu_Empty(void)
+static u8 OptionsSubMenu_Empty(void)
 {
     APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
@@ -2867,7 +3270,7 @@ u8 OptionsSubMenu_Empty(void)
  * 
  * @return u8 bool, leaving
  */
-u8 OptionsGallerySubroutine(void)
+static u8 OptionsGallerySubroutine(void)
 {
     APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
@@ -2893,7 +3296,7 @@ u8 OptionsGallerySubroutine(void)
  * 
  * @return u8 bool, leaving
  */
-u8 OptionsStereoSubroutine(void)
+static u8 OptionsStereoSubroutine(void)
 {
     u8 updatedStereo;
 
@@ -2967,7 +3370,7 @@ u8 OptionsStereoSubroutine(void)
  * 
  * @return u8 bool, leaving
  */
-u8 OptionsSoundTestSubroutine(void)
+static u8 OptionsSoundTestSubroutine(void)
 {
     s32 action;
 
@@ -2992,7 +3395,11 @@ u8 OptionsSoundTestSubroutine(void)
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].yPosition =
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID].yPosition;
 
+            #ifdef REGION_EU
+            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].priority = BGCNT_LOW_MID_PRIORITY;
+            #else // !REGION_EU
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].priority = BGCNT_LOW_PRIORITY;
+            #endif // REGION_EU
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
@@ -3133,7 +3540,7 @@ u8 OptionsSoundTestSubroutine(void)
  * 
  * @return u32 bool, not currently playing
  */
-u32 OptionsSoundTestCheckNotAlreadyPlaying(void)
+static u32 OptionsSoundTestCheckNotAlreadyPlaying(void)
 {
     u32 notCurrentlyPlaying;
 
@@ -3162,7 +3569,7 @@ u32 OptionsSoundTestCheckNotAlreadyPlaying(void)
  * @brief 7b094 | b0 | Updates the number graphics of the sound test id
  * 
  */
-void OptionsSoundTestUpdateIdGfx(void)
+static void OptionsSoundTestUpdateIdGfx(void)
 {
     u32 number;
     u32 offset;
@@ -3184,7 +3591,7 @@ void OptionsSoundTestUpdateIdGfx(void)
  * 
  * @return u8 bool, ended
  */
-u8 OptionsTimeAttackRecordsSubroutine(void)
+static u8 OptionsTimeAttackRecordsSubroutine(void)
 {
     u32 action;
 
@@ -3192,7 +3599,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
 
     switch (FILE_SELECT_DATA.subroutineStage)
     {
-        case 0:
+        case OPTIONS_TIME_ATTACK_STAGE_0:
             if (FILE_SELECT_DATA.timeAttackRecordFlags & 1)
                 FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_ID_PASSWORD);
             
@@ -3205,7 +3612,11 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].yPosition = BLOCK_SIZE * 3;
 
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].boundBackground = 0;
+            #ifdef REGION_EU
+            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].priority = BGCNT_LOW_MID_PRIORITY;
+            #else // !REGION_EU
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].priority = BGCNT_HIGH_MID_PRIORITY;
+            #endif // REGION_EU
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].xPosition = BLOCK_SIZE * 4;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].yPosition = BLOCK_SIZE * 2;
 
@@ -3219,6 +3630,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             FILE_SELECT_DATA.bg0cnt = FILE_SELECT_DATA.unk_1E;
             FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_1C;
 
+            #ifndef REGION_US_BETA
             if (FILE_SELECT_DATA.timeAttackRecordFlags & 1 && FILE_SELECT_DATA.timeAttackRecordFlags & 2)
             {
                 UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW], OPTIONS_OAM_ID_LEFT_ARROW_IDLE);
@@ -3241,12 +3653,13 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
 
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].notDrawn = TRUE;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].notDrawn = TRUE;
+            #endif // !REGION_US_BETA
 
             FILE_SELECT_DATA.subroutineStage++;
             FILE_SELECT_DATA.subroutineTimer = 0;
             break;
 
-        case 1:
+        case OPTIONS_TIME_ATTACK_STAGE_1:
             if (!FileScreenUpdateMessageInfoIdQueue(1, FILE_SCREEN_MESSAGE_INFO_ID_ID_PASSWORD))
                 break;
             
@@ -3257,42 +3670,58 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
-        case 2:
+        case OPTIONS_TIME_ATTACK_STAGE_2:
             if (FILE_SELECT_DATA.timeAttackRecordFlags & 1)
             {
                 OptionsTimeAttackLoadPassword(0|0);
                 OptionsTimeAttackLoadPassword(0|1);
             }
-            FILE_SELECT_DATA.subroutineStage = 4;
+            FILE_SELECT_DATA.subroutineStage = OPTIONS_TIME_ATTACK_STAGE_4;
             break;
 
-        case 3:
+        case OPTIONS_TIME_ATTACK_STAGE_3:
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
-        case 4:
+        case OPTIONS_TIME_ATTACK_STAGE_4:
             if (FILE_SELECT_DATA.timeAttackRecordFlags & 2)
             {
                 OptionsTimeAttackLoadPassword(2|0);
                 OptionsTimeAttackLoadPassword(2|1);
             }
-            FILE_SELECT_DATA.subroutineStage = 6;
+            FILE_SELECT_DATA.subroutineStage = OPTIONS_TIME_ATTACK_STAGE_6;
             break;
 
-        case 5:
+        case OPTIONS_TIME_ATTACK_STAGE_5:
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
-        case 6:
+        case OPTIONS_TIME_ATTACK_STAGE_6:
+            #ifndef REGION_US_BETA
             OptionsTimeAttackLoadBestTimeMessage();
+            #endif // !REGION_US_BETA
             UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL], OPTIONS_OAM_ID_HUGE_PANEL);
             UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL], OPTIONS_OAM_ID_LARGE_PANEL);
 
             SoundPlay(SOUND_OPEN_SUB_MENU);
-            FILE_SELECT_DATA.subroutineStage = 7;
+            #ifdef REGION_US_BETA
+            FILE_SELECT_DATA.subroutineStage++;
+            #else // !REGION_US_BETA
+            FILE_SELECT_DATA.subroutineStage = OPTIONS_TIME_ATTACK_STAGE_7;
+            #endif // REGION_US_BETA
             break;
+        
+        #ifdef REGION_US_BETA
+        case OPTIONS_TIME_ATTACK_STAGE_6B:
+            if (FILE_SELECT_DATA.timeAttack100Only)
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_BEST_TIME_100);
+            else
+                FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_BEST_TIME);
+            FILE_SELECT_DATA.subroutineStage++;
+            break;
+        #endif // REGION_US_BETA
 
-        case 7:
+        case OPTIONS_TIME_ATTACK_STAGE_7:
             action = FALSE;
 
             if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].ended &&
@@ -3319,6 +3748,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             if (!action)
                 break;
 
+            #ifndef REGION_US_BETA
             if (FILE_SELECT_DATA.timeAttack100Only)
             {
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].notDrawn = FALSE;
@@ -3329,15 +3759,16 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].notDrawn = TRUE;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].notDrawn = FALSE;
             }
+            #endif // !REGION_US_BETA
 
             OptionsTimeAttackLoadRecord(FILE_SELECT_DATA.timeAttack100Only);
 
             FILE_SELECT_DATA.dispcnt |= (DCNT_BG0 | DCNT_BG1);
             FILE_SELECT_DATA.subroutineTimer = 0;
-            FILE_SELECT_DATA.subroutineStage = 8;
+            FILE_SELECT_DATA.subroutineStage = OPTIONS_TIME_ATTACK_STAGE_8;
             break;
 
-        case 8:
+        case OPTIONS_TIME_ATTACK_STAGE_8:
             if (FILE_SELECT_DATA.subroutineTimer > CONVERT_SECONDS(1.f / 6))
             {
                 FILE_SELECT_DATA.subroutineTimer = 0;
@@ -3345,16 +3776,16 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             }
 
             if (gChangedInput & KEY_B)
-                FILE_SELECT_DATA.subroutineStage = 10;
+                FILE_SELECT_DATA.subroutineStage = OPTIONS_TIME_ATTACK_STAGE_10;
             break;
 
-        case 9:
+        case OPTIONS_TIME_ATTACK_STAGE_9:
             if (!gChangedInput)
                 break;
 
             if (gChangedInput & KEY_B)
             {
-                FILE_SELECT_DATA.subroutineStage = 10;
+                FILE_SELECT_DATA.subroutineStage = OPTIONS_TIME_ATTACK_STAGE_10;
                 break;
             }
             
@@ -3364,6 +3795,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             if (!(gChangedInput & (KEY_LEFT | KEY_RIGHT)))
                 break;
 
+            #ifndef REGION_US_BETA
             action = FALSE;
 
             if (FILE_SELECT_DATA.timeAttack100Only)
@@ -3390,18 +3822,29 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
 
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].notDrawn = TRUE;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].notDrawn = TRUE;
+            #endif // !REGION_US_BETA
 
             SoundPlay(SOUND_CHANGE_TIME_ATTACK_PANEL);
 
+            #ifdef REGION_US_BETA
+            FILE_SELECT_DATA.timeAttack100Only ^= TRUE;
+            #endif // REGION_US_BETA
+
             FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1);
-            FILE_SELECT_DATA.subroutineStage = 7;
+            #ifdef REGION_US_BETA
+            FILE_SELECT_DATA.subroutineStage = OPTIONS_TIME_ATTACK_STAGE_6B;
+            #else // !REGION_US_BETA
+            FILE_SELECT_DATA.subroutineStage = OPTIONS_TIME_ATTACK_STAGE_7;
+            #endif // REGION_US_BETA
             break;
 
-        case 10:
+        case OPTIONS_TIME_ATTACK_STAGE_10:
             SoundPlay(SOUND_CLOSE_SUB_MENU);
 
+            #ifndef REGION_US_BETA
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].notDrawn = TRUE;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].notDrawn = TRUE;
+            #endif // !REGION_US_BETA
 
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamID++;
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID++;
@@ -3411,7 +3854,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
-        case 11:
+        case OPTIONS_TIME_ATTACK_STAGE_11:
             if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].exists |
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].exists)
                 break;
@@ -3420,7 +3863,7 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
             FILE_SELECT_DATA.subroutineStage++;
             break;
 
-        case 12:
+        case OPTIONS_TIME_ATTACK_STAGE_12:
             FILE_SELECT_DATA.subroutineTimer = 0;
             FILE_SELECT_DATA.subroutineStage = 0;
             return TRUE;
@@ -3429,24 +3872,26 @@ u8 OptionsTimeAttackRecordsSubroutine(void)
     return FALSE;
 }
 
+#ifndef REGION_US_BETA
 /**
  * @brief 7b71c | 28 | Adds best time or best time 100 message to queue
  * 
  */
-void OptionsTimeAttackLoadBestTimeMessage(void)
+static void OptionsTimeAttackLoadBestTimeMessage(void)
 {
     if (FILE_SELECT_DATA.timeAttack100Only)
         FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_BEST_TIME_100);
     else
         FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_BEST_TIME);
 }
+#endif // !REGION_US_BETA
 
 /**
  * @brief 7b744 | 110 | Loads a time attack record into VRAM
  * 
  * @param id Id to load : 0 = Any%, 1 = 100%
  */
-void OptionsTimeAttackLoadRecord(u8 id)
+static void OptionsTimeAttackLoadRecord(u8 id)
 {
     u16* dst;
     u16 baseTile;
@@ -3491,11 +3936,13 @@ void OptionsTimeAttackLoadRecord(u8 id)
     dst[7 + 32] = baseTile | (FILE_SELECT_DATA.timeAttackBestTimes[id][5] + FILE_SELECT_TILE_NUMBER_LOW);
 }
 
+static u8 sFileSelectDefaultPassword[8] = "--------";
+
 /**
  * @brief 7b854 | d8 | To document
  * 
  */
-void unk_7b854(void)
+static void unk_7b854(void)
 {
     const u8* password;
     s32 i;
@@ -3504,7 +3951,7 @@ void unk_7b854(void)
     u32 low;
     u8* dstHigh;
     u8* dstLow;
-    u32 bitSize;
+    u8 bitSize;
 
     password = FILE_SELECT_DATA.timeAttackPassword;
     if (!(gFileScreenOptionsUnlocked.timeAttack & 1))
@@ -3531,12 +3978,17 @@ void unk_7b854(void)
     DmaTransfer(3, dstHigh + 0x400, dstHigh + 0x1400, 0x100, 16);
 }
 
+#ifdef DEBUG
+static u8 sFileSelectBlankPassword_Debug[20] = "--------------------";
+static u8 sFileSelectBlank100Password_Debug[20] = "====================";
+#endif // DEBUG
+
 /**
  * @brief 7b92c | bc | Loads a part of the time attack password to VRAM
  * 
  * @param part 2 bits : XY, where X is id and Y which half
  */
-void OptionsTimeAttackLoadPassword(u8 part)
+static void OptionsTimeAttackLoadPassword(u8 part)
 {
     const u8* password;
     s32 i;
@@ -3549,11 +4001,19 @@ void OptionsTimeAttackLoadPassword(u8 part)
     {
         i = 0x78C0;
         password = gTimeAttackRecord.password100;
+        #ifdef DEBUG
+        if (password[0] == UCHAR_MAX)
+            password = sFileSelectBlank100Password_Debug;
+        #endif // DEBUG
     }
     else
     {
         i = 0x68C0;
         password = gTimeAttackRecord.password;
+        #ifdef DEBUG
+        if (password[0] == UCHAR_MAX)
+            password = sFileSelectBlankPassword_Debug;
+        #endif // DEBUG
     }
 
     if (part & 1)
@@ -3582,7 +4042,7 @@ void OptionsTimeAttackLoadPassword(u8 part)
  * 
  * @return u8 bool, ended
  */
-u8 OptionsMetroidFusionLinkSubroutine(void)
+static u8 OptionsMetroidFusionLinkSubroutine(void)
 {
     APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subroutineTimer);
 
@@ -3753,7 +4213,7 @@ u8 OptionsMetroidFusionLinkSubroutine(void)
 
         case 7:
             if (gChangedInput & KEY_START)
-                gMainGameMode = GM_START_SOFTRESET;
+                gMainGameMode = GM_START_SOFT_RESET;
             break;
 
         case 8:
@@ -3910,13 +4370,13 @@ u32 FileSelectMenuSubroutine(void)
 {
     APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.timer);
 
-    switch (gGameModeSub1)
+    switch (gSubGameMode1)
     {
         case 0:
-            gGameModeSub2 = 0;
+            gSubGameMode2 = 0;
             gCutsceneToSkip = 0;
             FileSelectInit();
-            gGameModeSub1--;
+            gSubGameMode1--;
             break;
 
         case 1:
@@ -3924,8 +4384,8 @@ u32 FileSelectMenuSubroutine(void)
             FileSelectApplyFading();
             if (FileSelectUpdateFading())
             {
-                gGameModeSub1++;
-                gGameModeSub2 = 0;
+                gSubGameMode1++;
+                gSubGameMode2 = 0;
             }
             break;
 
@@ -3933,19 +4393,19 @@ u32 FileSelectMenuSubroutine(void)
             if (FileSelectUpdateSubMenu())
             {
                 FILE_SELECT_DATA.timer = 0;
-                if (gGameModeSub2 == 1)
-                    gGameModeSub1 = 7;
-                else if (gGameModeSub2 == 2)
-                    gGameModeSub1 = 4;
-                else if (gGameModeSub2 == 3)
-                    gGameModeSub1 = 3;
+                if (gSubGameMode2 == 1)
+                    gSubGameMode1 = 7;
+                else if (gSubGameMode2 == 2)
+                    gSubGameMode1 = 4;
+                else if (gSubGameMode2 == 3)
+                    gSubGameMode1 = 3;
                 else
                 {
                     FILE_SELECT_DATA.currentSubMenu = 0;
-                    gGameModeSub1 = 10;
+                    gSubGameMode1 = 10;
                 }
 
-                if (gGameModeSub2 == 0)
+                if (gSubGameMode2 == 0)
                     break;
 
                 FileSelectInitFading(TRUE);
@@ -3956,14 +4416,14 @@ u32 FileSelectMenuSubroutine(void)
         case 10:
             if (OptionsSubroutine())
             {
-                if (gGameModeSub2)
+                if (gSubGameMode2)
                 {
                     FileSelectInitFading(TRUE);
-                    gGameModeSub1 = 11;
+                    gSubGameMode1 = 11;
                 }
                 else
                 {
-                    gGameModeSub1 = 2;
+                    gSubGameMode1 = 2;
                     FILE_SELECT_DATA.currentSubMenu = 6;
                     FILE_SELECT_DATA.timer = 0;
                     FILE_SELECT_DATA.subroutineStage = 0;
@@ -3985,18 +4445,24 @@ u32 FileSelectMenuSubroutine(void)
             if (FileSelectUpdateFading())
             {
                 FILE_SELECT_DATA.timer = 0;
-                gGameModeSub1++;
+                gSubGameMode1++;
             }
             break;
 
         case 5:
             if (FILE_SELECT_DATA.timer > CONVERT_SECONDS(.5f))
-                gGameModeSub1++;
+                gSubGameMode1++;
             break;
 
         case 6:
+            unk_75c04(0);
+            return TRUE;
+
         case 8:
             unk_75c04(0);
+            #ifdef REGION_JP
+            SramWrite_Language();
+            #endif // REGION_JP
             return TRUE;
     }
 
@@ -4009,7 +4475,7 @@ u32 FileSelectMenuSubroutine(void)
  * 
  * @return u32 bool, ended
  */
-u32 FileSelectUpdateFading(void)
+static u32 FileSelectUpdateFading(void)
 {
     u32 ended;
     u16* src;
@@ -4123,7 +4589,7 @@ u32 FileSelectUpdateFading(void)
  * 
  * @param fadingOut Bool, file select fading out
  */
-void FileSelectInitFading(u8 fadingOut)
+static void FileSelectInitFading(u8 fadingOut)
 {
     FILE_SELECT_DATA.colorToApply = 0;
     FILE_SELECT_DATA.paletteUpdated = 0;
@@ -4153,7 +4619,7 @@ void FileSelectInitFading(u8 fadingOut)
  * @brief 7c568 | 3c | Transfers the fading palette to palette RAM
  * 
  */
-void FileSelectApplyFading(void)
+static void FileSelectApplyFading(void)
 {
     if (FILE_SELECT_DATA.paletteUpdated)
     {
@@ -4163,42 +4629,54 @@ void FileSelectApplyFading(void)
 }
 
 /**
- * @brief 7c5a4 | 3c | Sets the language to English
+ * @brief 7c5a4 | 3c | Sets the language to the default for the game's region
  * 
  */
-void FileSelectSetEnglishLanguage(void)
+static void FileSelectSetLanguage(void)
 {
     s32 i;
-    u32 saveLanguage;
 
-    saveLanguage = FALSE;
+    i = FALSE;
 
+    #if defined(REGION_EU)
+    if (INVALID_EU_LANGUAGE(gLanguage))
+    #elif defined(REGION_JP)
+    if (gLanguage > LANGUAGE_HIRAGANA)
+    #else // !REGION_JP
     if (gLanguage != LANGUAGE_ENGLISH)
+    #endif // REGION_JP
     {
-        gLanguage = LANGUAGE_ENGLISH;
-        saveLanguage = TRUE;
+        gLanguage = LANGUAGE_DEFAULT;
+        i = TRUE;
     }
 
-    if (saveLanguage)
+    if (i)
         SramWrite_Language();
 
     for (i = 0; i < ARRAY_SIZE(gSaveFilesInfo); i++)
+    {
+        #ifdef REGION_JP
+        if (gSaveFilesInfo[i].language > LANGUAGE_HIRAGANA)
+            gSaveFilesInfo[i].language = LANGUAGE_JAPANESE;
+        #else // !REGION_JP
         gSaveFilesInfo[i].language = gLanguage;
+        #endif // REGION_JP
+    }
 }
 
 /**
  * @brief 7c5e0 | 448 | Initializes the file select menu 
  * 
  */
-void FileSelectInit(void)
+static void FileSelectInit(void)
 {
-    CallbackSetVBlank(FileSelectVBlank_Empty);
+    CallbackSetVblank(FileSelectVBlank_Empty);
 
     BitFill(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam), 32);
 
-    write16(REG_DISPCNT, FILE_SELECT_DATA.dispcnt = 0);
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay = BLDY_MAX_VALUE);
-    write16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT);
+    WRITE_16(REG_DISPCNT, FILE_SELECT_DATA.dispcnt = 0);
+    WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay = BLDY_MAX_VALUE);
+    WRITE_16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT);
 
     gNextOamSlot = 0;
     ClearGfxRam();
@@ -4211,7 +4689,7 @@ void FileSelectInit(void)
 
     BitFill(3, 0, (void*)sEwramPointer + 0x1000, 0x800, 16);
     SramWrite_FileInfo();
-    FileSelectSetEnglishLanguage();
+    FileSelectSetLanguage();
 
     FILE_SELECT_DATA.unk_24 = gMostRecentSaveFile;
     FILE_SELECT_DATA.unk_25 = gMostRecentSaveFile;
@@ -4225,20 +4703,40 @@ void FileSelectInit(void)
     DmaTransfer(3, sFileSelectIconsPal, PALRAM_OBJ, sizeof(sFileSelectIconsPal), 16);
     SET_BACKDROP_COLOR(COLOR_BLACK);
 
+    #ifdef REGION_EU
+    CallLZ77UncompVram(sFileSelectAreaNamesGfx, VRAM_BASE + 0x2400);
+    CallLZ77UncompVram(sFileSelectBgIconsGfx, VRAM_BASE + 0x3800);
+    CallLZ77UncompVram(sFileSelectLargeTextGfxPointers[gLanguage - LANGUAGE_ENGLISH], VRAM_BASE + 0x4800);
+    CallLZ77UncompVram(sFileSelectDifficultyTextGfxPointers[gLanguage - LANGUAGE_ENGLISH], VRAM_BASE + 0x3400);
+    #else // !REGION_EU
     CallLZ77UncompVram(sFileSelectCharactersGfx, VRAM_BASE + 0x400);
-    CallLZ77UncompVram(sFileSelectChozoBackgroundGfx, VRAM_BASE + 0x8000);
-    CallLZ77UncompVram(sFileSelectIconsGfx, VRAM_OBJ);
+    #endif // REGION_EU
 
-    #ifdef DEBUG
+    CallLZ77UncompVram(sFileSelectChozoBackgroundGfx, VRAM_BASE + 0x8000);
+    CallLZ77UncompVram(sFileSelectObjIconsGfx, VRAM_OBJ);
+
+    // If not on JP, the translations for "Copy", "Erase", and "Options" are blanked out,
+    // and the options menu text is replaced with the appropriate language. Debug allows
+    // any language, so it has an extra check.
+    #if defined(DEBUG) || !defined(REGION_JP)
+    #if defined(DEBUG)
     if (gLanguage >= LANGUAGE_ENGLISH)
     #endif // DEBUG
     {
+        #if defined(DEBUG) || !defined(REGION_EU)
         BitFill(3, 0, VRAM_BASE + 0x400, 0x800, 16);
-        CallLZ77UncompVram(sFileSelectTextGfxPointers[gLanguage - LANGUAGE_ENGLISH], VRAM_BASE + 0xC00);
+        #endif // DEBUG || !REGION_EU
+        CallLZ77UncompVram(sFileSelectOptionsTextGfxPointers[gLanguage - LANGUAGE_ENGLISH], VRAM_BASE + 0xC00);
     }
+    #endif // DEBUG || !REGION_JP
+
     CallLZ77UncompVram(sFileSelectChozoBackgroundTileTable, VRAM_BASE + 0xF800);
 
+    #ifdef REGION_EU
+    CallLZ77UncompWram(sFileSelectOptionsTileTable, (void*)sEwramPointer + 0x800);
+    #else // !REGION_EU
     CallLZ77UncompWram(sFileSelectMenuTileTable, (void*)sEwramPointer + 0x800);
+    #endif // REGION_EU
     CallLZ77UncompWram(sFileSelect3BigPanelsTileTable, (void*)sEwramPointer + 0x2800);
     CallLZ77UncompWram(sFileSelect1Small2BigPanelsTileTable, (void*)sEwramPointer + 0x1800);
     CallLZ77UncompWram(sFileSelect2Big1SmallPanelsTileTable, (void*)sEwramPointer + 0x2000);
@@ -4250,7 +4748,7 @@ void FileSelectInit(void)
     SramRead_SoundMode();
     FileSelectApplyStereo();
 
-    gGameModeSub1 = 2;
+    gSubGameMode1 = 2;
 
     if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].corruptionFlag || gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].corruptionFlag || gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].corruptionFlag)
     {
@@ -4260,7 +4758,7 @@ void FileSelectInit(void)
     {
         if (FILE_SELECT_DATA.optionsUnlocked[gOptionsOptionSelected] && gOptionsOptionSelected > 0 && (u8)gOptionsOptionSelected < 7)
         {
-            gGameModeSub1 = 10;
+            gSubGameMode1 = 10;
             OptionsSoundTestCheckNotAlreadyPlaying();
             FILE_SELECT_DATA.currentSubMenu = 1;
         }
@@ -4286,10 +4784,10 @@ void FileSelectInit(void)
     FILE_SELECT_DATA.unk_1E = CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256);
     FILE_SELECT_DATA.unk_20 = CREATE_BGCNT(0, 30, BGCNT_LOW_MID_PRIORITY, BGCNT_SIZE_256x256);
 
-    write16(REG_BG0CNT, FILE_SELECT_DATA.bg0cnt = 0);
-    write16(REG_BG1CNT, FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_18);
-    write16(REG_BG2CNT, FILE_SELECT_DATA.bg2cnt = FILE_SELECT_DATA.unk_16);
-    write16(REG_BG3CNT, FILE_SELECT_DATA.bg3cnt = FILE_SELECT_DATA.unk_14);
+    WRITE_16(REG_BG0CNT, FILE_SELECT_DATA.bg0cnt = 0);
+    WRITE_16(REG_BG1CNT, FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_18);
+    WRITE_16(REG_BG2CNT, FILE_SELECT_DATA.bg2cnt = FILE_SELECT_DATA.unk_16);
+    WRITE_16(REG_BG3CNT, FILE_SELECT_DATA.bg3cnt = FILE_SELECT_DATA.unk_14);
 
     FILE_SELECT_DATA.fileSelectCursors = sFileSelectMenuCursors_Empty;
 
@@ -4301,7 +4799,7 @@ void FileSelectInit(void)
     FileSelectResetOAM();
     FileSelectUpdateCursor(CURSOR_POSE_DEFAULT, FILE_SELECT_DATA.unk_24);
 
-    if (gGameModeSub1 == 2)
+    if (gSubGameMode1 == 2)
     {
         if (FILE_SELECT_DATA.currentSubMenu == 4)
         {
@@ -4325,47 +4823,47 @@ void FileSelectInit(void)
     FileSelectProcessOAM();
     FileSelectInitFading(FALSE);
 
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay = 0);
-    write16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt = 0);
+    WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay = 0);
+    WRITE_16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt = 0);
 
     FileSelectVBlank();
-    CallbackSetVBlank(FileSelectVBlank);
+    CallbackSetVblank(FileSelectVBlank);
 }
 
 /**
  * @brief 7ca28 | f8 | File select menu V-blank code
  * 
  */
-void FileSelectVBlank(void)
+static void FileSelectVBlank(void)
 {
     if (gIoTransferInfo.linkInProgress)
         LinkVSync();
 
     DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)))
 
-    write16(REG_BG0HOFS, gBg0HOFS_NonGameplay / PIXEL_SIZE);
-    write16(REG_BG0VOFS, gBg0VOFS_NonGameplay / PIXEL_SIZE);
-    write16(REG_BG1HOFS, gBg1HOFS_NonGameplay / PIXEL_SIZE);
-    write16(REG_BG1VOFS, gBg1VOFS_NonGameplay / PIXEL_SIZE);
-    write16(REG_BG2HOFS, gBg2HOFS_NonGameplay / PIXEL_SIZE);
-    write16(REG_BG2VOFS, gBg2VOFS_NonGameplay / PIXEL_SIZE);
-    write16(REG_BG3HOFS, gBg3HOFS_NonGameplay / PIXEL_SIZE);
-    write16(REG_BG3VOFS, gBg3VOFS_NonGameplay / PIXEL_SIZE);
+    WRITE_16(REG_BG0HOFS, gBg0HOFS_NonGameplay / PIXEL_SIZE);
+    WRITE_16(REG_BG0VOFS, gBg0VOFS_NonGameplay / PIXEL_SIZE);
+    WRITE_16(REG_BG1HOFS, gBg1HOFS_NonGameplay / PIXEL_SIZE);
+    WRITE_16(REG_BG1VOFS, gBg1VOFS_NonGameplay / PIXEL_SIZE);
+    WRITE_16(REG_BG2HOFS, gBg2HOFS_NonGameplay / PIXEL_SIZE);
+    WRITE_16(REG_BG2VOFS, gBg2VOFS_NonGameplay / PIXEL_SIZE);
+    WRITE_16(REG_BG3HOFS, gBg3HOFS_NonGameplay / PIXEL_SIZE);
+    WRITE_16(REG_BG3VOFS, gBg3VOFS_NonGameplay / PIXEL_SIZE);
 
-    write16(REG_DISPCNT, FILE_SELECT_DATA.dispcnt);
-    write16(REG_BLDY, gWrittenToBLDY_NonGameplay);
-    write16(REG_BLDALPHA, C_16_2_8(gWrittenToBLDALPHA_H, gWrittenToBLDALPHA_L));
-    write16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt);
-    write16(REG_BG0CNT, FILE_SELECT_DATA.bg0cnt);
-    write16(REG_BG1CNT, FILE_SELECT_DATA.bg1cnt);
-    write16(REG_BG2CNT, FILE_SELECT_DATA.bg2cnt);
+    WRITE_16(REG_DISPCNT, FILE_SELECT_DATA.dispcnt);
+    WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay);
+    WRITE_16(REG_BLDALPHA, C_16_2_8(gWrittenToBldalpha_H, gWrittenToBldalpha_L));
+    WRITE_16(REG_BLDCNT, FILE_SELECT_DATA.bldcnt);
+    WRITE_16(REG_BG0CNT, FILE_SELECT_DATA.bg0cnt);
+    WRITE_16(REG_BG1CNT, FILE_SELECT_DATA.bg1cnt);
+    WRITE_16(REG_BG2CNT, FILE_SELECT_DATA.bg2cnt);
 }
 
 /**
  * @brief 7cb20 | c | Empty v-blank for file select
  * 
  */
-void FileSelectVBlank_Empty(void)
+static void FileSelectVBlank_Empty(void)
 {
     vu8 c = 0;
 }
@@ -4374,7 +4872,7 @@ void FileSelectVBlank_Empty(void)
  * @brief 7cb2c | 224 | Displays the info of every save file
  * 
  */
-void FileSelectDisplaySaveFileInfo(void)
+static void FileSelectDisplaySaveFileInfo(void)
 {
     FileSelectDisplaySaveFileHealth(FILE_SELECT_CURSOR_POSITION_FILE_A);
     FileSelectDisplaySaveFileTimer(FILE_SELECT_CURSOR_POSITION_FILE_A);
@@ -4424,7 +4922,7 @@ void FileSelectDisplaySaveFileInfo(void)
  * 
  * @param file File number
  */
-void FileSelectDisplaySaveFileHealth(u8 file)
+static void FileSelectDisplaySaveFileHealth(u8 file)
 {
     u32 offset;
 
@@ -4458,7 +4956,7 @@ void FileSelectDisplaySaveFileHealth(u8 file)
  * 
  * @param file File number
  */
-void FileSelectDisplaySaveFileTimer(u8 file)
+static void FileSelectDisplaySaveFileTimer(u8 file)
 {
     u16 baseTile;
     u16* dst;
@@ -4510,11 +5008,11 @@ void FileSelectDisplaySaveFileTimer(u8 file)
         dst[5 + 32] = baseTile | FILE_SELECT_TILE_TWO_DOTS_LOW;
 
         // Draw seconds
-        number = gSaveFilesInfo[file].igtSconds / 10; // Tenths
+        number = gSaveFilesInfo[file].igtSeconds / 10; // Tenths
         dst[6] = baseTile | (number + FILE_SELECT_TILE_NUMBER_HIGH);
         dst[6 + 32] = baseTile | (number + FILE_SELECT_TILE_NUMBER_LOW);
         
-        number = gSaveFilesInfo[file].igtSconds % 10; // Seconds
+        number = gSaveFilesInfo[file].igtSeconds % 10; // Seconds
         dst[7] = baseTile | (number + FILE_SELECT_TILE_NUMBER_HIGH);
         dst[7 + 32] = baseTile | (number + FILE_SELECT_TILE_NUMBER_LOW);
     }
@@ -4550,17 +5048,17 @@ void FileSelectDisplaySaveFileTimer(u8 file)
     }
 }
 
-// TODO: Not matching for REGION_JP || DEBUG
 /**
  * @brief 7cf98 | 118 | Displays the misc. info of a file (difficulty, area, time attack)
  * 
  * @param pFile Save file info pointer
  * @param file Save file number
  */
-void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file)
+static void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file)
 {
-    u16 baseTile;
     s32 offset;
+    s32 temp;
+    s32 palette;
     u16* dst;
     u16 tile;
     s32 i;
@@ -4575,10 +5073,10 @@ void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file)
         return;
 
     if (pFile->timeAttack)
-        tile = 6 << 12;
+        temp = 6 << 12;
     else
-        tile = 5 << 12;
-    baseTile = tile;
+        temp = 5 << 12;
+    palette = temp;
 
     dst = FILE_SELECT_EWRAM.menuTilemap;
     dst = &dst[offset + 102];
@@ -4588,27 +5086,27 @@ void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file)
         if (pFile->timeAttack)
         {
             tile = 0x1AF;
-            #if defined(REGION_JP) || defined(DEBUG)
+            #if defined(DEBUG) || defined(REGION_JP)
             if (pFile->language == LANGUAGE_HIRAGANA)
                 tile += 5;
-            #endif // REGION_JP || DEBUG
+            #endif // DEBUG || REGION_JP
         }
         else
         {
-            #if defined(REGION_JP) || defined(DEBUG)
+            #if defined(DEBUG) || defined(REGION_JP)
             tile = pFile->difficulty * 5;
             if (pFile->language == LANGUAGE_HIRAGANA)
                 tile += 0x13D;
             else
                 tile += 0x1A0;
-            #else // !(REGION_JP || DEBUG)
+            #else // !(DEBUG || REGION_JP)
             tile = 0x1A0 + pFile->difficulty * 5;
-            #endif // REGION_JP || DEBUG
+            #endif // DEBUG || REGION_JP
         }
 
         for (i = 0; i < 5; i++)
         {
-            *dst++ = baseTile | tile++;
+            *dst++ = palette | tile++;
         }
     }
     else
@@ -4629,19 +5127,19 @@ void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file)
 
     if ((pFile->exists || pFile->introPlayed) && i >= 0 && pFile->corruptionFlag == 0)
     {
-        #if defined(REGION_JP) || defined(DEBUG)
+        #if defined(DEBUG) || defined(REGION_JP)
         tile = i * 6;
         if (pFile->language == LANGUAGE_HIRAGANA)
             tile += 0x14C;
         else
             tile += 0x176;
-        #else // !(REGION_JP || DEBUG)
+        #else // !(DEBUG || REGION_JP)
         tile = i * 6 + 0x176;
-        #endif // REGION_JP || DEBUG
+        #endif // DEBUG || REGION_JP
 
         for (i = 0; i < 6; i++)
         {
-            *dst++ = baseTile | tile++;
+            *dst++ = palette | tile++;
         }
     }
     else
@@ -4657,7 +5155,7 @@ void FileSelectDisplaySaveFileMiscInfo(struct SaveFileInfo* pFile, u8 file)
  * @brief 7d0b0 | ec | Sets the enabled menus flags
  * 
  */
-void FileScreenSetEnabledMenuFlags(void)
+static void FileScreenSetEnabledMenuFlags(void)
 {
     u16 palette;
     u16* src;
@@ -4709,7 +5207,7 @@ void FileScreenSetEnabledMenuFlags(void)
  * @param pFileNumber File number pointer
  * @return u8 Could move
  */
-u8 FileSelectApplyMenuSelectInput(u8 set, u8* pFileNumber)
+static u8 FileSelectApplyMenuSelectInput(u8 set, u8* pFileNumber)
 {
     s32 direction;
     u8 position;
@@ -4785,7 +5283,7 @@ u8 FileSelectApplyMenuSelectInput(u8 set, u8* pFileNumber)
  * 
  * @param pFileNumber File number pointer
  */
-void FileSelectFindFirstNonEmptyFile(u8* pFileNumber)
+static void FileSelectFindFirstNonEmptyFile(u8* pFileNumber)
 {
     u8 file;
     u8 flags;
@@ -4810,7 +5308,7 @@ void FileSelectFindFirstNonEmptyFile(u8* pFileNumber)
  * 
  * @return u8 bool, leaving
  */
-u8 FileSelectUpdateSubMenu(void)
+static u8 FileSelectUpdateSubMenu(void)
 {
     u8 result;
     u8 cursorPose;
@@ -4820,7 +5318,11 @@ u8 FileSelectUpdateSubMenu(void)
     {
         case 0:
             result = 0;
+            #ifdef REGION_EU
+            CheckForMaintainedInput(MAINTAINED_INPUT_SPEED_FAST);
+            #else // !REGION_EU
             CheckForMaintainedInput();
+            #endif // REGION_EU
 
             if (gChangedInput)
             {
@@ -4904,7 +5406,15 @@ u8 FileSelectUpdateSubMenu(void)
             else if (result == 2)
             {
                 FadeMusic(0);
-                gGameModeSub2 = 3;
+                #ifdef REGION_JP
+                if (FILE_SELECT_DATA.fileSelectCursorPosition < FILE_SELECT_CURSOR_POSITION_COPY &&
+                    (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].exists ||
+                    gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].introPlayed))
+                {
+                    gLanguage = gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].language;
+                }
+                #endif // REGION_JP
+                gSubGameMode2 = 3;
                 return TRUE;
             }
             else if (result == 3)
@@ -4980,15 +5490,21 @@ u8 FileSelectUpdateSubMenu(void)
                             gSaveFilesInfo[gMostRecentSaveFile].difficulty = FILE_SELECT_DATA.fileSelectCursors.difficulty;
                             gSaveFilesInfo[gMostRecentSaveFile].timeAttack = FILE_SELECT_DATA.fileSelectCursors.completedFileOptions == 2;
 
-                            #ifdef DEBUG
-                            if (gSaveFilesInfo[gMostRecentSaveFile].language < LANGUAGE_ENGLISH)
-                                gSaveFilesInfo[gMostRecentSaveFile].language = FILE_SELECT_DATA.fileSelectCursors.japaneseText;
+                            // On JP, the language is updated based on whether Japanese or hiragana was chosen.
+                            // Debug allows any language, so it has an extra check.
+                            #if defined(DEBUG) || defined(REGION_JP)
+                            #if defined(DEBUG)
+                            if (gSaveFilesInfo[gMostRecentSaveFile].language <= LANGUAGE_HIRAGANA)
                             #endif // DEBUG
+                            {
+                                gSaveFilesInfo[gMostRecentSaveFile].language = FILE_SELECT_DATA.fileSelectCursors.japaneseText;
+                            }
+                            #endif // DEBUG || REGION_JP
                         }
                     }
                 }
                 
-                gGameModeSub2 = gSaveFilesInfo[gMostRecentSaveFile].exists ? 1 : 2;
+                gSubGameMode2 = gSaveFilesInfo[gMostRecentSaveFile].exists ? 1 : 2;
                 FadeMusic(ONE_THIRD_SECOND);
                 return TRUE;
             }
@@ -5024,7 +5540,7 @@ u8 FileSelectUpdateSubMenu(void)
         case 5:
             if (FileSelectOptionTransition(FALSE))
             {
-                gGameModeSub2 = 0;
+                gSubGameMode2 = 0;
                 return TRUE;
             }
             break;
@@ -5045,7 +5561,7 @@ u8 FileSelectUpdateSubMenu(void)
  * 
  * @return u32 bool, fully entered
  */
-u32 FileSelectCheckInputtingTimeAttackCode(void)
+static u32 FileSelectCheckInputtingTimeAttackCode(void)
 {
     u16 input;
 
@@ -5097,7 +5613,7 @@ u32 FileSelectCheckInputtingTimeAttackCode(void)
  * 
  * @return u8 Leaving, 
  */
-u8 FileSelectProcessFileSelection(void)
+static u8 FileSelectProcessFileSelection(void)
 {
     u32 leaving;
     u32 offset;
@@ -5122,13 +5638,17 @@ u8 FileSelectProcessFileSelection(void)
             FILE_SELECT_DATA.dispcnt |= DCNT_BG2;
             FILE_SELECT_DATA.dispcnt |= DCNT_WIN0;
 
-            write16(REG_WIN0H, C_16_2_8(70, 170));
-            write16(REG_WIN0V, C_16_2_8(0, 23));
-            write16(REG_WINOUT, C_16_2_8(0, WIN0_ALL));
-            write8(REG_WININ, C_16_2_8(0, WIN0_ALL_NO_COLOR_EFFECT));
+            #ifdef REGION_EU
+            WRITE_16(REG_WIN0H, C_16_2_8(40, 200));
+            #else // !REGION_EU
+            WRITE_16(REG_WIN0H, C_16_2_8(70, 170));
+            #endif // REGION_EU
+            WRITE_16(REG_WIN0V, C_16_2_8(0, 23));
+            WRITE_16(REG_WINOUT, C_16_2_8(0, WIN0_ALL));
+            WRITE_8(REG_WININ, C_16_2_8(0, WIN0_ALL_NO_COLOR_EFFECT));
 
-            gWrittenToBLDALPHA_H = 0;
-            gWrittenToBLDALPHA_L = 16;
+            gWrittenToBldalpha_H = 0;
+            gWrittenToBldalpha_L = 16;
 
             FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET;
 
@@ -5151,22 +5671,22 @@ u8 FileSelectProcessFileSelection(void)
         case 1:
             action = TRUE;
 
-            if (gWrittenToBLDALPHA_L != 0)
+            if (gWrittenToBldalpha_L != 0)
             {
                 action = FALSE;
-                if (gWrittenToBLDALPHA_L - 2 < 0)
-                    gWrittenToBLDALPHA_L = 0;
+                if (gWrittenToBldalpha_L - 2 < 0)
+                    gWrittenToBldalpha_L = 0;
                 else
-                    gWrittenToBLDALPHA_L -= 2;
+                    gWrittenToBldalpha_L -= 2;
             }
 
-            if (gWrittenToBLDALPHA_H != 16)
+            if (gWrittenToBldalpha_H != 16)
             {
                 action = FALSE;
-                if (gWrittenToBLDALPHA_H + 2 > 16)
-                    gWrittenToBLDALPHA_H = 16;
+                if (gWrittenToBldalpha_H + 2 > 16)
+                    gWrittenToBldalpha_H = 16;
                 else
-                    gWrittenToBLDALPHA_H += 2;
+                    gWrittenToBldalpha_H += 2;
             }
 
             if (!action)
@@ -5448,7 +5968,12 @@ u8 FileSelectProcessFileSelection(void)
                 break;
             }
 
-            #ifdef DEBUG
+            // When starting a new game on a completed file, JP always shows another menu
+            // (for Japanese/hiragana), but on non-JP the game will start if on a time
+            // attack file (since the difficulty menu is skipped). Debug allows any language,
+            // so it has an extra check.
+            #if defined(DEBUG) || !defined(REGION_JP)
+            #if defined(DEBUG)
             action = TRUE;
             if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].language >= LANGUAGE_ENGLISH)
             #endif // DEBUG
@@ -5457,15 +5982,19 @@ u8 FileSelectProcessFileSelection(void)
             }
 
             if (action)
+            #endif // DEBUG || !REGION_JP
             {
                 unk_7e3fc(6, 0x81);
                 FileSelectUpdateTilemap(0x23);
                 FILE_SELECT_DATA.subroutineStage = 20;
-                break;
             }
-
-            FILE_SELECT_DATA.unk_3A = 2;
-            FILE_SELECT_DATA.subroutineStage = 34;
+            #if defined(DEBUG) || !defined(REGION_JP)
+            else
+            {
+                FILE_SELECT_DATA.unk_3A = 2;
+                FILE_SELECT_DATA.subroutineStage = 34;
+            }
+            #endif // DEBUG || !REGION_JP
             break;
 
         case 19:
@@ -5480,17 +6009,25 @@ u8 FileSelectProcessFileSelection(void)
             break;
 
         case 21:
-            #ifdef DEBUG
+            // JP goes to the Japanese/hiragana menu, while non-JP goes to the difficulty menu.
+            // Debug allows any language, so it checks the language to decide the next menu.
+            #if defined(DEBUG) || defined(REGION_JP)
+            #if defined(DEBUG)
             if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].language <= LANGUAGE_HIRAGANA)
+            #endif // DEBUG
             {
                 FILE_SELECT_DATA.subroutineStage = 22;
                 FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_MESSAGE_OPTION);
             }
+            #endif // DEBUG || REGION_JP
+            #if defined(DEBUG) || !defined(REGION_JP)
+            #if defined(DEBUG)
             else
             #endif // DEBUG
             {
                 FILE_SELECT_DATA.subroutineStage = 28;
             }
+            #endif // DEBUG || !REGION_JP
 
             if (FILE_SELECT_DATA.fileSelectCursors.completedFileOptions == 2)
             {
@@ -5665,11 +6202,19 @@ u8 FileSelectProcessFileSelection(void)
         case 31:
             if (FileSelectUpdateTilemap(TILEMAP_REQUEST_DIFFICULTY_DESPAWN))
             {
-                #ifdef DEBUG
+                // When returning from the difficulty menu, JP goes to the Japanese/hiragana menu,
+                // while non-JP goes to the "Start Game" menu. Debug allows any language, so it
+                // checks the language to decide the next menu.
+                #if defined(DEBUG) || defined(REGION_JP)
+                #if defined(DEBUG)
                 if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].language <= LANGUAGE_HIRAGANA)
+                #endif // DEBUG
                 {
                     FILE_SELECT_DATA.subroutineStage = 22;
                 }
+                #endif // DEBUG || REGION_JP
+                #if defined(DEBUG) || !defined(REGION_JP)
+                #if defined(DEBUG)
                 else
                 #endif // DEBUG
                 {
@@ -5678,6 +6223,7 @@ u8 FileSelectProcessFileSelection(void)
                     else
                         FILE_SELECT_DATA.subroutineStage = 6;
                 }
+                #endif // DEBUG || !REGION_JP
             }
             break;
 
@@ -5795,22 +6341,22 @@ u8 FileSelectProcessFileSelection(void)
         case 43:
             action = TRUE;
 
-            if (gWrittenToBLDALPHA_H != 0)
+            if (gWrittenToBldalpha_H != 0)
             {
                 action = FALSE;
-                if (gWrittenToBLDALPHA_H - 2 < 0)
-                    gWrittenToBLDALPHA_H = 0;
+                if (gWrittenToBldalpha_H - 2 < 0)
+                    gWrittenToBldalpha_H = 0;
                 else
-                    gWrittenToBLDALPHA_H -= 2;
+                    gWrittenToBldalpha_H -= 2;
             }
 
-            if (gWrittenToBLDALPHA_L != 16)
+            if (gWrittenToBldalpha_L != 16)
             {
                 action = FALSE;
-                if (gWrittenToBLDALPHA_L + 2 > 16)
-                    gWrittenToBLDALPHA_L = 16;
+                if (gWrittenToBldalpha_L + 2 > 16)
+                    gWrittenToBldalpha_L = 16;
                 else
-                    gWrittenToBLDALPHA_L += 2;
+                    gWrittenToBldalpha_L += 2;
             }
             if (!action)
                 break;
@@ -5839,7 +6385,7 @@ u8 FileSelectProcessFileSelection(void)
  * @param param_1 To document
  * @param param_2 To document
  */
-void unk_7e3fc(u8 param_1, u8 param_2)
+static void unk_7e3fc(u8 param_1, u8 param_2)
 {
     switch (param_1)
     {
@@ -6026,7 +6572,7 @@ void unk_7e3fc(u8 param_1, u8 param_2)
 }
 
 #ifdef NON_MATCHING
-u32 FileSelectUpdateTilemap(u8 request)
+static u32 FileSelectUpdateTilemap(u8 request)
 {
     // https://decomp.me/scratch/ZaBhq
 
@@ -6361,7 +6907,7 @@ u32 FileSelectUpdateTilemap(u8 request)
 }
 #else
 NAKED_FUNCTION
-u32 FileSelectUpdateTilemap(u8 request)
+static u32 FileSelectUpdateTilemap(u8 request)
 {
     asm(" \n\
     push {r4, r5, r6, r7, lr} \n\
@@ -7319,7 +7865,7 @@ lbl_0807eed8: .4byte sNonGameplayRamPointer \n\
  * 
  * @param pTilemap Tilemap pointer
  */
-void unk_7eedc(u16* pTilemap)
+static void unk_7eedc(u16* pTilemap)
 {
     s32 i;
     s32 j;
@@ -7347,6 +7893,22 @@ void unk_7eedc(u16* pTilemap)
         }
     }
 }
+
+static u16 sMenuSounds[MENU_SOUND_REQUEST_END] = {
+    [MENU_SOUND_REQUEST_SUB_MENU_CURSOR] = SOUND_SUB_MENU_CURSOR,
+    [MENU_SOUND_REQUEST_ACCEPT_CONFIRM_MENU] = SOUND_ACCEPT_CONFIRM_MENU,
+    [MENU_SOUND_REQUEST_CURSOR] = SOUND_MENU_CURSOR,
+    [MENU_SOUND_REQUEST_FILE_SELECT] = SOUND_FILE_SELECT,
+    [MENU_SOUND_REQUEST_START_GAME] = SOUND_START_GAME,
+    [MENU_SOUND_REQUEST_OPEN_SUB_MENU] = SOUND_OPEN_SUB_MENU,
+    [MENU_SOUND_REQUEST_CLOSE_SUB_MENU] = SOUND_CLOSE_SUB_MENU,
+    [MENU_SOUND_REQUEST_CLOSE_SUB_MENU2] = SOUND_CLOSE_SUB_MENU,
+    [MENU_SOUND_REQUEST_COPY_DELETE] = SOUND_FILE_SELECT_COPY_DELETE,
+    [MENU_SOUND_REQUEST_COPY_DELETE_MOVING] = SOUND_FILE_SELECT_COPY_MOVING,
+    [MENU_SOUND_REQUEST_COPY_CONFIRM] = SOUND_FILE_SELECT_COPY_CONFIRM,
+    [MENU_SOUND_REQUEST_GAME_OVER_MENU_CURSOR] = SOUND_MENU_CURSOR,
+    [MENU_SOUND_REQUEST_GAME_OVER_START_GAME] = SOUND_START_GAME,
+};
 
 /**
  * @brief 7ef7c | 20 | Plays a menu sound
