@@ -54,16 +54,16 @@ endif
 #	ASFLAGS += --defsym REGION_CN=1
 # endif
 
-ifeq ($(DEBUG),1)
-	CPPFLAGS += -DDEBUG
-	ASFLAGS += --defsym DEBUG=1
-	TARGET := $(TARGET)_debug
-endif
-
 ifeq ($(RANDOMIZER),1)
 	CPPFLAGS += -DRANDOMIZER
 	ASFLAGS += --defsym RANDOMIZER=1
 	TARGET := $(TARGET)_rando
+endif
+
+ifeq ($(DEBUG),1)
+	CPPFLAGS += -DDEBUG
+	ASFLAGS += --defsym DEBUG=1
+	TARGET := $(TARGET)_debug
 endif
 
 BASEROM := $(TARGET)_baserom.gba

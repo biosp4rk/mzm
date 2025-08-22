@@ -3538,7 +3538,9 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
         case ABILITY_GROUP_BOMBS:
             if (statusSlot == STATUS_SLOT_BOMB && gEquipment.suitMiscActivation & SMF_MORPH_BALL)
             {
+#ifndef RANDOMIZER
                 if (!(gEquipment.beamBombsActivation & BBF_BOMBS))
+#endif // !RANDOMIZER
                 {
                     flag = BBF_BOMBS;
                     pActivation = &gEquipment.beamBombsActivation;
@@ -3556,8 +3558,10 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
                     flag = 0;
             }
 
+#ifndef RANDOMIZER
             if (flag != 0 && (*pActivation & flag))
                 flag = 0;
+#endif // !RANDOMIZER
             break;
 
         case ABILITY_GROUP_MISC:
@@ -3575,8 +3579,10 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
             break;
     }
 
+#ifndef RANDOMIZER
     if (!(PAUSE_SCREEN_DATA.typeFlags & PAUSE_SCREEN_TYPE_GETTING_SUITLESS) && gPauseScreenFlag != PAUSE_SCREEN_ITEM_ACQUISITION)
         flag = 0;
+#endif // !RANDOMIZER
 
     if (flag == 0)
     {
@@ -3646,6 +3652,7 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
             }
         }
 
+#ifndef RANDOMIZER
         switch (sStatusScreenItemsData[statusSlot].group)
         {
             case ABILITY_GROUP_BOMBS:
@@ -3657,6 +3664,7 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
                 if (flag == SMF_SPACE_JUMP && gEquipment.suitType != SUIT_FULLY_POWERED)
                     isActivated = UCHAR_MAX;
         }
+#endif // !RANDOMIZER
 
         if (isActivated == TRUE)
             oamId = OVERLAY_OAM_ID_SELECT_ON;

@@ -3,14 +3,18 @@
 - Fix charge beam OAM (only when charge beam is replaced with something else)
 - Allow chozo hints in any area
 - Option to force hard mode
-- Enable item toggle
+- ~~Enable item toggle~~
 - Map screen info?
-- Option to disable chozo hints
-- Option to remove cutscenes
-- ~~Option to skip door transitions~~
-- Option to skip suitless sequence
-- Option to obtain unknown items
-- Option to use ball launchers without bombs
+
+## Options
+- Disable chozo hints
+- Remove cutscenes
+- ~~Skip door transitions~~
+- Skip suitless sequence
+- Obtain unknown items
+- Use ball launchers without bombs
+- Disable wall jump
+- Disable infinite bomb jump
 
 # Items
 
