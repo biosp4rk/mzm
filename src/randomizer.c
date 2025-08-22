@@ -5,8 +5,10 @@
 
 #ifdef RANDOMIZER
 
-static const u16* sRandoMetroidSpriteStats = sPrimarySpriteStats[PSPRITE_METROID];
+static const u16* sRandoMetroidSpriteStats_Pointer = sPrimarySpriteStats[PSPRITE_METROID];
 
 static const boolu8* sRandoBlackPiratesRequirePlasma_Pointer = &sRandoBlackPiratesRequirePlasma;
+
+static const boolu8* sRandoSkipDoorTransitions_Pointer = &sRandoSkipDoorTransitions;
 
 #endif // RANDOMIZER

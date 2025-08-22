@@ -3,6 +3,7 @@
 
 #include "data/empty_datatypes.h"
 #include "data/hatch_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/connection.h"
@@ -514,7 +515,11 @@ void ConnectionProcessDoorType(DoorType type)
         default:
             // Use door transition coordinates instead of background coordinates
             gWhichBGPositionIsWrittenToBG3OFS = 4;
+#ifdef RANDOMIZER
+            if (!sRandoSkipDoorTransitions && !gSkipDoorTransition)
+#else // !RANDOMIZER
             if (!gSkipDoorTransition)
+#endif // RANDOMIZER
                 transition = COLOR_FADING_DOOR_TRANSITION;
 
         case DOOR_TYPE_NO_HATCH:
