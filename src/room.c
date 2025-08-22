@@ -91,6 +91,8 @@ void RoomLoad(void)
     // Getting an item, init cutscene
     else if (gPauseScreenFlag == PAUSE_SCREEN_ITEM_ACQUISITION)
     {
+// Disable Varia animation
+#ifndef RANDOMIZER
         if (gCurrentItemBeingAcquired == ITEM_ACQUISITION_VARIA)
         {
             gEquipment.suitMiscActivation &= ~SMF_VARIA_SUIT;
@@ -107,6 +109,7 @@ void RoomLoad(void)
             gSamusWeaponInfo.chargeCounter = 0;
             gSamusData.lastWallTouchedMidAir = TRUE;
         }
+#endif // !RANDOMIZER
     }
     else if (gPauseScreenFlag == PAUSE_SCREEN_FULLY_POWERED_SUIT_ITEMS)
     {

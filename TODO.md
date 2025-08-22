@@ -1,5 +1,6 @@
 ## Tweaks
 
+- ~~Disable Varia animation~~
 - Fix charge beam OAM (only when charge beam is replaced with something else)
 - Allow chozo hints in any area
 - Option to force hard mode
@@ -7,7 +8,7 @@
 - Map screen info?
 
 ## Options
-- Disable chozo hints
+- Disable chozo hints?
 - Remove cutscenes
 - ~~Skip door transitions~~
 - Skip suitless sequence

@@ -3538,6 +3538,7 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
         case ABILITY_GROUP_BOMBS:
             if (statusSlot == STATUS_SLOT_BOMB && gEquipment.suitMiscActivation & SMF_MORPH_BALL)
             {
+// Allow bombs to be toggled
 #ifndef RANDOMIZER
                 if (!(gEquipment.beamBombsActivation & BBF_BOMBS))
 #endif // !RANDOMIZER
@@ -3558,6 +3559,7 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
                     flag = 0;
             }
 
+// Allow suits to be toggled
 #ifndef RANDOMIZER
             if (flag != 0 && (*pActivation & flag))
                 flag = 0;
@@ -3579,6 +3581,7 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
             break;
     }
 
+// Allow items to be toggled
 #ifndef RANDOMIZER
     if (!(PAUSE_SCREEN_DATA.typeFlags & PAUSE_SCREEN_TYPE_GETTING_SUITLESS) && gPauseScreenFlag != PAUSE_SCREEN_ITEM_ACQUISITION)
         flag = 0;
@@ -3652,6 +3655,7 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
             }
         }
 
+// Always show on/off toggle
 #ifndef RANDOMIZER
         switch (sStatusScreenItemsData[statusSlot].group)
         {
