@@ -1,3 +1,12 @@
 #include "data/randomizer_data.h"
+#include "data/sprite_data.h"
+
+#include "constants/sprite.h"
+
+#ifdef RANDOMIZER
+
+static const u16* sRandoMetroidSpriteStats = sPrimarySpriteStats[PSPRITE_METROID];
 
 static const boolu8* sRandoBlackPiratesRequirePlasma_Pointer = &sRandoBlackPiratesRequirePlasma;
+
+#endif // RANDOMIZER

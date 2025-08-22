@@ -1,3 +1,7 @@
 #include "data/randomizer_data.h"
 
-const boolu8 sRandoBlackPiratesRequirePlasma = FALSE;
+#ifdef RANDOMIZER
+
+const boolu8 sRandoBlackPiratesRequirePlasma = TRUE;
+
+#endif // RANDOMIZER
