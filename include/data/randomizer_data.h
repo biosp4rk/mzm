@@ -5,5 +5,6 @@
 
 extern const boolu8 sRandoBlackPiratesRequirePlasma;
 extern const boolu8 sRandoSkipDoorTransitions;
+extern const u8 sRandoDifficultyOptions;
 
 #endif // RANDOMIZER_DATA_H

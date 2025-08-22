@@ -678,6 +678,9 @@ extern const u16 sEnglishText_FileScreen_GalleryUnlock[];
 extern const u16 sEnglishText_FileScreen_TimeAttackRecordUnlock[];
 extern const u16 sEnglishText_FileScreen_SoundTestUnlock[];
 extern const u16 sEnglishText_FileScreen_NesMetroidUnlock[];
+#ifdef RANDOMIZER
+extern const u16 sEnglishText_FileScreen_DifficultyHardOnly[];
+#endif // RANDOMIZER
 
 #if defined(REGION_EU)
 

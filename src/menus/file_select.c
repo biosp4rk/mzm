@@ -13,6 +13,7 @@
 #include "data/nes_metroid.h"
 #include "data/io_transfer_data.h"
 #include "data/menus/file_select_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/cable_link.h"
@@ -22,6 +23,7 @@
 #include "constants/game_state.h"
 #include "constants/menus/file_select.h"
 #include "constants/menus/pause_screen.h"
+#include "constants/randomizer.h"
 
 #include "structs/audio.h"
 #include "structs/cable_link.h"
@@ -4790,6 +4792,11 @@ static void FileSelectInit(void)
     WRITE_16(REG_BG3CNT, FILE_SELECT_DATA.bg3cnt = FILE_SELECT_DATA.unk_14);
 
     FILE_SELECT_DATA.fileSelectCursors = sFileSelectMenuCursors_Empty;
+#ifdef RANDOMIZER
+    // Set difficulty cursor default position to 0 if hard mode is forced
+    if (sRandoDifficultyOptions == DIFF_OPT_HARD)
+        FILE_SELECT_DATA.fileSelectCursors.difficulty = 0;
+#endif // RANDOMIZER
 
     FILE_SELECT_DATA.processTextStage = FILE_SCREEN_PROCESS_TEXT_STAGE_NONE;
     FILE_SELECT_DATA.messageInfoIdQueue[0] = UCHAR_MAX;
@@ -5487,7 +5494,16 @@ static u8 FileSelectUpdateSubMenu(void)
                         if (temp < 5)
                         {
                             gSaveFilesInfo[gMostRecentSaveFile].exists = FALSE;
-                            gSaveFilesInfo[gMostRecentSaveFile].difficulty = FILE_SELECT_DATA.fileSelectCursors.difficulty;
+#ifdef RANDOMIZER
+                            if (sRandoDifficultyOptions == DIFF_OPT_HARD)
+                            {
+                                gSaveFilesInfo[gMostRecentSaveFile].difficulty = DIFF_HARD;
+                            }
+                            else
+#endif // RANDOMIZER
+                            {
+                                gSaveFilesInfo[gMostRecentSaveFile].difficulty = FILE_SELECT_DATA.fileSelectCursors.difficulty;
+                            }
                             gSaveFilesInfo[gMostRecentSaveFile].timeAttack = FILE_SELECT_DATA.fileSelectCursors.completedFileOptions == 2;
 
                             // On JP, the language is updated based on whether Japanese or hiragana was chosen.
@@ -5655,6 +5671,11 @@ static u8 FileSelectProcessFileSelection(void)
             FILE_SELECT_DATA.unk_3A = 0;
 
             FILE_SELECT_DATA.fileSelectCursors = sFileSelectMenuCursors_Empty;
+#ifdef RANDOMIZER
+    // Set difficulty cursor default position to 0 if hard mode is forced
+    if (sRandoDifficultyOptions == DIFF_OPT_HARD)
+        FILE_SELECT_DATA.fileSelectCursors.difficulty = 0;
+#endif // RANDOMIZER
 
             if (FILE_SELECT_DATA.fileSelectCursorPosition != FILE_SELECT_CURSOR_POSITION_FILE_A)
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_LOGO].notDrawn = TRUE;
@@ -5773,12 +5794,18 @@ static u8 FileSelectProcessFileSelection(void)
             }
             else if (gFileScreenOptionsUnlocked.timeAttack & TRUE && gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].completedGame)
             {
-                if (FileSelectCheckInputtingTimeAttackCode())
+#ifdef RANDOMIZER
+                // Don't check for time attack if hard mode is forced
+                if (sRandoDifficultyOptions != DIFF_OPT_HARD)
+#endif // RANDOMIZER
                 {
-                    action = 0x80;
-                    FILE_SELECT_DATA.fileSelectCursors.completedFileOptions = 2;
-                    FILE_SELECT_DATA.inputtedTimeAttack = TRUE;
-                    FILE_SELECT_DATA.subroutineStage = 8;
+                    if (FileSelectCheckInputtingTimeAttackCode())
+                    {
+                        action = 0x80;
+                        FILE_SELECT_DATA.fileSelectCursors.completedFileOptions = 2;
+                        FILE_SELECT_DATA.inputtedTimeAttack = TRUE;
+                        FILE_SELECT_DATA.subroutineStage = 8;
+                    }
                 }
             }
 
@@ -6035,10 +6062,27 @@ static u8 FileSelectProcessFileSelection(void)
             }
             else
             {
-                if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].completedGame & 0x36)
-                    FILE_SELECT_DATA.difficultyMessage = 0x13;
+#ifdef RANDOMIZER
+                if (sRandoDifficultyOptions == DIFF_OPT_ALL)
+                {
+                    FILE_SELECT_DATA.difficultyMessage = FILE_SCREEN_MESSAGE_INFO_ID_DIFFICULTY_HARD;
+                }
+                else if (sRandoDifficultyOptions == DIFF_OPT_EASY_NORMAL)
+                {
+                    FILE_SELECT_DATA.difficultyMessage = FILE_SCREEN_MESSAGE_INFO_ID_DIFFICULTY;
+                }
+                else if (sRandoDifficultyOptions == DIFF_OPT_HARD)
+                {
+                    FILE_SELECT_DATA.difficultyMessage = FILE_SCREEN_MESSAGE_INFO_ID_DIFFICULTY_HARD_ONLY;
+                }
                 else
-                    FILE_SELECT_DATA.difficultyMessage = 0x12;
+#endif // RANDOMIZER
+                {
+                    if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].completedGame & 0x36)
+                        FILE_SELECT_DATA.difficultyMessage = 0x13;
+                    else
+                        FILE_SELECT_DATA.difficultyMessage = 0x12;
+                }
 
                 FileScreenUpdateMessageInfoIdQueue(0, FILE_SELECT_DATA.difficultyMessage);
             }
@@ -6171,26 +6215,36 @@ static u8 FileSelectProcessFileSelection(void)
                 }
                 else if (gChangedInput & KEY_UP)
                 {
-                    if (FILE_SELECT_DATA.fileSelectCursors.difficulty != 0)
+#ifdef RANDOMIZER
+                    if (sRandoDifficultyOptions != DIFF_OPT_HARD)
+#endif // RANDOMIZER
                     {
-                        action = --FILE_SELECT_DATA.fileSelectCursors.difficulty;
-                        FileSelectPlayMenuSound(MENU_SOUND_REQUEST_SUB_MENU_CURSOR);
+                        if (FILE_SELECT_DATA.fileSelectCursors.difficulty != 0)
+                        {
+                            action = --FILE_SELECT_DATA.fileSelectCursors.difficulty;
+                            FileSelectPlayMenuSound(MENU_SOUND_REQUEST_SUB_MENU_CURSOR);
+                        }
                     }
                 }
                 else if (gChangedInput & KEY_DOWN)
                 {
-                    if (FILE_SELECT_DATA.difficultyMessage == 0x13)
+#ifdef RANDOMIZER
+                    if (sRandoDifficultyOptions != DIFF_OPT_HARD)
+#endif // RANDOMIZER
                     {
-                        if (FILE_SELECT_DATA.fileSelectCursors.difficulty <= 1)
+                        if (FILE_SELECT_DATA.difficultyMessage == 0x13)
+                        {
+                            if (FILE_SELECT_DATA.fileSelectCursors.difficulty <= 1)
+                            {
+                                action = ++FILE_SELECT_DATA.fileSelectCursors.difficulty;
+                                FileSelectPlayMenuSound(MENU_SOUND_REQUEST_SUB_MENU_CURSOR);
+                            }
+                        }
+                        else if (FILE_SELECT_DATA.fileSelectCursors.difficulty == 0)
                         {
                             action = ++FILE_SELECT_DATA.fileSelectCursors.difficulty;
                             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_SUB_MENU_CURSOR);
                         }
-                    }
-                    else if (FILE_SELECT_DATA.fileSelectCursors.difficulty == 0)
-                    {
-                        action = ++FILE_SELECT_DATA.fileSelectCursors.difficulty;
-                        FileSelectPlayMenuSound(MENU_SOUND_REQUEST_SUB_MENU_CURSOR);
                     }
                 }
             }

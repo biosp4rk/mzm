@@ -2358,6 +2358,13 @@ const u8 sFileScreenMessagesInfo[FILE_SCREEN_MESSAGE_INFO_ID_COUNT][3] = {
         3,
         4
     },
+#ifdef RANDOMIZER
+    [33] = {
+        FILE_SCREEN_TEXT_DIFFICULTY_HARD_ONLY,
+        3,
+        4
+    },
+#endif // RANDOMIZER
 };
 
 const struct Message sFileScreenMessage_Empty = {

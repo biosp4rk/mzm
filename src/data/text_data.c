@@ -1505,6 +1505,9 @@ const u16 sEnglishText_FileScreen_GalleryUnlock[] = INCTEXT("{COLOR(5)}Gallery{C
 const u16 sEnglishText_FileScreen_TimeAttackRecordUnlock[] = INCTEXT("{COLOR(5)}Time Attack Records{COLOR(0)}\nhas been added to\nthe {COLOR(6)}OPTIONS{COLOR(0)} screen.");
 const u16 sEnglishText_FileScreen_SoundTestUnlock[] = INCTEXT("{COLOR(5)}Sound Test{COLOR(0)} has\nbeen added to the\n{COLOR(6)}OPTIONS{COLOR(0)} screen.");
 const u16 sEnglishText_FileScreen_NesMetroidUnlock[] = INCTEXT("{COLOR(5)}Original Metroid{COLOR(0)} has\nbeen added to the\n{COLOR(6)}OPTIONS{COLOR(0)} screen.");
+#ifdef RANDOMIZER
+const u16 sEnglishText_FileScreen_DifficultyHardOnly[] = INCTEXT("Difficulty Setting\n  HARD");
+#endif // RANDOMIZER
 
 const u16* sEnglishTextPointers_FileScreen[FILE_SCREEN_TEXT_END] = {
     [FILE_SCREEN_TEXT_START_GAME] = sEnglishText_FileScreen_StartGame,
@@ -1544,6 +1547,9 @@ const u16* sEnglishTextPointers_FileScreen[FILE_SCREEN_TEXT_END] = {
     [FILE_SCREEN_TEXT_TIME_ATTACK_RECORD_UNLOCK] = sEnglishText_FileScreen_TimeAttackRecordUnlock,
     [FILE_SCREEN_TEXT_SOUND_TEST_UNLOCK] = sEnglishText_FileScreen_SoundTestUnlock,
     [FILE_SCREEN_TEXT_NES_METROID_UNLOCK] = sEnglishText_FileScreen_NesMetroidUnlock,
+#ifdef RANDOMIZER
+    [FILE_SCREEN_TEXT_DIFFICULTY_HARD_ONLY] = sEnglishText_FileScreen_DifficultyHardOnly
+#endif // RANDOMIZER
 };
 
 #if defined(REGION_EU)

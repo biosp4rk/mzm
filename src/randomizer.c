@@ -11,4 +11,6 @@ static const boolu8* sRandoBlackPiratesRequirePlasma_Pointer = &sRandoBlackPirat
 
 static const boolu8* sRandoSkipDoorTransitions_Pointer = &sRandoSkipDoorTransitions;
 
+static const u8* sRandoDifficultyOptions_Pointer = &sRandoDifficultyOptions;
+
 #endif // RANDOMIZER

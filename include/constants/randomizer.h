@@ -1,6 +1,13 @@
 #ifndef RANDOMIZER_CONSTANTS_H
 #define RANDOMIZER_CONSTANTS_H
 
+enum DifficultyOptions {
+    DIFF_OPT_UNCHANGED,
+    DIFF_OPT_ALL,
+    DIFF_OPT_EASY_NORMAL,
+    DIFF_OPT_HARD
+};
+
 enum ItemLocation {
     LOC_BRI_1B__14_02__VARIA,
     LOC_BRI_1D__11_03__MISSILE,
