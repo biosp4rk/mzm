@@ -230,11 +230,13 @@ tools/%: tools/%.c
 	$(MSG) HOSTCC $@
 	$Q$(HOSTCC) $< $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@
 
-.PHONY: rando us us_debug us_beta eu eu_debug eu_beta jp jp_debug
+.PHONY: rando rando_debug us us_debug us_beta eu eu_debug eu_beta jp jp_debug
 # cn cn_debug
 
 rando:
 	$(MAKE) RANDOMIZER=1
+rando_debug:
+	$(MAKE) RANDOMIZER=1 DEBUG=1
 
 us:
 	$(MAKE) REGION=us

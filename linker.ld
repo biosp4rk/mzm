@@ -9,6 +9,7 @@ gUnk_Audio0x64 = 0x64;
 gUnk_Audio0x194F700 = 0x194F700;
 gUnk_Audio0x50 = 0x50;
 
+__rando_pointers_address = 0x87D0000;
 __nes_metroid_load_address = 0x87D8000;
 
 SECTIONS {
@@ -1128,6 +1129,10 @@ SECTIONS {
         src/data/shortcut_pointers.o(.rodata);
         src/data/cable_link_data.o(.rodata);
         sTransferRom_After = .;
+
+#ifdef RANDOMIZER
+        src/data/randomizer_data.o(.rodata);
+#endif
     } >rom
 
     .data : ALIGN(2) {
@@ -1197,6 +1202,12 @@ SECTIONS {
         src/chozodia_escape.o(.data);
         src/cable_link.o(.data);
     } >rom
+
+#ifdef RANDOMIZER
+    rando_pointers __rando_pointers_address : ALIGN(2) {
+        src/randomizer.o(.data);
+    } >rom
+#endif
 
     nes_metroid_data __nes_metroid_load_address : ALIGN(2) {
         src/data/nes_metroid.o(.rodata);

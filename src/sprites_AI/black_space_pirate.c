@@ -4,6 +4,7 @@
 
 #include "data/sprite_data.h"
 #include "data/sprites/space_pirate.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/clipdata.h"
@@ -73,6 +74,19 @@ void BlackSpacePirateProjectileCollision(void)
 
             switch (projType)
             {
+#ifdef RANDOMIZER
+                case PROJ_TYPE_BEAM:
+                case PROJ_TYPE_LONG_BEAM:
+                case PROJ_TYPE_ICE_BEAM:
+                case PROJ_TYPE_WAVE_BEAM:
+                    if (sRandoBlackPiratesRequirePlasma)
+                    {
+                        pProj->status = 0;
+                        ParticleSet(projY, projX, PE_HITTING_SOMETHING_INVINCIBLE);
+                        break;
+                    }
+                    // Fall-through
+#endif // RANDOMIZER
                 case PROJ_TYPE_PLASMA_BEAM:
                     pProj->status = 0;
 
@@ -136,6 +150,19 @@ void BlackSpacePirateProjectileCollision(void)
                     }
                     break;
 
+#ifdef RANDOMIZER
+                case PROJ_TYPE_CHARGED_BEAM:
+                case PROJ_TYPE_CHARGED_LONG_BEAM:
+                case PROJ_TYPE_CHARGED_ICE_BEAM:
+                case PROJ_TYPE_CHARGED_WAVE_BEAM:
+                    if (sRandoBlackPiratesRequirePlasma)
+                    {
+                        pProj->status = 0;
+                        ParticleSet(projY, projX, PE_HITTING_SOMETHING_INVINCIBLE);
+                        break;
+                    }
+                    // Fall-through
+#endif // RANDOMIZER
                 case PROJ_TYPE_CHARGED_PLASMA_BEAM:
                     pProj->status = 0;
 
