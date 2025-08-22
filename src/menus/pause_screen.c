@@ -2253,7 +2253,11 @@ void PauseScreenInit(void)
             break;
 
         case PAUSE_SCREEN_SUITLESS_ITEMS:
+#ifdef CHAOS
             UpdateSuitType(SUIT_SUITLESS, FALSE);
+#else // !CHAOS
+            UpdateSuitType(SUIT_SUITLESS);
+#endif // CHAOS
             gSamusData.pose = SPOSE_FACING_THE_FOREGROUND;
             gSamusData.direction = KEY_LEFT;
             gSamusData.currentAnimationFrame = 0;
@@ -2265,7 +2269,11 @@ void PauseScreenInit(void)
             break;
 
         case PAUSE_SCREEN_FULLY_POWERED_SUIT_ITEMS:
+#ifdef CHAOS
             UpdateSuitType(SUIT_FULLY_POWERED, FALSE);
+#else // !CHAOS
+            UpdateSuitType(SUIT_FULLY_POWERED);
+#endif // CHAOS
             PAUSE_SCREEN_DATA.typeFlags = PAUSE_SCREEN_TYPE_ON_STATUS_SCREEN | PAUSE_SCREEN_TYPE_GETTING_NEW_ITEM | PAUSE_SCREEN_TYPE_GETTING_FULLY_POWERED;
             break;
     }

@@ -3,6 +3,7 @@
 #include "chaos.h"
 #include "gba/keys.h"
 #include "gba/memory.h"
+#include "location_text.h"
 #include "macros.h"
 #include "menus/status_screen.h"
 #include "particle.h"
@@ -12,6 +13,9 @@
 #include "screen_shake.h"
 #include "sprite.h"
 #include "sprite_util.h"
+
+#include "data/projectile_data.h"
+#include "data/text_data.h"
 
 #include "constants/audio.h"
 #include "constants/chaos.h"
@@ -36,8 +40,7 @@
 #include "structs/samus.h"
 #include "structs/sprite.h"
 
-#include "data/text_pointers.h"
-#include "data/projectile_data.h"
+#ifdef CHAOS
 
 // Max positions where HUD elements can be drawn when moved
 #define HUD_MAX_X (SCREEN_SIZE_X - 24)
@@ -327,7 +330,7 @@ void ChaosCreateEffect(void)
             case CHAOS_EFFECT_PAUSE_GAME:
                 if (!ProcessPauseButtonPress())
                     continue;
-                gGameModeSub1++;
+                gSubGameMode1++;
                 break;
             case CHAOS_EFFECT_RAND_SOUND:
                 ChaosEffectRandSound();
@@ -749,7 +752,7 @@ void ChaosEffectExplosions(void)
             pe = PE_SHINESPARK_DESTROYED;
             break;
         case 6:
-            pe = PE_SUDO_SCREW_DESTROYED;
+            pe = PE_PSEUDO_SCREW_DESTROYED;
             break;
         case 7:
             pe = PE_SPEEDBOOSTER_DESTROYED;
@@ -842,7 +845,7 @@ s32 ChaosEffectSpawnEnemy(void)
         // Check if this sprite ID is excluded
         switch (spriteId)
         {
-            case PSPRITE_ITEM_BANNER:
+            case PSPRITE_MESSAGE_BANNER:
             case PSPRITE_LARGE_ENERGY_DROP:
             case PSPRITE_SMALL_ENERGY_DROP:
             case PSPRITE_MISSILE_DROP:
@@ -866,7 +869,7 @@ s32 ChaosEffectSpawnEnemy(void)
             case PSPRITE_CHOZO_STATUE_VARIA:
             case PSPRITE_MULTIPLE_LARGE_ENERGY:
             case PSPRITE_GUNSHIP:
-            case PSPRITE_DEOREM:
+            case PSPRITE_DEOREM_FIRST_LOCATION:
             case PSPRITE_DEOREM_SECOND_LOCATION:
             case PSPRITE_IMAGO_LARVA_RIGHT:
             case PSPRITE_IMAGO_COCOON:
@@ -943,10 +946,10 @@ s32 ChaosEffectMessageBox(void)
             return FALSE;
     }
 
-    if (SpriteUtilCountPrimarySprites(PSPRITE_ITEM_BANNER) > 0)
+    if (SpriteUtilCountPrimarySprites(PSPRITE_MESSAGE_BANNER) > 0)
         return FALSE;
 
-    slot = SpriteSpawnPrimary(PSPRITE_ITEM_BANNER, MESSAGE_CHAOS, 6,
+    slot = SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_CHAOS, 6,
         gSamusData.yPosition, gSamusData.xPosition, 0);
     if (slot == 0xFF)
         return FALSE;
@@ -960,24 +963,24 @@ const u16* ChaosRandomTextPointer(void)
     s32 total;
     u16 index;
 
-    total = STORY_TEXT_END + DESCRIPTION_TEXT_END + LT_UNUSED_7 + MESSAGE_END + FILE_SCREEN_TEXT_END;
+    total = STORY_TEXT_COUNT + DESCRIPTION_TEXT_COUNT + LT_UNUSED_7 + MESSAGE_COUNT + FILE_SCREEN_TEXT_END;
     index = ChaosRandU16(0, total - 1);
 
-    if (index < STORY_TEXT_END)
+    if (index < STORY_TEXT_COUNT)
         return sEnglishTextPointers_Story[index];
-    index -= STORY_TEXT_END;
+    index -= STORY_TEXT_COUNT;
 
-    if (index < DESCRIPTION_TEXT_END)
+    if (index < DESCRIPTION_TEXT_COUNT)
         return sEnglishTextPointers_Description[index];
-    index -= DESCRIPTION_TEXT_END;
+    index -= DESCRIPTION_TEXT_COUNT;
 
     if (index < LT_UNUSED_7)
         return sEnglishTextPointers_Location[index];
     index -= LT_UNUSED_7;
 
-    if (index < MESSAGE_END)
+    if (index < MESSAGE_COUNT)
         return sEnglishTextPointers_Message[index];
-    index -= MESSAGE_END;
+    index -= MESSAGE_COUNT;
 
     return sEnglishTextPointers_FileScreen[index];
 }
@@ -1208,12 +1211,12 @@ void ChaosEffectColorEffect(void)
                 r = r * 3 / 2;
                 g = g * 3 / 2;
                 b = b * 3 / 2;
-                if (r > COLOR_MASK)
-                    r = COLOR_MASK;
-                if (g > COLOR_MASK)
-                    g = COLOR_MASK;
-                if (b > COLOR_MASK)
-                    b = COLOR_MASK;
+                if (r > COLOR_MAX)
+                    r = COLOR_MAX;
+                if (g > COLOR_MAX)
+                    g = COLOR_MAX;
+                if (b > COLOR_MAX)
+                    b = COLOR_MAX;
                 break;
             case 2:
                 // Monochrome
@@ -1227,22 +1230,22 @@ void ChaosEffectColorEffect(void)
                 r = r * 3 / 2;
                 g = g * 3 / 4;
                 b = b * 3 / 4;
-                if (r > COLOR_MASK)
-                    r = COLOR_MASK;
+                if (r > COLOR_MAX)
+                    r = COLOR_MAX;
             case 4:
                 // Green
                 r = r * 3 / 4;
                 g = g * 3 / 2;
                 b = b * 3 / 4;
-                if (g > COLOR_MASK)
-                    g = COLOR_MASK;
+                if (g > COLOR_MAX)
+                    g = COLOR_MAX;
             case 5:
                 // Blue
                 r = r * 3 / 4;
                 g = g * 3 / 4;
                 b = b * 3 / 2;
-                if (b > COLOR_MASK)
-                    b = COLOR_MASK;
+                if (b > COLOR_MAX)
+                    b = COLOR_MAX;
         }
 
         *pPalette = COLOR(r, g, b);
@@ -1269,3 +1272,5 @@ s32 ChaosEffectCutscene(void)
 
     return TRUE;
 }
+
+#endif // CHAOS

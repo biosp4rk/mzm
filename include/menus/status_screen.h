@@ -33,7 +33,11 @@ void PauseDebugDrawEventName(u16 event, u16* dst);
 
 #endif
 
+#ifdef CHAOS
 void UpdateSuitType(SuitType newSuit, u8 chaos);
+#else // !CHAOS
+void UpdateSuitType(SuitType newSuit);
+#endif // CHAOS
 u32 StatusScreenDrawItems(u8 row);
 u8 StatusScreenGetSlotForNewItem(u8 param_1, u8 item);
 void StatusScreenDraw(void);

@@ -337,8 +337,10 @@ static u8 GettingFullyPoweredSuitInit(void)
 {
     s32 i;
 
+#ifdef CHAOS
     // Make sure Samus isn't suitless
     ChaosEndEquipmentEffects();
+#endif // CHAOS
 
     #ifdef REGION_EU
     CutsceneFadeScreenToWhite();

@@ -185,6 +185,10 @@ extern const u16 sEnglishText_Message_ActivateEasySleep[];
 extern const u16 sEnglishText_Message_PressSelectLAndR[];
 extern const u16 sEnglishText_Message_EasySleepPrompt[];
 
+#ifdef CHAOS
+extern const u16* sEnglishTextPointers_Message[MESSAGE_COUNT];
+#endif // CHAOS
+
 extern const u16 sEnglishText_Location_Brinstar[];
 extern const u16 sEnglishText_Location_Kraid[];
 extern const u16 sEnglishText_Location_Norfair[];
@@ -211,6 +215,10 @@ extern const u16 sEnglishText_Location_Unused15[];
 extern const u16 sEnglishText_Location_Unused16[];
 extern const u16 sEnglishText_Location_Unused17[];
 extern const u16 sEnglishText_Location_Unused18[];
+
+#ifdef CHAOS
+extern const u16* sEnglishTextPointers_Location[LT_COUNT];
+#endif // CHAOS
 
 #ifdef REGION_EU
 

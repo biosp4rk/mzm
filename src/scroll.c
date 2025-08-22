@@ -643,7 +643,11 @@ void ScrollProcessGeneral(void)
 
     if (gLockScreen.lock == LOCK_SCREEN_TYPE_NONE)
     {
+#ifdef CHAOS
         if (gSlowScrollingTimer == 0 && !ChaosIsEffectActive(CHAOS_FLAG_SLOW_SCROLLING))
+#else // !CHAOS
+        if (gSlowScrollingTimer == 0)
+#endif // CHAOS
         {
             // Compute new velocity caps to accomodate for samus movements
             distance = gSamusData.xPosition - gPreviousXPosition;

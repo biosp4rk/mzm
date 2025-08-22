@@ -951,10 +951,12 @@ u32 TitleScreenCheckPlayEffects(void)
     u32 tmp2;
     #endif // REGION_EU
 
-    // Disable demos
-    // TITLE_SCREEN_DATA.demoTimer++;
-    // if (TITLE_SCREEN_DATA.demoTimer > 60 * 17)
-    //     return 2;
+#ifndef CHAOS
+    // Disable demos in chaos
+    TITLE_SCREEN_DATA.demoTimer++;
+    if (TITLE_SCREEN_DATA.demoTimer > 60 * 17)
+        return 2;
+#endif // !CHAOS
 
     TITLE_SCREEN_DATA.effectsTimer++;
     if ((TITLE_SCREEN_DATA.type & TITLE_SCREEN_TYPE_ALL_SPARKLES_ENDED) == TITLE_SCREEN_TYPE_ALL_SPARKLES_ENDED)

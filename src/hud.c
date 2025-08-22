@@ -43,6 +43,7 @@
  */
 void HudUpdateOam(void)
 {
+#ifdef CHAOS
     u32 moveHud;
     u8 energyX;
     u8 energyY;
@@ -50,6 +51,7 @@ void HudUpdateOam(void)
     u8 chargeBarY;
     u8 minimapX;
     u8 minimapY;
+#endif // CHAOS
 
     u32 oamSlot;
     u16* dst;
@@ -59,9 +61,8 @@ void HudUpdateOam(void)
 
     if (!gHideHud)
     {
+#ifdef CHAOS
         moveHud = ChaosIsEffectActive(CHAOS_FLAG_MOVE_HUD);
-
-        dst = (u16*)gOamData;
 
         if (moveHud)
         {
@@ -73,14 +74,25 @@ void HudUpdateOam(void)
             energyX = HUD_HEALTH_BAR_X;
             energyY = HUD_HEALTH_BAR_Y;
         }
+#endif // CHAOS
+
+        dst = (u16*)gOamData;
 
         // Left part of health bar
         *dst++ = 0;
+#ifdef CHAOS
         gOamData[oamSlot].split.y = energyY;
+#else // !CHAOS
+        gOamData[oamSlot].split.y = HUD_HEALTH_BAR_Y;
+#endif // CHAOS
         gOamData[oamSlot].split.shape = OAM_SHAPE_HORIZONTAL;
 
         *dst++ = 0;
+#ifdef CHAOS
         gOamData[oamSlot].split.x = energyX;
+#else // !CHAOS
+        gOamData[oamSlot].split.x = HUD_HEALTH_BAR_X;
+#endif // CHAOS
         gOamData[oamSlot].split.size = OAM_SIZE_H_32x8;
         
         *dst++ = 0;
@@ -92,11 +104,19 @@ void HudUpdateOam(void)
 
         // Right part of health bar
         *dst++ = 0;
+#ifdef CHAOS
         gOamData[oamSlot].split.y = energyY;
+#else // !CHAOS
+        gOamData[oamSlot].split.y = HUD_HEALTH_BAR_Y;
+#endif // CHAOS
         gOamData[oamSlot].split.shape = OAM_SHAPE_HORIZONTAL;
         
         *dst++ = 0;
+#ifdef CHAOS
         gOamData[oamSlot].split.x = energyX + 32;
+#else // !CHAOS
+        gOamData[oamSlot].split.x = HUD_HEALTH_BAR_X + 32;
+#endif // CHAOS
         gOamData[oamSlot].split.size = OAM_SIZE_H_32x8;
         
         *dst++ = 0;
@@ -108,6 +128,7 @@ void HudUpdateOam(void)
 
         if (pEquipment->suitType == SUIT_SUITLESS)
         {
+#ifdef CHAOS
             if (moveHud)
             {
                 chargeBarX = gHudPositions.chargeBarX;
@@ -118,14 +139,23 @@ void HudUpdateOam(void)
                 chargeBarX = HUD_CHARGE_BAR_X;
                 chargeBarY = HUD_CHARGE_BAR_Y;
             }
+#endif // CHAOS
 
             // Left part of charge bar
             *dst++ = 0;
+#ifdef CHAOS
             gOamData[oamSlot].split.y = chargeBarY;
+#else // !CHAOS
+            gOamData[oamSlot].split.y = HUD_CHARGE_BAR_Y;
+#endif // CHAOS
             gOamData[oamSlot].split.shape = OAM_SHAPE_HORIZONTAL;
             
             *dst++ = 0;
+#ifdef CHAOS
             gOamData[oamSlot].split.x = chargeBarX;
+#else // !CHAOS
+            gOamData[oamSlot].split.x = HUD_CHARGE_BAR_X;
+#endif // CHAOS
             gOamData[oamSlot].split.size = OAM_SIZE_H_32x8;
             
             *dst++ = 0;
@@ -137,11 +167,19 @@ void HudUpdateOam(void)
             
             // Right part of charge bar
             *dst++ = 0;
+#ifdef CHAOS
             gOamData[oamSlot].split.y = chargeBarY;
+#else // !CHAOS
+            gOamData[oamSlot].split.y = HUD_CHARGE_BAR_Y;
+#endif // CHAOS
             gOamData[oamSlot].split.shape = OAM_SHAPE_HORIZONTAL;
             
             *dst++ = 0;
+#ifdef CHAOS
             gOamData[oamSlot].split.x = chargeBarX + 32;
+#else // !CHAOS
+            gOamData[oamSlot].split.x = HUD_CHARGE_BAR_X + 32;
+#endif // CHAOS
             gOamData[oamSlot].split.size = OAM_SIZE_H_32x8;
             
             *dst++ = 0;
@@ -158,11 +196,19 @@ void HudUpdateOam(void)
                 // Missile digits
                 
                 *dst++ = 0;
+#ifdef CHAOS
                 gOamData[oamSlot].split.y = moveHud ? gHudPositions.missileY : HUD_MISSILES_Y;
+#else // !CHAOS
+                gOamData[oamSlot].split.y = HUD_MISSILES_Y;
+#endif // CHAOS
                 gOamData[oamSlot].split.shape = OAM_SHAPE_HORIZONTAL;
 
                 *dst++ = 0;
+#ifdef CHAOS
                 gOamData[oamSlot].split.x = moveHud ? gHudPositions.missileX : HUD_MISSILES_X;
+#else // !CHAOS
+                gOamData[oamSlot].split.x = HUD_MISSILES_X;
+#endif // CHAOS
                 gOamData[oamSlot].split.size = OAM_SIZE_H_32x8;
 
                 *dst++ = 0;
@@ -178,11 +224,19 @@ void HudUpdateOam(void)
                 // Super missile digits
 
                 *dst++ = 0;
+#ifdef CHAOS
                 gOamData[oamSlot].split.y = moveHud ? gHudPositions.superMissileY : HUD_SUPER_MISSILES_Y;
+#else // !CHAOS
+                gOamData[oamSlot].split.y = HUD_SUPER_MISSILES_Y;
+#endif // CHAOS
                 gOamData[oamSlot].split.shape = OAM_SHAPE_HORIZONTAL;
 
                 *dst++ = 0;
+#ifdef CHAOS
                 gOamData[oamSlot].split.x = moveHud ? gHudPositions.superMissileX : HUD_SUPER_MISSILES_X;
+#else // !CHAOS
+                gOamData[oamSlot].split.x = HUD_SUPER_MISSILES_X;
+#endif // CHAOS
                 gOamData[oamSlot].split.size = OAM_SIZE_H_32x8;
 
                 *dst++ = 0;
@@ -198,11 +252,19 @@ void HudUpdateOam(void)
                 // Power bomb digits
 
                 *dst++ = 0;
+#ifdef CHAOS
                 gOamData[oamSlot].split.y = moveHud ? gHudPositions.powerBombY : HUD_POWER_BOMBS_Y;
+#else // !CHAOS
+                gOamData[oamSlot].split.y = HUD_POWER_BOMBS_Y;
+#endif // CHAOS
                 gOamData[oamSlot].split.shape = OAM_SHAPE_HORIZONTAL;
 
                 *dst++ = 0;
+#ifdef CHAOS
                 gOamData[oamSlot].split.x = moveHud ? gHudPositions.powerBombX : HUD_POWER_BOMBS_X;
+#else // !CHAOS
+                gOamData[oamSlot].split.x = HUD_POWER_BOMBS_X;
+#endif // CHAOS
                 gOamData[oamSlot].split.size = OAM_SIZE_H_32x8;
 
                 *dst++ = 0;
@@ -214,11 +276,7 @@ void HudUpdateOam(void)
             }
         }
 
-        // Minimap white square
-        *dst++ = 0;
-        gOamData[oamSlot].split.y = HUD_MINIMAP_SQUARE_Y;
-        gOamData[oamSlot].split.shape = OAM_SHAPE_SQUARE;
-
+#ifdef CHAOS
         if (moveHud)
         {
             minimapX = gHudPositions.minimapX;
@@ -229,14 +287,26 @@ void HudUpdateOam(void)
             minimapX = 214;
             minimapY = 250; // -6
         }
+#endif // CHAOS
 
+        // Minimap white square
         *dst++ = 0;
+#ifdef CHAOS
         gOamData[oamSlot].split.y = (minimapY + 16) & 0xFF;
+#else // !CHAOS
+        gOamData[oamSlot].split.y = HUD_MINIMAP_SQUARE_Y;
+#endif // CHAOS
         gOamData[oamSlot].split.shape = OAM_SHAPE_SQUARE;
 
         *dst++ = 0;
+#ifdef CHAOS
         gOamData[oamSlot].split.x = minimapX + 8;
+#else // !CHAOS
+        gOamData[oamSlot].split.x = HUD_MINIMAP_SQUARE_X;
+#endif // CHAOS
         gOamData[oamSlot].split.size = OAM_SIZE_S_8x8;
+
+        *dst++ = 0;
 
         if (MOD_BLOCK_AND(gFrameCounter8Bit, CONVERT_SECONDS(2.f / 15)))
             gOamData[oamSlot].split.tileNum = 0x20 * 5 + 0x1F;
@@ -250,11 +320,19 @@ void HudUpdateOam(void)
 
         // Minimap
         *dst++ = 0;
+#ifdef CHAOS
         gOamData[oamSlot].split.y = minimapY;
+#else // !CHAOS
+        gOamData[oamSlot].split.y = HUD_MINIMAP_Y;
+#endif // CHAOS
         gOamData[oamSlot].split.shape = OAM_SHAPE_SQUARE;
 
         *dst++ = 0;
+#ifdef CHAOS
         gOamData[oamSlot].split.x = minimapX;
+#else // !CHAOS
+        gOamData[oamSlot].split.x = HUD_MINIMAP_X;
+#endif // CHAOS
         gOamData[oamSlot].split.size = OAM_SIZE_S_32x32;
 
         *dst = 0;

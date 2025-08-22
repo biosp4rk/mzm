@@ -2328,8 +2328,10 @@ boolu32 SpriteUtilCheckStopSpritesPose(void)
             return TRUE;
     }
 
+#ifdef CHAOS
     if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_ENEMIES) && gFrameCounter8Bit & 1 != 0)
         return TRUE;
+#endif // CHAOS
     
     return FALSE;
 }

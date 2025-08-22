@@ -150,10 +150,12 @@ boolu8 ProjectileInit(ProjectileType type, u16 yPosition, u16 xPosition)
         pData = &gSamusData;
         if (!(pProj->status & PROJ_STATUS_EXISTS))
         {
+#ifdef CHAOS
             if (type < PROJ_TYPE_CHARGED_BEAM && ChaosIsEffectActive(CHAOS_FLAG_CHARGED_SHOTS))
                 type += PROJ_TYPE_CHARGED_BEAM;
             else if (type < PROJ_TYPE_MISSILE && ChaosIsEffectActive(CHAOS_FLAG_SHOOT_BOMBS))
                 type = PROJ_TYPE_BOMB;
+#endif // CHAOS
 
             if (type > PROJ_TYPE_SUPER_MISSILE)
                 status = PROJ_STATUS_EXISTS | PROJ_STATUS_ON_SCREEN | PROJ_STATUS_NOT_DRAWN;

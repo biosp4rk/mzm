@@ -15,7 +15,9 @@
 void UpdateInput(void)
 {
     u16 keys;
+#ifdef CHAOS
     u16 origKeys;
+#endif // CHAOS
 
     keys = KEY_MASK & ~READ_16(REG_KEY_INPUT);
 

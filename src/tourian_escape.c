@@ -2516,8 +2516,10 @@ u8 TourianEscapeCallSubroutines(void)
     switch (gSubGameMode1)
     {
         case 0:
+#ifdef CHAOS
             // Make sure Samus isn't suitless
             ChaosEndEquipmentEffects();
+#endif // CHAOS
             
             TourianEscapeInit();
             gSubGameMode1++;

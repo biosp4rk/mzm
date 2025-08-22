@@ -60,6 +60,12 @@ ifeq ($(DEBUG),1)
 	TARGET := $(TARGET)_debug
 endif
 
+ifeq ($(CHAOS),1)
+	CPPFLAGS += -DCHAOS
+	ASFLAGS += --defsym CHAOS=1
+	TARGET := $(TARGET)_chaos
+endif
+
 BASEROM := $(TARGET)_baserom.gba
 TARGET := $(TARGET).gba
 
@@ -224,8 +230,11 @@ tools/%: tools/%.c
 	$(MSG) HOSTCC $@
 	$Q$(HOSTCC) $< $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@
 
-.PHONY: us us_debug us_beta eu eu_debug eu_beta jp jp_debug
+.PHONY: chaos us us_debug us_beta eu eu_debug eu_beta jp jp_debug
 # cn cn_debug
+
+chaos:
+	$(MAKE) REGION=us CHAOS=1
 
 us:
 	$(MAKE) REGION=us

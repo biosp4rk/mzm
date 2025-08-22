@@ -143,7 +143,11 @@ static const struct FrameData sTitleScreenOam_SparkleDisappearing[6] = {
     [5] = FRAME_DATA_TERMINATOR
 };
 
+#ifdef CHAOS
 const u32 sTitleScreenTitleGfx[1128] = INCBIN_U32("data_new/title.gfx.lz");
+#else // !CHAOS
+const u32 sTitleScreenTitleGfx[1095] = INCBIN_U32("data/menus/TitleScreen/Title.gfx.lz");
+#endif // CHAOS
 const u32 sTitleScreenSparklesGfx[256] = INCBIN_U32("data/menus/TitleScreen/Sparkles.gfx.lz");
 const u32 sTitleScreenSpaceBackgroundGfx[3203] = INCBIN_U32("data/menus/TitleScreen/SpaceBackground.gfx.lz");
 const u32 sTitleScreenSpaceBackgroundDecorationGfx[797] = INCBIN_U32("data/menus/TitleScreen/SpaceBackgroundDecoration.gfx.lz");

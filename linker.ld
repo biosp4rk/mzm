@@ -392,6 +392,7 @@ SECTIONS {
         . = 0x00005b54; gLastRecvQueueCount = .;
         . = 0x00005b60; gLink = .;
 
+#ifdef CHAOS
         . = 0x00006000; gChaosRng = .;
         . = 0x00006004; gActiveChaosEffects = .;
         . = 0x00006008; gPrevOneTimeChaosEffect = .;
@@ -399,7 +400,7 @@ SECTIONS {
         . = 0x0000600C; gHudPositions = .;
         . = 0x00006018; gChaosTextPointer = .;
         . = 0x0000601C; gChaosEffects = .;
-
+#endif
 
         . = 0x00007e60; gSpSys = .;
         . = 0x00007fa0; gSpIrq = .;
@@ -620,7 +621,9 @@ SECTIONS {
         *libgcc.a:_negdi2.o(.text);
         *libc.a:memcpy.o(.text);
 
+#ifdef CHAOS
         src/chaos.o(.text);
+#endif
     } >rom
 
     .rodata : ALIGN(2) {

@@ -58,7 +58,9 @@ MAKE_ENUM(u8, MessageId) {
 
     MESSAGE_COUNT,
 
+#ifdef CHAOS
     MESSAGE_CHAOS,
+#endif // CHAOS
 
     MESSAGE_NONE = -1,
 };

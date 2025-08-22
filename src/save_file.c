@@ -636,8 +636,10 @@ u32 SramSaveFile(void)
         gSramOperationStage = 0;
         gUnk_3000C20 = 0;
 
+#ifdef CHAOS
         // Restore any changed equipment
         ChaosEndEquipmentEffects();
+#endif // CHAOS
     }
 
     switch (gSramOperationStage)

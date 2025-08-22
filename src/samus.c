@@ -2665,8 +2665,10 @@ void SamusUpdatePhysics(struct SamusData* pData)
                 slowed++;
     }
 
+#ifdef CHAOS
     if (ChaosIsEffectActive(CHAOS_FLAG_WATER_PHYSICS))
         slowed = TRUE;
+#endif // CHAOS
 
     // Set slowed
     pPhysics->slowedByLiquid = slowed;
@@ -2708,6 +2710,7 @@ void SamusUpdatePhysics(struct SamusData* pData)
         }
     }
 
+#ifdef CHAOS
     if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_HORI_MOVEMENT))
     {
         pPhysics->xAcceleration /= 2;
@@ -2729,6 +2732,7 @@ void SamusUpdatePhysics(struct SamusData* pData)
         pPhysics->yAcceleration /= 2;
     else if (ChaosIsEffectActive(CHAOS_FLAG_HIGH_GRAVITY))
         pPhysics->yAcceleration = pPhysics->yAcceleration * 3 / 2;
+#endif // CHAOS
 
     if (pData->standingStatus == STANDING_MIDAIR || pData->standingStatus == STANDING_ENEMY)
     {
@@ -3426,6 +3430,7 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
         // No super missiles left, select missiles
         pWeapon->missilesSelected = TRUE;
     }
+#ifdef CHAOS
     else
     {
         if (ChaosIsEffectActive(CHAOS_FLAG_SWAP_MISSILES))
@@ -3444,6 +3449,14 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
             SoundPlay(SOUND_MISSILE_TOGGLE); // Selecting missiles
         }
     }
+#else // !CHAOS
+    else if (gChangedInput & KEY_SELECT)
+    {
+        // Toggle
+        pWeapon->missilesSelected ^= TRUE;
+        SoundPlay(SOUND_MISSILE_TOGGLE); // Selecting missiles
+    }
+#endif // CHAOS
 
     switch (pData->pose)
     {
@@ -3454,6 +3467,7 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
         case SPOSE_GETTING_HURT_IN_MORPH_BALL:
         case SPOSE_GETTING_KNOCKED_BACK_IN_MORPH_BALL:
             // Check select power bombs
+#ifdef CHAOS
             if (pEquipment->currentPowerBombs != 0)
             {
                 if (ChaosIsEffectActive(CHAOS_FLAG_ARM_WEAPON))
@@ -3467,6 +3481,10 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
                     weaponHigh = WH_POWER_BOMB;
                 }
             }
+#else // !CHAOS
+            if (gButtonInput & gButtonAssignments.armWeapon && pEquipment->currentPowerBombs != 0)
+                weaponHigh = WH_POWER_BOMB;
+#endif // CHAOS
             break;
 
         case SPOSE_HANGING_ON_LEDGE:
@@ -3486,6 +3504,7 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
             break;
 
         default:
+#ifdef CHAOS
             if (ChaosIsEffectActive(CHAOS_FLAG_ARM_WEAPON))
             {
                 // Alternate every 8 frames
@@ -3504,6 +3523,10 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
             }
             // Try to arm missiles or super missiles
             else if (gButtonInput & gButtonAssignments.armWeapon)
+#else // !CHAOS
+            // Try to arm missiles or super missiles
+            if (gButtonInput & gButtonAssignments.armWeapon)
+#endif // CHAOS
             {
                 if (!pWeapon->missilesSelected)
                 {
@@ -6545,7 +6568,9 @@ SamusPose SamusStartingToCrawlGfx(struct SamusData* pData)
  */
 SamusPose SamusCrawling(struct SamusData* pData)
 {
+#ifdef CHAOS
     s32 velocityCap;
+#endif // CHAOS
 
     if (SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]) == SAMUS_COLLISION_DETECTION_NONE)
     {
@@ -6559,6 +6584,7 @@ SamusPose SamusCrawling(struct SamusData* pData)
     if (gButtonInput & pData->direction)
     {
         // Move
+#ifdef CHAOS
         velocityCap = HALF_BLOCK_SIZE;
         if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_HORI_MOVEMENT))
             velocityCap /= 2;
@@ -6566,6 +6592,9 @@ SamusPose SamusCrawling(struct SamusData* pData)
             velocityCap = velocityCap * 3 / 2;
 
         SamusApplyXAcceleration(gSamusPhysics.xAcceleration, velocityCap, pData);
+#else // !CHAOS
+        SamusApplyXAcceleration(gSamusPhysics.xAcceleration, HALF_BLOCK_SIZE, pData);
+#endif // CHAOS
         return SPOSE_NONE;
     }
 
@@ -6904,6 +6933,7 @@ void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction)
     acd = pData->armCannonDirection;
 
     // Check enable echo
+#ifdef CHAOS
     if (ChaosIsEffectActive(CHAOS_FLAG_LONG_ECHO))
     {
         pEcho->active = TRUE;
@@ -6911,6 +6941,7 @@ void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction)
         pEcho->distance = 15;
     }
     else
+#endif // CHAOS
     {
         switch (pose)
         {
@@ -6944,7 +6975,6 @@ void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction)
                 pEcho->active = FALSE;
         }
     }
-
 
     // Prevent buffer overflow
     ppc = MOD_AND(pEcho->previousPositionCounter, ARRAY_SIZE(pEcho->previous64XPositions));
@@ -8194,7 +8224,9 @@ void SamusDraw(void)
     u32 yPosition;
     u16 part1;
     u16 part2;
+#ifdef CHAOS
     u8 echoStart;
+#endif // CHAOS
     s32 ppc;
     s32 futureSlot;
 
@@ -8400,8 +8432,12 @@ void SamusDraw(void)
     // Draw echo
     if (gSamusEcho.active)
     {
+#ifdef CHAOS
         echoStart = ChaosIsEffectActive(CHAOS_FLAG_LONG_ECHO) ? 15 : 3;
         ppc = (s16)(gSamusEcho.previousPositionCounter - (gSamusEcho.distance * gSamusEcho.position) - echoStart);
+#else // !CHAOS
+        ppc = (s16)(gSamusEcho.previousPositionCounter - (gSamusEcho.distance * gSamusEcho.position) - 3);
+#endif // CHAOS
 
         if (gSamusEcho.unknown == 0 && ppc < 0)
         {

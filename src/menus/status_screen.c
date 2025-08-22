@@ -1753,7 +1753,11 @@ void PauseDebugDrawEventName(u16 event, u16* dst)
  * @param newSuit New suit type
  * @param chaos bool, changed via chaos code
  */
+#ifdef CHAOS
 void UpdateSuitType(SuitType newSuit, u8 chaos)
+#else // !CHAOS
+void UpdateSuitType(SuitType newSuit)
+#endif // CHAOS
 {
     if (gEquipment.suitType != newSuit)
         gEquipment.suitType = newSuit;
@@ -1761,19 +1765,25 @@ void UpdateSuitType(SuitType newSuit, u8 chaos)
     switch (gEquipment.suitType)
     {
         case SUIT_NORMAL:
+#ifdef CHAOS
             if (!chaos)
+#endif // CHAOS
+            {
                 gEquipment.currentEnergy = gEquipment.maxEnergy;
+            }
             gEquipment.beamBombsActivation = gEquipment.beamBombs & ~BBF_PLASMA_BEAM;
             gEquipment.suitMiscActivation = gEquipment.suitMisc & ~(SMF_SPACE_JUMP | SMF_GRAVITY_SUIT);
             break;
 
         case SUIT_FULLY_POWERED:
+#ifdef CHAOS
             if (chaos)
             {
                 gEquipment.beamBombsActivation = gEquipment.beamBombs;
                 gEquipment.suitMiscActivation = gEquipment.suitMisc;
             }
             else
+#endif // CHAOS
             {
                 gEquipment.currentEnergy = gEquipment.maxEnergy;
                 gEquipment.currentMissiles = gEquipment.maxMissiles;
@@ -1785,8 +1795,12 @@ void UpdateSuitType(SuitType newSuit, u8 chaos)
             break;
 
         case SUIT_SUITLESS:
+#ifdef CHAOS
             if (!chaos)
+#endif // CHAOS
+            {
                 gEquipment.currentEnergy = 99;
+            }
             gEquipment.suitMiscActivation = SMF_POWER_GRIP;
             gEquipment.beamBombsActivation = BBF_LONG_BEAM | BBF_CHARGE_BEAM;
     }
@@ -1940,7 +1954,11 @@ void StatusScreenDraw(void)
 {
     u8 previousSlots[3];
 
+#ifdef CHAOS
     if (gEquipment.suitType == SUIT_SUITLESS && !ChaosIsEffectActive(CHAOS_FLAG_SUITLESS))
+#else // !CHAOS
+    if (gEquipment.suitType == SUIT_SUITLESS)
+#endif // CHAOS
     {
         DmaTransfer(3, PAUSE_SCREEN_EWRAM.statusScreenBackgroundTilemap, PAUSE_SCREEN_EWRAM.statusScreenTilemap, sizeof(PAUSE_SCREEN_EWRAM.statusScreenBackgroundTilemap), 16);
         BitFill(3, 0, &PAUSE_SCREEN_DATA.statusScreenData, sizeof(PAUSE_SCREEN_DATA.statusScreenData), 32);
@@ -3299,7 +3317,11 @@ DescriptionTextId StatusScreenGetCurrentEquipmentSelected(u8 statusSlot)
     if (slot > 16)
         return descriptionTextId;
 
+#ifdef CHAOS
     if (gEquipment.suitType != SUIT_SUITLESS || ChaosIsEffectActive(CHAOS_FLAG_SUITLESS))
+#else // !CHAOS
+    if (gEquipment.suitType != SUIT_SUITLESS)
+#endif // CHAOS
     {
         switch (sStatusScreenItemsData[statusSlot].group)
         {

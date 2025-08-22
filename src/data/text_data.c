@@ -366,7 +366,11 @@ const u16 sEnglishText_Message_PressSelectLAndR[] = INCTEXT("{GAP(37)}press {Sel
 const u16 sEnglishText_Message_EasySleepPrompt[] = INCTEXT("{GAP(101)}Yes\n{GAP(104)}No");
 #endif // REGION_EU
 
+#ifdef CHAOS
+const u16* sEnglishTextPointers_Message[MESSAGE_COUNT] = {
+#else // !CHAOS
 static const u16* sEnglishTextPointers_Message[MESSAGE_COUNT] = {
+#endif // CHAOS
     [MESSAGE_DUMMY] = sEnglishText_Message_Dummy,
     [MESSAGE_ENERGY_TANK_ACQUIRED] = sEnglishText_Message_EnergyTankAcquired,
     [MESSAGE_MISSILE_TANK_ACQUIRED] = sEnglishText_Message_MissileTankAcquired,
@@ -466,7 +470,11 @@ const u16 sEnglishText_Location_Unused17[] = INCTEXT("{GAP(66)}UNUSED OBJ 17");
 const u16 sEnglishText_Location_Unused18[] = INCTEXT("{GAP(66)}UNUSED OBJ 18");
 #endif // REGION_EU
 
+#ifdef CHAOS
+const u16* sEnglishTextPointers_Location[LT_COUNT] = {
+#else // !CHAOS
 static const u16* sEnglishTextPointers_Location[LT_COUNT] = {
+#endif // CHAOS
     [LT_BRINSTAR] = sEnglishText_Location_Brinstar,
     [LT_KRAID] = sEnglishText_Location_Kraid,
     [LT_NORFAIR] = sEnglishText_Location_Norfair,

@@ -92,7 +92,7 @@ static void ParasiteInit(struct SpriteData* pSprite)
         {
             LOCK_DOORS();
         }
-#endif // !RANDO
+#endif // !CHAOS
 
         // Check is main parasite (spawned via room data and not with SpriteSpawnPrimary since it adds the Not Drawn flag)
         if (pSprite->status & SPRITE_STATUS_NOT_DRAWN)

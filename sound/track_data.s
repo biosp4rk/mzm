@@ -514,6 +514,10 @@
 .include "sound/tracks/track_531.s"
 .include "sound/tracks/track_532.s"
 .include "sound/tracks/track_533.s"
+.ifdef CHAOS
+.include "sound/tracks/track_534.s"
+.include "sound/tracks/track_535.s"
+.endif
 .include "sound/tracks/track_550.s"
 .include "sound/tracks/track_551.s"
 .include "sound/tracks/track_552.s"

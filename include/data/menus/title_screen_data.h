@@ -14,7 +14,11 @@ extern const u16 sTitleScreenPromptPal[5 * 16];
 extern const u16 sTitleScreenUnselectedMenuPal[1 * 16];
 #endif // REGION_EU
 
+#ifdef CHAOS
 extern const u32 sTitleScreenTitleGfx[1128];
+#else // !CHAOS
+extern const u32 sTitleScreenTitleGfx[1095];
+#endif // CHAOS
 extern const u32 sTitleScreenSparklesGfx[256];
 extern const u32 sTitleScreenSpaceBackgroundGfx[3203];
 extern const u32 sTitleScreenSpaceBackgroundDecorationGfx[797];

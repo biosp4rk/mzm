@@ -781,8 +781,12 @@ u8 unk_6f0a8(u8 textID, u8 gfxSlot, u8 param_3)
     if (param_3 == 0xF)
     {
         gCurrentMessage = sMessage_Empty;
-        
+
+#ifdef CHAOS
         gCurrentMessage.messageID = textID;
+#else // !CHAOS
+        gCurrentMessage.messageID = textID > MESSAGE_ENEMY_LOCATION_ABNORMAL ? MESSAGE_ENEMY_LOCATION_ABNORMAL : textID;
+#endif // CHAOS
         gCurrentMessage.gfxSlot = gfxSlot;
     }
 
@@ -865,7 +869,11 @@ void TextStartMessage(u8 textID, u8 gfxSlot)
 {
     gCurrentMessage = sMessage_Empty;
 
-    gCurrentMessage.messageID = textID;
+#ifdef CHAOS
+        gCurrentMessage.messageID = textID;
+#else // !CHAOS
+        gCurrentMessage.messageID = textID > MESSAGE_ENEMY_LOCATION_ABNORMAL ? MESSAGE_ENEMY_LOCATION_ABNORMAL : textID;
+#endif // CHAOS
     gCurrentMessage.gfxSlot = gfxSlot;
 }
 
@@ -877,7 +885,9 @@ void TextStartMessage(u8 textID, u8 gfxSlot)
 u8 TextProcessMessageBanner(void)
 {
     s32 i;
+#ifdef CHAOS
     const u16* pText;
+#endif // CHAOS
     u32 flag;
 
     switch (gCurrentMessage.stage)
@@ -907,14 +917,21 @@ u8 TextProcessMessageBanner(void)
             if (i == 0)
                 break;
 
+#ifdef CHAOS
             if (gCurrentMessage.messageID == MESSAGE_CHAOS)
                 pText = gChaosTextPointer;
             else
                 pText = sMessageTextPointers[gLanguage][gCurrentMessage.messageID];
+#endif // CHAOS
 
             while (i != 0)
             {
-                switch (TextProcessCurrentMessage(&gCurrentMessage, pText,
+                switch (TextProcessCurrentMessage(&gCurrentMessage,
+#ifdef CHAOS
+                    pText,
+#else // !CHAOS
+                    sMessageTextPointers[gLanguage][gCurrentMessage.messageID],
+#endif // CHAOS
                     VRAM_BASE + 0x14000 + gCurrentMessage.gfxSlot * 0x800 + gCurrentMessage.line * 0x800))
                 {
                     case TEXT_STATE_ENDED:

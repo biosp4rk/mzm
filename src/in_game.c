@@ -55,8 +55,10 @@ u32 InGameMainLoop(void)
             gDebugVCount_AudioMax = 0;
             #endif // DEBUG
 
+#ifdef CHAOS
             // Set initial seed for chaos RNG
             gChaosRng = gFrameCounter16Bit;
+#endif // CHAOS
 
             if (gSubGameMode3 == 0)
                 DemoResetInputAndDuration();
@@ -97,7 +99,9 @@ u32 InGameMainLoop(void)
     
                 if (gSubGameMode1 == SUB_GAME_MODE_PLAYING)
                 {
+#ifdef CHAOS
                     ChaosUpdate();
+#endif // CHAOS
 
                     gPreviousXPosition = gSamusData.xPosition;
                     gPreviousYPosition = gSamusData.yPosition;

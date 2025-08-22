@@ -25,7 +25,7 @@ track_535:
 	.byte 0
 	.byte 251
 	.byte 0
-	.word voice_group16
+	.word voicegroup016
 	.word track_535_0
 
 .align 2

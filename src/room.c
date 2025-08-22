@@ -472,7 +472,9 @@ void RoomReset(void)
     if (gPauseScreenFlag != PAUSE_SCREEN_NONE)
         return;
 
+#ifdef CHAOS
     gCrumbleCityActive = FALSE;
+#endif // CHAOS
 
     gDisableScrolling = FALSE;
     gSlowScrollingTimer = 0;
