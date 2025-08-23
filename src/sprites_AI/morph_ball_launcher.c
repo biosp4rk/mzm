@@ -1,8 +1,11 @@
 #include "sprites_AI/morph_ball_launcher.h"
 #include "macros.h"
 #include "gba/display.h"
+#include "gba/keys.h"
+#include "samus.h"
 
 #include "data/sprites/morph_ball_launcher.h"
+#include "data/randomizer_data.h"
 
 #include "constants/clipdata.h"
 #include "constants/sprite.h"
@@ -14,6 +17,7 @@
 #include "structs/sprite.h"
 #include "structs/samus.h"
 #include "structs/projectile.h"
+#include "structs/game_state.h"
 
 #define MORPH_BALL_LAUNCHER_POSE_IDLE 0x9
 #define MORPH_BALL_LAUNCHER_POSE_DELAY_BEFORE_LAUNCHING 0xB
@@ -114,20 +118,50 @@ static void MorphBallLauncherDetectBomb(void)
     spriteY = gCurrentSprite.yPosition + HALF_BLOCK_SIZE;
     spriteX = gCurrentSprite.xPosition;
 
-    for (count = 0; count < MAX_AMOUNT_OF_PROJECTILES; count++)
+#ifdef RANDOMIZER
+    if (sRandoBallLauncherWithoutBombs)
     {
-        pProj = gProjectileData + count;
-
-        if (pProj->status & PROJ_STATUS_EXISTS && pProj->type == PROJ_TYPE_BOMB && pProj->movementStage == BOMB_STAGE_FIRST_SPIN)
+        if (gChangedInput & KEY_B && gSamusData.invincibilityTimer == 0 &&
+            (gSamusData.pose == SPOSE_MORPH_BALL || gSamusData.pose == SPOSE_ROLLING))
         {
-            projY = pProj->yPosition;
-            projX = pProj->xPosition;
-
-            if (projY < spriteY && projY > spriteY - EIGHTH_BLOCK_SIZE && projX < spriteX + EIGHTH_BLOCK_SIZE && projX > spriteX - EIGHTH_BLOCK_SIZE)
+            if (gSamusData.yPosition < spriteY + 8 && gSamusData.yPosition > spriteY - 8 &&
+                gSamusData.xPosition < spriteX + 8 && gSamusData.xPosition > spriteX - 8)
             {
-                pProj->movementStage = BOMB_STAGE_PLACED_ON_LAUNCHER;
-                hasBomb++;
-                break;
+                // Prevent a bomb from spawning
+                gSamusWeaponInfo.newProjectile = PROJECTILE_CATEGORY_NONE;
+                gSamusData.forcedMovement = FORCED_MOVEMENT_LAUNCHED_BY_CANNON;
+                SamusSetPose(SPOSE_DELAY_BEFORE_BALLSPARKING);
+
+                // Copied from MorphBallLauncherDelayBeforeLaunching
+                gCurrentSprite.pOam = sMorphBallLauncherOam_Launching;
+                gCurrentSprite.animationDurationCounter = 0;
+                gCurrentSprite.currentAnimationFrame = 0;
+                gCurrentSprite.pose = MORPH_BALL_LAUNCHER_POSE_LAUNCHING;
+                gCurrentSprite.work0 = CONVERT_SECONDS(1.f);
+                gCurrentSprite.work1 = FALSE;
+            }
+        }
+
+        return;
+    }
+    else
+#endif // RANDOMIZER
+    {
+        for (count = 0; count < MAX_AMOUNT_OF_PROJECTILES; count++)
+        {
+            pProj = gProjectileData + count;
+
+            if (pProj->status & PROJ_STATUS_EXISTS && pProj->type == PROJ_TYPE_BOMB && pProj->movementStage == BOMB_STAGE_FIRST_SPIN)
+            {
+                projY = pProj->yPosition;
+                projX = pProj->xPosition;
+
+                if (projY < spriteY && projY > spriteY - EIGHTH_BLOCK_SIZE && projX < spriteX + EIGHTH_BLOCK_SIZE && projX > spriteX - EIGHTH_BLOCK_SIZE)
+                {
+                    pProj->movementStage = BOMB_STAGE_PLACED_ON_LAUNCHER;
+                    hasBomb++;
+                    break;
+                }
             }
         }
     }

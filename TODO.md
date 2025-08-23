@@ -13,7 +13,7 @@
 - ~~Skip door transitions~~
 - Skip suitless sequence
 - Obtain unknown items
-- Use ball launchers without bombs
+- ~~Use ball launchers without bombs~~
 - Disable wall jump
 - Disable infinite bomb jump
 
