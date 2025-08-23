@@ -15,4 +15,8 @@ static const boolu8* sRandoSkipDoorTransitions_Pointer = &sRandoSkipDoorTransiti
 
 static const boolu8* sRandoBallLauncherWithoutBombs_Pointer = &sRandoBallLauncherWithoutBombs;
 
+static const boolu8* sRandoDisableMidAirBombJump_Pointer = &sRandoDisableMidAirBombJump;
+
+static const boolu8* sRandoDisableWallJump_Pointer = &sRandoDisableWallJump;
+
 #endif // RANDOMIZER

@@ -8,6 +8,7 @@
 #include "data/samus/samus_palette_data.h"
 #include "data/samus/samus_animation_pointers.h"
 #include "data/samus/samus_graphics.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/clipdata.h"
@@ -1764,34 +1765,39 @@ void SamusSetMidAir(struct SamusData* pData, struct SamusData* pCopy, struct Wea
             break;
 
         case SPOSE_MORPH_BALL_MIDAIR:
-            // Check perform bomb jump
-            if (pCopy->forcedMovement == FORCED_MOVEMENT_BOMB_JUMP_RIGHT)
+#ifdef RANDOMIZER
+            if (!sRandoDisableMidAirBombJump)
+#endif // RANDOMIZER
             {
-                // Set direction and velocity
-                pData->direction = KEY_RIGHT;
+                // Check perform bomb jump
+                if (pCopy->forcedMovement == FORCED_MOVEMENT_BOMB_JUMP_RIGHT)
+                {
+                    // Set direction and velocity
+                    pData->direction = KEY_RIGHT;
 
-                pData->xVelocity = SAMUS_BOMB_BOUNCE_X_VELOCITY;
-                pData->yVelocity = SAMUS_BOMB_BOUNCE_Y_VELOCITY;
+                    pData->xVelocity = SAMUS_BOMB_BOUNCE_X_VELOCITY;
+                    pData->yVelocity = SAMUS_BOMB_BOUNCE_Y_VELOCITY;
 
-                pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_JUMP;
-            }
-            else if (pCopy->forcedMovement == FORCED_MOVEMENT_BOMB_JUMP_UP)
-            {
-                // Set velocity
-                pData->xVelocity = 0;
-                pData->yVelocity = SAMUS_BOMB_BOUNCE_Y_VELOCITY;
+                    pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_JUMP;
+                }
+                else if (pCopy->forcedMovement == FORCED_MOVEMENT_BOMB_JUMP_UP)
+                {
+                    // Set velocity
+                    pData->xVelocity = 0;
+                    pData->yVelocity = SAMUS_BOMB_BOUNCE_Y_VELOCITY;
 
-                pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_JUMP;
-            }
-            else if (pCopy->forcedMovement == FORCED_MOVEMENT_BOMB_JUMP_LEFT)
-            {
-                // Set direction and velocity
-                pData->direction = KEY_LEFT;
+                    pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_JUMP;
+                }
+                else if (pCopy->forcedMovement == FORCED_MOVEMENT_BOMB_JUMP_LEFT)
+                {
+                    // Set direction and velocity
+                    pData->direction = KEY_LEFT;
 
-                pData->xVelocity = -SAMUS_BOMB_BOUNCE_X_VELOCITY;
-                pData->yVelocity = SAMUS_BOMB_BOUNCE_Y_VELOCITY;
+                    pData->xVelocity = -SAMUS_BOMB_BOUNCE_X_VELOCITY;
+                    pData->yVelocity = SAMUS_BOMB_BOUNCE_Y_VELOCITY;
 
-                pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_JUMP;
+                    pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_JUMP;
+                }
             }
             break;
 
@@ -4716,31 +4722,36 @@ SamusPose SamusSpinning(struct SamusData* pData)
     }
     else
     {
-        // Check can wall jump
-        if (pData->walljumpTimer != 0)
+#ifdef RANDOMIZER
+        if (!sRandoDisableWallJump)
+#endif // RANDOMIZER
         {
-            pData->walljumpTimer--;
-
-            // Holding correct direction and pressed A
-            if (pData->direction & pData->lastWallTouchedMidAir)
+            // Check can wall jump
+            if (pData->walljumpTimer != 0)
             {
-                if (gChangedInput & KEY_A)
+                pData->walljumpTimer--;
+
+                // Holding correct direction and pressed A
+                if (pData->direction & pData->lastWallTouchedMidAir)
                 {
-                    // Get check offset
-                    if (pData->lastWallTouchedMidAir & KEY_RIGHT)
-                        xOffset = -(HALF_BLOCK_SIZE + EIGHTH_BLOCK_SIZE);
-                    else
-                        xOffset = (HALF_BLOCK_SIZE + EIGHTH_BLOCK_SIZE);
-
-                    // Check has block
-                    if (ClipdataProcessForSamus(pData->yPosition, pData->xPosition + xOffset) & CLIPDATA_TYPE_SOLID_FLAG)
+                    if (gChangedInput & KEY_A)
                     {
-                        pData->direction = pData->lastWallTouchedMidAir;
-                        return SPOSE_STARTING_WALL_JUMP;
-                    }
-                }
+                        // Get check offset
+                        if (pData->lastWallTouchedMidAir & KEY_RIGHT)
+                            xOffset = -(HALF_BLOCK_SIZE + EIGHTH_BLOCK_SIZE);
+                        else
+                            xOffset = (HALF_BLOCK_SIZE + EIGHTH_BLOCK_SIZE);
 
-                xAcceleration = 1;
+                        // Check has block
+                        if (ClipdataProcessForSamus(pData->yPosition, pData->xPosition + xOffset) & CLIPDATA_TYPE_SOLID_FLAG)
+                        {
+                            pData->direction = pData->lastWallTouchedMidAir;
+                            return SPOSE_STARTING_WALL_JUMP;
+                        }
+                    }
+
+                    xAcceleration = 1;
+                }
             }
         }
     }

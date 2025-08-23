@@ -7,5 +7,7 @@ extern const u8 sRandoDifficultyOptions;
 extern const boolu8 sRandoBlackPiratesRequirePlasma;
 extern const boolu8 sRandoSkipDoorTransitions;
 extern const boolu8 sRandoBallLauncherWithoutBombs;
+extern const boolu8 sRandoDisableMidAirBombJump;
+extern const boolu8 sRandoDisableWallJump;
 
 #endif // RANDOMIZER_DATA_H
