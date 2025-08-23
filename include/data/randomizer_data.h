@@ -9,5 +9,7 @@ extern const boolu8 sRandoSkipDoorTransitions;
 extern const boolu8 sRandoBallLauncherWithoutBombs;
 extern const boolu8 sRandoDisableMidAirBombJump;
 extern const boolu8 sRandoDisableWallJump;
+extern const boolu8 sRandoRemoveCutscenes;
+extern const boolu8 sRandoSkipSuitlessSequence;
 
 #endif // RANDOMIZER_DATA_H

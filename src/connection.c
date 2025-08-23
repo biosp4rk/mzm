@@ -1064,7 +1064,12 @@ void ConnectionCheckPlayCutsceneDuringTransition(Area area, u8 dstRoomPlusOne)
             {
                 FadeMusic(CONVERT_SECONDS(1.f / 6));
                 FadeAllSounds(CONVERT_SECONDS(1.f / 6));
-                gCurrentCutscene = CUTSCENE_KRAID_RISING;
+#ifdef RANDOMIZER
+                if (!sRandoRemoveCutscenes)
+#endif // RANDOMIZER
+                {
+                    gCurrentCutscene = CUTSCENE_KRAID_RISING;
+                }
             }
             break;
 
@@ -1073,14 +1078,35 @@ void ConnectionCheckPlayCutsceneDuringTransition(Area area, u8 dstRoomPlusOne)
             if (dstRoomPlusOne == 0x2B)
             {
                 if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_FULLY_POWERED_SUIT_OBTAINED))
-                    gCurrentCutscene = CUTSCENE_BEFORE_RUINS_TEST;
+                {
+#ifdef RANDOMIZER
+                    if (sRandoRemoveCutscenes)
+                    {
+                        FadeMusic(CONVERT_SECONDS(1.f / 6));
+                        FadeAllSounds(CONVERT_SECONDS(1.f / 6));
+                    }
+                    else
+#endif // RANDOMIZER
+                    {
+                        gCurrentCutscene = CUTSCENE_BEFORE_RUINS_TEST;
+                    }
+                }
             }
             // Room 0xA is the suitless entry of the mothership
             else if (dstRoomPlusOne == 0xB && !EventFunction(EVENT_ACTION_CHECKING, EVENT_ENTER_MOTHERSHIP_DEMO_PLAYED))
             {
-                if (gRainSoundEffect & RAIN_SOUND_PLAYING)
-                    SoundFade(SOUND_RAIN, CONVERT_SECONDS(1.f / 6));
-                gCurrentCutscene = CUTSCENE_MECHA_RIDLEY_SEES_SAMUS;
+#ifdef RANDOMIZER
+                if (sRandoRemoveCutscenes)
+                {
+                    EventFunction(EVENT_ACTION_SETTING, EVENT_ENTER_MOTHERSHIP_DEMO_PLAYED);
+                }
+                else
+#endif // RANDOMIZER
+                {
+                    if (gRainSoundEffect & RAIN_SOUND_PLAYING)
+                        SoundFade(SOUND_RAIN, CONVERT_SECONDS(1.f / 6));
+                    gCurrentCutscene = CUTSCENE_MECHA_RIDLEY_SEES_SAMUS;
+                }
             }
             break;
 
@@ -1104,11 +1130,20 @@ void ConnectionCheckPlayCutsceneDuringAreaConnection(void)
         case ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR:
             if (gLastElevatorUsed.direction == ELEVATOR_DIRECTION_DOWN && !EventFunction(EVENT_ACTION_CHECKING, EVENT_ENTER_NORFAIR_DEMO_PLAYED))
             {
-                gCurrentCutscene = CUTSCENE_MOTHER_BRAIN_CLOSE_UP;
-
-                ColorFadingStart(COLOR_FADING_CANCEL);
-                SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
-                FadeMusic(CONVERT_SECONDS(1.f / 6));
+#ifdef RANDOMIZER
+                if (sRandoRemoveCutscenes)
+                {
+                    EventFunction(EVENT_ACTION_SETTING, EVENT_ENTER_NORFAIR_DEMO_PLAYED);
+                }
+                else
+#endif // RANDOMIZER
+                {
+                    gCurrentCutscene = CUTSCENE_MOTHER_BRAIN_CLOSE_UP;
+    
+                    ColorFadingStart(COLOR_FADING_CANCEL);
+                    SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
+                    FadeMusic(CONVERT_SECONDS(1.f / 6));
+                }
             }
             break;
 
@@ -1121,33 +1156,60 @@ void ConnectionCheckPlayCutsceneDuringAreaConnection(void)
                     break;
                 }
 
-                gCurrentCutscene = CUTSCENE_RIDLEY_IN_SPACE;
-
-                ColorFadingStart(COLOR_FADING_CANCEL);
-                SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
-                FadeMusic(CONVERT_SECONDS(1.f / 6));
+#ifdef RANDOMIZER
+                if (sRandoRemoveCutscenes)
+                {
+                    EventFunction(EVENT_ACTION_SETTING, EVENT_EXIT_KRAID_DEMO_PLAYED);
+                }
+                else
+#endif // RANDOMIZER
+                {
+                    gCurrentCutscene = CUTSCENE_RIDLEY_IN_SPACE;
+    
+                    ColorFadingStart(COLOR_FADING_CANCEL);
+                    SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
+                    FadeMusic(CONVERT_SECONDS(1.f / 6));
+                }
             }
             break;
 
         case ELEVATOR_ROUTE_NORFAIR_TO_RIDLEY:
             if (gLastElevatorUsed.direction == ELEVATOR_DIRECTION_DOWN && !EventFunction(EVENT_ACTION_CHECKING, EVENT_ENTER_RIDLEY_DEMO_PLAYED))
             {
-                gCurrentCutscene = CUTSCENE_RIDLEY_LANDING;
-
-                ColorFadingStart(COLOR_FADING_CANCEL);
-                SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
-                FadeMusic(CONVERT_SECONDS(1.f / 6));
+#ifdef RANDOMIZER
+                if (sRandoRemoveCutscenes)
+                {
+                    EventFunction(EVENT_ACTION_SETTING, EVENT_ENTER_RIDLEY_DEMO_PLAYED);
+                }
+                else
+#endif // RANDOMIZER
+                {
+                    gCurrentCutscene = CUTSCENE_RIDLEY_LANDING;
+    
+                    ColorFadingStart(COLOR_FADING_CANCEL);
+                    SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
+                    FadeMusic(CONVERT_SECONDS(1.f / 6));
+                }
             }
             break;
 
         case ELEVATOR_ROUTE_BRINSTAR_TO_TOURIAN:
             if (gLastElevatorUsed.direction == ELEVATOR_DIRECTION_DOWN && !EventFunction(EVENT_ACTION_CHECKING, EVENT_ENTER_TOURIAN_DEMO_PLAYED))
             {
-                gCurrentCutscene = CUTSCENE_ENTER_TOURIAN;
-
-                ColorFadingStart(COLOR_FADING_CANCEL);
-                SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
-                FadeMusic(CONVERT_SECONDS(1.f / 6));
+#ifdef RANDOMIZER
+                if (sRandoRemoveCutscenes)
+                {
+                    EventFunction(EVENT_ACTION_SETTING, EVENT_ENTER_TOURIAN_DEMO_PLAYED);
+                }
+                else
+#endif // RANDOMIZER
+                {
+                    gCurrentCutscene = CUTSCENE_ENTER_TOURIAN;
+    
+                    ColorFadingStart(COLOR_FADING_CANCEL);
+                    SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
+                    FadeMusic(CONVERT_SECONDS(1.f / 6));
+                }
             }
             break;
 

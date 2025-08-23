@@ -1,6 +1,7 @@
 #include "room_music.h"
 
 #include "data/cutscenes/cutscenes_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/connection.h"
@@ -52,8 +53,13 @@ void CheckPlayRoomMusicTrack(Area area, u8 room)
     {
         if (gCurrentCutscene == CUTSCENE_NONE || sCutsceneData[gCurrentCutscene].playRoomMusic)
         {
-            CheckSetNewMusicTrack(gMusicTrackInfo.currentRoomTrack);
-            gMusicTrackInfo.takingNormalTransition = TRUE;
+#ifdef RANDOMIZER
+            if (!(sRandoRemoveCutscenes && area == AREA_CHOZODIA && room == 0x2A))
+#endif // RANDOMIZER
+            {
+                CheckSetNewMusicTrack(gMusicTrackInfo.currentRoomTrack);
+                gMusicTrackInfo.takingNormalTransition = TRUE;
+            }
         }
     }
 
@@ -143,7 +149,16 @@ void UpdateMusicAfterPause(void)
             break;
 
         case PAUSE_SCREEN_SUITLESS_ITEMS:
-            PlayMusic(MUSIC_CHOZO_RUINS, 16);
+#ifdef RANDOMIZER
+            if (sRandoSkipSuitlessSequence)
+            {
+                PlayMusic(MUSIC_SAVE_ELEVATOR_ROOM, 16);
+            }
+            else
+#endif // RANDOMIZER
+            {
+                PlayMusic(MUSIC_CHOZO_RUINS, 16);
+            }
             break;
 
         case PAUSE_SCREEN_FULLY_POWERED_SUIT_ITEMS:

@@ -1,8 +1,10 @@
 #include "sprites_AI/gunship.h"
 #include "gba.h"
 #include "sprites_AI/message_banner.h"
+#include "menus/status_screen.h"
 
 #include "data/sprites/gunship.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/color_fading.h"
@@ -795,7 +797,38 @@ static void GunshipFlying(void)
     {
         if (gCurrentSprite.work0 == CONVERT_SECONDS(5.f / 6))
         {
-            StartEffectForCutscene(EFFECT_CUTSCENE_EXITING_ZEBES);
+#ifdef RANDOMIZER
+            if (sRandoRemoveCutscenes)
+            {
+                gCurrentArea = AREA_CHOZODIA;
+                if (sRandoSkipSuitlessSequence)
+                {
+                    gCurrentRoom = 0x28;
+                    gLastDoorUsed = 0x56;
+                    PlayMusic(MUSIC_SAVE_ELEVATOR_ROOM, 16);
+                }
+                else
+                {
+                    gCurrentRoom = 0;
+                    gLastDoorUsed = 0;
+                    PlayMusic(MUSIC_CHOZO_RUINS, 16);
+                }
+
+                // Copied from PauseScreenInit
+                UpdateSuitType(SUIT_SUITLESS);
+                gSamusData.pose = SPOSE_FACING_THE_FOREGROUND;
+                gSamusData.direction = KEY_LEFT;
+                gSamusData.currentAnimationFrame = 0;
+                gSamusData.lastWallTouchedMidAir = 0;
+
+                // TODO: Improve transition
+                gSubGameMode1 = 3;
+            }
+            else
+#endif // RANDOMIZER
+            {
+                StartEffectForCutscene(EFFECT_CUTSCENE_EXITING_ZEBES);
+            }
             gCurrentSprite.status |= SPRITE_STATUS_MOSAIC;
         }
 

@@ -9,6 +9,7 @@
 #include "data/menus/pause_screen_data.h"
 #include "data/shortcut_pointers.h"
 #include "data/block_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/connection.h"
@@ -104,8 +105,19 @@ u8 TourianEscapeSubroutine(void)
         {
             ColorFadingStart(COLOR_FADING_CANCEL);
             gCurrentArea = AREA_CHOZODIA;
-            gCurrentRoom = 0;
-            gLastDoorUsed = 0;
+#ifdef RANDOMIZER
+            if (sRandoSkipSuitlessSequence)
+            {
+                // Put Samus in save room before Ruins Test
+                gCurrentRoom = 0x28;
+                gLastDoorUsed = 0x56;
+            }
+            else
+#endif // RANDOMIZER
+            {
+                gCurrentRoom = 0;
+                gLastDoorUsed = 0;
+            }
             gCurrentCutscene = CUTSCENE_COULD_I_SURVIVE;
             gSubGameMode2 = 10;
         }

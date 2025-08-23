@@ -9,13 +9,13 @@
 
 ## Options
 - Disable chozo hints?
-- Remove cutscenes
+- ~~Remove cutscenes~~
 - ~~Skip door transitions~~
-- Skip suitless sequence
+- ~~Skip suitless sequence~~
 - Obtain unknown items
 - ~~Use ball launchers without bombs~~
-- Disable wall jump
-- Disable infinite bomb jump
+- ~~Disable wall jump~~
+- ~~Disable infinite bomb jump~~
 
 # Items
 

@@ -4,6 +4,7 @@
 
 #include "data/sprites/ridley.h"
 #include "data/sprite_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/color_fading.h"
@@ -773,7 +774,16 @@ static void RidleyCheckPlayCutscene(void)
             // Timer
             gCurrentSprite.scaling = CONVERT_SECONDS(5.f);
 
-            StartEffectForCutscene(EFFECT_CUTSCENE_RIDLEY_SPAWN);
+#ifdef RANDOMIZER
+            if (sRandoRemoveCutscenes)
+            {
+                PlayMusic(MUSIC_RIDLEY_BATTLE, 0);
+            }
+            else
+#endif // RANDOIMZER
+            {
+                StartEffectForCutscene(EFFECT_CUTSCENE_RIDLEY_SPAWN);
+            }
         }
     }
 }
@@ -1922,9 +1932,18 @@ static void RidleyDying(void)
                 APPLY_DELTA_TIME_DEC(gCurrentSprite.work2);
 
             if (gCurrentSprite.work2 == DELTA_TIME)
-                StartEffectForCutscene(EFFECT_CUTSCENE_STATUE_OPENING);
+            {
+#ifdef RANDOMIZER
+                if (!sRandoRemoveCutscenes)
+#endif // RANDOMIZER
+                {
+                    StartEffectForCutscene(EFFECT_CUTSCENE_STATUE_OPENING);
+                }
+            }
             else if (gCurrentSprite.work2 == 0)
+            {
                 FadeMusic(CONVERT_SECONDS(2.5f));
+            }
         }
     }
 

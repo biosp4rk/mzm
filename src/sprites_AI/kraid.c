@@ -4,6 +4,7 @@
 
 #include "data/sprites/kraid.h"
 #include "data/sprite_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/color_fading.h"
@@ -1206,6 +1207,11 @@ static void KraidInit(void)
     u8 ramSlot;
     u8 partSlot;
 
+#ifdef RANDOMIZER
+    if (sRandoRemoveCutscenes)
+        PlayMusic(MUSIC_KRAID_BATTLE_WITH_INTRO, 0);
+#endif // RANDOMIZER
+
     LOCK_DOORS();
     gCurrentSprite.yPosition -= HALF_BLOCK_SIZE + EIGHTH_BLOCK_SIZE;
     gCurrentSprite.xPosition -= HALF_BLOCK_SIZE;
@@ -1691,10 +1697,20 @@ static void KraidDying(void)
     if (gCurrentSprite.work2 != 0)
     {
         APPLY_DELTA_TIME_DEC(gCurrentSprite.work2);
+
         if (gCurrentSprite.work2 == DELTA_TIME)
-            StartEffectForCutscene(EFFECT_CUTSCENE_STATUE_OPENING);
+        {
+#ifdef RANDOMIZER
+            if (!sRandoRemoveCutscenes)
+#endif // RANDOMIZER
+            {
+                StartEffectForCutscene(EFFECT_CUTSCENE_STATUE_OPENING);
+            }
+        }
         else if (gCurrentSprite.work2 == 0)
+        {
             SoundPlay(SOUND_KRAID_DYING_3);
+        }
     }
 
     // Play effects

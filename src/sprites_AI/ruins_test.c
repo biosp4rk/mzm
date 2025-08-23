@@ -1,10 +1,12 @@
 #include "sprites_AI/ruins_test.h"
 #include "gba.h"
 #include "macros.h"
+#include "projectile_util.h"
 
 #include "data/sprites/ruins_test.h"
 #include "data/sprite_data.h"
 #include "data/generic_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/color_fading.h"
@@ -18,6 +20,7 @@
 #include "constants/projectile.h"
 #include "constants/sprite_util.h"
 #include "constants/text.h"
+#include "constants/menus/pause_screen.h"
 
 #include "structs/clipdata.h"
 #include "structs/game_state.h"
@@ -25,6 +28,8 @@
 #include "structs/samus.h"
 #include "structs/sprite.h"
 #include "structs/projectile.h"
+#include "structs/in_game_cutscene.h"
+#include "structs/text.h"
 
 #define RUINS_TEST_POSE_SPAWNING 0x1
 #define RUINS_TEST_POSE_TURNING_INTO_REFLECTION 0x2
@@ -1131,8 +1136,43 @@ static void RuinsTestDespawn(void)
         EventFunction(EVENT_ACTION_SETTING, EVENT_FULLY_POWERED_SUIT_OBTAINED);
         gInGameTimerAtBosses[2] = gInGameTimer;
 
-        // Start getting fully powered cutscene
-        StartEffectForCutscene(EFFECT_CUTSCENE_GETTING_FULLY_POWERED);
+#ifdef RANDOMIZER
+        if (sRandoRemoveCutscenes)
+        {
+            gEquipment.suitType = SUIT_FULLY_POWERED;
+            // Set ammo full
+            gEquipment.currentEnergy = gEquipment.maxEnergy;
+            gEquipment.currentMissiles = gEquipment.maxMissiles;
+            gEquipment.currentSuperMissiles = gEquipment.maxSuperMissiles;
+            gEquipment.currentPowerBombs = gEquipment.maxPowerBombs;
+            // Activate items
+            gEquipment.beamBombsActivation = gEquipment.beamBombs;
+            gEquipment.suitMiscActivation = gEquipment.suitMisc;
+
+            // Copied from RoomLoad
+            SamusSetPose(SPOSE_FACING_THE_FOREGROUND);
+            gSamusData.xPosition = BLOCK_SIZE * 24 + HALF_BLOCK_SIZE;
+            gSamusData.yPosition = BLOCK_SIZE * 31 - ONE_SUB_PIXEL;
+
+            gInGameCutscene.stage = 0;
+            gInGameCutscene.queuedCutscene = IGC_GETTING_FULLY_POWERED;
+            InGameCutsceneStart(IGC_GETTING_FULLY_POWERED);
+
+            gDisablePause = TRUE;
+            gSamusData.lastWallTouchedMidAir = TRUE;
+            gCurrentItemBeingAcquired = ITEM_ACQUISITION_GRAVITY;
+            gSamusWeaponInfo.chargeCounter = 0;
+
+            // Extra fixes
+            ProjectileLoadGraphics();
+            gSubSpriteData1.work3 = RUINS_TEST_FIGHT_STAGE_STARTING_CUTSCENE;
+        }
+        else
+#endif // RANDOMIZER
+        {
+            // Start getting fully powered cutscene
+            StartEffectForCutscene(EFFECT_CUTSCENE_GETTING_FULLY_POWERED);
+        }
     }
 }
 
