@@ -5,7 +5,7 @@
 - Allow chozo hints in any area
 - ~~Option to force hard mode~~
 - ~~Enable item toggle~~
-- Map screen info?
+- ~~Map screen info~~
 
 ## Options
 - Disable chozo hints?

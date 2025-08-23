@@ -547,6 +547,7 @@ void PauseScreenDrawCompletionInfo(u8 dontDraw)
 
     cantDraw = FALSE;
 
+#ifndef RANDOMIZER
     #ifdef DEBUG
     if (!gDebugMode)
     #endif // DEBUG
@@ -555,6 +556,7 @@ void PauseScreenDrawCompletionInfo(u8 dontDraw)
         if (!gGameCompletion.completedGame)
             cantDraw = TRUE;
     }
+#endif // !RANDOMIZER
 
     // Draw if on map screen
     if (PAUSE_SCREEN_DATA.typeFlags & PAUSE_SCREEN_TYPE_ON_MAP_SCREEN)
@@ -569,15 +571,25 @@ void PauseScreenDrawCompletionInfo(u8 dontDraw)
     if (dontDraw)
         return;
 
+#ifdef RANDOMIZER
+    // Only draw in-game time
+    PauseScreenDrawIgtAndTanks(FALSE, FALSE);
+#else // !RANDOMIZER
     // Count tanks and prepare VRAM with IGT and tanks
     PauseScreenCountTanksInArea();
     PauseScreenDrawIgtAndTanks(FALSE, FALSE);
     PauseScreenDrawIgtAndTanks(FALSE, TRUE);
+#endif // RANDOMIZER
 
     priority = 3;
 
     // Setup oam data
+#ifdef RANDOMIZER
+    // Only draw in-game time
+    i = 0;
+#else // !RANDOMIZER
     for (i = 0; i < ARRAY_SIZE(sPauseScreenCompletionInfoOamData[0]); i++)
+#endif // RANDOMIZER
     {
         // Set oam id and priority
         PAUSE_SCREEN_DATA.miscOam[sPauseScreenCompletionInfoOamData[i][0]].oamID = sPauseScreenCompletionInfoOamData[i][1];

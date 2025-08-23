@@ -10,7 +10,7 @@ const boolu8 sRandoSkipDoorTransitions = FALSE;
 const boolu8 sRandoBallLauncherWithoutBombs = FALSE;
 const boolu8 sRandoDisableMidAirBombJump = FALSE;
 const boolu8 sRandoDisableWallJump = FALSE;
-const boolu8 sRandoRemoveCutscenes = TRUE;
-const boolu8 sRandoSkipSuitlessSequence = TRUE;
+const boolu8 sRandoRemoveCutscenes = FALSE;
+const boolu8 sRandoSkipSuitlessSequence = FALSE;
 
 #endif // RANDOMIZER
