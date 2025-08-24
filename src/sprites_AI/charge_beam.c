@@ -2,6 +2,7 @@
 #include "macros.h"
 
 #include "data/sprites/charge_beam.h"
+#include "data/sprites/power_grip.h"
 
 #include "constants/sprite.h"
 #include "constants/event.h"
@@ -70,8 +71,11 @@ static void ChargeBeamSpawnGlow(void)
     {
         gCurrentSprite.pose = CHARGE_BEAM_POSE_IDLE_INIT;
 
+// Not enough room in VRAM for the glow with items other than charge beam
+#ifndef RANDOMIZER
         gCurrentSprite.CHARGE_BEAM_SPRITE_SLOT = SpriteSpawnSecondary(SSPRITE_CHARGE_BEAM_GLOW, 0, gCurrentSprite.spritesetGfxSlot,
             gCurrentSprite.primarySpriteRamSlot, gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
+#endif // !RANDOMIZER
     }
 }
 
@@ -84,7 +88,13 @@ static void ChargeBeamVisibleInit(void)
     gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
     gCurrentSprite.pose = CHARGE_BEAM_POSE_IDLE;
 
+#ifdef RANDOMIZER
+    // Charge beam's vanilla graphics can't fit other items, so use power grip's OAM
+    // since all 3 16x16 frames are on the left side
+    gCurrentSprite.pOam = sPowerGripOAM_Idle;
+#else // !RANDOMIZER
     gCurrentSprite.pOam = sChargeBeamOam_Visible;
+#endif // RANDOMIZER
     gCurrentSprite.animationDurationCounter = 0;
     gCurrentSprite.currentAnimationFrame = 0;
 
@@ -117,9 +127,12 @@ static void ChargeBeamIdle(void)
 
     if (gCurrentSprite.status & SPRITE_STATUS_SAMUS_COLLIDING)
     {
+// Not enough room in VRAM for the glow with items other than charge beam
+#ifndef RANDOMIZER
         offset = gCurrentSprite.CHARGE_BEAM_SPRITE_SLOT;
         if (offset < MAX_AMOUNT_OF_SPRITES)
             gSpriteData[offset].status = 0; // Kill glow
+#endif // !RANDOMIZER
 
         gPreventMovementTimer = SAMUS_ITEM_PMT;
         gCurrentSprite.properties |= SP_ALWAYS_ACTIVE;

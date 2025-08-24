@@ -1,8 +1,8 @@
 ## Tweaks
 
 - ~~Disable Varia animation~~
-- Fix charge beam OAM (only when charge beam is replaced with something else)
-- Allow chozo hints in any area
+- ~~Fix charge beam OAM~~
+- ~~Allow chozo hints in any area~~
 - ~~Option to force hard mode~~
 - ~~Enable item toggle~~
 - ~~Map screen info~~
