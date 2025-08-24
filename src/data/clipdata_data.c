@@ -136,6 +136,18 @@ const struct ElevatorPair sElevatorRoomPairs[ELEVATOR_ROUTE_COUNT] = {
         .mapX2 = 18,
         .mapY2 = 2
     },
+#ifdef RANDOMIZER
+    [ELEVATOR_ROUTE_CRATERIA_TO_CHOZODIA] = {
+        .area1 = AREA_CRATERIA,
+        .room1 = 0xA,
+        .mapX1 = 23,
+        .mapY1 = 3,
+        .area2 = AREA_CHOZODIA,
+        .room2 = 0x22,
+        .mapX2 = 3,
+        .mapY2 = 17
+    },
+#endif // RANDOMIZER
 };
 
 const u8 sScroll_Empty[11] = {

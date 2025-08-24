@@ -1,10 +1,17 @@
+#include "data/menus/pause_screen_sub_menus_data.h"
 #include "data/randomizer_data.h"
+#include "data/rooms_data.h"
 #include "data/sprite_data.h"
 
 #include "constants/sprite.h"
 
 #ifdef RANDOMIZER
 
+// Data
+static const struct TilesetEntry* sTilesetEntries_Pointer = sTilesetEntries;
+static const struct ChozoStatueTarget* sChozoStatueTargets_Pointer = sChozoStatueTargets;
+
+// Options
 static const u8* sRandoDifficultyOptions_Pointer = &sRandoDifficultyOptions;
 static const u16* sRandoMetroidSpriteStats_Pointer = sPrimarySpriteStats[PSPRITE_METROID];
 static const boolu8* sRandoBlackPiratesRequirePlasma_Pointer = &sRandoBlackPiratesRequirePlasma;

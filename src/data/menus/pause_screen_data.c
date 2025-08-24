@@ -2791,7 +2791,11 @@ const u32 sTankIconsGfx[1786] = INCBIN_U32("data/menus/PauseScreen/TankIcons.gfx
 
 const u32 sMapScreenAreaNamesEnglishGfx[216] = INCBIN_U32("data/menus/PauseScreen/MapScreenAreaNamesEnglish.gfx.lz");
 const u32 sMapScreenUnknownItemsNamesJapaneseGfx[65] = INCBIN_U32("data/menus/PauseScreen/MapScreenUnknownItemsNamesJapanese.gfx.lz");
+#ifdef RANDOMIZER
+const u32 sMapScreenChozoStatueAreaNamesEnglishGfx[247] = INCBIN_U32("data_rando/MapScreenChozoStatueAreaNamesEnglish.gfx.lz");
+#else // !RANDOMIZER
 const u32 sMapScreenChozoStatueAreaNamesEnglishGfx[152] = INCBIN_U32("data/menus/PauseScreen/MapScreenChozoStatueAreaNamesEnglish.gfx.lz");
+#endif // RANDOMIZER
 
 const u32 sChozoHintBackgroundGfx[3618] = INCBIN_U32("data/menus/PauseScreen/ChozoHintBackground.gfx.lz");
 

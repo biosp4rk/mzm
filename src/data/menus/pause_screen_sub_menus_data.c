@@ -285,34 +285,76 @@ const Event sChozoStatueHintEvents[TARGET_END] = {
     [15] = UCHAR_MAX
 };
 
+#ifdef RANDOMIZER
+const s8 sChozoStatueTargetPathBrinstar[21][2] = {
+#else // !RANDOMIZER
 const s8 sChozoStatueTargetPathBrinstar[9][2] = {
-    [0] = {
+#endif // RANDOMIZER
+    [0] = { // Brinstar/Brinstar 1
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [1] = {
+    [1] = { // Brinstar/Brinstar 2
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [2] = {
+    [2] = { // Brinstar/Brinstar 3
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [3] = {
+    [3] = { // Brinstar/Kraid 1
         ELEVATOR_ROUTE_BRINSTAR_TO_KRAID, 0x40
     },
-    [4] = {
+    [4] = { // Brinstar/Kraid 2
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [5] = {
+    [5] = { // Brinstar/Kraid 3
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [6] = {
+    [6] = { // Brinstar/Norfair 1
         ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, 0x40
     },
-    [7] = {
+    [7] = { // Brinstar/Norfair 2
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [8] = {
+    [8] = { // Brinstar/Norfair 3
         ELEVATOR_ROUTE_NONE, 0x40
     },
+#ifdef RANDOMIZER
+    [9] = { // Brinstar/Ridley 1
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, 0x40
+    },
+    [10] = { // Brinstar/Ridley 2
+        ELEVATOR_ROUTE_NORFAIR_TO_RIDLEY, 0x40
+    },
+    [11] = { // Brinstar/Ridley 3
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [12] = { // Brinstar/Tourian 1
+        ELEVATOR_ROUTE_BRINSTAR_TO_TOURIAN, 0x40
+    },
+    [13] = { // Brinstar/Tourian 2
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [14] = { // Brinstar/Tourian 3
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [15] = { // Brinstar/Crateria 1
+        ELEVATOR_ROUTE_CRATERIA_TO_BRINSTAR, -0x40
+    },
+    [16] = { // Brinstar/Crateria 2
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [17] = { // Brinstar/Crateria 3
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [18] = { // Brinstar/Chozodia 1
+        ELEVATOR_ROUTE_CRATERIA_TO_BRINSTAR, -0x40
+    },
+    [19] = { // Brinstar/Chozodia 2
+        ELEVATOR_ROUTE_CRATERIA_TO_CHOZODIA, -0x40
+    },
+    [20] = { // Brinstar/Chozodia 3
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+#endif // RANDOMIZER
 };
 
 const s8 sChozoStatueTargetPathKraid[9][2] = {
@@ -345,34 +387,76 @@ const s8 sChozoStatueTargetPathKraid[9][2] = {
     },
 };
 
+#ifdef RANDOMIZER
+const s8 sChozoStatueTargetPathNorfair[21][2] = {
+#else // !RANDOMIZER
 const s8 sChozoStatueTargetPathNorfair[9][2] = {
-    [0] = {
+#endif // RANDOMIZER
+    [0] = { // Norfair/Brinstar 1
         ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, -0x40
     },
-    [1] = {
+    [1] = { // Norfair/Brinstar 2
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [2] = {
+    [2] = { // Norfair/Brinstar 3
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [3] = {
+    [3] = { // Norfair/Kraid 1
         ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, -0x40
     },
-    [4] = {
+    [4] = { // Norfair/Kraid 2
         ELEVATOR_ROUTE_BRINSTAR_TO_KRAID, 0x40
     },
-    [5] = {
+    [5] = { // Norfair/Kraid 3
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [6] = {
+    [6] = { // Norfair/Norfair 1
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [7] = {
+    [7] = { // Norfair/Norfair 2
         ELEVATOR_ROUTE_NONE, 0x40
     },
-    [8] = {
+    [8] = { // Norfair/Norfair 3
         ELEVATOR_ROUTE_NONE, 0x40
     },
+#ifdef RANDOMIZER
+    [9] = { // Norfair/Ridley 1
+        ELEVATOR_ROUTE_NORFAIR_TO_RIDLEY, 0x40
+    },
+    [10] = { // Norfair/Ridley 2
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [11] = { // Norfair/Ridley 3
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [12] = { // Norfair/Tourian 1
+        ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR, -0x40
+    },
+    [13] = { // Norfair/Tourian 2
+        ELEVATOR_ROUTE_BRINSTAR_TO_TOURIAN, 0x40
+    },
+    [14] = { // Norfair/Tourian 3
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [15] = { // Norfair/Crateria 1
+        ELEVATOR_ROUTE_CRATERIA_TO_NORFAIR, -0x40
+    },
+    [16] = { // Norfair/Crateria 2
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [17] = { // Norfair/Crateria 3
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+    [18] = { // Norfair/Chozodia 1
+        ELEVATOR_ROUTE_CRATERIA_TO_NORFAIR, -0x40
+    },
+    [19] = { // Norfair/Chozodia 2
+        ELEVATOR_ROUTE_CRATERIA_TO_CHOZODIA, -0x40
+    },
+    [20] = { // Norfair/Chozodia 3
+        ELEVATOR_ROUTE_NONE, 0x40
+    },
+#endif // RANDOMIZER
 };
 
 const s8 sChozoStatueTargetPathRidley[9][2] = {

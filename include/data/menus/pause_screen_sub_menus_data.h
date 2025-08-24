@@ -13,9 +13,17 @@ extern const struct ChozoStatueTarget sChozoStatueTargets[TARGET_END];
 extern const u8 sChozoStatueTargetConditions[TARGET_END][2];
 extern const Event sChozoStatueHintEvents[TARGET_END];
 
+#ifdef RANDOMIZER
+extern const s8 sChozoStatueTargetPathBrinstar[21][2];
+#else // !RANDOMIZER
 extern const s8 sChozoStatueTargetPathBrinstar[9][2];
+#endif // RANDOMIZER
 extern const s8 sChozoStatueTargetPathKraid[9][2];
+#ifdef RANDOMIZER
+extern const s8 sChozoStatueTargetPathNorfair[21][2];
+#else // !RANDOMIZER
 extern const s8 sChozoStatueTargetPathNorfair[9][2];
+#endif // RANDOMIZER
 extern const s8 sChozoStatueTargetPathRidley[9][2];
 extern const s8 sChozoStatueTargetPathCrateria[9][2];
 

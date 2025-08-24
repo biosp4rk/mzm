@@ -33,7 +33,11 @@ extern const u32 sTankIconsGfx[1786];
 
 extern const u32 sMapScreenAreaNamesEnglishGfx[216];
 extern const u32 sMapScreenUnknownItemsNamesJapaneseGfx[65];
+#ifdef RANDOMIZER
+extern const u32 sMapScreenChozoStatueAreaNamesEnglishGfx[247];
+#else // !RANDOMIZER
 extern const u32 sMapScreenChozoStatueAreaNamesEnglishGfx[152];
+#endif // RANDOMIZER
 
 extern const u32 sChozoHintBackgroundGfx[3618];
 
