@@ -13,4 +13,7 @@ const boolu8 sRandoDisableWallJump = FALSE;
 const boolu8 sRandoRemoveCutscenes = FALSE;
 const boolu8 sRandoSkipSuitlessSequence = FALSE;
 
+const u8 sRandoTitleLine1[31] = "RANDOMIZER LINE 1";
+const u8 sRandoTitleLine2[31] = "RANDOMIZER LINE 2";
+
 #endif // RANDOMIZER

@@ -10,6 +10,7 @@
 #include "data/menus/pause_screen_data.h"
 #include "data/text_data.h"
 #include "data/menus/game_over_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/menus/title_screen.h"
 #include "constants/audio.h"
@@ -1334,10 +1335,19 @@ void TitleScreenInit(void)
     TitleScreenSetBGCNTPageData(&sTitleScreenPageData[0]);
     TitleScreenSetBGCNTPageData(&sTitleScreenPageData[1]);
 
+#ifdef RANDOMIZER
+    DmaTransfer(3, sCharactersGfx, VRAM_BASE + 0xF800, 0x800, 16);
+    DmaTransfer(3, sGameOverMenuPal + 1 * PAL_ROW_SIZE, PALRAM_BASE + 15 * PAL_ROW_SIZE, 1 * PAL_ROW_SIZE, 16);
+    TitleScreenDrawString(sRandoTitleLine1,
+        VRAM_BASE + sTitleScreenPageData[0].tiletablePage * 0x800, 15);
+    TitleScreenDrawString(sRandoTitleLine2,
+        VRAM_BASE + 0x40 + sTitleScreenPageData[0].tiletablePage * 0x800, 15);
+#else // !RANDOMIZER
     #ifdef DEBUG
     if (sRomInfoStringPointers[0][0] != '\0')
         TitleScreenDrawDebugText();
     #endif // DEBUG
+#endif // RANDOMIZER
 
     gSubGameMode3 = 0;
     gBg0HOFS_NonGameplay = gBg0VOFS_NonGameplay = 0;

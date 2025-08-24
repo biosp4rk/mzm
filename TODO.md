@@ -24,5 +24,5 @@ TODO
 ## Other
 
 - Draw hash on file select
-- Title screen version info
+- ~~Title screen version info~~
 - Add pointers to all palettes that can be randomized

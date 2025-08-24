@@ -22,4 +22,7 @@ static const boolu8* sRandoDisableWallJump_Pointer = &sRandoDisableWallJump;
 static const boolu8* sRandoRemoveCutscenes_Pointer = &sRandoRemoveCutscenes;
 static const boolu8* sRandoSkipSuitlessSequence_Pointer = &sRandoSkipSuitlessSequence;
 
+static const u8* sRandoTitleLine1_Pointer = sRandoTitleLine1;
+static const u8* sRandoTitleLine2_Pointer = sRandoTitleLine2;
+
 #endif // RANDOMIZER
