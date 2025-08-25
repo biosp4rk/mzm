@@ -29,17 +29,19 @@
   - `RuinsTestDespawn` in [ruins_test.c](src\sprites_AI\ruins_test.c)
 - Fix space pirate alarm music
   - `DisableChozodiaAlarm` and `DecrementChozodiaAlarm` in [space_pirate.c](src/sprites_AI/space_pirate.c)
+- Fix space pirate power bomb OAM (flip horizontally)
+  - `sSpacePirateCarryingPowerBombOam_Frame*` in [space_pirate.c](src/data/sprites/space_pirate.c)
 
 ## Room Changes
+- Remove vines in Norfair and near varia
+  - `sNorfair_4_Spriteset0`, `sNorfair_4_Spriteset1`, and `sNorfair_4_Spriteset2` in [Norfair_4.c](src/data/rooms/norfair/Norfair_4.c)
+  - `sBrinstar_28_Spriteset1` and `sBrinstar_28_Spriteset2` in [Brinstar_28.c](src/data/rooms/brinstar/Brinstar_28.c)
 
 ## QoL
 - Enable toggling items on status screen
   - `StatusScreenToggleItem` in [status_screen.c](src/menus/status_screen.c)
 - Always show in-game timer on pause screen (but don't show items)
   - `PauseScreenDrawCompletionInfo` in [pause_screen.c](src/menus/pause_screen.c)
-- Remove vines in Norfair and near varia
-  - `sNorfair_4_Spriteset0`, `sNorfair_4_Spriteset1`, and `sNorfair_4_Spriteset2` in [Norfair_4.c](src/data/rooms/norfair/Norfair_4.c)
-  - `sBrinstar_28_Spriteset1` and `sBrinstar_28_Spriteset2` in [Brinstar_28.c](src/data/rooms/brinstar/Brinstar_28.c)
 
 ## Options
 - Allow black space pirates to be hit by any beam
