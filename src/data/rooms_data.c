@@ -5769,7 +5769,12 @@ const struct Door sCrateriaDoors[53] = {
 		.xEnd = 61,
 		.yStart = 7,
 		.yEnd = 10,
+#ifdef RANDOMIZER
+		// Change destination of Crateria 0x15 top right door to Crateria 0
+		.destinationDoor = 3,
+#else // !RANDOMIZER
 		.destinationDoor = 42,
+#endif // RANDOMIZER
 		.xExit = -32,
 		.yExit = 0
 	},

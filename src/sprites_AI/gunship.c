@@ -2,6 +2,7 @@
 #include "gba.h"
 #include "sprites_AI/message_banner.h"
 #include "menus/status_screen.h"
+#include "escape.h"
 
 #include "data/sprites/gunship.h"
 #include "data/randomizer_data.h"
@@ -13,6 +14,7 @@
 #include "constants/event.h"
 #include "constants/samus.h"
 #include "constants/text.h"
+#include "constants/escape.h"
 
 #include "structs/connection.h"
 #include "structs/display.h"
@@ -282,6 +284,15 @@ static void GunshipInit(void)
             gCurrentSprite.pose = GUNSHIP_POSE_IDLE;
 
         gCurrentSprite.drawOrder = 12;
+
+#ifdef RANDOMIZER
+        if (EscapeDetermineTimer() == ESCAPE_MOTHER_BRAIN)
+        {
+            // Lock hatches 0 and 2
+            gHatchesState.hatchesLockedWithEvent = (1 << 0) | (1 << 2);
+            ConnectionLockHatches(TRUE);
+        }
+#endif // RANDOMIZER
     }
 }
 

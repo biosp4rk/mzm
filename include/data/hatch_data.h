@@ -13,7 +13,11 @@ extern const struct HatchLockEvent sHatchLockEventsBrinstar[1];
 
 extern const struct HatchLockEvent sHatchLockEventsKraid[1];
 
+#ifdef RANDOMIZER
+extern const struct HatchLockEvent sHatchLockEventsCrateria[1];
+#else // !RANDOMIZER
 extern const struct HatchLockEvent sHatchLockEventsCrateria[2];
+#endif // RANDOMIZER
 
 extern const struct HatchLockEvent sHatchLockEventsChozodia[15];
 

@@ -40,9 +40,13 @@
 - Remove vines in Norfair and near varia
   - `sNorfair_4_Spriteset0`, `sNorfair_4_Spriteset1`, and `sNorfair_4_Spriteset2` in [Norfair_4.c](src/data/rooms/norfair/Norfair_4.c)
   - `sBrinstar_28_Spriteset1` and `sBrinstar_28_Spriteset2` in [Brinstar_28.c](src/data/rooms/brinstar/Brinstar_28.c)
-- Use Crateria room 0 instead of room 5
+- Use Crateria room 0 instead of room 5 (landing site)
   - `sCrateriaRoomEntries` and `sCrateriaDoors` in [rooms_data.c](src/data/rooms_data.c)
-  - `sNumberOfHatchLockEventsPerArea` in [hatch_data.c](src/data/hatch_data.c)
+  - `sHatchLockEventsCrateria` in [hatch_data.c](src/data/hatch_data.c)
+  - `GunshipInit` in [gunship.c](src/sprites_AI/gunship.c)
+- Fix Crateria rooms 1 and 0x15 (large room left of landing site)
+  - `sHatchLockEventsCrateria` in [hatch_data.c](src/data/hatch_data.c)
+  - `sCrateriaDoors` in [rooms_data.c](src/data/rooms_data.c)
 
 ## QoL
 - Enable toggling items on status screen

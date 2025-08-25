@@ -64,6 +64,32 @@ const struct HatchLockEvent sHatchLockEventsKraid[1] = {
     }
 };
 
+#ifdef RANDOMIZER
+const struct HatchLockEvent sHatchLockEventsCrateria[1] = {
+    {
+        // Prevent reaching Mother Brain from Crateria
+        .room = 0x15,
+        .event = EVENT_MOTHER_BRAIN_KILLED,
+        .type = HATCH_LOCK_EVENT_TYPE_BEFORE,
+        .hatchesToLock_0 = FALSE,
+        .hatchesToLock_1 = FALSE,
+        .hatchesToLock_2 = TRUE,
+        .hatchesToLock_3 = FALSE,
+        .hatchesToLock_4 = FALSE,
+        .hatchesToLock_5 = FALSE,
+        .hatchesToLock_6 = FALSE,
+        .hatchesToLock_7 = FALSE,
+        .hatchesToLock_8 = FALSE,
+        .hatchesToLock_9 = FALSE,
+        .hatchesToLock_10 = FALSE,
+        .hatchesToLock_11 = FALSE,
+        .hatchesToLock_12 = FALSE,
+        .hatchesToLock_13 = FALSE,
+        .hatchesToLock_14 = FALSE,
+        .hatchesToLock_15 = FALSE
+    }
+};
+#else // !RANDOMIZER
 const struct HatchLockEvent sHatchLockEventsCrateria[2] = {
     {
         .room = 0,
@@ -108,6 +134,7 @@ const struct HatchLockEvent sHatchLockEventsCrateria[2] = {
         .hatchesToLock_15 = FALSE
     }
 };
+#endif // RANDOMIZER
 
 const struct HatchLockEvent sHatchLockEventsChozodia[15] = {
     {
@@ -835,12 +862,7 @@ const u16 sNumberOfHatchLockEventsPerArea[MAX_AMOUNT_OF_AREAS] = {
     [AREA_NORFAIR] = 0,
     [AREA_RIDLEY] = 0,
     [AREA_TOURIAN] = 0,
-#ifdef RANDOMIZER
-    // Remove hatch lock events in Crateria
-    [AREA_CRATERIA] = 0,
-#else // !RANDOMIZER
     [AREA_CRATERIA] = ARRAY_SIZE(sHatchLockEventsCrateria),
-#endif // RANDOMIZER
     [AREA_CHOZODIA] = ARRAY_SIZE(sHatchLockEventsChozodia),
     [AREA_TEST] = 0
 };
