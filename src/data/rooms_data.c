@@ -5780,12 +5780,22 @@ const struct Door sCrateriaDoors[53] = {
 		.xEnd = 2,
 		.yStart = 67,
 		.yEnd = 70,
+#ifdef RANDOMIZER
+		// Change destination of Crateria 0 left door to post-exploded room
+		.destinationDoor = 2,
+#else // !RANDOMIZER
 		.destinationDoor = 5,
+#endif // RANDOMIZER
 		.xExit = 32,
 		.yExit = 0
 	},
 	{
+#ifdef RANDOMIZER
+		// Remove event based connection at top right of Crateria 0
+		.type = DOOR_TYPE_CLOSED_HATCH | DOOR_TYPE_EXISTS | DOOR_TYPE_DISPLAYS_ROOM_LOCATION,
+#else // !RANDOMIZER
 		.type = DOOR_TYPE_CLOSED_HATCH | DOOR_TYPE_LOAD_EVENT_BASED_ROOM | DOOR_TYPE_DISPLAYS_ROOM_LOCATION,
+#endif // RANDOMIZER
 		.sourceRoom = 15,
 		.xStart = 2,
 		.xEnd = 2,
@@ -6038,7 +6048,12 @@ const struct Door sCrateriaDoors[53] = {
 		.yExit = 0
 	},
 	{
+#ifdef RANDOMIZER
+		// Remove event based connection at bottom right of Crateria 0
+		.type = DOOR_TYPE_CLOSED_HATCH | DOOR_TYPE_EXISTS,
+#else // !RANDOMIZER
 		.type = DOOR_TYPE_CLOSED_HATCH | DOOR_TYPE_LOAD_EVENT_BASED_ROOM,
+#endif // RANDOMIZER
 		.sourceRoom = 11,
 		.xStart = 2,
 		.xEnd = 2,
@@ -14594,13 +14609,23 @@ const struct RoomEntryRom sCrateriaRoomEntries[22] = {
 		.pBg0Data = sCrateria_0_Bg0,
 		.pBg1Data = sCrateria_0_Bg1,
 		.pBg2Data = sCrateria_0_Bg2,
+#ifdef RANDOMIZER
+		// Use clipdata from Crateria 5 since it has a power bomb tank
+		.pClipData = sCrateria_5_Clipdata,
+#else // !RANDOMIZER
 		.pClipData = sCrateria_0_Clipdata,
+#endif // RANDOMIZER
 		.pBg3Data = sCrateria_Bg3_0,
 		.bg3Scrolling = 3,
 		.transparency = 44,
 		.pDefaultSpriteData = sCrateria_0_Spriteset0,
 		.defaultSpriteset = 31,
+#ifdef RANDOMIZER
+		// Add blank room sprite layout after Zebes escape
+		.firstSpritesetEvent = EVENT_ESCAPED_ZEBES,
+#else // !RANDOMIZER
 		.firstSpritesetEvent = EVENT_NONE,
+#endif // RANDOMIZER
 		.pFirstSpriteData = sEnemyRoomData_Empty,
 		.firstSpriteset = 0,
 		.secondSpritesetEvent = EVENT_NONE,

@@ -835,7 +835,12 @@ const u16 sNumberOfHatchLockEventsPerArea[MAX_AMOUNT_OF_AREAS] = {
     [AREA_NORFAIR] = 0,
     [AREA_RIDLEY] = 0,
     [AREA_TOURIAN] = 0,
+#ifdef RANDOMIZER
+    // Remove hatch lock events in Crateria
+    [AREA_CRATERIA] = 0,
+#else // !RANDOMIZER
     [AREA_CRATERIA] = ARRAY_SIZE(sHatchLockEventsCrateria),
+#endif // RANDOMIZER
     [AREA_CHOZODIA] = ARRAY_SIZE(sHatchLockEventsChozodia),
     [AREA_TEST] = 0
 };
