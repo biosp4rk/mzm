@@ -2382,6 +2382,124 @@ void StatusScreenSetMiscsVisibility(u16* pTilemap)
  */
 void StatusScreenSetBombsVisibility(u16* pTilemap)
 {
+#ifdef RANDOMIZER
+    s32 nbrToProcess;
+    u8 hasBombs;
+    u8 hasPbs;
+    s32 i;
+    s32 j;
+    u32 srcPosition;
+    u32 dstPosition;
+    s32 size;
+    u16* dup;
+
+    dup = pTilemap;
+
+    PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_NORMAL] = 0;
+    PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_POWER] = 0;
+
+    // Start at 1 to include the "BOMB" title
+    nbrToProcess = 1;
+    hasBombs = FALSE;
+    hasPbs = FALSE;
+
+    if (gEquipment.beamBombs & sStatusScreenFlagsOrderPointers[ABILITY_GROUP_BOMBS][0])
+    {
+        hasBombs = TRUE;
+        nbrToProcess = 2;
+        // Set bombs as "Collected"
+        PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_NORMAL] |= BOMB_ACTIVATION_COLLECTED;
+    }
+
+    if (gEquipment.maxPowerBombs != 0)
+    {
+        hasPbs = TRUE;
+        nbrToProcess = 3;
+        // Set power bombs as "Collected"
+        PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_POWER] |= BOMB_ACTIVATION_COLLECTED;
+    }
+
+    if (!hasBombs && !hasPbs)
+        return;
+
+    for (i = 0; i < nbrToProcess; i++)
+    {
+        dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].top + i) * HALF_BLOCK_SIZE +
+            sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].left;
+        
+        srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS].top + sPauseScreen_7603ea[i]) * HALF_BLOCK_SIZE;
+        srcPosition += sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS].left;
+
+        for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].left; j++)
+        {
+            pTilemap[dstPosition + j] = dup[srcPosition + j];
+        }
+
+        j = 0;
+        
+        if (i == 1)
+        {
+            if (hasBombs)
+            {
+                if (gEquipment.beamBombsActivation & sStatusScreenFlagsOrderPointers[ABILITY_GROUP_BOMBS][0])
+                    PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_NORMAL] |= BOMB_ACTIVATION_ACTIVATED;
+
+                PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_NORMAL] |= BOMB_ACTIVATION_HAS_AMMO_REMAINING;
+
+                j = PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_NORMAL];
+            }
+            else
+            {
+                // Pretend that bombs are collected but not activated, so they get drawn but grayed out
+                j = BOMB_ACTIVATION_COLLECTED;
+            }
+        }
+        else if (i == 2)
+        {
+            PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_POWER] |= BOMB_ACTIVATION_ACTIVATED;
+
+            if (gEquipment.currentPowerBombs != 0)
+                PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_POWER] |= BOMB_ACTIVATION_HAS_AMMO_REMAINING;
+
+            j = PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_POWER];
+        }
+
+        if (j == 0)
+            continue;
+
+        // Only draw as active if all 3 flags are set
+        j = j == (BOMB_ACTIVATION_HAS_AMMO_REMAINING | BOMB_ACTIVATION_ACTIVATED | BOMB_ACTIVATION_COLLECTED);
+
+        if (gPauseScreenFlag == PAUSE_SCREEN_ITEM_ACQUISITION && gCurrentItemBeingAcquired == ITEM_ACQUISITION_POWER_BOMB && i == 2)
+            j = FALSE;
+
+        StatusScreenUpdateRow(ABILITY_GROUP_BOMBS, i, j, FALSE);
+    }
+
+    dstPosition = (sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].top + nbrToProcess) * HALF_BLOCK_SIZE +
+        sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].left;
+    
+    if (nbrToProcess != 2)
+        nbrToProcess++;
+
+    srcPosition = (sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS].top + nbrToProcess) * HALF_BLOCK_SIZE +
+        sStatusScreenUnknownItemsPositions[ABILITY_GROUP_BOMBS].left;
+
+    for (j = 0; j <= sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].right - sStatusScreenGroupsPositions[ABILITY_GROUP_BOMBS].left; j++)
+    {
+        pTilemap[dstPosition + j] = dup[srcPosition + j];
+    }
+
+    if (PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot == STATUS_SLOT_0)
+    {
+        if (hasBombs)
+            PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot = STATUS_SLOT_BOMB;
+        else if (hasPbs)
+            PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot = STATUS_SLOT_POWER_BOMB;
+    }
+
+#else // !RANDOMIZER
+
     s32 nbrToProcess;
     s32 i;
     s32 j;
@@ -2485,6 +2603,7 @@ void StatusScreenSetBombsVisibility(u16* pTilemap)
 
     if (PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot == STATUS_SLOT_0)
         PAUSE_SCREEN_DATA.statusScreenData.currentStatusSlot = STATUS_SLOT_BOMB;
+#endif // RANDOMIZER
 }
 
 /**
@@ -3536,7 +3655,12 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
             break;
 
         case ABILITY_GROUP_BOMBS:
+// Don't check for morph ball
+#ifdef RANDOMIZER
+            if (statusSlot == STATUS_SLOT_BOMB)
+#else // !RANDOMIZER
             if (statusSlot == STATUS_SLOT_BOMB && gEquipment.suitMiscActivation & SMF_MORPH_BALL)
+#endif // RANDOMIZER
             {
 // Allow bombs to be toggled
 #ifndef RANDOMIZER
@@ -3616,6 +3740,8 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
                     if (!(flag & SMF_MORPH_BALL))
                         break;
 
+// Don't update bomb section when changing morph
+#ifndef RANDOMIZER
                     for (i = 0; i < ARRAY_SIZE(PAUSE_SCREEN_DATA.statusScreenData.bombActivation); i++)
                     {
                         if (!(PAUSE_SCREEN_DATA.statusScreenData.bombActivation[i] & BOMB_ACTIVATION_COLLECTED))
@@ -3630,6 +3756,7 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
                         
                         StatusScreenUpdateRow(ABILITY_GROUP_BOMBS, i + 1, subActivated, TRUE);
                     }
+#endif // !RANDOMIZER
                     break;
 
                 case ABILITY_GROUP_SUITS:
@@ -3637,6 +3764,7 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
                     break;
 
                 case ABILITY_GROUP_BOMBS:
+#ifndef RANDOMIZER
                     PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_NORMAL] &= (BOMB_ACTIVATION_MORPH_ACTIVATED | BOMB_ACTIVATION_HAS_AMMO_REMAINING | BOMB_ACTIVATION_COLLECTED);
                     PAUSE_SCREEN_DATA.statusScreenData.bombActivation[STATUS_SCREEN_BOMB_OFFSET_NORMAL] |= isActivated * 2;
 
@@ -3651,6 +3779,7 @@ u32 StatusScreenToggleItem(u8 statusSlot, u8 action)
                         subActivated = TRUE;
                     
                     StatusScreenUpdateRow(ABILITY_GROUP_BOMBS, 2, subActivated, TRUE);
+#endif // !RANDOMIZER
                     break;
             }
         }

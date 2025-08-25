@@ -19,7 +19,35 @@
 
 # Items
 
-TODO
+Original ASM:
+- anim_gfx
+- data
+  - anim_gfx_entries.bin
+  - anim_tileset_entries.bin
+  - clipdata_behavior_types.bin
+  - clipdata_behavior_types_400.bin
+  - clipdata_collision_types.bin
+  - clipdata_collision_types_400.bin
+  - crateria_11_bg1.rle
+  - crateria_11_clip.rle
+  - tank_collection_info.bin
+  - tile_table_400.bin
+  - tileset_entries.bin
+- unk_items
+- abilities.asm
+- assign_item.asm
+- clipdata_new.asm
+- items_new.asm
+- misc.asm
+- pointer_fixes.asm
+- random_items.asm
+- room_fixes.asm
+- tile_table_lengths.asm
+- tilesets_new.asm
+- touching_tank.asm
+
+## Room Fixes
+- Remove duplicate rooms near Ruins Test
 
 ## Other
 

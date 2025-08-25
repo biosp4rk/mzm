@@ -3331,6 +3331,16 @@ void SamusCheckNewProjectile(struct SamusData* pData, struct WeaponInfo* pWeapon
         case SPOSE_MORPH_BALL_MIDAIR:
         case SPOSE_MORPH_BALL_ON_ZIPLINE:
             // Check for bombs
+#if RANDOMIZER
+            if (gChangedInput & KEY_B && pWeapon->cooldown == 0)
+            {
+                // Check if power bombs selected
+                if (pWeapon->weaponHighlighted & WH_POWER_BOMB)
+                    pWeapon->newProjectile = PROJECTILE_CATEGORY_POWER_BOMB;
+                else if (pEquipment->beamBombsActivation & BBF_BOMBS)
+                    pWeapon->newProjectile = PROJECTILE_CATEGORY_BOMB;
+            }
+#else // !RANDOMIZER
             if (gChangedInput & KEY_B && pWeapon->cooldown == 0 && pEquipment->beamBombsActivation & BBF_BOMBS)
             {
                 // Check if power bombs selected
@@ -3339,6 +3349,7 @@ void SamusCheckNewProjectile(struct SamusData* pData, struct WeaponInfo* pWeapon
                 else
                     pWeapon->newProjectile = PROJECTILE_CATEGORY_BOMB;
             }
+#endif // RANDOMIZER
 
         case SPOSE_MORPHING:
             // Check fire charged shot in morph ball
