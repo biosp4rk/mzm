@@ -1,6 +1,8 @@
 ## Randomizer
 - Support showing text on title screen
   - `TitleScreenInit` in [title_screen.c](src\menus\title_screen.c)
+- Disable title screen demos (to avoid spoilers)
+  - `TitleScreenCheckPlayEffects` in [title_screen.c](src/menus/title_screen.c)
 
 ## Fixes
 - Allow laying power bombs without bombs
