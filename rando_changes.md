@@ -21,6 +21,8 @@
   - `ChargeBeamSpawnGlow`, `ChargeBeamVisibleInit`, and `ChargeBeamIdle` in [charge_beam.c](src/sprites_AI/charge_beam.c)
 - Unlock Imago door when it dies (instead of waiting to collect super missiles)
   - `ImagoSetEvent` in [imago.c](src/sprites_AI/imago.c)
+- Allow both escape timers to work in any order
+  - `EscapeDetermineTimer` in [escape.c](src/escape.c)
 
 ## Room Changes
 
