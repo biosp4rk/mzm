@@ -1,23 +1,7 @@
-## Tweaks
-
-- ~~Disable Varia animation~~
-- ~~Fix charge beam OAM~~
-- ~~Allow chozo hints in any area~~
-- ~~Option to force hard mode~~
-- ~~Enable item toggle~~
-- ~~Map screen info~~
-
-## Options
-- Disable chozo hints?
-- ~~Remove cutscenes~~
-- ~~Skip door transitions~~
-- ~~Skip suitless sequence~~
-- Obtain unknown items
-- ~~Use ball launchers without bombs~~
-- ~~Disable wall jump~~
-- ~~Disable infinite bomb jump~~
-
-# Items
+## Randomizer
+- ~~Title screen version info~~
+- Draw hash on file select
+- Add pointers to all palettes that can be randomized
 
 Original ASM:
 - anim_gfx
@@ -48,11 +32,26 @@ Original ASM:
 - tilesets_new.asm
 - touching_tank.asm
 
-## Room Fixes
+## Fixes
+- ~~Disable Varia animation~~
+- ~~Fix charge beam OAM~~
+- ~~Allow chozo hints in any area~~
+- Add event for Ruins Test defeated and fix checks for fully powered suit
+
+## Room Changes
 - Remove duplicate rooms near Ruins Test
 
-## Other
+## QoL
+- ~~Enable item toggle~~
+- ~~Map screen info~~
 
-- Draw hash on file select
-- ~~Title screen version info~~
-- Add pointers to all palettes that can be randomized
+## Options
+- Disable chozo hints?
+- ~~Remove cutscenes~~
+- ~~Skip door transitions~~
+- ~~Skip suitless sequence~~
+- Obtain unknown items
+- ~~Use ball launchers without bombs~~
+- ~~Disable wall jump~~
+- ~~Disable infinite bomb jump~~
+- ~~New file difficulty options~~

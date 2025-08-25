@@ -25,6 +25,8 @@
   - `EscapeDetermineTimer` in [escape.c](src/escape.c)
 - Allow glass tube to be broken any time
   - `GlassTubeCheckPowerBombCollision` in [glass_tube.c](src/sprites_AI/glass_tube.c)
+- Defeating Ruins Test sets Mother Brain killed event and Zebes escaped event
+  - `RuinsTestDespawn` in [ruins_test.c](src\sprites_AI\ruins_test.c)
 
 ## Room Changes
 

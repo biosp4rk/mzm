@@ -1137,6 +1137,9 @@ static void RuinsTestDespawn(void)
         gInGameTimerAtBosses[2] = gInGameTimer;
 
 #ifdef RANDOMIZER
+        EventFunction(EVENT_ACTION_SETTING, EVENT_MOTHER_BRAIN_KILLED);
+        EventFunction(EVENT_ACTION_SETTING, EVENT_ESCAPED_ZEBES);
+
         if (sRandoRemoveCutscenes)
         {
             gEquipment.suitType = SUIT_FULLY_POWERED;
