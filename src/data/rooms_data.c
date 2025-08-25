@@ -5965,13 +5965,21 @@ const struct Door sCrateriaDoors[53] = {
 		.yExit = 0
 	},
 	{
+#ifdef RANDOMIZER
+		.type = DOOR_TYPE_CLOSED_HATCH | DOOR_TYPE_EXISTS,
+#else // !RANDOMIZER
 		.type = DOOR_TYPE_CLOSED_HATCH | DOOR_TYPE_LOAD_EVENT_BASED_ROOM,
+#endif // RANDOMIZER
 		.sourceRoom = 9,
 		.xStart = 2,
 		.xEnd = 2,
 		.yStart = 17,
 		.yEnd = 20,
+#ifdef RANDOMIZER
+		.destinationDoor = 0x2F,
+#else // !RANDOMIZER
 		.destinationDoor = 15,
+#endif // RANDOMIZER
 		.xExit = 32,
 		.yExit = 0
 	},
@@ -6091,7 +6099,12 @@ const struct Door sCrateriaDoors[53] = {
 		.yExit = 0
 	},
 	{
+#ifdef RANDOMIZER
+		// Remove event connection when leaving power grip room
+		.type = DOOR_TYPE_NO_HATCH | DOOR_TYPE_EXISTS,
+#else // !RANDOMIZER
 		.type = DOOR_TYPE_NO_HATCH | DOOR_TYPE_LOAD_EVENT_BASED_ROOM,
+#endif // RANDOMIZER
 		.sourceRoom = 12,
 		.xStart = 16,
 		.xEnd = 16,
@@ -6191,7 +6204,12 @@ const struct Door sCrateriaDoors[53] = {
 	},
 	{
 		.type = DOOR_TYPE_NO_HATCH | DOOR_TYPE_EXISTS,
+#ifdef RANDOMIZER
+		// Move door to room 0x11
+		.sourceRoom = 0x11,
+#else // !RANDOMIZER
 		.sourceRoom = 8,
+#endif // RANDOMIZER
 		.xStart = 2,
 		.xEnd = 2,
 		.yStart = 36,

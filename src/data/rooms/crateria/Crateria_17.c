@@ -13,11 +13,19 @@ const u8 sCrateria_8_Scrolls[SCROLL_DATA_SIZE(1)] = {
 	UCHAR_MAX, // Breakeable block Y bound extension
 };
 
+#ifdef RANDOMIZER
+const u8 sCrateria_17_Clipdata[230] = INCBIN_U8("data_rando/Crateria_17_Clipdata.rlebg");
+#else // !RANDOMIZER
 const u8 sCrateria_17_Clipdata[223] = INCBIN_U8("data/rooms/crateria/Crateria_17_Clipdata.gfx");
+#endif // RANDOMIZER
 
 const u8 sCrateria_17_Bg2[527] = INCBIN_U8("data/rooms/crateria/Crateria_17_Bg2.gfx");
 
+#ifdef RANDOMIZER
+const u8 sCrateria_17_Bg1[739] = INCBIN_U8("data_rando/Crateria_17_Bg1.rlebg");
+#else // !RANDOMIZER
 const u8 sCrateria_17_Bg1[735] = INCBIN_U8("data/rooms/crateria/Crateria_17_Bg1.gfx");
+#endif // RANDOMIZER
 
 const u8 sCrateria_17_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(2)] = {
 	40, 13, SPRITESET_IDX(0),

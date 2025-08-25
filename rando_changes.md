@@ -47,6 +47,10 @@
 - Fix Crateria rooms 1 and 0x15 (large room left of landing site)
   - `sHatchLockEventsCrateria` in [hatch_data.c](src/data/hatch_data.c)
   - `sCrateriaDoors` in [rooms_data.c](src/data/rooms_data.c)
+- Fix Crateria rooms near power grip (8, 0x10, and 0x11)
+  - `sCrateria_17_Bg1` and `sCrateria_17_Clipdata` in [Crateria_17.c](src/data/rooms/crateria/Crateria_17.c)
+  - `sCrateriaDoors` in [rooms_data.c](src/data/rooms_data.c)
+  - `RisingChozoPillar` and `ChozoPillarPlatform` in [rising_chozo_pillar.c](src/sprites_AI/rising_chozo_pillar.c)
 
 ## QoL
 - Enable toggling items on status screen

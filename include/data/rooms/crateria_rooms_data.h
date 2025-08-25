@@ -107,9 +107,17 @@ extern const u8 sCrateria_16_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(2)];
 extern const u8 sCrateria_16_Bg0[247];
 
 extern const u8 sCrateria_8_Scrolls[SCROLL_DATA_SIZE(1)];
+#ifdef RANDOMIZER
+extern const u8 sCrateria_17_Clipdata[230];
+#else // !RANDOMIZER
 extern const u8 sCrateria_17_Clipdata[223];
+#endif // RANDOMIZER
 extern const u8 sCrateria_17_Bg2[527];
+#ifdef RANDOMIZER
+extern const u8 sCrateria_17_Bg1[739];
+#else // !RANDOMIZER
 extern const u8 sCrateria_17_Bg1[735];
+#endif // RANDOMIZER
 extern const u8 sCrateria_17_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(2)];
 
 extern const u8 sCrateria_9_Scrolls[SCROLL_DATA_SIZE(1)];

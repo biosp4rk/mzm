@@ -211,7 +211,10 @@ void RisingChozoPillar(void)
     switch (gCurrentSprite.pose)
     {
         case SPRITE_POSE_UNINITIALIZED:
+// Always extend pillar for rando
+#ifndef RANDOMIZER
             if (EventFunction(EVENT_ACTION_CHECKING, EVENT_CHOZO_PILLAR_FULLY_EXTENDED))
+#endif // !RANDOMIZER
             {
                 // Already extended, spawn all platforms
                 RisingChozoPillarSpawnThreePlatforms(yPosition, xPosition, caa);
@@ -322,7 +325,10 @@ void ChozoPillarPlatform(void)
             gCurrentSprite.animationDurationCounter = 0;
             gCurrentSprite.currentAnimationFrame = 0;
 
+// Always extend pillar for rando
+#ifndef RANDOMIZER
             if (EventFunction(EVENT_ACTION_CHECKING, EVENT_CHOZO_PILLAR_FULLY_EXTENDED))
+#endif // !RANDOMIZER
             {
                 gCurrentSprite.pose = RISING_CHOZO_PILLAR_PLATFORM_POSE_IDLE;
                 if (gCurrentSprite.roomSlot != CHOZO_PILLAR_PLATFORM_NO_SHADOW)
@@ -336,6 +342,7 @@ void ChozoPillarPlatform(void)
                     gCurrentSprite.pOam = sRisingChozoPillarPlatformOam_NoShadowSpawned;
                 }
             }
+#ifndef RANDOMIZER
             else
             {
                 gCurrentSprite.pose = RISING_CHOZO_PILLAR_PLATFORM_POSE_SPAWNING;
@@ -346,6 +353,7 @@ void ChozoPillarPlatform(void)
 
                 SoundPlay(SOUND_RISING_CHOZO_PILLAR_PLATFORM_SPAWNING);
             }
+#endif // !RANDOMIZER
             break;
 
         case RISING_CHOZO_PILLAR_PLATFORM_POSE_SPAWNING:
