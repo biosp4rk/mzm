@@ -2749,9 +2749,11 @@ void PauseScreenGetMinimapData(Area area, u16* dst)
         }
     }
 
+#ifndef RANDOMIZER
     // Check update the varia statue tile if varia suit was skipped
     if (area == AREA_BRINSTAR && EventFunction(EVENT_ACTION_CHECKING, EVENT_SKIPPED_VARIA_SUIT))
         dst[MINIMAP_SIZE * 2 + 14]++;
+#endif // !RANDOMIZER
 }
 
 /**

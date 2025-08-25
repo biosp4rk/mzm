@@ -11,7 +11,8 @@
 - Disable varia animation
   - `RoomLoad` in [room.c](src/room.c)
 - Don't give varia automatically when getting fully powered suit
-  - `color_fading` in [room.c](src/color_fading.c)
+  - `ColorFadingProcess_GettingFullyPowered` in [room.c](src/color_fading.c)
+  - `PauseScreenGetMinimapData` in [pause_screen.c](src\menus\pause_screen.c)
 - Allow Chozo hints in all areas
   - `sElevatorRoomPairs` in [clipdata_data.c](src\data\clipdata_data.c)
   - `sMapScreenChozoStatueAreaNamesEnglishGfx` in [pause_screen_data.c](src\data\menus\pause_screen_data.c)
