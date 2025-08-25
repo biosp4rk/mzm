@@ -39,6 +39,8 @@ Original ASM:
 - clipdata_new.asm
 - items_new.asm
 - misc.asm
+  - "modify code that checks for hidden tanks"
+  - "fix call to RemoveCollectedAbility"
 - pointer_fixes.asm
 - random_items.asm
 - room_fixes.asm

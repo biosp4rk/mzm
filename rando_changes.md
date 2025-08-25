@@ -19,6 +19,8 @@
   - `sChozoStatueTargetPathBrinstar` and `sChozoStatueTargetPathNorfair` in [pause_screen_sub_menus_data.c](src\data\menus\pause_screen_sub_menus_data.c)
 - Change charge beam OAM to work with any item (and don't spawn glow)
   - `ChargeBeamSpawnGlow`, `ChargeBeamVisibleInit`, and `ChargeBeamIdle` in [charge_beam.c](src/sprites_AI/charge_beam.c)
+- Unlock Imago door when it dies (instead of waiting to collect super missiles)
+  - `ImagoSetEvent` in [imago.c](src/sprites_AI/imago.c)
 
 ## Room Changes
 

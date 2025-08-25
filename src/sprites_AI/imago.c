@@ -1145,7 +1145,10 @@ static void ImagoDying(void)
 static void ImagoSetEvent(void)
 {
     gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
+// Unlock door right away
+#ifndef RANDOMIZER
     if (gEquipment.maxSuperMissiles > gSubSpriteData1.work4)
+#endif // !RANDOMIZER
     {
         // More supers than at the beginning of the fight
         // Unlock doors
