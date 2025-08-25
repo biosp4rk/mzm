@@ -54,6 +54,8 @@
   - `sCrateriaDoors` in [rooms_data.c](src/data/rooms_data.c)
 - Fix Chozodia rooms near glass tube
   - `sChozodiaDoors` in [rooms_data.c](src/data/rooms_data.c)
+- Fix miscolored super missile tank near varia (is this necessary?)
+  - `sTileset_37_Tilemap` in [tilesets_set1.c](src/data/tilesets/tilesets_set1.c)
 
 ## QoL
 - Enable toggling items on status screen

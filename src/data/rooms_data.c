@@ -9008,6 +9008,7 @@ const struct Door sChozodiaDoors[246] = {
 		.yStart = 21,
 		.yEnd = 21,
 #ifdef RANDOMIZER
+		// Redirect to sunny version of shortcut room
 		.destinationDoor = 0xF2,
 #else // !RANDOMIZER
 		.destinationDoor = 239,

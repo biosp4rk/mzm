@@ -12,8 +12,6 @@ Original ASM:
   - clipdata_behavior_types_400.bin
   - clipdata_collision_types.bin
   - clipdata_collision_types_400.bin
-  - crateria_11_bg1.rle
-  - crateria_11_clip.rle
   - tank_collection_info.bin
   - tile_table_400.bin
   - tileset_entries.bin
@@ -25,12 +23,9 @@ Original ASM:
 - ~~misc.asm~~
   - "modify code that checks for hidden tanks"
   - "fix call to RemoveCollectedAbility"
-  - "fix discolored super missile (near varia)"
   - "add blank row to tileset palette 47"
-- ~~pointer_fixes.asm~~
 - random_items.asm
-- room_fixes.asm
-- tile_table_lengths.asm
+- tile_table_lengths.asm (store these in the patcher)
 - tilesets_new.asm
 - touching_tank.asm
 

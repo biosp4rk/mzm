@@ -48,7 +48,12 @@ const u16 sTileset_20_Pal[14 * 16] = INCBIN_U16("data/tilesets/20.pal");
 const u8 sTileset_8_Tilemap[4228] = INCBIN_U8("data/tilesets/8.tm");
 const u8 sTileset_17_Tilemap[] = INCBIN_U8("data/tilesets/17.tm");
 const u8 sTileset_34_Tilemap[4228] = INCBIN_U8("data/tilesets/34.tm");
+#ifdef RANDOMIZER
+// Fix miscolored super missile tank
+const u8 sTileset_37_Tilemap[4228] = INCBIN_U8("data_rando/37.tm");
+#else // !RANDOMIZER
 const u8 sTileset_37_Tilemap[4228] = INCBIN_U8("data/tilesets/37.tm");
+#endif // RANDOMIZER
 const u8 sTileset_53_Tilemap[4228] = INCBIN_U8("data/tilesets/53.tm");
 const u8 sTileset_72_Tilemap[2308] = INCBIN_U8("data/tilesets/72.tm");
 const u8 sTileset_33_Tilemap[2308] = INCBIN_U8("data/tilesets/33.tm");
