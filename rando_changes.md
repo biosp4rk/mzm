@@ -23,6 +23,8 @@
   - `ImagoSetEvent` in [imago.c](src/sprites_AI/imago.c)
 - Allow both escape timers to work in any order
   - `EscapeDetermineTimer` in [escape.c](src/escape.c)
+- Allow glass tube to be broken any time
+  - `GlassTubeCheckPowerBombCollision` in [glass_tube.c](src/sprites_AI/glass_tube.c)
 
 ## Room Changes
 

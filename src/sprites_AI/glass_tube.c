@@ -147,8 +147,10 @@ static void GlassTubeCheckPowerBombCollision(void)
     u16 spriteLeft;
     u16 spriteRight;
 
+#ifndef RANDOMIZER
     if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_FULLY_POWERED_SUIT_OBTAINED))
         return;
+#endif // !RANDOMIZER
 
     if (gCurrentPowerBomb.animationState != PB_STATE_NONE && gEquipment.maxPowerBombs != 0)
     {
