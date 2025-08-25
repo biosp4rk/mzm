@@ -33,6 +33,8 @@
   - `DisableChozodiaAlarm` and `DecrementChozodiaAlarm` in [space_pirate.c](src/sprites_AI/space_pirate.c)
 - Fix space pirate power bomb OAM (flip horizontally)
   - `sSpacePirateCarryingPowerBombOam_Frame*` in [space_pirate.c](src/data/sprites/space_pirate.c)
+- Fix searchlight eye vulnerability condition
+  - `SearchlightEyeInit` in [searchlight_eye.c](src/sprites_AI/searchlight_eye.c)
 
 ## Room Changes
 - Remove vines in Norfair and near varia

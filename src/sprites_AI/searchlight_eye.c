@@ -40,7 +40,11 @@ static void SearchlightEyeInit(void)
     u8 ramSlot;
 
     // Make invulnerable if during suitless
+#ifdef RANDOMIZER
+    if (gEquipment.suitType == SUIT_SUITLESS)
+#else // !RANDOMIZER
     if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_FULLY_POWERED_SUIT_OBTAINED))
+#endif // RANDOMIZER
         gCurrentSprite.properties |= SP_IMMUNE_TO_PROJECTILES;
     
     gCurrentSprite.drawDistanceTop = SUB_PIXEL_TO_PIXEL(THREE_QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE);

@@ -22,12 +22,12 @@ Original ASM:
 - assign_item.asm
 - clipdata_new.asm
 - items_new.asm
-- misc.asm
+- ~~misc.asm~~
   - "modify code that checks for hidden tanks"
   - "fix call to RemoveCollectedAbility"
   - "fix discolored super missile (near varia)"
   - "add blank row to tileset palette 47"
-- pointer_fixes.asm
+- ~~pointer_fixes.asm~~
 - random_items.asm
 - room_fixes.asm
 - tile_table_lengths.asm
