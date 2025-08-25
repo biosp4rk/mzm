@@ -25,6 +25,8 @@
   - `EscapeDetermineTimer` in [escape.c](src/escape.c)
 - Allow glass tube to be broken any time
   - `GlassTubeCheckPowerBombCollision` in [glass_tube.c](src/sprites_AI/glass_tube.c)
+- Using any beam on Ruins Test can hurt Samus
+  - `RuinsTestProjectileCollision` in [ruins_test.c](src\sprites_AI\ruins_test.c)
 - Defeating Ruins Test sets Mother Brain killed event and Zebes escaped event
   - `RuinsTestDespawn` in [ruins_test.c](src\sprites_AI\ruins_test.c)
 - Fix space pirate alarm music

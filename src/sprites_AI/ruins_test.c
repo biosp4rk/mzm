@@ -316,7 +316,12 @@ static u8 RuinsTestProjectileCollision(void)
         if (pProj->movementStage <= PROJECTILE_STAGE_SPAWNING)
             continue;
 
+#ifdef RANDOMIZER
+        // Allow any beam instead of just pistol
+        if (pProj->type > PROJ_TYPE_CHARGED_PISTOL)
+#else // !RANDOMIZER
         if (pProj->type != PROJ_TYPE_PISTOL && pProj->type != PROJ_TYPE_CHARGED_PISTOL)
+#endif // RANDOMIZER
             continue;
 
         if (pProj->xPosition > spriteLeft && pProj->xPosition < spriteRight && pProj->yPosition > spriteTop && pProj->yPosition < spriteBottom)
