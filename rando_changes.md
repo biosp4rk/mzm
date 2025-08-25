@@ -56,6 +56,8 @@
   - `sChozodiaDoors` in [rooms_data.c](src/data/rooms_data.c)
 - Fix miscolored super missile tank near varia (is this necessary?)
   - `sTileset_37_Tilemap` in [tilesets_set1.c](src/data/tilesets/tilesets_set1.c)
+- Add blank row to tileset 0x47 palette
+  - `sTileset_71_Pal` in [tilesets_set7.c](src/data/tilesets/tilesets_set7.c)
 
 ## QoL
 - Enable toggling items on status screen

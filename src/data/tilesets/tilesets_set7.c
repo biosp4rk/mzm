@@ -76,7 +76,12 @@ const u16 sTileset_49_Pal[14 * 16] = INCBIN_U16("data/tilesets/49.pal");
 const u16 sTileset_70_Pal[14 * 16] = INCBIN_U16("data/tilesets/70.pal");
 const u16 sAnimatedPal_14[4 * 16] = INCBIN_U16("data/tilesets/animated_palettes/14.pal");
 const u16 sTileset_50_Pal[14 * 16] = INCBIN_U16("data/tilesets/50.pal");
+#ifdef RANDOMIZER
+// Add blank row to tileset palette
+const u16 sTileset_71_Pal[14 * 16] = INCBIN_U16("data_rando/71.pal");
+#else // !RANDOMIZER
 const u16 sTileset_71_Pal[14 * 16] = INCBIN_U16("data/tilesets/71.pal");
+#endif // RANDOMIZER
 const u16 sAnimatedPal_15[4 * 16] = INCBIN_U16("data/tilesets/animated_palettes/15.pal");
 const u16 sTileset_28_Pal[14 * 16] = INCBIN_U16("data/tilesets/28.pal");
 const u16 sTileset_43_Pal[14 * 16] = INCBIN_U16("data/tilesets/43.pal");
