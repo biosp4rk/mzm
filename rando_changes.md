@@ -23,6 +23,8 @@
   - `ImagoSetEvent` in [imago.c](src/sprites_AI/imago.c)
 - Allow both escape timers to work in any order
   - `EscapeDetermineTimer` in [escape.c](src/escape.c)
+- Make Chozo pillar near power grip always extended
+  - `RisingChozoPillar` and `ChozoPillarPlatform` in [rising_chozo_pillar.c](src/sprites_AI/rising_chozo_pillar.c)
 - Allow glass tube to be broken any time
   - `GlassTubeCheckPowerBombCollision` in [glass_tube.c](src/sprites_AI/glass_tube.c)
 - Using any beam on Ruins Test can hurt Samus
@@ -50,7 +52,8 @@
 - Fix Crateria rooms near power grip (8, 0x10, and 0x11)
   - `sCrateria_17_Bg1` and `sCrateria_17_Clipdata` in [Crateria_17.c](src/data/rooms/crateria/Crateria_17.c)
   - `sCrateriaDoors` in [rooms_data.c](src/data/rooms_data.c)
-  - `RisingChozoPillar` and `ChozoPillarPlatform` in [rising_chozo_pillar.c](src/sprites_AI/rising_chozo_pillar.c)
+- Fix Chozodia rooms near glass tube
+  - `sChozodiaDoors` in [rooms_data.c](src/data/rooms_data.c)
 
 ## QoL
 - Enable toggling items on status screen

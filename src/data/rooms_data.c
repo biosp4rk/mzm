@@ -6899,7 +6899,12 @@ const struct Door sChozodiaDoors[246] = {
 		.xEnd = 2,
 		.yStart = 75,
 		.yEnd = 78,
+#ifdef RANDOMIZER
+		// Redirect to sunny version of tube room
+		.destinationDoor = 0xA5,
+#else // !RANDOMIZER
 		.destinationDoor = 51,
+#endif // RANDOMIZER
 		.xExit = 32,
 		.yExit = 0
 	},
@@ -6948,13 +6953,22 @@ const struct Door sChozodiaDoors[246] = {
 		.yExit = 0
 	},
 	{
+#ifdef RANDOMIZER
+		.type = DOOR_TYPE_SET_MOTHER_SHIP | DOOR_TYPE_EXISTS | DOOR_TYPE_DISPLAYS_ROOM_LOCATION,
+#else // !RANDOMIZER
 		.type = DOOR_TYPE_SET_MOTHER_SHIP | DOOR_TYPE_LOAD_EVENT_BASED_ROOM | DOOR_TYPE_DISPLAYS_ROOM_LOCATION,
+#endif // RANDOMIZER
 		.sourceRoom = 24,
 		.xStart = 16,
 		.xEnd = 16,
 		.yStart = 5,
 		.yEnd = 8,
+#ifdef RANDOMIZER
+		// Redirect to sunny version of tube room
+		.destinationDoor = 0xA9,
+#else // !RANDOMIZER
 		.destinationDoor = 52,
+#endif // RANDOMIZER
 		.xExit = -32,
 		.yExit = 0
 	},
@@ -8983,13 +8997,21 @@ const struct Door sChozodiaDoors[246] = {
 		.yExit = 0
 	},
 	{
+#ifdef RANDOMIZER
+		.type = DOOR_TYPE_NO_HATCH | DOOR_TYPE_EXISTS,
+#else // !RANDOMIZER
 		.type = DOOR_TYPE_NO_HATCH | DOOR_TYPE_LOAD_EVENT_BASED_ROOM,
+#endif // RANDOMIZER
 		.sourceRoom = 19,
 		.xStart = 14,
 		.xEnd = 15,
 		.yStart = 21,
 		.yEnd = 21,
+#ifdef RANDOMIZER
+		.destinationDoor = 0xF2,
+#else // !RANDOMIZER
 		.destinationDoor = 239,
+#endif // RANDOMIZER
 		.xExit = 0,
 		.yExit = -32
 	},
