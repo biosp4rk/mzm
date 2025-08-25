@@ -82,9 +82,11 @@ void DisableChozodiaAlarm(void)
     // Disable animated palette
     gDisableAnimatedPalette = -1;
 
+#ifndef RANDOMIZER
     // Check is in stealth
     if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_FULLY_POWERED_SUIT_OBTAINED))
         UpdateMusicAfterAlarmDisable();
+#endif // !RANDOMIZER
 }
 
 /**
@@ -104,8 +106,11 @@ void DecrementChozodiaAlarm(void)
     }
 
     gDisableAnimatedPalette = FALSE;
+
+#ifndef RANDOMIZER
     if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_FULLY_POWERED_SUIT_OBTAINED))
         PlayMusic(MUSIC_ALARM_ACTIVATED, 0x40);
+#endif // !RANDOMIZER
 }
 
 /**

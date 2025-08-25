@@ -25,6 +25,8 @@ Original ASM:
 - misc.asm
   - "modify code that checks for hidden tanks"
   - "fix call to RemoveCollectedAbility"
+  - "fix discolored super missile (near varia)"
+  - "add blank row to tileset palette 47"
 - pointer_fixes.asm
 - random_items.asm
 - room_fixes.asm
