@@ -1,10 +1,18 @@
 ## Randomizer
 - ~~Title screen version info~~
 - Draw hash on file select
-- Add pointers to all palettes that can be randomized
+- Add pointers to data needed by patcher
+  - Palettes
+  - Room data
+  - Door data (DLR)
+  - Minimap data (DLR)
 - Custom item messages
-- Major locations having any item
+- ~~Major locations having any item~~
+- Allow getting ziplines as an item
+- Allow getting item from zipline source
+- Support infant metroid items
 - Starting items
+- Starting location
 
 Original ASM:
 - data

@@ -14,6 +14,8 @@
   - `MorphBallInit` and `MorphBallGet` in [morph_ball.c](src/sprites_AI/morph_ball.c)
   - `PowerGrip` in [power_grip.c](src/sprites_AI/power_grip.c)
   - `ChargeBeamInit` and `ChargeBeamIdle` in [charge_beam.c](src/sprites_AI/charge_beam.c)
+  - `ChozoStatueRegisterItem` and `ChozoStatueGetBehavior` in [chozo_statue.c](src/sprites_AI/chozo_statue.c)
+  - `ChozoBallRegisterItem` in [chozo_ball.c](src/sprites_AI/chozo_ball.c)
 
 ## Fixes
 - Allow laying power bombs without bombs

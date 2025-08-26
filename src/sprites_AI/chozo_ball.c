@@ -281,7 +281,10 @@ static void ChozoBallRegisterItem(void)
 
         spriteId = gSpriteData[gCurrentSprite.primarySpriteRamSlot].spriteId;
         ChozoStatueRegisterItem(spriteId);
+// Message banner is handled when ChozoStatueRegisterItem is called
+#ifndef RANDOMIZER
         ChozoBallSpawnMessageBanner(spriteId);
+#endif // !RANDOMIZER
     }
 }
 
