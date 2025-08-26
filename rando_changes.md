@@ -9,6 +9,7 @@
   - `BgClipCheckTouchingTransitionOrTank` in [bg_clip.c](src\bg_clip.c)
   - `MessageBannerPopUp` in [message_banner.c](src\sprites_AI\message_banner.c)
   - `TextProcessMessageBanner` in [text.c](src/text.c)
+  - `BlockCheckCcaa` in [block.c](src/block.c)
 
 ## Fixes
 - Allow laying power bombs without bombs

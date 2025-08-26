@@ -3,6 +3,7 @@
 #include "dma.h"
 #include "gba.h"
 #include "bg_clip.h"
+#include "randomizer.h"
 
 #include "data/block_data.h"
 
@@ -16,6 +17,7 @@
 #include "structs/game_state.h"
 #include "structs/samus.h"
 #include "structs/power_bomb_explosion.h"
+#include "structs/randomizer.h"
 
 /**
  * @brief 590b0 | 214 | Checks if something should happen to a block depending on the Ccaa
@@ -168,6 +170,16 @@ u32 BlockCheckCcaa(struct ClipdataBlockData* pClipBlock)
             // Check should reveal
             if (sClipdataAffectingActionDamageTypes[gCurrentClipdataAffectingAction] & TANK_WEAKNESS)
             {
+#ifdef RANDOMIZER
+                // Get new BG1 value from minor locations table
+                const struct MinorLocation* loc = RandoGetMinorLocation(
+                    gCurrentArea, gCurrentRoom, pClipBlock->xPosition, pClipBlock->yPosition);
+                BgClipSetBg1BlockValue(loc->bg1Value, pClipBlock->yPosition, pClipBlock->xPosition);
+                // Set clipdata to any valid tank value
+                BgClipSetClipdataBlockValue(CLIPDATA_TILEMAP_FLAG | CLIPDATA_TILEMAP_ENERGY_TANK,
+                    pClipBlock->yPosition, pClipBlock->xPosition);
+                result = TRUE;
+#else // !RANDOMIZER
                 destroy = sTankBehaviors[BEHAVIOR_TO_TANK(pClipBlock->behavior)].revealedClipdata;
                 if (destroy != CLIPDATA_AIR)
                 {
@@ -175,6 +187,7 @@ u32 BlockCheckCcaa(struct ClipdataBlockData* pClipBlock)
                     BgClipSetClipdataBlockValue(destroy, pClipBlock->yPosition, pClipBlock->xPosition);
                     result = TRUE;
                 }
+#endif // RANDOMIZER
             }
     }
 
