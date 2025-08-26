@@ -12,6 +12,7 @@
 
 #include "structs/game_state.h"
 #include "structs/menus/pause_screen.h"
+#include "structs/randomizer.h"
 
 extern u16** sStoryTextPointers[LANGUAGE_END];
 
@@ -936,12 +937,45 @@ u8 TextProcessMessageBanner(void)
 
         case 3:
             gCurrentMessage.line++;
+#ifdef RANDOMIZER
+            switch (gCurrentMessage.messageID)
+            {
+                case MESSAGE_ENERGY_TANK_ACQUIRED:
+                case MESSAGE_MISSILE_TANK_ACQUIRED:
+                case MESSAGE_FIRST_MISSILE_TANK:
+                case MESSAGE_SUPER_MISSILE_TANK_ACQUIRED:
+                case MESSAGE_FIRST_SUPER_MISSILE_TANK:
+                case MESSAGE_POWER_BOMB_TANK_ACQUIRED:
+                case MESSAGE_FIRST_POWER_BOMB_TANK:
+                case MESSAGE_LONG_BEAM:
+                case MESSAGE_CHARGE_BEAM:
+                case MESSAGE_ICE_BEAM:
+                case MESSAGE_WAVE_BEAM:
+                case MESSAGE_UKNOWN_ITEM_PLASMA:
+                case MESSAGE_BOMB:
+                case MESSAGE_VARIA_SUIT:
+                case MESSAGE_UNKNOWN_ITEM_GRAVITY:
+                case MESSAGE_MORPH_BALL:
+                case MESSAGE_SPEED_BOOSTER:
+                case MESSAGE_HIGH_JUMP:
+                case MESSAGE_SCREW_ATTACK:
+                case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
+                case MESSAGE_POWER_GRIP:
+                case MESSAGE_FULLY_POWERED_SUIT:
+                case MESSAGE_UNKNOWN_ITEM:
+                    gCurrentItemBeingAcquired = gCurrentMessage.messageID;
+                    if (!gCurrentRandoItem.isMinor)
+                        BgClipFinishCollectingAbility();
+                    break;
+            }
+#else // !RANDOMIZER
             if (gCurrentMessage.messageID <= MESSAGE_POWER_GRIP)
             {
                 gCurrentItemBeingAcquired = gCurrentMessage.messageID;
                 if (gCurrentMessage.messageID >= MESSAGE_LONG_BEAM)
                     BgClipFinishCollectingAbility();
             }
+#endif // RANDOMIZER
             gCurrentMessage.stage++;
 
         case 4:

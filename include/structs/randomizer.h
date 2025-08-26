@@ -11,7 +11,7 @@ struct MajorLocation {
     /* 1 */ u8 room; // Not needed?
     /* 2 */ RandoItemType item;
     /* 3 */ RandoItemJingle jingle;
-    /* 4 */ u8* message;
+    /* 4 */ u8* customMessage;
 };
 
 struct MinorLocation {
@@ -24,6 +24,8 @@ struct MinorLocation {
 };
 
 struct CurrentRandoItem {
+    boolu8 isMinor;
+    RandoItemType item;
     RandoItemJingle jingle;
     u8* customMessage;
 };

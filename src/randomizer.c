@@ -243,11 +243,27 @@ static void RandoCollectItem(RandoItemType item, RandoItemJingle jingle)
 }
 
 /**
- * @brief Updates equipment, spawns a message banner, and stores the jingle
- * and custom message for a minor location item
+ * @brief Updates equipment, spawns a message banner, and stores the item,
+ * jingle, and custom message for a major location item
+ */
+void RandoCollectMajorLocationItem(const struct MajorLocation* loc)
+{
+    gCurrentRandoItem.isMinor = FALSE;
+    gCurrentRandoItem.item = loc->item;
+    gCurrentRandoItem.jingle = loc->jingle;
+    gCurrentRandoItem.customMessage = loc->customMessage;
+
+    RandoCollectItem(loc->item, loc->jingle);
+}
+
+/**
+ * @brief Updates equipment, spawns a message banner, and stores the item,
+ * jingle, and custom message for a minor location item
  */
 void RandoCollectMinorLocationItem(const struct MinorLocation* loc)
 {
+    gCurrentRandoItem.isMinor = TRUE;
+    gCurrentRandoItem.item = loc->item;
     gCurrentRandoItem.jingle = loc->jingle;
     gCurrentRandoItem.customMessage = loc->customMessage;
 

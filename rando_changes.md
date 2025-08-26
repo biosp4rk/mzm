@@ -8,6 +8,7 @@
 - Allow getting any item on tanks
   - `BgClipCheckTouchingTransitionOrTank` in [bg_clip.c](src\bg_clip.c)
   - `MessageBannerPopUp` in [message_banner.c](src\sprites_AI\message_banner.c)
+  - `TextProcessMessageBanner` in [text.c](src/text.c)
 
 ## Fixes
 - Allow laying power bombs without bombs

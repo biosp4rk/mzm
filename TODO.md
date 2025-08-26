@@ -25,7 +25,7 @@ Original ASM:
 - ~~Disable Varia animation~~
 - ~~Fix charge beam OAM~~
 - ~~Allow chozo hints in any area~~
-- Fix minimap updating twice when grabbing an ability at a minor location
+- ~~Fix minimap updating twice when grabbing an ability at a minor location~~
 - Fix Samus not getting stopped when getting full suit
 
 ## Room Changes
