@@ -597,6 +597,10 @@ SECTIONS {
         src/transfer.o(.text);
         src/link.o(.text);
 
+#ifdef RANDOMIZER
+        src/randomizer.o(.text);
+#endif
+
         *libgcc.a:_call_via_rX.o(.text);
         *libgcc.a:_divsi3.o(.text);
         *libgcc.a:_dvmd_tls.o(.text);

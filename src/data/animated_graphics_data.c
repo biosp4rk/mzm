@@ -10,6 +10,7 @@
 #include "data/tilesets/tilesets_set5.h"
 #include "data/tilesets/tilesets_set6.h"
 #include "data/tilesets/tilesets_set7.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 
@@ -243,6 +244,140 @@ const struct AnimatedGraphicsData sAnimatedGraphicsEntries[ANIMATED_GFX_ID_END] 
         .numberOfStates = 8,
         .pGraphics = &sAnimatedTilesGfx[28 * ANIMATED_GFX_SIZE],
     },
+#ifdef RANDOMIZER
+    // [ANIMATED_GFX_ID_ENERGY_TANK] = {
+    //     .type = ANIMATED_GFX_TYPE_ALTERNATE,
+    //     .framesPerState = CONVERT_SECONDS(1.f / 6),
+    //     .numberOfStates = 3,
+    //     .pGraphics = sRandoEnergyTankGfx,
+    // },
+    // [ANIMATED_GFX_ID_MISSILE_TANK] = {
+    //     .type = ANIMATED_GFX_TYPE_ALTERNATE,
+    //     .framesPerState = CONVERT_SECONDS(1.f / 6),
+    //     .numberOfStates = 3,
+    //     .pGraphics = sRandoMissileTankGfx,
+    // },
+    // [ANIMATED_GFX_ID_SUPER_MISSILE_TANK] = {
+    //     .type = ANIMATED_GFX_TYPE_ALTERNATE,
+    //     .framesPerState = CONVERT_SECONDS(1.f / 6),
+    //     .numberOfStates = 3,
+    //     .pGraphics = sRandoSuperMissileTankGfx,
+    // },
+    // [ANIMATED_GFX_ID_POWER_BOMB_TANK] = {
+    //     .type = ANIMATED_GFX_TYPE_ALTERNATE,
+    //     .framesPerState = CONVERT_SECONDS(1.f / 6),
+    //     .numberOfStates = 3,
+    //     .pGraphics = sRandoPowerBombTankGfx,
+    // },
+    [ANIMATED_GFX_ID_LONG_BEAM] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoLongBeamGfx,
+    },
+    [ANIMATED_GFX_ID_CHARGE_BEAM] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoChargeBeamGfx,
+    },
+    [ANIMATED_GFX_ID_ICE_BEAM] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoIceBeamGfx,
+    },
+    [ANIMATED_GFX_ID_WAVE_BEAM] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoWaveBeamGfx,
+    },
+    [ANIMATED_GFX_ID_PLASMA_BEAM] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoPlasmaBeamGfx,
+    },
+    [ANIMATED_GFX_ID_BOMBS] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoBombsGfx,
+    },
+    [ANIMATED_GFX_ID_VARIA_SUIT] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoVariaSuitGfx,
+    },
+    [ANIMATED_GFX_ID_GRAVITY_SUIT] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoGravitySuitGfx,
+    },
+    [ANIMATED_GFX_ID_MORPH_BALL] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoMorphBallGfx,
+    },
+    [ANIMATED_GFX_ID_SPEED_BOOSTER] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoSpeedBoosterGfx,
+    },
+    [ANIMATED_GFX_ID_HI_JUMP] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoHiJumpGfx,
+    },
+    [ANIMATED_GFX_ID_SCREW_ATTACK] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoScrewAttackGfx,
+    },
+    [ANIMATED_GFX_ID_SPACE_JUMP] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoSpaceJumpGfx,
+    },
+    [ANIMATED_GFX_ID_POWER_GRIP] = {
+        .type = ANIMATED_GFX_TYPE_ALTERNATE,
+        .framesPerState = CONVERT_SECONDS(1.f / 6),
+        .numberOfStates = 3,
+        .pGraphics = sRandoPowerGripGfx,
+    },
+    // [ANIMATED_GFX_ID_ZIPLINES] = {
+    //     .type = ANIMATED_GFX_TYPE_ALTERNATE,
+    //     .framesPerState = CONVERT_SECONDS(1.f / 6),
+    //     .numberOfStates = 3,
+    //     .pGraphics = sRandoZiplinesGfx,
+    // },
+    // [ANIMATED_GFX_ID_FULLY_POWERED] = {
+    //     .type = ANIMATED_GFX_TYPE_ALTERNATE,
+    //     .framesPerState = CONVERT_SECONDS(1.f / 6),
+    //     .numberOfStates = 3,
+    //     .pGraphics = sRandoFullyPoweredGfx,
+    // },
+    // [ANIMATED_GFX_ID_INFANT_METROID] = {
+    //     .type = ANIMATED_GFX_TYPE_ALTERNATE,
+    //     .framesPerState = CONVERT_SECONDS(1.f / 6),
+    //     .numberOfStates = 3,
+    //     .pGraphics = sRandoInfantMetroidGfx,
+    // },
+    // [ANIMATED_GFX_ID_ANONYMOUS] = {
+    //     .type = ANIMATED_GFX_TYPE_ALTERNATE,
+    //     .framesPerState = CONVERT_SECONDS(1.f / 6),
+    //     .numberOfStates = 3,
+    //     .pGraphics = sRandoAnonymousGfx,
+    // },
+#endif // RANDOMIZER
 };
 
 #define GFX_ANIM_TO_3BYTES(n) n, 0, 0

@@ -4,9 +4,9 @@
 - Add pointers to all palettes that can be randomized
 
 Original ASM:
-- anim_gfx
+- ~~anim_gfx~~
 - data
-  - anim_gfx_entries.bin
+  - ~~anim_gfx_entries.bin~~
   - anim_tileset_entries.bin
   - clipdata_behavior_types.bin
   - clipdata_behavior_types_400.bin
@@ -23,7 +23,6 @@ Original ASM:
 - ~~misc.asm~~
   - "modify code that checks for hidden tanks"
   - "fix call to RemoveCollectedAbility"
-  - "add blank row to tileset palette 47"
 - random_items.asm
 - tile_table_lengths.asm (store these in the patcher)
 - tilesets_new.asm
