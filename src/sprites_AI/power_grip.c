@@ -1,5 +1,7 @@
 #include "sprites_AI/power_grip.h"
 #include "macros.h"
+#include "event.h"
+#include "randomizer.h"
 
 #include "data/sprites/power_grip.h"
 
@@ -7,6 +9,7 @@
 #include "constants/event.h"
 #include "constants/samus.h"
 #include "constants/text.h"
+#include "constants/randomizer.h"
 
 #include "structs/sprite.h"
 #include "structs/samus.h"
@@ -25,7 +28,11 @@ void PowerGrip(void)
     switch (gCurrentSprite.pose)
     {
         case SPRITE_POSE_UNINITIALIZED:
+#ifdef RANDOMIZER
+            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_POWER_GRIP_OBTAINED))
+#else // !RANDOMIZER
             if (gEquipment.suitMisc & SMF_POWER_GRIP)
+#endif // RANDOMIZER
             {
                 // Already has power grip, kill
                 gCurrentSprite.status = 0;
@@ -63,11 +70,15 @@ void PowerGrip(void)
                 gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
                 gCurrentSprite.pose = POWER_GRIP_POSE_BEING_ACQUIRED;
                 gCurrentSprite.work0 = 0;
+#ifdef RANDOMIZER
+                EventFunction(EVENT_ACTION_SETTING, EVENT_POWER_GRIP_OBTAINED);
+                RandoCollectMajorLocationItem(ITEM_SOURCE_POWER_GRIP);
+#else // !RANDOMIZER
                 gEquipment.suitMisc |= SMF_POWER_GRIP;
                 EventFunction(EVENT_ACTION_SETTING, EVENT_POWER_GRIP_OBTAINED);
-
                 SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_POWER_GRIP, 6,
                     gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
+#endif // RANDOMIZER
             }
             break;
 

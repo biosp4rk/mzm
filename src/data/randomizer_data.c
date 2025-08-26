@@ -48,7 +48,89 @@ const u16 sMissileTankIncreaseAmount = 5;
 const u8 sSuperMissileTankIncreaseAmount = 2;
 const u8 sPowerBombTankIncreaseAmount = 2;
 
-const struct MajorLocation sMajorLocations[ITEM_SOURCE_COUNT] = {0};
+const struct MajorLocation sMajorLocations[ITEM_SOURCE_COUNT] = {
+    [ITEM_SOURCE_LONG_BEAM] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_CHARGE_BEAM] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_ICE_BEAM] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_WAVE_BEAM] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_PLASMA_BEAM] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_BOMBS] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_VARIA_SUIT] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_GRAVITY_SUIT] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_MORPH_BALL] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_SPEED_BOOSTER] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_HI_JUMP] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_SCREW_ATTACK] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_SPACE_JUMP] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_POWER_GRIP] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_FULLY_POWERED] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+    [ITEM_SOURCE_ZIPLINES] = {
+        .item = RIT_WAVE_BEAM,
+        .jingle = RIJ_UNKNOWN,
+        .customMessage = NULL
+    },
+};
+
 const struct MinorLocation sMinorLocations[MINOR_LOCATION_COUNT] = {
     { // Brinstar 0x1 at 13, 7
         .key = 0x1070D,

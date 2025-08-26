@@ -5,11 +5,15 @@
   - `TitleScreenCheckPlayEffects` in [title_screen.c](src/menus/title_screen.c)
 - Allow getting unknown items as normal items
   - `sEnglishText_Message_UnknownItem*` and `sEnglishTextPointers_Message` in [text_data.c](src\data\text_data.c)
-- Allow getting any item on tanks
+- Allow getting any item from a minor location (tanks)
   - `BgClipCheckTouchingTransitionOrTank` in [bg_clip.c](src\bg_clip.c)
   - `MessageBannerPopUp` in [message_banner.c](src\sprites_AI\message_banner.c)
   - `TextProcessMessageBanner` in [text.c](src/text.c)
   - `BlockCheckCcaa` in [block.c](src/block.c)
+- Allow getting any item from a major location (ability)
+  - `MorphBallInit` and `MorphBallGet` in [morph_ball.c](src/sprites_AI/morph_ball.c)
+  - `PowerGrip` in [power_grip.c](src/sprites_AI/power_grip.c)
+  - `ChargeBeamInit` and `ChargeBeamIdle` in [charge_beam.c](src/sprites_AI/charge_beam.c)
 
 ## Fixes
 - Allow laying power bombs without bombs

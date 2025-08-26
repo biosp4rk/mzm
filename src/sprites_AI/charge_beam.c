@@ -1,5 +1,7 @@
 #include "sprites_AI/charge_beam.h"
 #include "macros.h"
+#include "randomizer.h"
+#include "event.h"
 
 #include "data/sprites/charge_beam.h"
 #include "data/sprites/power_grip.h"
@@ -8,6 +10,7 @@
 #include "constants/event.h"
 #include "constants/samus.h"
 #include "constants/text.h"
+#include "constants/randomizer.h"
 
 #include "structs/sprite.h"
 #include "structs/samus.h"
@@ -29,7 +32,11 @@
  */
 static void ChargeBeamInit(void)
 {
+#ifdef RANDOMIZER
+    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_CHARGE_BEAM_OBTAINED))
+#else // !RANDOMIZER
     if (gEquipment.beamBombs & BBF_CHARGE_BEAM)
+#endif // RANDOMIZER
     {
         gCurrentSprite.status = 0;
         return;
@@ -144,6 +151,10 @@ static void ChargeBeamIdle(void)
         gCurrentSprite.animationDurationCounter = 0;
         gCurrentSprite.currentAnimationFrame = 0;
 
+#ifdef RANDOMIZER
+        RandoCollectMajorLocationItem(ITEM_SOURCE_CHARGE_BEAM);
+        EventFunction(EVENT_ACTION_SETTING, EVENT_CHARGE_BEAM_OBTAINED);
+#else // !RANDOMIZER
         // Set charge beam
         gEquipment.beamBombs |= BBF_CHARGE_BEAM;
 
@@ -153,6 +164,7 @@ static void ChargeBeamIdle(void)
         // Spawn banner
         SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_CHARGE_BEAM, SPRITE_GFX_SLOT_SPECIAL,
             gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
+#endif // RANDOMIZER
     }
 }
 

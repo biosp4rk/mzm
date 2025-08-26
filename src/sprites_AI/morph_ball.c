@@ -1,11 +1,14 @@
 #include "sprites_AI/morph_ball.h"
 #include "macros.h"
+#include "event.h"
+#include "randomizer.h"
 
 #include "data/sprites/morph_ball.h"
 
 #include "constants/sprite.h"
 #include "constants/samus.h"
 #include "constants/text.h"
+#include "constants/event.h"
 
 #include "structs/sprite.h"
 #include "structs/samus.h"
@@ -21,7 +24,11 @@
  */
 static void MorphBallInit(void)
 {
+#ifdef RANDOMIZER
+    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_LOCATION_MORPH_BALL))
+#else // !RANDOMIZER
     if (gEquipment.suitMisc & SMF_MORPH_BALL)
+#endif // RANDOMIZER
     {
         gCurrentSprite.status = 0;
         return;
@@ -68,10 +75,15 @@ static void MorphBallGet(void)
 
         gCurrentSprite.work0 = 0;
 
+#ifdef RANDOMIZER
+        RandoCollectMajorLocationItem(ITEM_SOURCE_MORPH_BALL);
+        EventFunction(EVENT_ACTION_SETTING, EVENT_LOCATION_MORPH_BALL);
+#else // !RANDOMIZER
         // Give morph ball
         gEquipment.suitMisc |= SMF_MORPH_BALL;
 
         SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_MORPH_BALL, SPRITE_GFX_SLOT_SPECIAL, gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
+#endif // RANDOMIZER
     }
 }
 

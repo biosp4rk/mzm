@@ -2,8 +2,9 @@
 - ~~Title screen version info~~
 - Draw hash on file select
 - Add pointers to all palettes that can be randomized
-- Support custom item messages
-- Support major locations having any item
+- Custom item messages
+- Major locations having any item
+- Starting items
 
 Original ASM:
 - data

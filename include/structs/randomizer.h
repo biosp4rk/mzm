@@ -7,10 +7,8 @@
 #include "constants/randomizer.h"
 
 struct MajorLocation {
-    /* 0 */ Area area; // Not needed?
-    /* 1 */ u8 room; // Not needed?
-    /* 2 */ RandoItemType item;
-    /* 3 */ RandoItemJingle jingle;
+    /* 0 */ RandoItemType item;
+    /* 1 */ RandoItemJingle jingle;
     /* 4 */ u8* customMessage;
 };
 
