@@ -337,15 +337,27 @@ const u16 sEnglishText_Message_LongBeam[] = INCTEXT("{GAP(82)}{COLOR(5)}Long Bea
 const u16 sEnglishText_Message_ChargeBeam[] = INCTEXT("{GAP(76)}{COLOR(5)}Charge Beam\n{GAP(110)}");
 const u16 sEnglishText_Message_IceBeam[] = INCTEXT("{GAP(86)}{COLOR(5)}Ice Beam\n{GAP(110)}");
 const u16 sEnglishText_Message_WaveBeam[] = INCTEXT("{GAP(82)}{COLOR(5)}Wave Beam\n{GAP(110)}");
+#ifdef RANDOMIZER
+const u16 sEnglishText_Message_UnknownItemPlasma[] = INCTEXT("{GAP(74)}{COLOR(5)}Plasma Beam\n{GAP(110)}");
+#else // !RANDOMIZER
 const u16 sEnglishText_Message_UnknownItemPlasma[] = INCTEXT("{GAP(74)}{COLOR(5)}Unknown Item\n{GAP(110)}");
+#endif // RANDOMIZER
 const u16 sEnglishText_Message_Bomb[] = INCTEXT("{GAP(98)}{COLOR(5)}Bomb\n{GAP(110)}");
 const u16 sEnglishText_Message_VariaSuit[] = INCTEXT("{GAP(84)}{COLOR(5)}Varia Suit\n{GAP(110)}");
+#ifdef RANDOMIZER
+const u16 sEnglishText_Message_UnknownItemGravity[] = INCTEXT("{GAP(74)}{COLOR(5)}Gravity Suit\n{GAP(110)}");
+#else // !RANDOMIZER
 const u16 sEnglishText_Message_UnknownItemGravity[] = INCTEXT("{GAP(74)}{COLOR(5)}Unknown Item\n{GAP(110)}");
+#endif // RANDOMIZER
 const u16 sEnglishText_Message_MorphBall[] = INCTEXT("{GAP(82)}{COLOR(5)}Morph Ball\n{GAP(110)}");
 const u16 sEnglishText_Message_SpeedBooster[] = INCTEXT("{GAP(71)}{COLOR(5)}Speed Booster\n{GAP(110)}");
 const u16 sEnglishText_Message_HighJump[] = INCTEXT("{GAP(89)}{COLOR(5)}Hi-Jump\n{GAP(110)}");
 const u16 sEnglishText_Message_ScrewAttack[] = INCTEXT("{GAP(75)}{COLOR(5)}Screw Attack\n{GAP(110)}");
+#ifdef RANDOMIZER
+const u16 sEnglishText_Message_UnknownItemSpaceJump[] = INCTEXT("{GAP(74)}{COLOR(5)}Space Jump\n{GAP(110)}");
+#else // !RANDOMIZER
 const u16 sEnglishText_Message_UnknownItemSpaceJump[] = INCTEXT("{GAP(74)}{COLOR(5)}Unknown Item\n{GAP(110)}");
+#endif // RANDOMIZER
 const u16 sEnglishText_Message_PowerGrip[] = INCTEXT("{GAP(82)}{COLOR(5)}Power Grip\n{GAP(110)}");
 const u16 sEnglishText_Message_SavePrompt[] = INCTEXT("{GAP(94)}Save？\n{GAP(94)}{INDENT(64)}Yes{INDENT(160)}No");
 const u16 sEnglishText_Message_SaveComplete[] = INCTEXT("{GAP(72)}Save Complete\n{GAP(110)}");
@@ -364,6 +376,9 @@ const u16 sEnglishText_Message_EnemyLocationAbnormal[] = INCTEXT("{GAP(44)}Enemy
 const u16 sEnglishText_Message_ActivateEasySleep[] = INCTEXT("{GAP(52)}Activate Easy Sleep？\n{GAP(57)}To exit Easy Sleep,");
 const u16 sEnglishText_Message_PressSelectLAndR[] = INCTEXT("{GAP(37)}press {Select_button}, {L_button}, and {R_button}\n{GAP(72)}simultaneously.");
 const u16 sEnglishText_Message_EasySleepPrompt[] = INCTEXT("{GAP(101)}Yes\n{GAP(104)}No");
+#ifdef RANDOMIZER
+const u16 sEnglishText_Message_UnknownItem[] = INCTEXT("{GAP(74)}{COLOR(5)}Unknown Item\n{GAP(110)}");
+#endif // RANDOMIZER
 #endif // REGION_EU
 
 static const u16* sEnglishTextPointers_Message[MESSAGE_COUNT] = {
@@ -405,7 +420,10 @@ static const u16* sEnglishTextPointers_Message[MESSAGE_COUNT] = {
     [MESSAGE_ENEMY_LOCATION_ABNORMAL] = sEnglishText_Message_EnemyLocationAbnormal,
     [MESSAGE_ACTIVATE_EASY_SLEEP] = sEnglishText_Message_ActivateEasySleep,
     [MESSAGE_PRESS_SELECT_L_AND_R] = sEnglishText_Message_PressSelectLAndR,
-    [MESSAGE_EASY_SLEEP_PROMPT] = sEnglishText_Message_EasySleepPrompt
+    [MESSAGE_EASY_SLEEP_PROMPT] = sEnglishText_Message_EasySleepPrompt,
+#ifdef RANDOMIZER
+    [MESSAGE_UNKNOWN_ITEM] = sEnglishText_Message_UnknownItem,
+#endif // RANDOMIZER
 };
 
 

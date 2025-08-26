@@ -7,28 +7,27 @@
 #include "constants/randomizer.h"
 
 struct MajorLocation {
-    Area area;
-    u8 room;
-    RandoItemType item;
-    // Ziplines and fully powered don't have a sprite
-    RandoItemSprite sprite;
-    RandoItemJingle jingle;
-    u8* message;
+    /* 0 */ Area area; // Not needed?
+    /* 1 */ u8 room; // Not needed?
+    /* 2 */ RandoItemType item;
+    /* 3 */ RandoItemJingle jingle;
+    /* 4 */ u8* message;
 };
 
 struct MinorLocation {
-    // (area << 24) | (room << 16) | (blockY << 8) | blockX
-    u32 sortValue;
-    // Area area;
-    // u8 room;
-    // u8 blockX;
-    // u8 blockY;
-    u16 bg1Value;
-    boolu8 hidden; // possibly not needed?
-    RandoItemType item;
-    RandoItemSprite sprite;
-    RandoItemJingle jingle;
-    u8* message;
+    // See MINOR_LOC_KEY macro
+    /* 0 */ u32 key;
+    /* 4 */ u16 bg1Value; // Needed for hidden items
+    /* 6 */ RandoItemType item;
+    /* 7 */ RandoItemJingle jingle;
+    /* 8 */ u8* customMessage;
 };
+
+struct CurrentRandoItem {
+    RandoItemJingle jingle;
+    u8* customMessage;
+};
+
+extern struct CurrentRandoItem gCurrentRandoItem;
 
 #endif // RANDOMIZER_STRUCT_H

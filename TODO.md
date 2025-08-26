@@ -2,26 +2,19 @@
 - ~~Title screen version info~~
 - Draw hash on file select
 - Add pointers to all palettes that can be randomized
+- Support custom item messages
+- Support major locations having any item
 
 Original ASM:
-- ~~anim_gfx~~
 - data
-  - ~~anim_gfx_entries.bin~~
-  - anim_tileset_entries.bin
-  - clipdata_behavior_types.bin
-  - clipdata_behavior_types_400.bin
-  - clipdata_collision_types.bin
-  - clipdata_collision_types_400.bin
-  - tank_collection_info.bin
-  - tile_table_400.bin
-  - tileset_entries.bin
+  - anim_tileset_entries.bin (add extra blank animated tilesets)
+  - tileset_entries.bin (add extra blank tilesets)
 - unk_items
 - abilities.asm
 - assign_item.asm
 - clipdata_new.asm
 - items_new.asm
 - ~~misc.asm~~
-  - "modify code that checks for hidden tanks"
   - "fix call to RemoveCollectedAbility"
 - random_items.asm
 - tile_table_lengths.asm (store these in the patcher)
@@ -32,7 +25,8 @@ Original ASM:
 - ~~Disable Varia animation~~
 - ~~Fix charge beam OAM~~
 - ~~Allow chozo hints in any area~~
-- Add event for Ruins Test defeated and fix checks for fully powered suit
+- Fix minimap updating twice when grabbing an ability at a minor location
+- Fix Samus not getting stopped when getting full suit
 
 ## Room Changes
 - Remove duplicate rooms near Ruins Test

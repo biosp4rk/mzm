@@ -393,6 +393,9 @@ SECTIONS {
         . = 0x00005b54; gLastRecvQueueCount = .;
         . = 0x00005b60; gLink = .;
 
+#ifdef RANDOMIZER
+        . = 0x00006000; gCurrentRandoItem = .;
+#endif
 
         . = 0x00007e60; gSpSys = .;
         . = 0x00007fa0; gSpIrq = .;

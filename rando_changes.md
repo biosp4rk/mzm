@@ -3,6 +3,11 @@
   - `TitleScreenInit` in [title_screen.c](src\menus\title_screen.c)
 - Disable title screen demos (to avoid spoilers)
   - `TitleScreenCheckPlayEffects` in [title_screen.c](src/menus/title_screen.c)
+- Allow getting unknown items as normal items
+  - `sEnglishText_Message_UnknownItem*` and `sEnglishTextPointers_Message` in [text_data.c](src\data\text_data.c)
+- Allow getting any item on tanks
+  - `BgClipCheckTouchingTransitionOrTank` in [bg_clip.c](src\bg_clip.c)
+  - `MessageBannerPopUp` in [message_banner.c](src\sprites_AI\message_banner.c)
 
 ## Fixes
 - Allow laying power bombs without bombs

@@ -11,6 +11,7 @@
 #include "constants/sprite.h"
 #include "constants/samus.h"
 #include "constants/text.h"
+#include "constants/randomizer.h"
 
 #include "structs/bg_clip.h"
 #include "structs/demo.h"
@@ -18,6 +19,7 @@
 #include "structs/sprite.h"
 #include "structs/samus.h"
 #include "structs/power_bomb_explosion.h"
+#include "structs/randomizer.h"
 
 // Save yes no cursor
 
@@ -143,6 +145,9 @@ static void MessageBannerPopUp(void)
     u16 music;
     u8 msg;
     u8 timer;
+#ifdef RANDOMIZER
+    boolu8 isItem;
+#endif // RANDOMIZER
 
     // Work Variable 2 is used as a bool, 1 if getting new item (leading to status screen), 0 otherwise
     gPreventMovementTimer = SAMUS_ITEM_PMT;
@@ -157,6 +162,124 @@ static void MessageBannerPopUp(void)
             gCurrentSprite.MESSAGE_BANNER_PROCESSING = FALSE;
             gCurrentSprite.status &= ~SPRITE_STATUS_NOT_DRAWN;
 
+#ifdef RANDOMIZER
+            // Use work3 as flag for fully powered jingle
+            gCurrentSprite.work3 = FALSE;
+            isItem = FALSE;
+
+            switch (msg)
+            {
+                case MESSAGE_ENERGY_TANK_ACQUIRED:
+                case MESSAGE_MISSILE_TANK_ACQUIRED:
+                case MESSAGE_SUPER_MISSILE_TANK_ACQUIRED:
+                case MESSAGE_POWER_BOMB_TANK_ACQUIRED:
+                    isItem = TRUE;
+                    break;
+
+                case MESSAGE_FIRST_MISSILE_TANK:
+                case MESSAGE_FIRST_SUPER_MISSILE_TANK:
+                case MESSAGE_FIRST_POWER_BOMB_TANK:
+                case MESSAGE_LONG_BEAM:
+                case MESSAGE_CHARGE_BEAM:
+                case MESSAGE_ICE_BEAM:
+                case MESSAGE_WAVE_BEAM:
+                case MESSAGE_UKNOWN_ITEM_PLASMA:
+                case MESSAGE_BOMB:
+                case MESSAGE_VARIA_SUIT:
+                case MESSAGE_UNKNOWN_ITEM_GRAVITY:
+                case MESSAGE_MORPH_BALL:
+                case MESSAGE_SPEED_BOOSTER:
+                case MESSAGE_HIGH_JUMP:
+                case MESSAGE_SCREW_ATTACK:
+                case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
+                case MESSAGE_POWER_GRIP:
+                    isItem = TRUE;
+                    gCurrentSprite.MESSAGE_BANNER_NEW_ITEM = TRUE;
+                    break;
+
+                case MESSAGE_FULLY_POWERED_SUIT:
+                case MESSAGE_UNKNOWN_ITEM:
+                    isItem = TRUE;
+                    break;
+            }
+
+            if (isItem)
+            {
+                RandoItemJingle jingle = gCurrentRandoItem.jingle;
+
+                if (jingle == RIJ_DEFAULT)
+                {
+                    switch (msg)
+                    {
+                        case MESSAGE_ENERGY_TANK_ACQUIRED:
+                        case MESSAGE_MISSILE_TANK_ACQUIRED:
+                        case MESSAGE_SUPER_MISSILE_TANK_ACQUIRED:
+                        case MESSAGE_POWER_BOMB_TANK_ACQUIRED:
+                            jingle = RIJ_MINOR;
+                            break;
+
+                        case MESSAGE_FIRST_MISSILE_TANK:
+                        case MESSAGE_FIRST_SUPER_MISSILE_TANK:
+                        case MESSAGE_FIRST_POWER_BOMB_TANK:
+                        case MESSAGE_LONG_BEAM:
+                        case MESSAGE_CHARGE_BEAM:
+                        case MESSAGE_ICE_BEAM:
+                        case MESSAGE_WAVE_BEAM:
+                        case MESSAGE_UKNOWN_ITEM_PLASMA:
+                        case MESSAGE_BOMB:
+                        case MESSAGE_VARIA_SUIT:
+                        case MESSAGE_UNKNOWN_ITEM_GRAVITY:
+                        case MESSAGE_MORPH_BALL:
+                        case MESSAGE_SPEED_BOOSTER:
+                        case MESSAGE_HIGH_JUMP:
+                        case MESSAGE_SCREW_ATTACK:
+                        case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
+                        case MESSAGE_POWER_GRIP:
+                            jingle = RIJ_MAJOR;
+                            break;
+
+                        case MESSAGE_UNKNOWN_ITEM:
+                            jingle = RIJ_UNKNOWN;
+                            break;
+
+                        case MESSAGE_FULLY_POWERED_SUIT:
+                            jingle = RIJ_FULLY_POWERED;
+                            break;
+                    }
+                }
+
+                switch (jingle)
+                {
+                    case RIJ_MINOR:
+                        SoundPlay(MUSIC_GETTING_TANK_JINGLE);
+                        break;
+
+                    case RIJ_MAJOR:
+                        BackupTrackData2SoundChannels();
+                        InsertMusicAndQueueCurrent(MUSIC_GETTING_ITEM_JINGLE, FALSE);
+                        break;
+
+                    case RIJ_UNKNOWN:
+                        BackupTrackData2SoundChannels();
+                        InsertMusicAndQueueCurrent(MUSIC_GETTING_UNKNOWN_ITEM_JINGLE, FALSE);
+                        break;
+
+                    case RIJ_FULLY_POWERED:
+                        InsertMusicAndQueueCurrent(MUSIC_GETTING_FULLY_POWERED_SUIT_JINGLE, FALSE);
+                        // Used as flag for longer timer
+                        gCurrentSprite.work3 = TRUE;
+                        break;
+                    
+                    default:
+                        SoundPlay(MUSIC_GETTING_TANK_JINGLE);
+                        break;
+                }
+            }
+            else if (msg != MESSAGE_SAVE_PROMPT)
+            {
+                SoundPlay(MUSIC_GETTING_TANK_JINGLE);
+            }
+#else // !RANDOMIZER
             if (MESSAGE_IS_ITEM(msg))
             {
                 // New item
@@ -190,7 +313,8 @@ static void MessageBannerPopUp(void)
 
                 SoundPlay(MUSIC_GETTING_TANK_JINGLE);
             }
-            
+#endif // RANDOMIZER
+
             // Check is one line message (new item/ability, save complete, map text)
             if (gCurrentSprite.MESSAGE_BANNER_NEW_ITEM || msg == MESSAGE_SAVE_COMPLETE ||
                 (MESSAGE_IS_MAP(msg) || msg == MESSAGE_FULLY_POWERED_SUIT))
@@ -216,8 +340,11 @@ static void MessageBannerPopUp(void)
         if (gCurrentSprite.pOam == sMessageBannerOam_OneLineSpawn)
         {
             gCurrentSprite.pOam = sMessageBannerOam_OneLineStatic;
-
+#ifdef RANDOMIZER
+            if (gCurrentSprite.work3)
+#else // !RANDOMIZER
             if (msg == MESSAGE_FULLY_POWERED_SUIT)
+#endif // RANDOMIZER
                 gCurrentSprite.MESSAGE_BANNER_TIMER = CONVERT_SECONDS(5) + TWO_THIRD_SECOND; // Long because jingle is long
             else
                 gCurrentSprite.MESSAGE_BANNER_TIMER = CONVERT_SECONDS(1) + TWO_THIRD_SECOND;

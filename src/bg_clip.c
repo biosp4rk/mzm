@@ -4,6 +4,7 @@
 #include "minimap.h"
 #include "connection.h"
 #include "macros.h"
+#include "randomizer.h"
 
 #include "data/block_data.h"
 
@@ -21,6 +22,7 @@
 #include "structs/transparency.h"
 #include "structs/game_state.h"
 #include "structs/samus.h"
+#include "structs/randomizer.h"
 
 /**
  * @brief 5a484 | d8 | Sets the value for a BG block
@@ -402,6 +404,9 @@ void BgClipCheckTouchingTransitionOrTank(void)
     s32 i;
     s32 j;
     s32 isFirstTank;
+#ifdef RANDOMIZER
+    const struct MinorLocation* loc;
+#endif // RANDOMIZER
 
     // Get X positions
     // On the right
@@ -513,6 +518,11 @@ void BgClipCheckTouchingTransitionOrTank(void)
                 gLastTankCollected.xPosition = xPositions[sBlockTouchOffsets[j][1]];
                 gLastTankCollected.yPosition = yPositions[sBlockTouchOffsets[j][0]];
 
+#ifdef RANDOMIZER
+                loc = RandoGetMinorLocation(gCurrentArea, gCurrentRoom,
+                    xPositions[sBlockTouchOffsets[j][1]], yPositions[sBlockTouchOffsets[j][0]]);
+                RandoCollectMinorLocationItem(loc);
+#else // !RANDOMIZER
                 // Apply tank :
                 // Check not above max (max number of tanks * increase amount + starting) >= current max + increase
                 // Check if it's not first tank of that type (except for energy)
@@ -567,6 +577,7 @@ void BgClipCheckTouchingTransitionOrTank(void)
                     SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, i, SPRITE_GFX_SLOT_SPECIAL,
                         gSamusData.yPosition, gSamusData.xPosition, 0);
                 }
+#endif // RANDOMIZER
             }
         }
 
