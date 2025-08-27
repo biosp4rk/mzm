@@ -2,6 +2,7 @@
 #include "gba.h"
 #include "sprites_AI/ruins_test.h"
 #include "macros.h"
+#include "randomizer.h"
 
 #include "data/sprites/message_banner.h"
 
@@ -207,9 +208,9 @@ static void MessageBannerPopUp(void)
 
             if (isItem)
             {
-                RandoItemJingle jingle = gCurrentRandoItem.jingle;
-
-                if (jingle == RIJ_DEFAULT)
+                // Set actual jingle if default
+                // TODO: Could probably move this to RandoCollectItem
+                if (gCurrentRandoItem.jingle == RIJ_DEFAULT)
                 {
                     switch (msg)
                     {
@@ -217,7 +218,7 @@ static void MessageBannerPopUp(void)
                         case MESSAGE_MISSILE_TANK_ACQUIRED:
                         case MESSAGE_SUPER_MISSILE_TANK_ACQUIRED:
                         case MESSAGE_POWER_BOMB_TANK_ACQUIRED:
-                            jingle = RIJ_MINOR;
+                            gCurrentRandoItem.jingle = RIJ_MINOR;
                             break;
 
                         case MESSAGE_FIRST_MISSILE_TANK:
@@ -236,22 +237,23 @@ static void MessageBannerPopUp(void)
                         case MESSAGE_POWER_GRIP:
                         case MESSAGE_ZIPLINES:
                         case MESSAGE_INFANT_METROID:
-                            jingle = RIJ_MAJOR;
+                            gCurrentRandoItem.jingle = RIJ_MAJOR;
                             break;
 
                         case MESSAGE_UKNOWN_ITEM_PLASMA:
                         case MESSAGE_UNKNOWN_ITEM_GRAVITY:
                         case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
-                            jingle = gEquipment.suitType == SUIT_FULLY_POWERED ? RIJ_MAJOR : RIJ_UNKNOWN;
+                            gCurrentRandoItem.jingle = gEquipment.suitType == SUIT_FULLY_POWERED ?
+                                RIJ_MAJOR : RIJ_UNKNOWN;
                             break;
 
                         case MESSAGE_FULLY_POWERED_SUIT:
-                            jingle = RIJ_FULLY_POWERED;
+                            gCurrentRandoItem.jingle = RIJ_FULLY_POWERED;
                             break;
                     }
                 }
 
-                switch (jingle)
+                switch (gCurrentRandoItem.jingle)
                 {
                     case RIJ_MINOR:
                         SoundPlay(MUSIC_GETTING_TANK_JINGLE);
@@ -419,7 +421,11 @@ static void MessageBannerStatic(void)
  */
 static void MessageBannerRemovalInit(void)
 {
+#ifdef RANDOMIZER
+    if (gCollectingTank && !IN_RUINS_TEST_ROOM)
+#else // !RANDOMIZER
     if (gCollectingTank)
+#endif // RANDOMIZER
         BgClipFinishCollectingTank();
 
     if (gCurrentSprite.pOam == sMessageBannerOam_OneLineStatic)
@@ -451,6 +457,22 @@ static void MessageBannerRemovalAnimation(void)
             // Re-enable pause
             gDisablePause = FALSE;
         }
+#ifdef RANDOMIZER
+        // Check if in Ruins Test room
+        else if (IN_RUINS_TEST_ROOM)
+        {
+            // Spawn chozo pillar
+            SpriteLoadGfx(PSPRITE_FALLING_CHOZO_PILLAR, 7);
+            SpriteLoadPal(PSPRITE_FALLING_CHOZO_PILLAR, 7, 1);
+            SpriteSpawnPrimary(PSPRITE_FALLING_CHOZO_PILLAR, 0, 7, gBossWork.work1 - BLOCK_SIZE * 4,
+                gBossWork.work2 + BLOCK_SIZE * 12, 0);
+        }
+        // Check replay sounds
+        else if (RandoIsItemMessage(msg) && gCurrentRandoItem.jingle == RIJ_MINOR)
+        {
+            RetrieveTrackData2SoundChannels();
+        }
+#else // !RANDOMIZER
         else if (msg == MESSAGE_FULLY_POWERED_SUIT)
         {
             // Start suit animation
@@ -467,6 +489,7 @@ static void MessageBannerRemovalAnimation(void)
         {
             RetrieveTrackData2SoundChannels();
         }
+#endif // RANDOMIZER
 
         gPreventMovementTimer = 0;
 

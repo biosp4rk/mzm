@@ -11,7 +11,7 @@
 - ~~Major locations having any item~~
 - ~~Allow getting ziplines as an item~~
 - ~~Allow getting item from zipline source~~
-- Allow getting item from ruins test
+- ~~Allow getting item from ruins test~~
 - Support infant metroid items
 - Starting items
   - Set hint events here for statues that don't have hints

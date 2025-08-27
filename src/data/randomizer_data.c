@@ -136,7 +136,7 @@ const struct MajorLocation sMajorLocations[ITEM_SOURCE_COUNT] = {
         .hintedBy = 0xFF
     },
     [ITEM_SOURCE_FULLY_POWERED] = {
-        .item = RIT_WAVE_BEAM,
+        .item = RIT_ZIPLINES,
         .jingle = RIJ_UNKNOWN,
         .customMessage = NULL,
         .hintedBy = 0xFF

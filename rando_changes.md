@@ -6,20 +6,24 @@
 - Allow getting unknown items as normal items
   - `sEnglishText_Message_UnknownItem*` and `sEnglishTextPointers_Message` in [text_data.c](src/data/text_data.c)
   - `StatusScreenSuitlessItems` in [status_screen.c](src/menus/status_screen.c)
-- Allow getting items from anywhere
-  - `MessageBannerPopUp` and `MessageBannerStatic` in [message_banner.c](src/sprites_AI/message_banner.c)
+- Get any item from anywhere
+  - `MessageBannerPopUp`, `MessageBannerStatic`, and `MessageBannerRemovalAnimation` in [message_banner.c](src/sprites_AI/message_banner.c)
   - `TextProcessMessageBanner` in [text.c](src/text.c)
-- Allow getting any item from a minor location (tanks)
+- Get any item from a minor location (tanks)
   - `BgClipCheckTouchingTransitionOrTank` in [bg_clip.c](src/bg_clip.c)
   - `BlockCheckCcaa` in [block.c](src/block.c)
-- Allow getting any item from a major location (ability)
+- Get any item from a major location (ability)
   - `MorphBallInit` and `MorphBallGet` in [morph_ball.c](src/sprites_AI/morph_ball.c)
   - `PowerGrip` in [power_grip.c](src/sprites_AI/power_grip.c)
   - `ChargeBeamInit` and `ChargeBeamIdle` in [charge_beam.c](src/sprites_AI/charge_beam.c)
   - `ChozoStatueRegisterItem` and `ChozoStatueGetBehavior` in [chozo_statue.c](src/sprites_AI/chozo_statue.c)
   - `ChozoBallRegisterItem` in [chozo_ball.c](src/sprites_AI/chozo_ball.c)
-- Get item from zipline generator
+- Get any item from zipline generator
   - `ZiplineGeneratorInit` and `ZiplineGeneratorActivating` in [zipline_generator.c](src/sprites_AI/zipline_generator.c)
+- Get any item from Ruins Test
+  - `RuinsTestDespawn` and `RuinsTestSamusReflectionEnd` in [ruins_test.c](src/sprites_AI/ruins_test.c)
+  - `FallingChozoPillar` in [falling_chozo_pillar.c](src/sprites_AI/falling_chozo_pillar.c)
+  - `MessageBannerRemovalInit` and `MessageBannerRemovalAnimation` in [message_banner.c](src/sprites_AI/message_banner.c)
 - Custom text on items
   - `TextProcessMessageBanner` in [text.c](src/text.c)
 - Chozo hints for any item

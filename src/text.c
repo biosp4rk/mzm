@@ -951,7 +951,7 @@ u8 TextProcessMessageBanner(void)
             if (RandoIsItemMessage(gCurrentMessage.messageID))
             {
                 gCurrentItemBeingAcquired = gCurrentMessage.messageID;
-                if (!gCurrentRandoItem.isMinor)
+                if (!gCurrentRandoItem.isMinor && !IN_RUINS_TEST_ROOM)
                     BgClipFinishCollectingAbility();
             }
 #else // !RANDOMIZER

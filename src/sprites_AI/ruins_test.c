@@ -2,6 +2,7 @@
 #include "gba.h"
 #include "macros.h"
 #include "projectile_util.h"
+#include "randomizer.h"
 
 #include "data/sprites/ruins_test.h"
 #include "data/sprite_data.h"
@@ -21,6 +22,7 @@
 #include "constants/sprite_util.h"
 #include "constants/text.h"
 #include "constants/menus/pause_screen.h"
+#include "constants/randomizer.h"
 
 #include "structs/clipdata.h"
 #include "structs/game_state.h"
@@ -130,7 +132,11 @@ enum RuinsTestLightningPart {
  */
 static void RuinsTestCalculateDelay(u8 delay)
 {
+#if defined(DEBUG) && defined(RANDOMIZER)
+    gBossWork.work5 = 30;
+#else
     gBossWork.work5 = sRandomNumberTable[gFrameCounter8Bit] + delay;
+#endif // DEBUG && RANDOMIZER
 }
 
 /**
@@ -1145,7 +1151,8 @@ static void RuinsTestDespawn(void)
         EventFunction(EVENT_ACTION_SETTING, EVENT_MOTHER_BRAIN_KILLED);
         EventFunction(EVENT_ACTION_SETTING, EVENT_ESCAPED_ZEBES);
 
-        if (sRandoRemoveCutscenes)
+        // TODO: Restore previous suit type if suitless
+        if (gEquipment.suitType == SUIT_SUITLESS)
         {
             gEquipment.suitType = SUIT_FULLY_POWERED;
             // Set ammo full
@@ -1156,31 +1163,65 @@ static void RuinsTestDespawn(void)
             // Activate items
             gEquipment.beamBombsActivation = gEquipment.beamBombs;
             gEquipment.suitMiscActivation = gEquipment.suitMisc;
-
-            // Copied from RoomLoad
-            SamusSetPose(SPOSE_FACING_THE_FOREGROUND);
-            gSamusData.xPosition = BLOCK_SIZE * 24 + HALF_BLOCK_SIZE;
-            gSamusData.yPosition = BLOCK_SIZE * 31 - ONE_SUB_PIXEL;
-
-            gInGameCutscene.stage = 0;
-            gInGameCutscene.queuedCutscene = IGC_GETTING_FULLY_POWERED;
-            InGameCutsceneStart(IGC_GETTING_FULLY_POWERED);
-
-            gDisablePause = TRUE;
-            gSamusData.lastWallTouchedMidAir = TRUE;
-            gCurrentItemBeingAcquired = ITEM_ACQUISITION_GRAVITY;
-            gSamusWeaponInfo.chargeCounter = 0;
-
-            // Extra fixes
-            ProjectileLoadGraphics();
-            gSubSpriteData1.work3 = RUINS_TEST_FIGHT_STAGE_STARTING_CUTSCENE;
         }
-        else
+
+        // Copied from RoomLoad
+        SamusSetPose(SPOSE_FACING_THE_FOREGROUND);
+        gSamusData.xPosition = BLOCK_SIZE * 24 + HALF_BLOCK_SIZE;
+        gSamusData.yPosition = BLOCK_SIZE * 31 - ONE_SUB_PIXEL;
+        gSamusWeaponInfo.chargeCounter = 0;
+
+        PlayMusic(MUSIC_BRINSTAR_REMIX, 0);
+        RandoCollectMajorLocationItem(ITEM_SOURCE_FULLY_POWERED);
+        gDisablePause = FALSE;
+
+        // Set variable that remove Ruins Test sprites
+        gSubSpriteData1.work3 = RUINS_TEST_FIGHT_STAGE_STARTING_CUTSCENE;
+#else // !RANDOMIZER
+        // Start getting fully powered cutscene
+        StartEffectForCutscene(EFFECT_CUTSCENE_GETTING_FULLY_POWERED);
 #endif // RANDOMIZER
-        {
-            // Start getting fully powered cutscene
-            StartEffectForCutscene(EFFECT_CUTSCENE_GETTING_FULLY_POWERED);
-        }
+
+// #ifdef RANDOMIZER
+//         EventFunction(EVENT_ACTION_SETTING, EVENT_MOTHER_BRAIN_KILLED);
+//         EventFunction(EVENT_ACTION_SETTING, EVENT_ESCAPED_ZEBES);
+
+//         if (sRandoRemoveCutscenes)
+//         {
+//             gEquipment.suitType = SUIT_FULLY_POWERED;
+//             // Set ammo full
+//             gEquipment.currentEnergy = gEquipment.maxEnergy;
+//             gEquipment.currentMissiles = gEquipment.maxMissiles;
+//             gEquipment.currentSuperMissiles = gEquipment.maxSuperMissiles;
+//             gEquipment.currentPowerBombs = gEquipment.maxPowerBombs;
+//             // Activate items
+//             gEquipment.beamBombsActivation = gEquipment.beamBombs;
+//             gEquipment.suitMiscActivation = gEquipment.suitMisc;
+
+//             // Copied from RoomLoad
+//             SamusSetPose(SPOSE_FACING_THE_FOREGROUND);
+//             gSamusData.xPosition = BLOCK_SIZE * 24 + HALF_BLOCK_SIZE;
+//             gSamusData.yPosition = BLOCK_SIZE * 31 - ONE_SUB_PIXEL;
+
+//             gInGameCutscene.stage = 0;
+//             gInGameCutscene.queuedCutscene = IGC_GETTING_FULLY_POWERED;
+//             InGameCutsceneStart(IGC_GETTING_FULLY_POWERED);
+
+//             gDisablePause = TRUE;
+//             gSamusData.lastWallTouchedMidAir = TRUE;
+//             gCurrentItemBeingAcquired = ITEM_ACQUISITION_GRAVITY;
+//             gSamusWeaponInfo.chargeCounter = 0;
+
+//             // Extra fixes
+//             ProjectileLoadGraphics();
+//             gSubSpriteData1.work3 = RUINS_TEST_FIGHT_STAGE_STARTING_CUTSCENE;
+//         }
+//         else
+// #endif // RANDOMIZER
+//         {
+//             // Start getting fully powered cutscene
+//             StartEffectForCutscene(EFFECT_CUTSCENE_GETTING_FULLY_POWERED);
+//         }
     }
 }
 
@@ -2248,8 +2289,10 @@ void RuinsTestSamusReflectionEnd(void)
                 gCurrentSprite.status = 0;
                 gSpriteData[gCurrentSprite.primarySpriteRamSlot].status = 0;
 
+#ifndef RANDOMIZER
                 SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_FULLY_POWERED_SUIT, 6,
                     gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
+#endif // !RANDOMIZER
         }
         
         return;
