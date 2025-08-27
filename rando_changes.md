@@ -1,15 +1,16 @@
 ## Randomizer
 - Support showing text on title screen
-  - `TitleScreenInit` in [title_screen.c](src\menus\title_screen.c)
+  - `TitleScreenInit` in [title_screen.c](src/menus/title_screen.c)
 - Disable title screen demos (to avoid spoilers)
   - `TitleScreenCheckPlayEffects` in [title_screen.c](src/menus/title_screen.c)
 - Allow getting unknown items as normal items
-  - `sEnglishText_Message_UnknownItem*` and `sEnglishTextPointers_Message` in [text_data.c](src\data\text_data.c)
+  - `sEnglishText_Message_UnknownItem*` and `sEnglishTextPointers_Message` in [text_data.c](src/data/text_data.c)
+  - `StatusScreenSuitlessItems` in [status_screen.c](src/menus/status_screen.c)
 - Allow getting items from anywhere
-  - `MessageBannerPopUp` and `MessageBannerStatic` in [message_banner.c](src\sprites_AI\message_banner.c)
+  - `MessageBannerPopUp` and `MessageBannerStatic` in [message_banner.c](src/sprites_AI/message_banner.c)
   - `TextProcessMessageBanner` in [text.c](src/text.c)
 - Allow getting any item from a minor location (tanks)
-  - `BgClipCheckTouchingTransitionOrTank` in [bg_clip.c](src\bg_clip.c)
+  - `BgClipCheckTouchingTransitionOrTank` in [bg_clip.c](src/bg_clip.c)
   - `BlockCheckCcaa` in [block.c](src/block.c)
 - Allow getting any item from a major location (ability)
   - `MorphBallInit` and `MorphBallGet` in [morph_ball.c](src/sprites_AI/morph_ball.c)
@@ -17,6 +18,8 @@
   - `ChargeBeamInit` and `ChargeBeamIdle` in [charge_beam.c](src/sprites_AI/charge_beam.c)
   - `ChozoStatueRegisterItem` and `ChozoStatueGetBehavior` in [chozo_statue.c](src/sprites_AI/chozo_statue.c)
   - `ChozoBallRegisterItem` in [chozo_ball.c](src/sprites_AI/chozo_ball.c)
+- Custom text on items
+  - `TextProcessMessageBanner` in [text.c](src/text.c)
 
 ## Fixes
 - Allow laying power bombs without bombs
@@ -26,11 +29,11 @@
   - `RoomLoad` in [room.c](src/room.c)
 - Don't give varia automatically when getting fully powered suit
   - `ColorFadingProcess_GettingFullyPowered` in [room.c](src/color_fading.c)
-  - `PauseScreenGetMinimapData` in [pause_screen.c](src\menus\pause_screen.c)
+  - `PauseScreenGetMinimapData` in [pause_screen.c](src/menus/pause_screen.c)
 - Allow Chozo hints in all areas
-  - `sElevatorRoomPairs` in [clipdata_data.c](src\data\clipdata_data.c)
-  - `sMapScreenChozoStatueAreaNamesEnglishGfx` in [pause_screen_data.c](src\data\menus\pause_screen_data.c)
-  - `sChozoStatueTargetPathBrinstar` and `sChozoStatueTargetPathNorfair` in [pause_screen_sub_menus_data.c](src\data\menus\pause_screen_sub_menus_data.c)
+  - `sElevatorRoomPairs` in [clipdata_data.c](src/data/clipdata_data.c)
+  - `sMapScreenChozoStatueAreaNamesEnglishGfx` in [pause_screen_data.c](src/data/menus/pause_screen_data.c)
+  - `sChozoStatueTargetPathBrinstar` and `sChozoStatueTargetPathNorfair` in [pause_screen_sub_menus_data.c](src/data/menus/pause_screen_sub_menus_data.c)
 - Change charge beam OAM to work with any item (and don't spawn glow)
   - `ChargeBeamSpawnGlow`, `ChargeBeamVisibleInit`, and `ChargeBeamIdle` in [charge_beam.c](src/sprites_AI/charge_beam.c)
 - Unlock Imago door when it dies (instead of waiting to collect super missiles)
@@ -42,9 +45,9 @@
 - Allow glass tube to be broken any time
   - `GlassTubeCheckPowerBombCollision` in [glass_tube.c](src/sprites_AI/glass_tube.c)
 - Using any beam on Ruins Test can hurt Samus
-  - `RuinsTestProjectileCollision` in [ruins_test.c](src\sprites_AI\ruins_test.c)
+  - `RuinsTestProjectileCollision` in [ruins_test.c](src/sprites_AI/ruins_test.c)
 - Defeating Ruins Test sets Mother Brain killed event and Zebes escaped event
-  - `RuinsTestDespawn` in [ruins_test.c](src\sprites_AI\ruins_test.c)
+  - `RuinsTestDespawn` in [ruins_test.c](src/sprites_AI/ruins_test.c)
 - Fix space pirate alarm music
   - `DisableChozodiaAlarm` and `DecrementChozodiaAlarm` in [space_pirate.c](src/sprites_AI/space_pirate.c)
 - Fix space pirate power bomb OAM (flip horizontally)
@@ -85,9 +88,9 @@
 - Skip door transitions
   - `ConnectionProcessDoorType` in [connection.c](src/connection.c)
 - New file difficulty options
-  - `FileSelectInit`, `FileSelectUpdateSubMenu`, and `FileSelectProcessFileSelection` [file_select.c](src\menus\file_select.c)
-  - `sFileScreenMessagesInfo` in [file_select_data.c](src\data\menus\file_select_data.c)
-  - `sEnglishText_FileScreen_DifficultyHardOnly` and `sEnglishTextPointers_FileScreen` in [text_data.c](src\data\text_data.c)
+  - `FileSelectInit`, `FileSelectUpdateSubMenu`, and `FileSelectProcessFileSelection` [file_select.c](src/menus/file_select.c)
+  - `sFileScreenMessagesInfo` in [file_select_data.c](src/data/menus/file_select_data.c)
+  - `sEnglishText_FileScreen_DifficultyHardOnly` and `sEnglishTextPointers_FileScreen` in [text_data.c](src/data/text_data.c)
 - Use ball launchers without bombs
   - `MorphBallLauncherDetectBomb` in [morph_ball_launcher.c](src/sprites_AI/morph_ball_launcher.c)
 - Disable infinite bomb jumping
@@ -104,4 +107,4 @@
   - `GunshipFlying` in [gunship.c](src/sprites_AI/gunship.c)
   - `KraidInit` and `KraidDying` in [kraid.c](src/sprites_AI/kraid.c)
   - `RidleyCheckPlayCutscene` and `RidleyDying` in [ridley.c](src/sprites_AI/ridley.c)
-  - `RuinsTestDespawn` in [ruins_test.c](src\sprites_AI\ruins_test.c)
+  - `RuinsTestDespawn` in [ruins_test.c](src/sprites_AI/ruins_test.c)

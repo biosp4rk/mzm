@@ -9,7 +9,7 @@
 struct MajorLocation {
     /* 0 */ RandoItemType item;
     /* 1 */ RandoItemJingle jingle;
-    /* 4 */ u8* customMessage;
+    /* 4 */ const u16* customMessage;
 };
 
 struct MinorLocation {
@@ -18,14 +18,14 @@ struct MinorLocation {
     /* 4 */ u16 bg1Value; // Needed for hidden items
     /* 6 */ RandoItemType item;
     /* 7 */ RandoItemJingle jingle;
-    /* 8 */ u8* customMessage;
+    /* 8 */ const u16* customMessage;
 };
 
 struct CurrentRandoItem {
     boolu8 isMinor;
     RandoItemType item;
     RandoItemJingle jingle;
-    u8* customMessage;
+    const u16* customMessage;
 };
 
 extern struct CurrentRandoItem gCurrentRandoItem;

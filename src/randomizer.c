@@ -6,6 +6,7 @@
 #include "data/randomizer_data.h"
 #include "data/rooms_data.h"
 #include "data/sprite_data.h"
+#include "data/text_data.h"
 
 #include "constants/event.h"
 #include "constants/randomizer.h"
@@ -13,6 +14,7 @@
 #include "constants/sprite.h"
 #include "constants/text.h"
 
+#include "structs/game_state.h"
 #include "structs/samus.h"
 
 #ifdef RANDOMIZER
@@ -266,6 +268,63 @@ void RandoCollectMinorLocationItem(const struct MinorLocation* loc)
     gCurrentRandoItem.customMessage = loc->customMessage;
 
     RandoCollectItem(loc->item, loc->jingle);
+}
+
+boolu8 RandoIsItemMessage(u8 message)
+{
+    switch (message)
+    {
+        case MESSAGE_ENERGY_TANK_ACQUIRED:
+        case MESSAGE_MISSILE_TANK_ACQUIRED:
+        case MESSAGE_FIRST_MISSILE_TANK:
+        case MESSAGE_SUPER_MISSILE_TANK_ACQUIRED:
+        case MESSAGE_FIRST_SUPER_MISSILE_TANK:
+        case MESSAGE_POWER_BOMB_TANK_ACQUIRED:
+        case MESSAGE_FIRST_POWER_BOMB_TANK:
+        case MESSAGE_LONG_BEAM:
+        case MESSAGE_CHARGE_BEAM:
+        case MESSAGE_ICE_BEAM:
+        case MESSAGE_WAVE_BEAM:
+        case MESSAGE_UKNOWN_ITEM_PLASMA:
+        case MESSAGE_BOMB:
+        case MESSAGE_VARIA_SUIT:
+        case MESSAGE_UNKNOWN_ITEM_GRAVITY:
+        case MESSAGE_MORPH_BALL:
+        case MESSAGE_SPEED_BOOSTER:
+        case MESSAGE_HIGH_JUMP:
+        case MESSAGE_SCREW_ATTACK:
+        case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
+        case MESSAGE_POWER_GRIP:
+        case MESSAGE_FULLY_POWERED_SUIT:
+        case MESSAGE_ZIPLINES:
+        case MESSAGE_INFANT_METROID:
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+const u16* RandoGetMessageText(u8 message)
+{
+    if (RandoIsItemMessage(message))
+    {
+        if (gCurrentRandoItem.customMessage != NULL)
+            return gCurrentRandoItem.customMessage;
+        
+        if (gEquipment.suitType != SUIT_FULLY_POWERED)
+        {
+            switch (message)
+            {
+                case MESSAGE_UKNOWN_ITEM_PLASMA:
+                case MESSAGE_UNKNOWN_ITEM_GRAVITY:
+                case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
+                    message = MESSAGE_UNKNOWN_ITEM;
+                    break;
+            }
+        }
+    }
+
+    return sMessageTextPointers[gLanguage][message];
 }
 
 #endif // RANDOMIZER

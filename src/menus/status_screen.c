@@ -2879,8 +2879,17 @@ u32 StatusScreenSuitlessItems(void)
                     case ITEM_ACQUISITION_PLASMA_BEAM:
                     case ITEM_ACQUISITION_GRAVITY:
                     case ITEM_ACQUISITION_SPACE_JUMP:
-                        // Play unknown item sound
-                        SoundPlay(SOUND_UNKNOWN_ITEM_ACQUISITION);
+#ifdef RANDOMIZER
+                        if (gEquipment.suitType == SUIT_FULLY_POWERED)
+                        {
+                            SoundPlay(SOUND_TOGGLING_ITEM_ON);
+                        }
+                        else
+#endif // RANDOMIZER
+                        {
+                            // Play unknown item sound
+                            SoundPlay(SOUND_UNKNOWN_ITEM_ACQUISITION);
+                        }
                         break;
 
                     case ITEM_ACQUISITION_MISSILES:

@@ -233,8 +233,8 @@ const struct MinorLocation sMinorLocations[MINOR_LOCATION_COUNT] = {
     { // Kraid 0x1 at 24, 4
         .key = 0x1010418,
         .bg1Value = 0x47,
-        .item = RIT_FULLY_POWERED,
-        .jingle = RIJ_MAJOR,
+        .item = RIT_PLASMA_BEAM,
+        .jingle = RIJ_DEFAULT,
         .customMessage = NULL
     },
     { // Kraid 0x2 at 9, 33

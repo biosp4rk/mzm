@@ -14,9 +14,6 @@
 - Support infant metroid items
 - Starting items
 - Starting location
-- Fix obtaining unknown items
-  - Display "unknown item" if not full suit when text is loaded
-  - Don't play sound effect on status screen if full suit
 - Add separate normal and varia palettes for full suit
 
 Original ASM:
@@ -28,8 +25,6 @@ Original ASM:
 - assign_item.asm
 - clipdata_new.asm
 - items_new.asm
-- ~~misc.asm~~
-  - "fix call to RemoveCollectedAbility"
 - random_items.asm
 - tile_table_lengths.asm (store these in the patcher)
 - tilesets_new.asm
@@ -41,6 +36,9 @@ Original ASM:
 - ~~Allow chozo hints in any area~~
 - ~~Fix minimap updating twice when grabbing an ability at a minor location~~
 - ~~Fix Samus not getting stopped when getting full suit~~
+- ~~Fix obtaining unknown items~~
+  - ~~Display "unknown item" if not full suit when text is loaded~~
+  - ~~Don't play sound effect on status screen if full suit~~
 
 ## Room Changes
 - Remove duplicate rooms near Ruins Test
