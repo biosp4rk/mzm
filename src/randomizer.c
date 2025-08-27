@@ -1,5 +1,7 @@
 #include "randomizer.h"
+
 #include "event.h"
+#include "in_game_cutscene.h"
 #include "sprite.h"
 
 #include "data/menus/pause_screen_sub_menus_data.h"
@@ -9,6 +11,8 @@
 #include "data/text_data.h"
 
 #include "constants/event.h"
+#include "constants/in_game_cutscene.h"
+#include "constants/menus/pause_screen.h"
 #include "constants/randomizer.h"
 #include "constants/samus.h"
 #include "constants/sprite.h"
@@ -48,6 +52,9 @@ static const u8* sPowerBombTankIncreaseAmount_Pointer = &sPowerBombTankIncreaseA
 static const u8* sRandoTitleLine1_Pointer = sRandoTitleLine1;
 static const u8* sRandoTitleLine2_Pointer = sRandoTitleLine2;
 
+/**
+ * @brief TODO
+ */
 const struct MinorLocation* RandoGetMinorLocation(Area area, u8 room, u8 blockX, u8 blockY)
 {
     u32 key;
@@ -74,7 +81,10 @@ const struct MinorLocation* RandoGetMinorLocation(Area area, u8 room, u8 blockX,
     return NULL;
 }
 
-static void RandoCollectItem(RandoItemType item, RandoItemJingle jingle)
+/**
+ * @brief TODO
+ */
+static void RandoCollectItem(RandoItemType item, u8 hintedBy)
 {
     boolu8 isFirstTank;
     // message is for spawning the message banner, the actual text can be
@@ -237,6 +247,15 @@ static void RandoCollectItem(RandoItemType item, RandoItemJingle jingle)
         SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, message, SPRITE_GFX_SLOT_SPECIAL,
             gSamusData.yPosition, gSamusData.xPosition, 0);
     }
+
+    if (hintedBy != 0xFF && hintedBy < TARGET_ITEM_END)
+    {
+        EventFunction(EVENT_ACTION_SETTING, sRandoHintEvents[hintedBy][0]);
+        EventFunction(EVENT_ACTION_SETTING, sRandoHintEvents[hintedBy][1]);
+
+        if (hintedBy == TARGET_LONG_BEAM)
+            InGameCutsceneCheckFlag(TRUE, IGC_LONG_BEAM_HINT);
+    }
 }
 
 /**
@@ -253,7 +272,7 @@ void RandoCollectMajorLocationItem(ItemSource source)
     gCurrentRandoItem.jingle = loc->jingle;
     gCurrentRandoItem.customMessage = loc->customMessage;
 
-    RandoCollectItem(loc->item, loc->jingle);
+    RandoCollectItem(loc->item, loc->hintedBy);
 }
 
 /**
@@ -267,9 +286,12 @@ void RandoCollectMinorLocationItem(const struct MinorLocation* loc)
     gCurrentRandoItem.jingle = loc->jingle;
     gCurrentRandoItem.customMessage = loc->customMessage;
 
-    RandoCollectItem(loc->item, loc->jingle);
+    RandoCollectItem(loc->item, loc->hintedBy);
 }
 
+/**
+ * @brief TODO
+ */
 boolu8 RandoIsItemMessage(u8 message)
 {
     switch (message)
@@ -304,6 +326,9 @@ boolu8 RandoIsItemMessage(u8 message)
     return FALSE;
 }
 
+/**
+ * @brief TODO
+ */
 const u16* RandoGetMessageText(u8 message)
 {
     if (RandoIsItemMessage(message))

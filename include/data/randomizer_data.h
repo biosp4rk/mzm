@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#include "constants/menus/pause_screen.h"
+
 #include "structs/randomizer.h"
 
 // New data
@@ -51,5 +53,8 @@ extern const u8 sPowerBombTankIncreaseAmount;
 
 extern const struct MajorLocation sMajorLocations[ITEM_SOURCE_COUNT];
 extern const struct MinorLocation sMinorLocations[MINOR_LOCATION_COUNT];
+
+// TODO: Make static and move to randomizer.c (remove pause_screen include)
+extern const u8 sRandoHintEvents[TARGET_ITEM_END][2];
 
 #endif // RANDOMIZER_DATA_H

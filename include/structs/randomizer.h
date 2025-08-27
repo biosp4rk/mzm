@@ -9,6 +9,7 @@
 struct MajorLocation {
     /* 0 */ RandoItemType item;
     /* 1 */ RandoItemJingle jingle;
+    /* 2 */ u8 hintedBy;
     /* 4 */ const u16* customMessage;
 };
 
@@ -19,6 +20,7 @@ struct MinorLocation {
     /* 6 */ RandoItemType item;
     /* 7 */ RandoItemJingle jingle;
     /* 8 */ const u16* customMessage;
+    /* C */ u8 hintedBy;
 };
 
 struct CurrentRandoItem {

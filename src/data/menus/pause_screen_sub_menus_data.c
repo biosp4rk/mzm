@@ -199,7 +199,45 @@ const struct ChozoStatueTarget sChozoStatueTargets[TARGET_END] = {
     },
 };
 
+/**
+ * Indicates when a hint should no longer be displayed on the map
+ */
 const u8 sChozoStatueTargetConditions[TARGET_END][2] = {
+// Use events for each hint condition instead of checking equipment
+#ifdef RANDOMIZER
+    [TARGET_LONG_BEAM] = {
+        CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT,
+        EVENT_COLLECTED_LONG_BEAM_HINT
+    },
+    [TARGET_BOMBS] = {
+        CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT,
+        EVENT_COLLECTED_BOMBS_HINT
+    },
+    [TARGET_ICE_BEAM] = {
+        CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT,
+        EVENT_COLLECTED_ICE_BEAM_HINT
+    },
+    [TARGET_SPEED_BOOSTER] = {
+        CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT,
+        EVENT_COLLECTED_SPEED_BOOSTER_HINT
+    },
+    [TARGET_HIGH_JUMP] = {
+        CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT,
+        EVENT_COLLECTED_HI_JUMP_HINT
+    },
+    [TARGET_VARIA] = {
+        CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT,
+        EVENT_COLLECTED_VARIA_SUIT_HINT
+    },
+    [TARGET_WAVE_BEAM] = {
+        CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT,
+        EVENT_COLLECTED_WAVE_BEAM_HINT
+    },
+    [TARGET_SCREW_ATTACK] = {
+        CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT,
+        EVENT_COLLECTED_SCREW_ATTACK_HINT
+    },
+#else // !RANDOMIZER
     [TARGET_LONG_BEAM] = {
         CHOZO_STATUE_HINT_CONDITION_TYPE_BEAM_BOMBS,
         BBF_LONG_BEAM
@@ -232,6 +270,7 @@ const u8 sChozoStatueTargetConditions[TARGET_END][2] = {
         CHOZO_STATUE_HINT_CONDITION_TYPE_SUIT_MISC,
         SMF_SCREW_ATTACK
     },
+#endif // RANDOMIZER
     [TARGET_KRAID_FLAME] = {
         CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT,
         EVENT_KRAID_STATUE_OPENED
@@ -266,6 +305,9 @@ const u8 sChozoStatueTargetConditions[TARGET_END][2] = {
     }
 };
 
+/**
+ * Indicates which event should be set for a hint to be active
+ */
 const Event sChozoStatueHintEvents[TARGET_END] = {
     [TARGET_LONG_BEAM] = EVENT_STATUE_LONG_BEAM_GRABBED,
     [TARGET_BOMBS] = EVENT_STATUE_BOMBS_GRABBED,

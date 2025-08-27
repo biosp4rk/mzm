@@ -6,13 +6,15 @@
   - Room data
   - Door data (DLR)
   - Minimap data (DLR)
-- Custom item messages
+- ~~Custom item messages~~
+- ~~Hints for any item~~
 - ~~Major locations having any item~~
 - ~~Allow getting ziplines as an item~~
 - Allow getting item from zipline source
 - Allow getting item from ruins test
 - Support infant metroid items
 - Starting items
+  - Set hint events here for statues that don't have hints
 - Starting location
 - Add separate normal and varia palettes for full suit
 
@@ -20,15 +22,7 @@ Original ASM:
 - data
   - anim_tileset_entries.bin (add extra blank animated tilesets)
   - tileset_entries.bin (add extra blank tilesets)
-- unk_items
-- abilities.asm
-- assign_item.asm
-- clipdata_new.asm
-- items_new.asm
-- random_items.asm
-- tile_table_lengths.asm (store these in the patcher)
-- tilesets_new.asm
-- touching_tank.asm
+- tile_table_lengths.asm (store these in array in rom and add pointer to it)
 
 ## Fixes
 - ~~Disable Varia animation~~
@@ -39,6 +33,8 @@ Original ASM:
 - ~~Fix obtaining unknown items~~
   - ~~Display "unknown item" if not full suit when text is loaded~~
   - ~~Don't play sound effect on status screen if full suit~~
+  - Replace Chozo statue graphics
+- Include bug fixes for bugs that don't help speedrunners
 
 ## Room Changes
 - Remove duplicate rooms near Ruins Test
