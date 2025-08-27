@@ -194,11 +194,13 @@ static void MessageBannerPopUp(void)
                 case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
                 case MESSAGE_POWER_GRIP:
                     isItem = TRUE;
+                    // Go to status screen
                     gCurrentSprite.MESSAGE_BANNER_NEW_ITEM = TRUE;
                     break;
 
                 case MESSAGE_FULLY_POWERED_SUIT:
-                case MESSAGE_UNKNOWN_ITEM:
+                case MESSAGE_ZIPLINES:
+                case MESSAGE_INFANT_METROID:
                     isItem = TRUE;
                     break;
             }
@@ -225,21 +227,22 @@ static void MessageBannerPopUp(void)
                         case MESSAGE_CHARGE_BEAM:
                         case MESSAGE_ICE_BEAM:
                         case MESSAGE_WAVE_BEAM:
-                        case MESSAGE_UKNOWN_ITEM_PLASMA:
                         case MESSAGE_BOMB:
                         case MESSAGE_VARIA_SUIT:
-                        case MESSAGE_UNKNOWN_ITEM_GRAVITY:
                         case MESSAGE_MORPH_BALL:
                         case MESSAGE_SPEED_BOOSTER:
                         case MESSAGE_HIGH_JUMP:
                         case MESSAGE_SCREW_ATTACK:
-                        case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
                         case MESSAGE_POWER_GRIP:
+                        case MESSAGE_ZIPLINES:
+                        case MESSAGE_INFANT_METROID:
                             jingle = RIJ_MAJOR;
                             break;
 
-                        case MESSAGE_UNKNOWN_ITEM:
-                            jingle = RIJ_UNKNOWN;
+                        case MESSAGE_UKNOWN_ITEM_PLASMA:
+                        case MESSAGE_UNKNOWN_ITEM_GRAVITY:
+                        case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
+                            jingle = gEquipment.suitType == SUIT_FULLY_POWERED ? RIJ_MAJOR : RIJ_UNKNOWN;
                             break;
 
                         case MESSAGE_FULLY_POWERED_SUIT:
@@ -377,10 +380,16 @@ static void MessageBannerStatic(void)
     u8 message;
 
     message = gCurrentSprite.roomSlot;
+#ifndef RANDOMIZER
     if (message == MESSAGE_FULLY_POWERED_SUIT)
+    {
         gPreventMovementTimer = 0;
+    }
     else
+#endif // !RANDOMIZER
+    {
         gPreventMovementTimer = SAMUS_ITEM_PMT;
+    }
 
     // Timer
     if (gCurrentSprite.MESSAGE_BANNER_TIMER != 0)

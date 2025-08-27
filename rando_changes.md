@@ -5,10 +5,11 @@
   - `TitleScreenCheckPlayEffects` in [title_screen.c](src/menus/title_screen.c)
 - Allow getting unknown items as normal items
   - `sEnglishText_Message_UnknownItem*` and `sEnglishTextPointers_Message` in [text_data.c](src\data\text_data.c)
+- Allow getting items from anywhere
+  - `MessageBannerPopUp` and `MessageBannerStatic` in [message_banner.c](src\sprites_AI\message_banner.c)
+  - `TextProcessMessageBanner` in [text.c](src/text.c)
 - Allow getting any item from a minor location (tanks)
   - `BgClipCheckTouchingTransitionOrTank` in [bg_clip.c](src\bg_clip.c)
-  - `MessageBannerPopUp` in [message_banner.c](src\sprites_AI\message_banner.c)
-  - `TextProcessMessageBanner` in [text.c](src/text.c)
   - `BlockCheckCcaa` in [block.c](src/block.c)
 - Allow getting any item from a major location (ability)
   - `MorphBallInit` and `MorphBallGet` in [morph_ball.c](src/sprites_AI/morph_ball.c)

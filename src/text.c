@@ -865,7 +865,12 @@ void TextStartMessage(u8 textID, u8 gfxSlot)
 {
     gCurrentMessage = sMessage_Empty;
 
+#ifdef RANDOMIZER
+    // Assume textID is valid for randomizer
+    gCurrentMessage.messageID = textID;
+#else // !RANDOMIZER
     gCurrentMessage.messageID = textID > MESSAGE_ENEMY_LOCATION_ABNORMAL ? MESSAGE_ENEMY_LOCATION_ABNORMAL : textID;
+#endif // RANDOMIZER
     gCurrentMessage.gfxSlot = gfxSlot;
 }
 
@@ -962,7 +967,8 @@ u8 TextProcessMessageBanner(void)
                 case MESSAGE_UNKNOWN_ITEM_SPACE_JUMP:
                 case MESSAGE_POWER_GRIP:
                 case MESSAGE_FULLY_POWERED_SUIT:
-                case MESSAGE_UNKNOWN_ITEM:
+                case MESSAGE_ZIPLINES:
+                case MESSAGE_INFANT_METROID:
                     gCurrentItemBeingAcquired = gCurrentMessage.messageID;
                     if (!gCurrentRandoItem.isMinor)
                         BgClipFinishCollectingAbility();

@@ -8,11 +8,16 @@
   - Minimap data (DLR)
 - Custom item messages
 - ~~Major locations having any item~~
-- Allow getting ziplines as an item
+- ~~Allow getting ziplines as an item~~
 - Allow getting item from zipline source
+- Allow getting item from ruins test
 - Support infant metroid items
 - Starting items
 - Starting location
+- Fix obtaining unknown items
+  - Display "unknown item" if not full suit when text is loaded
+  - Don't play sound effect on status screen if full suit
+- Add separate normal and varia palettes for full suit
 
 Original ASM:
 - data
@@ -35,7 +40,7 @@ Original ASM:
 - ~~Fix charge beam OAM~~
 - ~~Allow chozo hints in any area~~
 - ~~Fix minimap updating twice when grabbing an ability at a minor location~~
-- Fix Samus not getting stopped when getting full suit
+- ~~Fix Samus not getting stopped when getting full suit~~
 
 ## Room Changes
 - Remove duplicate rooms near Ruins Test

@@ -158,8 +158,7 @@ static void RandoCollectItem(RandoItemType item, RandoItemJingle jingle)
             break;
 
         case RIT_PLASMA_BEAM:
-            message = gEquipment.suitType == SUIT_FULLY_POWERED ?
-                MESSAGE_UKNOWN_ITEM_PLASMA : MESSAGE_UNKNOWN_ITEM;
+            message = MESSAGE_UKNOWN_ITEM_PLASMA;
             gEquipment.beamBombs |= BBF_PLASMA_BEAM;
             break;
 
@@ -174,8 +173,7 @@ static void RandoCollectItem(RandoItemType item, RandoItemJingle jingle)
             break;
 
         case RIT_GRAVITY_SUIT:
-            message = gEquipment.suitType == SUIT_FULLY_POWERED ?
-                MESSAGE_UNKNOWN_ITEM_GRAVITY : MESSAGE_UNKNOWN_ITEM;
+            message = MESSAGE_UNKNOWN_ITEM_GRAVITY;
             gEquipment.suitMisc |= SMF_GRAVITY_SUIT;
             break;
 
@@ -200,8 +198,7 @@ static void RandoCollectItem(RandoItemType item, RandoItemJingle jingle)
             break;
 
         case RIT_SPACE_JUMP:
-            message = gEquipment.suitType == SUIT_FULLY_POWERED ?
-                MESSAGE_UNKNOWN_ITEM_SPACE_JUMP : MESSAGE_UNKNOWN_ITEM;
+            message = MESSAGE_UNKNOWN_ITEM_SPACE_JUMP;
             gEquipment.suitMisc |= SMF_SPACE_JUMP;
             break;
 
@@ -219,14 +216,12 @@ static void RandoCollectItem(RandoItemType item, RandoItemJingle jingle)
             break;
 
         case RIT_ZIPLINES:
-            // TODO: Add zipline activation message
-            message = MESSAGE_NONE;
+            message = MESSAGE_ZIPLINES;
             EventFunction(EVENT_ACTION_SETTING, EVENT_ZIPLINES_ACTIVATED);
             break;
 
         case RIT_INFANT_METROID:
-            // TODO: Add infant metroid activation message
-            message = MESSAGE_NONE;
+            message = MESSAGE_INFANT_METROID;
             // TODO: Add RAM value to increment
             break;
     }
