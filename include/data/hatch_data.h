@@ -11,7 +11,11 @@ extern const HatchType sHatchTypeTable[HATCH_COUNT];
 
 extern const struct HatchLockEvent sHatchLockEventsBrinstar[1];
 
+#ifdef RANDOMIZER
+extern const struct HatchLockEvent sHatchLockEventsKraid[0];
+#else // !RANDOMIZER
 extern const struct HatchLockEvent sHatchLockEventsKraid[1];
+#endif // RANDOMIZER
 
 #ifdef RANDOMIZER
 extern const struct HatchLockEvent sHatchLockEventsCrateria[1];

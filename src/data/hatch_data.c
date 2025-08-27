@@ -40,6 +40,10 @@ const struct HatchLockEvent sHatchLockEventsBrinstar[1] = {
     }
 };
 
+#ifdef RANDOMIZER
+// Don't lock door in zipline generator room
+const struct HatchLockEvent sHatchLockEventsKraid[0] = {};
+#else // !RANDOMIZER
 const struct HatchLockEvent sHatchLockEventsKraid[1] = {
     {
         .room = 4,
@@ -63,6 +67,7 @@ const struct HatchLockEvent sHatchLockEventsKraid[1] = {
         .hatchesToLock_15 = FALSE
     }
 };
+#endif // RANDOMIZER
 
 #ifdef RANDOMIZER
 const struct HatchLockEvent sHatchLockEventsCrateria[1] = {

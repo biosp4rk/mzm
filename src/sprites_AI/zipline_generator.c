@@ -1,5 +1,6 @@
 #include "sprites_AI/zipline_generator.h"
 #include "macros.h"
+#include "randomizer.h"
 
 #include "data/sprites/zipline_generator.h"
 
@@ -8,6 +9,7 @@
 #include "constants/event.h"
 #include "constants/sprite.h"
 #include "constants/samus.h"
+#include "constants/randomizer.h"
 
 #include "structs/clipdata.h"
 #include "structs/sprite.h"
@@ -95,8 +97,14 @@ static void ZiplineGeneratorInit(void)
         gCurrentSprite.status = 0;
         return;
     }
-    
+
+// EVENT_ZIPLINES_ACTIVATED determines if ziplines should work
+// EVENT_ZIPLINES_SOURCE indicates if the zipline generator has been used
+#ifdef RANDOMIZER
+    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ZIPLINES_SOURCE))
+#else // !RANDOMIZER
     if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ZIPLINES_ACTIVATED))
+#endif // RANDOMIZER
     {
         // Set already activated
         gCurrentSprite.pOam = sZiplineGeneratorOam_Activated;
@@ -197,7 +205,14 @@ static void ZiplineGeneratorActivating(void)
         gSpriteData[ramSlot].status = 0;
 
         // Set event
+// EVENT_ZIPLINES_ACTIVATED determines if ziplines should work
+// EVENT_ZIPLINES_SOURCE indicates if the zipline generator has been used
+#ifdef RANDOMIZER
+        RandoCollectMajorLocationItem(ITEM_SOURCE_ZIPLINES);
+        EventFunction(EVENT_ACTION_SETTING, EVENT_ZIPLINES_SOURCE);
+#else // !RANDOMIZER
         EventFunction(EVENT_ACTION_SETTING, EVENT_ZIPLINES_ACTIVATED);
+#endif // RANDOMIZER
     }
     else if (gCurrentSprite.work0 == CONVERT_SECONDS(1.5f))
     {

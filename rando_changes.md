@@ -18,8 +18,12 @@
   - `ChargeBeamInit` and `ChargeBeamIdle` in [charge_beam.c](src/sprites_AI/charge_beam.c)
   - `ChozoStatueRegisterItem` and `ChozoStatueGetBehavior` in [chozo_statue.c](src/sprites_AI/chozo_statue.c)
   - `ChozoBallRegisterItem` in [chozo_ball.c](src/sprites_AI/chozo_ball.c)
+- Get item from zipline generator
+  - `ZiplineGeneratorInit` and `ZiplineGeneratorActivating` in [zipline_generator.c](src/sprites_AI/zipline_generator.c)
 - Custom text on items
   - `TextProcessMessageBanner` in [text.c](src/text.c)
+- Chozo hints for any item
+  - `sChozoStatueTargetConditions` in [pause_screen_sub_menus_data.c](src/data/menus/pause_screen_sub_menus_data.c)
 
 ## Fixes
 - Allow laying power bombs without bombs
@@ -75,6 +79,8 @@
   - `sTileset_37_Tilemap` in [tilesets_set1.c](src/data/tilesets/tilesets_set1.c)
 - Add blank row to tileset 0x47 palette
   - `sTileset_71_Pal` in [tilesets_set7.c](src/data/tilesets/tilesets_set7.c)
+- Don't lock door in ziplines generator room
+  - `sHatchLockEventsKraid` in [hatch_data.c](src/data/hatch_data.c)
 
 ## QoL
 - Enable toggling items on status screen

@@ -10,7 +10,7 @@
 - ~~Hints for any item~~
 - ~~Major locations having any item~~
 - ~~Allow getting ziplines as an item~~
-- Allow getting item from zipline source
+- ~~Allow getting item from zipline source~~
 - Allow getting item from ruins test
 - Support infant metroid items
 - Starting items
