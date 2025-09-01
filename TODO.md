@@ -22,7 +22,7 @@ Original ASM:
 - data
   - anim_tileset_entries.bin (add extra blank animated tilesets)
   - tileset_entries.bin (add extra blank tilesets)
-- tile_table_lengths.asm (store these in array in rom and add pointer to it)
+- ~~tile_table_lengths.asm (store these in array in rom and add pointer to it)~~
 
 ## Fixes
 - ~~Disable Varia animation~~

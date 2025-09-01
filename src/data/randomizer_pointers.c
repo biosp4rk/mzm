@@ -11,6 +11,8 @@
 static const struct TilesetEntry* sTilesetEntries_Pointer = sTilesetEntries;
 static const struct ChozoStatueTarget* sChozoStatueTargets_Pointer = sChozoStatueTargets;
 
+static const u32* sRandoTilesetTilemapSizes_Pointer = sRandoTilesetTilemapSizes;
+
 // Rando data
 
 // Need to write starting area to cutscene data entry

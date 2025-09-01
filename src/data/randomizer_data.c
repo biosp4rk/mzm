@@ -1,4 +1,13 @@
 #include "data/randomizer_data.h"
+#include "data/rooms/test_rooms_data.h"
+#include "data/tilesets/tilesets_set0.h"
+#include "data/tilesets/tilesets_set1.h"
+#include "data/tilesets/tilesets_set2.h"
+#include "data/tilesets/tilesets_set3.h"
+#include "data/tilesets/tilesets_set4.h"
+#include "data/tilesets/tilesets_set5.h"
+#include "data/tilesets/tilesets_set6.h"
+#include "data/tilesets/tilesets_set7.h"
 
 #include "constants/menus/pause_screen.h"
 #include "constants/randomizer.h"
@@ -30,6 +39,92 @@ const u8 sRandoPowerGripGfx[384] = INCBIN_U8("data_rando/animated_gfx/PowerGrip.
 // const u8 sRandoZiplinesGfx[384] = INCBIN_U8("data_rando/animated_gfx/Ziplines.gfx");
 // const u8 sRandoInfantMetroidGfx[384] = INCBIN_U8("data_rando/animated_gfx/InfantMetroid.gfx");
 // const u8 sRandoAnonymousGfx[384] = INCBIN_U8("data_rando/animated_gfx/Anonymous.gfx");
+
+const u32 sRandoTilesetTilemapSizes[79] = {
+    [0] = sizeof(sTileset_0_Tilemap),
+    [1] = sizeof(sTileset_1_Tilemap),
+    [2] = sizeof(sTileset_2_Tilemap),
+    [3] = sizeof(sTileset_3_Tilemap),
+    [4] = sizeof(sTileset_4_Tilemap),
+    [5] = sizeof(sTileset_5_Tilemap),
+    [6] = sizeof(sTileset_6_Tilemap),
+    [7] = sizeof(sTileset_7_Tilemap),
+    [8] = sizeof(sTileset_8_Tilemap),
+    [9] = sizeof(sTileset_9_Tilemap),
+    [10] = sizeof(sTileset_10_Tilemap),
+    [11] = sizeof(sTileset_11_Tilemap),
+    [12] = sizeof(sTileset_12_Tilemap),
+    [13] = sizeof(sTileset_13_Tilemap),
+    [14] = sizeof(sTileset_14_Tilemap),
+    [15] = sizeof(sTileset_15_Tilemap),
+    [16] = sizeof(sTileset_16_Tilemap),
+#ifdef REGION_EU
+    [17] = 3332,
+#else // !REGION_EU
+    [17] = 4228,
+#endif // REGION_EU
+    [18] = sizeof(sTileset_18_Tilemap),
+    [19] = sizeof(sTileset_19_Tilemap),
+    [20] = sizeof(sTileset_20_Tilemap),
+    [21] = sizeof(sTileset_11_Tilemap),
+    [22] = sizeof(sTileset_22_Tilemap),
+    [23] = sizeof(sTileset_23_Tilemap),
+    [24] = sizeof(sTileset_24_Tilemap),
+    [25] = sizeof(sTileset_25_Tilemap),
+    [26] = sizeof(sTileset_26_Tilemap),
+    [27] = sizeof(sTileset_27_Tilemap),
+    [28] = sizeof(sTileset_28_Tilemap),
+    [29] = sizeof(sTileset_29_Tilemap),
+    [30] = sizeof(sTileset_30_Tilemap),
+    [31] = sizeof(sTileset_2_Tilemap),
+    [32] = sizeof(sTileset_2_Tilemap),
+    [33] = sizeof(sTileset_33_Tilemap),
+    [34] = sizeof(sTileset_34_Tilemap),
+    [35] = sizeof(sTileset_35_Tilemap),
+    [36] = sizeof(sTileset_36_Tilemap),
+    [37] = sizeof(sTileset_37_Tilemap),
+    [38] = sizeof(sTileset_38_Tilemap),
+    [39] = sizeof(sTileset_39_Tilemap),
+    [40] = sizeof(sTileset_40_Tilemap),
+    [41] = sizeof(sTileset_40_Tilemap),
+    [42] = sizeof(sTileset_42_Tilemap),
+    [43] = sizeof(sTileset_28_Tilemap),
+    [44] = sizeof(sTileset_44_Tilemap),
+    [45] = sizeof(sTileset_44_Tilemap),
+    [46] = sizeof(sTileset_46_Tilemap),
+    [47] = sizeof(sTileset_47_Tilemap),
+    [48] = sizeof(sTileset_48_Tilemap),
+    [49] = sizeof(sTileset_49_Tilemap),
+    [50] = sizeof(sTileset_50_Tilemap),
+    [51] = sizeof(sTileset_29_Tilemap),
+    [52] = sizeof(sTileset_52_Tilemap),
+    [53] = sizeof(sTileset_53_Tilemap),
+    [54] = sizeof(sTileset_54_Tilemap),
+    [55] = sizeof(sTileset_55_Tilemap),
+    [56] = sizeof(sTileset_56_Tilemap),
+    [57] = sizeof(sTileset_52_Tilemap),
+    [58] = sizeof(sTileset_52_Tilemap),
+    [59] = sizeof(sTileset_52_Tilemap),
+    [60] = sizeof(sTileset_52_Tilemap),
+    [61] = sizeof(sTileset_61_Tilemap),
+    [62] = sizeof(sTileset_47_Tilemap),
+    [63] = sizeof(sTileset_47_Tilemap),
+    [64] = sizeof(sTileset_64_Tilemap),
+    [65] = sizeof(sTileset_65_Tilemap),
+    [66] = sizeof(sTileset_66_Tilemap),
+    [67] = sizeof(sTileset_11_Tilemap),
+    [68] = sizeof(sTileset_68_Tilemap),
+    [69] = sizeof(sTileset_69_Tilemap),
+    [70] = sizeof(sTileset_49_Tilemap),
+    [71] = sizeof(sTileset_50_Tilemap),
+    [72] = sizeof(sTileset_72_Tilemap),
+    [73] = sizeof(sTileset_3_Tilemap),
+    [74] = sizeof(sTileset_74_Tilemap),
+    [75] = sizeof(sTileset_75_Tilemap),
+    [76] = sizeof(sTileset_76_Tilemap),
+    [77] = sizeof(sTileset_77_Tilemap),
+    [78] = sizeof(sTileset_78_Tilemap),
+};
 
 // From patcher
 

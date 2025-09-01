@@ -32,6 +32,8 @@ extern const u8 sRandoPowerGripGfx[384];
 // extern const u8 sRandoInfantMetroidGfx[384];
 // extern const u8 sRandoAnonymousGfx[384];
 
+extern const u32 sRandoTilesetTilemapSizes[79];
+
 // From patcher
 
 extern const u8 sRandoDifficultyOptions;
