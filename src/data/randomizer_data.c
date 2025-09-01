@@ -50,6 +50,26 @@ const u16 sMissileTankIncreaseAmount = 5;
 const u8 sSuperMissileTankIncreaseAmount = 2;
 const u8 sPowerBombTankIncreaseAmount = 2;
 
+const struct StartingInfo sStartingInfo = {
+    // Location
+    .area = AREA_BRINSTAR,
+    .room = 0,
+    .door = 0,
+    .blockX = 39,
+    .blockY = 29,
+    // Equipment
+    .maxEnergy = 99,
+    .maxMissiles = 0,
+    .maxSuperMissiles = 0,
+    .maxPowerBombs = 0,
+    .beamBombs = BBF_NONE,
+    .suitMisc = SMF_NONE,
+    .downloadedMapStatus = 0,
+    .suitType = SUIT_NORMAL,
+    // Disabled hints
+    .disabledHints = 0
+};
+
 const struct MajorLocation sMajorLocations[ITEM_SOURCE_COUNT] = {
     [ITEM_SOURCE_LONG_BEAM] = {
         .item = RIT_WAVE_BEAM,
@@ -845,42 +865,6 @@ const struct MinorLocation sMinorLocations[MINOR_LOCATION_COUNT] = {
         .jingle = RIJ_DEFAULT,
         .customMessage = NULL,
         .hintedBy = 0xFF
-    },
-};
-
-// TODO: Make static and move to randomizer.c (remove event include)
-const u8 sRandoHintEvents[TARGET_ITEM_END][2] = {
-    [TARGET_LONG_BEAM] = {
-        EVENT_STATUE_LONG_BEAM_GRABBED,
-        EVENT_COLLECTED_LONG_BEAM_HINT
-    },
-    [TARGET_BOMBS] = {
-        EVENT_STATUE_BOMBS_GRABBED,
-        EVENT_COLLECTED_BOMBS_HINT
-    },
-    [TARGET_ICE_BEAM] = {
-        EVENT_STATUE_ICE_BEAM_GRABBED,
-        EVENT_COLLECTED_ICE_BEAM_HINT
-    },
-    [TARGET_SPEED_BOOSTER] = {
-        EVENT_STATUE_SPEEDBOOSTER_GRABBED,
-        EVENT_COLLECTED_SPEED_BOOSTER_HINT
-    },
-    [TARGET_HIGH_JUMP] = {
-        EVENT_STATUE_HIGH_JUMP_GRABBED,
-        EVENT_COLLECTED_HI_JUMP_HINT
-    },
-    [TARGET_VARIA] = {
-        EVENT_STATUE_VARIA_SUIT_GRABBED,
-        EVENT_COLLECTED_VARIA_SUIT_HINT
-    },
-    [TARGET_WAVE_BEAM] = {
-        EVENT_STATUE_WAVE_BEAM_GRABBED,
-        EVENT_COLLECTED_WAVE_BEAM_HINT
-    },
-    [TARGET_SCREW_ATTACK] = {
-        EVENT_STATUE_SCREW_ATTACK_GRABBED,
-        EVENT_COLLECTED_SCREW_ATTACK_HINT
     },
 };
 

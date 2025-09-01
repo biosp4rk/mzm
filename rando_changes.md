@@ -28,6 +28,9 @@
   - `TextProcessMessageBanner` in [text.c](src/text.c)
 - Chozo hints for any item
   - `sChozoStatueTargetConditions` in [pause_screen_sub_menus_data.c](src/data/menus/pause_screen_sub_menus_data.c)
+- Starting location and items
+  - `CutsceneEnd` in [cutscene_utils.c](src/cutscenes/cutscene_utils.c)
+  - `InGameCutsceneTryQueue`, `InGameCutsceneCheckPlayOnTransition`, and `InGameCutsceneSamusCloseUp` in [in_game_cutscene.c](src/in_game_cutscene.c)
 
 ## Fixes
 - Allow laying power bombs without bombs

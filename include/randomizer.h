@@ -14,6 +14,7 @@
 const struct MinorLocation* RandoGetMinorLocation(Area area, u8 room, u8 blockX, u8 blockY);
 void RandoCollectMajorLocationItem(ItemSource source);
 void RandoCollectMinorLocationItem(const struct MinorLocation* loc);
+void RandoSetHintEvents(u8 hint);
 boolu8 RandoIsItemMessage(u8 message);
 const u16* RandoGetMessageText(u8 message);
 

@@ -173,9 +173,15 @@ void CutsceneEnd(void)
             #endif // DEBUG
             {
                 // Set spawn location
+#ifdef RANDOMIZER
+                gCurrentArea = sStartingInfo.area;
+                gCurrentRoom = sStartingInfo.room;
+                gLastDoorUsed = sStartingInfo.door;
+#else // !RANDOMIZER
                 gCurrentArea = AREA_BRINSTAR;
                 gCurrentRoom = 0;
                 gLastDoorUsed = 0;
+#endif // RANDOMIZER
                 gSubGameMode3 = 0;
                 gShipLandingFlag = FALSE;
             }

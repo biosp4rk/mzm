@@ -1208,11 +1208,15 @@ SECTIONS {
         src/ending_and_gallery.o(.data);
         src/chozodia_escape.o(.data);
         src/cable_link.o(.data);
+
+#ifdef RANDOMIZER
+        src/randomizer.o(.data);
+#endif
     } >rom
 
 #ifdef RANDOMIZER
     rando_pointers __rando_pointers_address : ALIGN(2) {
-        src/randomizer.o(.data);
+        src/data/randomizer_pointers.o(.data);
     } >rom
 #endif
 

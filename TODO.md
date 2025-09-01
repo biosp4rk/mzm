@@ -13,9 +13,9 @@
 - ~~Allow getting item from zipline source~~
 - ~~Allow getting item from ruins test~~
 - Support infant metroid items
-- Starting items
-  - Set hint events here for statues that don't have hints
-- Starting location
+- ~~Starting items~~
+  - ~~Set hint events here for statues that don't have hints~~
+- ~~Starting location~~
 - Add separate normal and varia palettes for full suit
 
 Original ASM:
@@ -34,6 +34,7 @@ Original ASM:
   - ~~Display "unknown item" if not full suit when text is loaded~~
   - ~~Don't play sound effect on status screen if full suit~~
   - Replace Chozo statue graphics
+- Fix ending percent calculation
 - Include bug fixes for bugs that don't help speedrunners
 
 ## Room Changes
@@ -44,7 +45,6 @@ Original ASM:
 - ~~Map screen info~~
 
 ## Options
-- Disable chozo hints?
 - ~~Remove cutscenes~~
 - ~~Skip door transitions~~
 - ~~Skip suitless sequence~~

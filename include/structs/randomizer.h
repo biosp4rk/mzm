@@ -5,6 +5,7 @@
 
 #include "constants/connection.h"
 #include "constants/randomizer.h"
+#include "constants/samus.h"
 
 struct MajorLocation {
     /* 0 */ RandoItemType item;
@@ -28,6 +29,30 @@ struct CurrentRandoItem {
     RandoItemType item;
     RandoItemJingle jingle;
     const u16* customMessage;
+};
+
+struct StartingInfo {
+    // Location
+    Area area;
+    u8 room;
+    u8 door;
+    u8 blockX;
+    u8 blockY;
+    // Equipment
+    u16 maxEnergy;
+    u16 maxMissiles;
+    u8 maxSuperMissiles;
+    u8 maxPowerBombs;
+    u16 currentEnergy;
+    u16 currentMissiles;
+    u8 currentSuperMissiles;
+    u8 currentPowerBombs;
+    BeamBombFlags beamBombs;
+    SuitMiscFlags suitMisc;
+    u8 downloadedMapStatus;
+    SuitType suitType;
+    // Disabled hints
+    u8 disabledHints;
 };
 
 extern struct CurrentRandoItem gCurrentRandoItem;

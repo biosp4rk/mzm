@@ -2,9 +2,11 @@
 #include "sprites_AI/ruins_test.h"
 #include "dma.h"
 #include "gba.h"
+#include "randomizer.h"
 
 #include "data/in_game_cutscene_data.h"
 #include "data/samus_close_up_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/animated_graphics.h"
@@ -52,13 +54,19 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
             break;
 
         case 1:
+#ifndef RANDOMIZER
             TransparencyUpdateBldalpha(16, 0, 7, 1);
+#endif // !RANDOMIZER
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 2:
+#ifndef RANDOMIZER
             if (gIoRegistersBackup.BLDALPHA_NonGameplay_EVA == 16 && gIoRegistersBackup.BLDALPHA_NonGameplay_EVB == 0)
+#endif // !RANDOMIZER
+            {
                 result = IGC_RESULT_NEXT_STAGE;
+            }
             break;
 
         case 5:
@@ -74,6 +82,7 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
             break;
 
         case 4:
+#ifndef RANDOMIZER
             // Warning: DMA is out of bounds
             DmaTransfer(3, &sSamusCloseUpEyesGfx_1[0], VRAM_BASE + 0xB940, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B000, VRAM_BASE + 0x294, 0x14, 16);
@@ -92,10 +101,12 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
 
             DmaTransfer(3, &sSamusCloseUpEyesGfx_1[1280], VRAM_BASE + 0xCD40, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B140, VRAM_BASE + 0x3D4, 0x14, 16);
+#endif // !RANDOMIZER
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 6:
+#ifndef RANDOMIZER
             DmaTransfer(3, &sSamusCloseUpEyesGfx_2[0], VRAM_BASE + 0xB940, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B014, VRAM_BASE + 0x294, 0x14, 16);
 
@@ -113,10 +124,12 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
 
             DmaTransfer(3, &sSamusCloseUpEyesGfx_2[1280], VRAM_BASE + 0xCD40, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B154, VRAM_BASE + 0x3D4, 0x14, 16);
+#endif // !RANDOMIZER
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 8:
+#ifndef RANDOMIZER
             DmaTransfer(3, &sSamusCloseUpEyesGfx_3[0], VRAM_BASE + 0xB940, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B028, VRAM_BASE + 0x294, 0x14, 16);
 
@@ -134,16 +147,21 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
             
             DmaTransfer(3, &sSamusCloseUpEyesGfx_3[1280], VRAM_BASE + 0xCD40, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B168, VRAM_BASE + 0x3D4, 0x14, 16);
+#endif // !RANDOMIZER
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 10:
+#ifndef RANDOMIZER
             TransparencyUpdateBldalpha(0, 16, 0, 16);
+#endif // !RANDOMIZER
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 11:
+#ifndef RANDOMIZER
             if (gIoRegistersBackup.BLDALPHA_NonGameplay_EVA == 0 && gIoRegistersBackup.BLDALPHA_NonGameplay_EVB == 16)
+#endif // !RANDOMIZER
             {
                 gHideHud = FALSE;
                 result = TRUE;
@@ -151,7 +169,9 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
             break;
 
         case 12:
+#ifndef RANDOMIZER
             DmaTransfer(3, EWRAM_BASE + 0x1E000, VRAM_BASE + 0x9000, 0x2000, 16);
+#endif // !RANDOMIZER
             gSramOperationStage = 0;
             result = IGC_RESULT_NEXT_STAGE;
             break;
@@ -799,12 +819,49 @@ void InGameCutsceneCheckPlayOnTransition(void)
             gDisablePause = TRUE;
             gDisplayLocationText = FALSE;
 
+#ifdef RANDOMIZER
+            PlayMusic(gCurrentRoomEntry.musicTrack, 0);
+#else // !RANDOMIZER
             // Queue brinstar and play loading jingle
             PlayMusic(MUSIC_BRINSTAR, 0);
+#endif // RANDOMIZER
             InsertMusicAndQueueCurrent(MUSIC_LOADING_JINGLE, TRUE);
 
             // Set samus to facing foreground
             SamusSetPose(SPOSE_FACING_THE_FOREGROUND);
+#ifdef RANDOMIZER
+            gSamusData.xPosition = gPreviousXPosition = sStartingInfo.blockX * BLOCK_SIZE + HALF_BLOCK_SIZE;
+            gSamusData.yPosition = gPreviousYPosition = (sStartingInfo.blockY + 1) * BLOCK_SIZE - 1;
+
+            gEquipment.maxEnergy = gEquipment.currentEnergy = sStartingInfo.maxEnergy;
+            gEquipment.maxMissiles = gEquipment.currentMissiles = sStartingInfo.maxMissiles;
+            gEquipment.maxSuperMissiles = gEquipment.currentSuperMissiles = sStartingInfo.maxSuperMissiles;
+            gEquipment.maxPowerBombs = gEquipment.currentPowerBombs = sStartingInfo.maxPowerBombs;
+
+            gEquipment.suitType = sStartingInfo.suitType;
+            gEquipment.beamBombs = sStartingInfo.beamBombs;
+            gEquipment.suitMisc = sStartingInfo.suitMisc;
+            if (gEquipment.suitType == SUIT_FULLY_POWERED)
+            {
+                gEquipment.beamBombsActivation = gEquipment.beamBombs;
+                gEquipment.suitMiscActivation = gEquipment.suitMisc;
+            }
+            else
+            {
+                gEquipment.beamBombsActivation = gEquipment.beamBombs & ~BBF_PLASMA_BEAM;
+                gEquipment.suitMiscActivation = gEquipment.suitMisc & ~(SMF_SPACE_JUMP | SMF_GRAVITY_SUIT);
+            }
+
+            gEquipment.downloadedMapStatus = sStartingInfo.downloadedMapStatus;
+
+            for (i = 0; i < 8; i++)
+            {
+                if (sStartingInfo.disabledHints & (1 << i))
+                    RandoSetHintEvents(i);
+            }
+
+            gHideHud = FALSE;
+#else // !RANDOMIZER
             // Starting Y position
             gSamusData.yPosition = gPreviousYPosition = BLOCK_SIZE * 30 - 1;
 
@@ -844,6 +901,7 @@ void InGameCutsceneCheckPlayOnTransition(void)
 
             ColorFadingStart(COLOR_FADING_NO_TRANSITION_HUD_HIDE);
             gHideHud = TRUE;
+#endif // RANDOMIZER
             break;
 
         case IGC_LONG_BEAM_HINT:
@@ -875,8 +933,16 @@ u32 InGameCutsceneTryQueue(InGameCutsceneScene cutscene)
     switch (cutscene)
     {
         case IGC_CLOSE_UP:
-            if (gCurrentRoom == 0 && gLastDoorUsed == 0 && !gIsLoadingFile && gSubGameMode3 == 0 && !gDebugMode && gDemoState == 0)
+#ifdef RANDOMIZER
+            if (gCurrentRoom == sStartingInfo.room && gLastDoorUsed == sStartingInfo.door &&
+                !gIsLoadingFile && gSubGameMode3 == 0 && !gDebugMode && gDemoState == 0)
+#else // !RANDOMIZER
+            if (gCurrentRoom == 0 && gLastDoorUsed == 0 &&
+                !gIsLoadingFile && gSubGameMode3 == 0 && !gDebugMode && gDemoState == 0)
+#endif // RANDOMIZER
+            {
                 queued = TRUE;
+            }
             break;
 
         case 6:

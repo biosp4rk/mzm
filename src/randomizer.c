@@ -4,10 +4,7 @@
 #include "in_game_cutscene.h"
 #include "sprite.h"
 
-#include "data/menus/pause_screen_sub_menus_data.h"
 #include "data/randomizer_data.h"
-#include "data/rooms_data.h"
-#include "data/sprite_data.h"
 #include "data/text_data.h"
 
 #include "constants/event.h"
@@ -23,34 +20,40 @@
 
 #ifdef RANDOMIZER
 
-// TODO: Move pointers to separate file
-
-// Existing data
-static const struct TilesetEntry* sTilesetEntries_Pointer = sTilesetEntries;
-static const struct ChozoStatueTarget* sChozoStatueTargets_Pointer = sChozoStatueTargets;
-
-// Rando data
-static const struct MajorLocation* sMajorLocations_Pointer = sMajorLocations;
-static const struct MinorLocation* sMinorLocations_Pointer = sMinorLocations;
-
-// Rando options
-static const u8* sRandoDifficultyOptions_Pointer = &sRandoDifficultyOptions;
-static const u16* sRandoMetroidSpriteStats_Pointer = sPrimarySpriteStats[PSPRITE_METROID];
-static const boolu8* sRandoBlackPiratesRequirePlasma_Pointer = &sRandoBlackPiratesRequirePlasma;
-static const boolu8* sRandoSkipDoorTransitions_Pointer = &sRandoSkipDoorTransitions;
-static const boolu8* sRandoBallLauncherWithoutBombs_Pointer = &sRandoBallLauncherWithoutBombs;
-static const boolu8* sRandoDisableMidAirBombJump_Pointer = &sRandoDisableMidAirBombJump;
-static const boolu8* sRandoDisableWallJump_Pointer = &sRandoDisableWallJump;
-static const boolu8* sRandoRemoveCutscenes_Pointer = &sRandoRemoveCutscenes;
-static const boolu8* sRandoSkipSuitlessSequence_Pointer = &sRandoSkipSuitlessSequence;
-
-static const u16* sEnergyTankIncreaseAmount_Pointer = &sEnergyTankIncreaseAmount;
-static const u16* sMissileTankIncreaseAmount_Pointer = &sMissileTankIncreaseAmount;
-static const u8* sSuperMissileTankIncreaseAmount_Pointer = &sSuperMissileTankIncreaseAmount;
-static const u8* sPowerBombTankIncreaseAmount_Pointer = &sPowerBombTankIncreaseAmount;
-
-static const u8* sRandoTitleLine1_Pointer = sRandoTitleLine1;
-static const u8* sRandoTitleLine2_Pointer = sRandoTitleLine2;
+static u8 sRandoHintEvents[TARGET_ITEM_END][2] = {
+    [TARGET_LONG_BEAM] = {
+        EVENT_STATUE_LONG_BEAM_GRABBED,
+        EVENT_COLLECTED_LONG_BEAM_HINT
+    },
+    [TARGET_BOMBS] = {
+        EVENT_STATUE_BOMBS_GRABBED,
+        EVENT_COLLECTED_BOMBS_HINT
+    },
+    [TARGET_ICE_BEAM] = {
+        EVENT_STATUE_ICE_BEAM_GRABBED,
+        EVENT_COLLECTED_ICE_BEAM_HINT
+    },
+    [TARGET_SPEED_BOOSTER] = {
+        EVENT_STATUE_SPEEDBOOSTER_GRABBED,
+        EVENT_COLLECTED_SPEED_BOOSTER_HINT
+    },
+    [TARGET_HIGH_JUMP] = {
+        EVENT_STATUE_HIGH_JUMP_GRABBED,
+        EVENT_COLLECTED_HI_JUMP_HINT
+    },
+    [TARGET_VARIA] = {
+        EVENT_STATUE_VARIA_SUIT_GRABBED,
+        EVENT_COLLECTED_VARIA_SUIT_HINT
+    },
+    [TARGET_WAVE_BEAM] = {
+        EVENT_STATUE_WAVE_BEAM_GRABBED,
+        EVENT_COLLECTED_WAVE_BEAM_HINT
+    },
+    [TARGET_SCREW_ATTACK] = {
+        EVENT_STATUE_SCREW_ATTACK_GRABBED,
+        EVENT_COLLECTED_SCREW_ATTACK_HINT
+    },
+};
 
 /**
  * @brief TODO
@@ -249,13 +252,7 @@ static void RandoCollectItem(RandoItemType item, u8 hintedBy)
     }
 
     if (hintedBy != 0xFF && hintedBy < TARGET_ITEM_END)
-    {
-        EventFunction(EVENT_ACTION_SETTING, sRandoHintEvents[hintedBy][0]);
-        EventFunction(EVENT_ACTION_SETTING, sRandoHintEvents[hintedBy][1]);
-
-        if (hintedBy == TARGET_LONG_BEAM)
-            InGameCutsceneCheckFlag(TRUE, IGC_LONG_BEAM_HINT);
-    }
+        RandoSetHintEvents(hintedBy);
 }
 
 /**
@@ -287,6 +284,15 @@ void RandoCollectMinorLocationItem(const struct MinorLocation* loc)
     gCurrentRandoItem.customMessage = loc->customMessage;
 
     RandoCollectItem(loc->item, loc->hintedBy);
+}
+
+void RandoSetHintEvents(u8 hint)
+{
+    EventFunction(EVENT_ACTION_SETTING, sRandoHintEvents[hint][0]);
+    EventFunction(EVENT_ACTION_SETTING, sRandoHintEvents[hint][1]);
+
+    if (hint == TARGET_LONG_BEAM)
+        InGameCutsceneCheckFlag(TRUE, IGC_LONG_BEAM_HINT);
 }
 
 /**
