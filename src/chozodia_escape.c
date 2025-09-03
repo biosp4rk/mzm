@@ -3,6 +3,7 @@
 #include "gba.h"
 #include "callbacks.h"
 #include "complex_oam.h" // Required
+#include "event.h"
 
 #include "data/block_data.h"
 #include "data/haze_data.h"
@@ -10,10 +11,13 @@
 #include "data/tourian_escape_data.h"
 #include "data/chozodia_escape_data.h"
 #include "data/cutscenes/ridley_landing_data.h"
+#include "data/randomizer_data.h"
 
 #include "constants/audio.h"
 #include "constants/ending_and_gallery.h"
 #include "constants/samus.h"
+#include "constants/event.h"
+#include "constants/randomizer.h"
 
 #include "structs/bg_clip.h"
 #include "structs/chozodia_escape.h"
@@ -183,8 +187,7 @@ static void ChozodiaEscapeUpdateExplosionHaze(void)
 /**
  * @brief 87aec | 11c | Calculates the item count and ending number
  * 
- * @return u32 Bits 3-0 is ending image, bits 7-4 is ability tank count, bits 11-8 is power bomb tank count,
- *             bits 15-12 is super missile tank count, bits 23-16 is missile tank count, bits 31-24 is energy tank count
+ * @return u32 RANDO: Bits 0-3 are ending image, bits 4+ are item percentage
  */
 u32 ChozodiaEscapeGetItemCountAndEndingNumber(void)
 {
@@ -202,10 +205,17 @@ u32 ChozodiaEscapeGetItemCountAndEndingNumber(void)
     difficulty = gDifficulty;
 
     // Calculate the amount of tanks of each type (remove starting energy)
+#ifdef RANDOMIZER
+    energyNbr = (gEquipment.maxEnergy - sStartingInfo.maxEnergy) / sEnergyTankIncreaseAmount;
+    missilesNbr = (gEquipment.maxMissiles - sStartingInfo.maxMissiles) / sMissileTankIncreaseAmount;
+    superMissilesNbr = (gEquipment.maxSuperMissiles - sStartingInfo.maxSuperMissiles) / sSuperMissileTankIncreaseAmount;
+    powerBombNbr = (gEquipment.maxPowerBombs - sStartingInfo.maxPowerBombs) / sPowerBombTankIncreaseAmount;
+#else // !RANDOMIZER
     energyNbr = (gEquipment.maxEnergy - 99) / sTankIncreaseAmount[difficulty].energy;
     missilesNbr = gEquipment.maxMissiles / sTankIncreaseAmount[difficulty].missile;
     superMissilesNbr = gEquipment.maxSuperMissiles / sTankIncreaseAmount[difficulty].superMissile;
     powerBombNbr = gEquipment.maxPowerBombs / sTankIncreaseAmount[difficulty].powerBomb;
+#endif // RANDOMIZER
 
     // Count the number of suit/misc items
     abilityCount = 0;
@@ -213,7 +223,15 @@ u32 ChozodiaEscapeGetItemCountAndEndingNumber(void)
     for (i = 0; i < 8; i++)
     {
         if (gEquipment.suitMisc & mask)
-            abilityCount++;
+        {
+#ifdef RANDOMIZER
+            // Exclude starting items
+            if (!(sStartingInfo.suitMisc & mask))
+#endif // RANDOMIZER
+            {
+                abilityCount++;
+            }
+        }
 
         mask <<= 1;
     }
@@ -223,7 +241,15 @@ u32 ChozodiaEscapeGetItemCountAndEndingNumber(void)
     for (i = 0; i < 5; i++)
     {
         if (gEquipment.beamBombs & mask)
-            abilityCount++;
+        {
+#ifdef RANDOMIZER
+            // Exclude starting items
+            if (!(sStartingInfo.beamBombs & mask))
+#endif // RANDOMIZER
+            {
+                abilityCount++;
+            }
+        }
 
         mask <<= 1;
     }
@@ -231,10 +257,41 @@ u32 ChozodiaEscapeGetItemCountAndEndingNumber(void)
     // Check for bomb flag
     // Probably because flag 0x20 and 0x40 are unused, so they didn't want that to interfere with the result
     if (gEquipment.beamBombs & BBF_BOMBS)
-        abilityCount++;
+    {
+#ifdef RANDOMIZER
+        // Exclude starting items
+        if (!(sStartingInfo.beamBombs & BBF_BOMBS))
+#endif // RANDOMIZER
+        {
+            abilityCount++;
+        }
+    }
 
     // Calculate completion percentage (sum of every item/tank)
     completionPercentage = abilityCount + energyNbr + missilesNbr + superMissilesNbr + powerBombNbr;
+
+#ifdef RANDOMIZER
+    // Check for ziplines and fully powered suit
+    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ZIPLINES_ACTIVATED))
+        completionPercentage++;
+    if (gEquipment.suitType == SUIT_FULLY_POWERED)
+        completionPercentage++;
+
+    u32 totalItemCount = ITEM_SOURCE_COUNT + MINOR_LOCATION_COUNT;
+    for (i = 0; i < ARRAY_SIZE(sMajorLocations); i++)
+    {
+        if (sMajorLocations[i].item == RIT_NONE)
+            totalItemCount--;
+    }
+    for (i = 0; i < MINOR_LOCATION_COUNT; i++)
+    {
+        if (sMinorLocations[i].item == RIT_NONE)
+            totalItemCount--;
+    }
+
+    // Rescale to 100%
+    completionPercentage = (completionPercentage * 100) / totalItemCount;
+#endif
 
     // Determine ending
     endingNbr = ENDING_IMAGE_ZERO;
@@ -275,9 +332,13 @@ u32 ChozodiaEscapeGetItemCountAndEndingNumber(void)
         }
     }
 
+#ifdef RANDOMIZER
+    return (completionPercentage << 4) | endingNbr;
+#else // !RANDOMIZER
     // Final result, formatted on 32bits as follow :
     //      0 0 0 0 0 0 0 0     0 0 0 0 0 0 0 0       0 0 0 0                    0 0 0 0               0 0 0 0              0 0 0 0
     return (energyNbr << 24) + (missilesNbr << 16) + (superMissilesNbr << 12) + (powerBombNbr << 8) + (abilityCount << 4) + endingNbr;
+#endif // RANDOMIZER
 }
 
 /**

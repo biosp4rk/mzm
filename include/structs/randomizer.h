@@ -43,10 +43,6 @@ struct StartingInfo {
     u16 maxMissiles;
     u8 maxSuperMissiles;
     u8 maxPowerBombs;
-    u16 currentEnergy;
-    u16 currentMissiles;
-    u8 currentSuperMissiles;
-    u8 currentPowerBombs;
     BeamBombFlags beamBombs;
     SuitMiscFlags suitMisc;
     u8 downloadedMapStatus;

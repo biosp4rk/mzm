@@ -3762,6 +3762,9 @@ u32 SpriteUtilGetFinalCompletionPercentage(void)
 
     pen = ChozodiaEscapeGetItemCountAndEndingNumber();
 
+#ifdef RANDOMIZER
+    completionPercentage = pen >> 4;
+#else // !RANDOMIZER
     energyNbr = PEN_GET_ENERGY(pen);
     missilesNbr = PEN_GET_MISSILE(pen);
     superMissilesNbr = PEN_GET_SUPER_MISSILE(pen);
@@ -3769,6 +3772,7 @@ u32 SpriteUtilGetFinalCompletionPercentage(void)
     abilityCount = PEN_GET_ABILITY(pen);
 
     completionPercentage = energyNbr + missilesNbr + superMissilesNbr + powerBombNbr + abilityCount;
+#endif // RANDOMIZER
 
     return completionPercentage;
 }

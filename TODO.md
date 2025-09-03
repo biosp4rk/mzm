@@ -34,7 +34,7 @@ Original ASM:
   - ~~Display "unknown item" if not full suit when text is loaded~~
   - ~~Don't play sound effect on status screen if full suit~~
   - Replace Chozo statue graphics
-- Fix ending percent calculation
+- ~~Fix ending percent calculation~~
 - Include bug fixes for bugs that don't help speedrunners
 
 ## Room Changes

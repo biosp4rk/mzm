@@ -65,6 +65,11 @@
   - `sSpacePirateCarryingPowerBombOam_Frame*` in [space_pirate.c](src/data/sprites/space_pirate.c)
 - Fix searchlight eye vulnerability condition
   - `SearchlightEyeInit` in [searchlight_eye.c](src/sprites_AI/searchlight_eye.c)
+- Fix ending percent calculation and rescale to 100%
+  - `ChozodiaEscapeGetItemCountAndEndingNumber` and `ChozodiaEscapeGetItemCountAndEndingNumber` in [chozodia_escape.c](src/chozodia_escape.c)
+  - `EndingImageInit` in [ending_and_gallery.c](src/ending_and_gallery.c)
+  - `CheckUnlockTimeAttack` and `TimeAttackCheckSetNewRecord` in [time_attack.c](src/time_attack.c)
+  - `SpriteUtilGetFinalCompletionPercentage` in [sprite_util.c](src/sprite_util.c)
 
 ## Room Changes
 - Remove vines in Norfair and near varia

@@ -319,6 +319,8 @@ void CheckUnlockTimeAttack(void)
     if (gFileScreenOptionsUnlocked.timeAttack & 1 || !TimeAttackCheckSaveFileValidity())
         return;
 
+// The item counts in randomizer can be different from vanilla
+#ifndef RANDOMIZER
     // Get each item count
     value = ChozodiaEscapeGetItemCountAndEndingNumber();
 
@@ -334,6 +336,7 @@ void CheckUnlockTimeAttack(void)
     if (energyNbr > 12 || missilesNbr > 50 || superMissilesNbr > 15 || powerBombNbr > 9 ||
         abilityCount > 14 || abilityCount < 8 || missilesNbr == 0)
         return;
+#endif // !RANDOMIZER
 
     // Zero out array
     for (i = 0; i < ARRAY_SIZE(igt); i++)
@@ -791,6 +794,9 @@ u8 TimeAttackCheckSetNewRecord(void)
 
     pen = ChozodiaEscapeGetItemCountAndEndingNumber();
 
+#ifdef RANDOMIZER
+    completionPercentage = pen >> 4;
+#else // !RANDOMIZER
     energyNbr = PEN_GET_ENERGY(pen);
     missilesNbr = PEN_GET_MISSILE(pen);
     superMissilesNbr = PEN_GET_SUPER_MISSILE(pen);
@@ -803,6 +809,7 @@ u8 TimeAttackCheckSetNewRecord(void)
         allAbilities = TRUE;
     else
         allAbilities = FALSE;
+#endif // RANDOMIZER
 
     // Check current IGT is faster than previous Any% record
     if (convertedIgt < convertedRecordIgt)
@@ -828,12 +835,14 @@ u8 TimeAttackCheckSetNewRecord(void)
     if (gFileScreenOptionsUnlocked.timeAttack & 1)
         validFile = TimeAttackCheckSaveFileValidity();
 
+#ifndef RANDOMIZER
     // Sanity checks to see if the player has an abnormal amount of tanks/abilites
     // - More than the max (12 e-tanks, 50 missile tanks, 15 super missile tanks, 9 power bomb tanks, 14 abilities)
     // - Less than the minimum (8 abilities, 0 missiles)
     if (energyNbr > 12 || missilesNbr > 50 || superMissilesNbr > 15 || powerBombNbr > 9 ||
         abilityCount > 14 || abilityCount < 8 || missilesNbr == 0)
         validFile = FALSE;
+#endif // !RANDOMIZER
 
     igtBoss1 = (gInGameTimerAtBosses[0].frames & 15) << 4 | (gInGameTimerAtBosses[2].frames & 15);
     igtBoss2 = (gInGameTimerAtBosses[3].frames & 15) << 4 | (gInGameTimerAtBosses[1].frames & 15);
@@ -846,11 +855,19 @@ u8 TimeAttackCheckSetNewRecord(void)
     pTimeAttack->igtMinutes = gInGameTimer.minutes;
     pTimeAttack->igtSeconds = gInGameTimer.seconds;
 
+#ifdef RANDOMIZER
+    pTimeAttack->missilesNbr = 0;
+    pTimeAttack->superMissilesNbr = 0;
+    pTimeAttack->powerBombNbr = 0;
+    pTimeAttack->energyNbr = 0;
+    pTimeAttack->allAbilities = FALSE;
+#else // !RANDOMIZER
     pTimeAttack->missilesNbr = missilesNbr;
     pTimeAttack->superMissilesNbr = superMissilesNbr;
     pTimeAttack->powerBombNbr = powerBombNbr;
     pTimeAttack->energyNbr = energyNbr;
     pTimeAttack->allAbilities = allAbilities;
+#endif // RANDOMIZER
 
     pTimeAttack->validFile = validFile;
     pTimeAttack->igtAtBosses1 = igtBoss1;

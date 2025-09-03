@@ -1409,11 +1409,13 @@ static void EndingImageInit(void)
 
     pen = ChozodiaEscapeGetItemCountAndEndingNumber();
 
+#ifndef RANDOMIZER
     energyNbr = PEN_GET_ENERGY(pen);
     missilesNbr = PEN_GET_MISSILE(pen);
     superMissilesNbr = PEN_GET_SUPER_MISSILE(pen);
     powerBombNbr = PEN_GET_POWER_BOMB(pen);
     abilityCount = PEN_GET_ABILITY(pen);
+#endif // !RANDOMIZER
     endingNbr = PEN_GET_ENDING(pen);
         
     LZ77UncompVRAM(sEndingImagesTopGfxPointers[endingNbr], VRAM_BASE);
@@ -1427,7 +1429,11 @@ static void EndingImageInit(void)
     DMA_SET(3, sEndingImagesPalPointers[endingNbr], PALRAM_BASE, C_32_2_16(DMA_ENABLE, 0x100));
     #endif // REGION_EU
 
+#ifdef RANDOMIZER
+    ENDING_DATA.completionPercentage = pen >> 4;
+#else // !RANDOMIZER
     ENDING_DATA.completionPercentage = energyNbr + missilesNbr + superMissilesNbr + powerBombNbr + abilityCount;
+#endif // RANDOMIZER
 
     #ifndef REGION_EU
     LZ77UncompVRAM(sEndingImageNumbersMiscEnglishGfx, VRAM_OBJ);
