@@ -55,6 +55,7 @@ MAKE_ENUM(u8, RandoItemType) {
     RIT_FULLY_POWERED,
     RIT_ZIPLINES,
     RIT_INFANT_METROID,
+    RIT_ICE_TRAP,
 };
 
 MAKE_ENUM(u8, RandoItemSprite) {

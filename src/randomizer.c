@@ -333,7 +333,7 @@ boolu8 RandoIsItemMessage(u8 message)
 }
 
 /**
- * @brief TODO
+ * @brief Gets the actual message text based on the message ID
  */
 const u16* RandoGetMessageText(u8 message)
 {

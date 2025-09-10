@@ -3331,7 +3331,7 @@ void SamusCheckNewProjectile(struct SamusData* pData, struct WeaponInfo* pWeapon
         case SPOSE_MORPH_BALL_MIDAIR:
         case SPOSE_MORPH_BALL_ON_ZIPLINE:
             // Check for bombs
-#if RANDOMIZER
+#ifdef RANDOMIZER
             if (gChangedInput & KEY_B && pWeapon->cooldown == 0)
             {
                 // Check if power bombs selected

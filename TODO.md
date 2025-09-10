@@ -12,11 +12,15 @@
 - ~~Allow getting ziplines as an item~~
 - ~~Allow getting item from zipline source~~
 - ~~Allow getting item from ruins test~~
-- Support infant metroid items
+- Support infant metroid items?
 - ~~Starting items~~
   - ~~Set hint events here for statues that don't have hints~~
 - ~~Starting location~~
 - Add separate normal and varia palettes for full suit
+- Rooms names
+- Custom credits text
+- Ice trap item
+- Allow negative tank increments
 
 Original ASM:
 - data
@@ -38,7 +42,7 @@ Original ASM:
 - Include bug fixes for bugs that don't help speedrunners
 
 ## Room Changes
-- Remove duplicate rooms near Ruins Test
+- Remove duplicate rooms near Ruins Test?
 
 ## QoL
 - ~~Enable item toggle~~
@@ -48,8 +52,9 @@ Original ASM:
 - ~~Remove cutscenes~~
 - ~~Skip door transitions~~
 - ~~Skip suitless sequence~~
-- Obtain unknown items
+- Obtain unknown items?
 - ~~Use ball launchers without bombs~~
 - ~~Disable wall jump~~
 - ~~Disable infinite bomb jump~~
 - ~~New file difficulty options~~
+- Default stereo

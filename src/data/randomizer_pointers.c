@@ -6,41 +6,52 @@
 
 #ifdef RANDOMIZER
 
+extern const struct RoomEntryRom* sAreaRoomEntryPointers[AREA_ENTRY_COUNT];
+
+// The pointers in this file are written to 0x7D0000 (see linker.ld)
+
+// --------------------------------
 // Existing data
+// --------------------------------
 
-static const struct TilesetEntry* sTilesetEntries_Pointer = sTilesetEntries;
-static const struct ChozoStatueTarget* sChozoStatueTargets_Pointer = sChozoStatueTargets;
+/* ?? */ static const struct RoomEntryRom* sAreaRoomEntryPointers_Pointer = sAreaRoomEntryPointers;
+/* 00 */ static const struct TilesetEntry* sTilesetEntries_Pointer = sTilesetEntries;
+/* 04 */ static const struct ChozoStatueTarget* sChozoStatueTargets_Pointer = sChozoStatueTargets;
 
-static const u32* sRandoTilesetTilemapSizes_Pointer = sRandoTilesetTilemapSizes;
+/* 08 */ static const u32* sRandoTilesetTilemapSizes_Pointer = sRandoTilesetTilemapSizes;
 
+// --------------------------------
 // Rando data
+// --------------------------------
 
 // Need to write starting area to cutscene data entry
-static const struct InGameCutsceneData* sIntroCutsceneData_Pointer = &sInGameCutsceneData[IGC_CLOSE_UP];
+/* 0C */ static const struct InGameCutsceneData* sIntroCutsceneData_Pointer = &sInGameCutsceneData[IGC_CLOSE_UP];
 
-static const struct StartingInfo* sStartingInfo_Pointer = &sStartingInfo;
+/* 10 */ static const struct StartingInfo* sStartingInfo_Pointer = &sStartingInfo;
 
-static const struct MajorLocation* sMajorLocations_Pointer = sMajorLocations;
-static const struct MinorLocation* sMinorLocations_Pointer = sMinorLocations;
+/* 14 */ static const struct MajorLocation* sMajorLocations_Pointer = sMajorLocations;
+/* 18 */ static const struct MinorLocation* sMinorLocations_Pointer = sMinorLocations;
 
+// --------------------------------
 // Rando options
+// --------------------------------
 
-static const u8* sRandoDifficultyOptions_Pointer = &sRandoDifficultyOptions;
-static const u16* sRandoMetroidSpriteStats_Pointer = sPrimarySpriteStats[PSPRITE_METROID];
-static const boolu8* sRandoBlackPiratesRequirePlasma_Pointer = &sRandoBlackPiratesRequirePlasma;
-static const boolu8* sRandoSkipDoorTransitions_Pointer = &sRandoSkipDoorTransitions;
-static const boolu8* sRandoBallLauncherWithoutBombs_Pointer = &sRandoBallLauncherWithoutBombs;
-static const boolu8* sRandoDisableMidAirBombJump_Pointer = &sRandoDisableMidAirBombJump;
-static const boolu8* sRandoDisableWallJump_Pointer = &sRandoDisableWallJump;
-static const boolu8* sRandoRemoveCutscenes_Pointer = &sRandoRemoveCutscenes;
-static const boolu8* sRandoSkipSuitlessSequence_Pointer = &sRandoSkipSuitlessSequence;
+/* 1C */ static const u8* sRandoDifficultyOptions_Pointer = &sRandoDifficultyOptions;
+/* 20 */ static const u16* sRandoMetroidSpriteStats_Pointer = sPrimarySpriteStats[PSPRITE_METROID];
+/* 24 */ static const boolu8* sRandoBlackPiratesRequirePlasma_Pointer = &sRandoBlackPiratesRequirePlasma;
+/* 28 */ static const boolu8* sRandoSkipDoorTransitions_Pointer = &sRandoSkipDoorTransitions;
+/* 2C */ static const boolu8* sRandoBallLauncherWithoutBombs_Pointer = &sRandoBallLauncherWithoutBombs;
+/* 30 */ static const boolu8* sRandoDisableMidAirBombJump_Pointer = &sRandoDisableMidAirBombJump;
+/* 34 */ static const boolu8* sRandoDisableWallJump_Pointer = &sRandoDisableWallJump;
+/* 38 */ static const boolu8* sRandoRemoveCutscenes_Pointer = &sRandoRemoveCutscenes;
+/* 3C */ static const boolu8* sRandoSkipSuitlessSequence_Pointer = &sRandoSkipSuitlessSequence;
 
-static const u16* sEnergyTankIncreaseAmount_Pointer = &sEnergyTankIncreaseAmount;
-static const u16* sMissileTankIncreaseAmount_Pointer = &sMissileTankIncreaseAmount;
-static const u8* sSuperMissileTankIncreaseAmount_Pointer = &sSuperMissileTankIncreaseAmount;
-static const u8* sPowerBombTankIncreaseAmount_Pointer = &sPowerBombTankIncreaseAmount;
+/* 40 */ static const u16* sEnergyTankIncreaseAmount_Pointer = &sEnergyTankIncreaseAmount;
+/* 44 */ static const u16* sMissileTankIncreaseAmount_Pointer = &sMissileTankIncreaseAmount;
+/* 48 */ static const u8* sSuperMissileTankIncreaseAmount_Pointer = &sSuperMissileTankIncreaseAmount;
+/* 4C */ static const u8* sPowerBombTankIncreaseAmount_Pointer = &sPowerBombTankIncreaseAmount;
 
-static const u8* sRandoTitleLine1_Pointer = sRandoTitleLine1;
-static const u8* sRandoTitleLine2_Pointer = sRandoTitleLine2;
+/* 50 */ static const u8* sRandoTitleLine1_Pointer = sRandoTitleLine1;
+/* 54 */ static const u8* sRandoTitleLine2_Pointer = sRandoTitleLine2;
 
 #endif

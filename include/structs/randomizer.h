@@ -12,7 +12,7 @@ struct MajorLocation {
     /* 1 */ RandoItemJingle jingle;
     /* 2 */ u8 hintedBy;
     /* 4 */ const u16* customMessage;
-};
+}; // Size: 8
 
 struct MinorLocation {
     // See MINOR_LOC_KEY macro
@@ -22,33 +22,34 @@ struct MinorLocation {
     /* 7 */ RandoItemJingle jingle;
     /* 8 */ const u16* customMessage;
     /* C */ u8 hintedBy;
-};
+}; // Size: 0x10
 
 struct CurrentRandoItem {
-    boolu8 isMinor;
-    RandoItemType item;
-    RandoItemJingle jingle;
-    const u16* customMessage;
-};
+    /* 0 */ boolu8 isMinor;
+    /* 1 */ RandoItemType item;
+    /* 2 */ RandoItemJingle jingle;
+    /* 4 */ const u16* customMessage;
+}; // Size: 8
 
 struct StartingInfo {
     // Location
-    Area area;
-    u8 room;
-    u8 door;
-    u8 blockX;
-    u8 blockY;
+    /* 00 */ Area area;
+    /* 01 */ u8 room;
+    /* 02 */ u8 door;
+    /* 03 */ u8 blockX;
+    /* 04 */ u8 blockY;
     // Equipment
-    u16 maxEnergy;
-    u16 maxMissiles;
-    u8 maxSuperMissiles;
-    u8 maxPowerBombs;
-    BeamBombFlags beamBombs;
-    SuitMiscFlags suitMisc;
-    u8 downloadedMapStatus;
-    SuitType suitType;
+    /* 06 */ u16 maxEnergy;
+    /* 08 */ u16 maxMissiles;
+    /* 0A */ u8 maxSuperMissiles;
+    /* 0B */ u8 maxPowerBombs;
+    /* 0C */ BeamBombFlags beamBombs;
+    /* 0D */ SuitMiscFlags suitMisc;
+    /* 0E */ u8 downloadedMapStatus;
+    /* 0F */ SuitType suitType;
+    /* 10 */ boolu8 ziplinesActivated;
     // Disabled hints
-    u8 disabledHints;
+    /* 11 */ u8 disabledHints;
 };
 
 extern struct CurrentRandoItem gCurrentRandoItem;
