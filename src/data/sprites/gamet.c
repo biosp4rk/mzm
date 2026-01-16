@@ -1,51 +1,51 @@
 #include "data/sprites/gamet.h"
 #include "macros.h"
 
-const u32 sGametBlueGfx[168] = INCBIN_U32("data/sprites/GametBlue.gfx.lz");
-const u16 sGametBluePal[16] = INCBIN_U16("data/sprites/GametBlue.pal");
-const u32 sGametRedGfx[168] = INCBIN_U32("data/sprites/GametRed.gfx.lz");
-const u16 sGametRedPal[16] = INCBIN_U16("data/sprites/GametRed.pal");
+const u32 sGametBlueGfx[168] = INCBIN_U32("data/sprites/gamet_blue.gfx.lz");
+const u16 sGametBluePal[16] = INCBIN_U16("data/sprites/gamet_blue.pal");
+const u32 sGametRedGfx[168] = INCBIN_U32("data/sprites/gamet_red.gfx.lz");
+const u16 sGametRedPal[16] = INCBIN_U16("data/sprites/gamet_red.pal");
 
 static const u16 sGametOam_Idle_Frame0[OAM_DATA_SIZE(3)] = {
-    0x3,
-    0xf8, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x201,
-    0xf8, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x207,
-    OBJ_SHAPE_VERTICAL | 0xf8, 0x1f0, OBJ_SPRITE_OAM | 0x200
+    3,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x201, 8, 0),
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x207, 8, 0),
+    OAM_ENTRY(-16, -8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x200, 8, 0),
 };
 
 static const u16 sGametOam_Idle_Frame1[OAM_DATA_SIZE(3)] = {
-    0x3,
-    0xf8, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x203,
-    0xf9, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x207,
-    OBJ_SHAPE_VERTICAL | 0xf8, 0x1f0, OBJ_SPRITE_OAM | 0x200
+    3,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x203, 8, 0),
+    OAM_ENTRY(-8, -7, OAM_DIMS_16x16, OAM_NO_FLIP, 0x207, 8, 0),
+    OAM_ENTRY(-16, -8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x200, 8, 0),
 };
 
 static const u16 sGametOam_Idle_Frame2[OAM_DATA_SIZE(3)] = {
-    0x3,
-    0xf8, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x205,
-    0xf8, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x207,
-    OBJ_SHAPE_VERTICAL | 0xf8, 0x1f0, OBJ_SPRITE_OAM | 0x200
+    3,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x205, 8, 0),
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x207, 8, 0),
+    OAM_ENTRY(-16, -8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x200, 8, 0),
 };
 
 static const u16 sGametOam_Moving_Frame2[OAM_DATA_SIZE(3)] = {
-    0x3,
-    OBJ_SHAPE_VERTICAL | 0xf7, 0x1f0, OBJ_SPRITE_OAM | 0x200,
-    0xf7, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x201,
-    0xf9, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x209
+    3,
+    OAM_ENTRY(-16, -9, OAM_DIMS_8x16, OAM_NO_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(-8, -9, OAM_DIMS_16x16, OAM_NO_FLIP, 0x201, 8, 0),
+    OAM_ENTRY(-8, -7, OAM_DIMS_16x16, OAM_NO_FLIP, 0x209, 8, 0),
 };
 
 static const u16 sGametOam_Moving_Frame1[OAM_DATA_SIZE(3)] = {
-    0x3,
-    OBJ_SHAPE_VERTICAL | 0xf7, 0x1f0, OBJ_SPRITE_OAM | 0x200,
-    0xf7, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x203,
-    0xf8, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x209
+    3,
+    OAM_ENTRY(-16, -9, OAM_DIMS_8x16, OAM_NO_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(-8, -9, OAM_DIMS_16x16, OAM_NO_FLIP, 0x203, 8, 0),
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x209, 8, 0),
 };
 
 static const u16 sGametOam_Moving_Frame0[OAM_DATA_SIZE(3)] = {
-    0x3,
-    0xf8, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x205,
-    0xf8, OBJ_SIZE_16x16 | 0x1f8, OBJ_SPRITE_OAM | 0x209,
-    OBJ_SHAPE_VERTICAL | 0xf8, 0x1f0, OBJ_SPRITE_OAM | 0x200
+    3,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x205, 8, 0),
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x209, 8, 0),
+    OAM_ENTRY(-16, -8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x200, 8, 0),
 };
 
 const struct FrameData sGametOam_Idle[5] = {

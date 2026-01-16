@@ -342,11 +342,11 @@ static u8 GettingFullyPoweredSuitInit(void)
     ChaosEndEquipmentEffects();
 #endif // CHAOS
 
-    #ifdef REGION_EU
+    #if defined(REGION_EU) || defined(BUGFIX)
     CutsceneFadeScreenToWhite();
-    #else // !REGION_EU
+    #else // !(REGION_EU || BUGFIX)
     CutsceneFadeScreenToBlack();
-    #endif // REGION_EU
+    #endif // REGION_EU || BUGFIX
 
     // Load palette, in both background and object
     DmaTransfer(3, sGettingFullyPoweredSuitPal, PALRAM_BASE, 11 * PAL_ROW_SIZE, 16);
@@ -451,7 +451,7 @@ static u8 GettingFullyPoweredSuitInit(void)
     return FALSE;
 }
 
-static struct CutsceneSubroutineData sGettingFullyPoweredSuitSubroutineData[3] = {
+static struct CutsceneStageData sGettingFullyPoweredSuitStageData[3] = {
     [0] = {
         .pFunction = GettingFullyPoweredSuitInit,
         .oamLength = 14
@@ -467,15 +467,15 @@ static struct CutsceneSubroutineData sGettingFullyPoweredSuitSubroutineData[3] =
 };
 
 /**
- * @brief 6635c | 34 | Subroutine for the getting fully powered suit cutscene
+ * @brief 6635c | 34 | Main loop for the getting fully powered suit cutscene
  * 
  * @return u8 bool, ended
  */
-u8 GettingFullyPoweredSuitSubroutine(void)
+u8 GettingFullyPoweredSuitMainLoop(void)
 {
     u8 ended;
 
-    ended = sGettingFullyPoweredSuitSubroutineData[CUTSCENE_DATA.timeInfo.stage].pFunction();
+    ended = sGettingFullyPoweredSuitStageData[CUTSCENE_DATA.timeInfo.stage].pFunction();
     CutsceneUpdateBackgroundsPosition(TRUE);
     GettingFullyPoweredSuitProcessOAM();
     
@@ -489,6 +489,6 @@ u8 GettingFullyPoweredSuitSubroutine(void)
 static void GettingFullyPoweredSuitProcessOAM(void)
 {
     gNextOamSlot = 0;
-    ProcessCutsceneOam(sGettingFullyPoweredSuitSubroutineData[CUTSCENE_DATA.timeInfo.stage].oamLength, CUTSCENE_DATA.oam, sGettingFullyPoweredSuitCutsceneOam);
+    ProcessCutsceneOam(sGettingFullyPoweredSuitStageData[CUTSCENE_DATA.timeInfo.stage].oamLength, CUTSCENE_DATA.oam, sGettingFullyPoweredSuitCutsceneOam);
     ResetFreeOam();
 }

@@ -26,6 +26,10 @@ void InitializeGame(void)
     CallbackSetVblank(SoftResetVBlankCallback);
     SramRead_All();
     InitializeAudio();
+    #ifdef BUGFIX
+    SramRead_SoundMode();
+    FileSelectApplyStereo();
+    #endif // BUGFIX
 
     WRITE_16(REG_IE, IF_VBLANK | IF_DMA2 | IF_GAMEPAK);
     WRITE_16(REG_DISPSTAT, DSTAT_IF_VBLANK);
@@ -59,9 +63,9 @@ void InitializeGame(void)
         #endif // DEBUG
     }
 
-    gButtonInput = 0;
-    gPreviousButtonInput = 0;
-    gChangedInput = 0;
+    gButtonInput = KEY_NONE;
+    gPreviousButtonInput = KEY_NONE;
+    gChangedInput = KEY_NONE;
 
     gDisableSoftReset = FALSE;
     gStereoFlag = FALSE;

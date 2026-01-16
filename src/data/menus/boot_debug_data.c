@@ -5,115 +5,115 @@
 
 #ifdef DEBUG
 
-const u16 sBootDebug_417e38[8 * 16] = INCBIN_U16("data/menus/BootDebug/BootDebug_417e38.pal");
-const u16 sBootDebugBgPal[8 * 16] = INCBIN_U16("data/menus/BootDebug/Background.pal");
-const u16 sBootDebugObjPal[3 * 16] = INCBIN_U16("data/menus/BootDebug/Objects.pal");
-const u32 sBootDebugObjGfx[222] = INCBIN_U32("data/menus/BootDebug/Objects.gfx.lz");
+const u16 sBootDebug_417e38[8 * 16] = INCBIN_U16("data/menus/boot_debug/boot_debug_417e38.pal");
+const u16 sBootDebugBgPal[8 * 16] = INCBIN_U16("data/menus/boot_debug/background.pal");
+const u16 sBootDebugObjPal[3 * 16] = INCBIN_U16("data/menus/boot_debug/objects.pal");
+const u32 sBootDebugObjGfx[222] = INCBIN_U32("data/menus/boot_debug/objects.gfx.lz");
 
 static const u16 sBootDebugOam_4185D8_Frame1[OAM_DATA_SIZE(1)] = {
-    0x1,
-    0x0, 0x0, 0x1000
+    1,
+    OAM_ENTRY(0, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x0, 1, 0),
 };
 
 static const u16 sBootDebugOam_4185B0_Frame0[OAM_DATA_SIZE(1)] = {
-    0x1,
-    OBJ_SHAPE_VERTICAL | 0x0, 0x1f6, 0x2044
+    1,
+    OAM_ENTRY(-10, 0, OAM_DIMS_8x16, OAM_NO_FLIP, 0x44, 2, 0),
 };
 
 static const u16 sBootDebugOam_4185B0_Frame1[OAM_DATA_SIZE(1)] = {
-    0x1,
-    OBJ_SHAPE_VERTICAL | 0x0, 0x1f7, 0x2044
+    1,
+    OAM_ENTRY(-9, 0, OAM_DIMS_8x16, OAM_NO_FLIP, 0x44, 2, 0),
 };
 
 static const u16 sBootDebugOam_4185B0_Frame2[OAM_DATA_SIZE(1)] = {
-    0x1,
-    OBJ_SHAPE_VERTICAL | 0x0, 0x1f8, 0x2044
+    1,
+    OAM_ENTRY(-8, 0, OAM_DIMS_8x16, OAM_NO_FLIP, 0x44, 2, 0),
 };
 
 static const u16 sBootDebugOam_4185D8_Frame0[OAM_DATA_SIZE(1)] = {
-    0x1,
-    0x3, 0x0, 0x2065
+    1,
+    OAM_ENTRY(0, 3, OAM_DIMS_8x8, OAM_NO_FLIP, 0x65, 2, 0),
 };
 
 static const u16 sBootDebugOam_4185F0_Frame0[OAM_DATA_SIZE(4)] = {
-    0x4,
-    0x0, 0x1fa, 0x2047,
-    0x8, OBJ_Y_FLIP | 0x1fa, 0x2047,
-    0x0, OBJ_X_FLIP | 0x34, 0x2047,
-    0x8, OBJ_X_FLIP | OBJ_Y_FLIP | 0x34, 0x2047
+    4,
+    OAM_ENTRY(-6, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x47, 2, 0),
+    OAM_ENTRY(-6, 8, OAM_DIMS_8x8, OAM_Y_FLIP, 0x47, 2, 0),
+    OAM_ENTRY(52, 0, OAM_DIMS_8x8, OAM_X_FLIP, 0x47, 2, 0),
+    OAM_ENTRY(52, 8, OAM_DIMS_8x8, OAM_XY_FLIP, 0x47, 2, 0),
 };
 
 static const u16 sBootDebugOam_418600_Frame0[OAM_DATA_SIZE(45)] = {
-    0x2d,
-    0x0, 0x0, 0x1031,
-    0x0, 0x10, 0x1021,
-    0x0, 0x18, 0x1034,
-    0x0, 0x20, 0x1033,
-    0x0, 0x28, 0x1033,
-    0x0, 0x30, 0x102e,
-    0x0, 0x38, 0x102d,
-    0x8, 0xd, 0x1033,
-    0x8, 0x15, 0x1028,
-    0x8, 0x1c, 0x1033,
-    0x8, 0x24, 0x102b,
-    0x8, 0x2c, 0x1024,
-    0xff, 0x8, 0x100b,
-    0xf8, 0x8, 0x100c,
-    0xf8, 0x8, 0x100c,
-    0xf8, 0x10, 0x100c,
-    0xf8, 0x10, 0x100c,
-    0xf8, 0x18, 0x100c,
-    0xf8, 0x18, 0x100c,
-    0xf8, 0x20, 0x100c,
-    0xf8, 0x20, 0x100c,
-    0xf8, 0x28, 0x100c,
-    0xf8, 0x28, 0x100c,
-    0xf8, 0x30, 0x100c,
-    0xf8, 0x30, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x8, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x8, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x10, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x10, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x18, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x18, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x20, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x20, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x28, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x28, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x30, 0x100c,
-    0x10, OBJ_Y_FLIP | 0x30, 0x100c,
-    0x0, OBJ_X_FLIP | 0x1f8, 0x100e,
-    0x8, OBJ_X_FLIP | 0x1f8, 0x100e,
-    0x0, 0x40, 0x100e,
-    0x8, 0x40, 0x100e,
-    OBJ_SHAPE_HORIZONTAL | 0xf8, 0x38, 0x100c,
-    OBJ_SHAPE_HORIZONTAL | 0x10, OBJ_Y_FLIP | 0x38, 0x100c,
-    OBJ_SHAPE_HORIZONTAL | 0x10, OBJ_X_FLIP | OBJ_Y_FLIP | 0x1f8, 0x100c,
-    OBJ_SHAPE_HORIZONTAL | 0xf8, OBJ_X_FLIP | 0x1f8, 0x100c
+    45,
+    OAM_ENTRY(0, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x31, 1, 0),
+    OAM_ENTRY(16, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x21, 1, 0),
+    OAM_ENTRY(24, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x34, 1, 0),
+    OAM_ENTRY(32, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x33, 1, 0),
+    OAM_ENTRY(40, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x33, 1, 0),
+    OAM_ENTRY(48, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2e, 1, 0),
+    OAM_ENTRY(56, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2d, 1, 0),
+    OAM_ENTRY(13, 8, OAM_DIMS_8x8, OAM_NO_FLIP, 0x33, 1, 0),
+    OAM_ENTRY(21, 8, OAM_DIMS_8x8, OAM_NO_FLIP, 0x28, 1, 0),
+    OAM_ENTRY(28, 8, OAM_DIMS_8x8, OAM_NO_FLIP, 0x33, 1, 0),
+    OAM_ENTRY(36, 8, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2b, 1, 0),
+    OAM_ENTRY(44, 8, OAM_DIMS_8x8, OAM_NO_FLIP, 0x24, 1, 0),
+    OAM_ENTRY(8, -1, OAM_DIMS_8x8, OAM_NO_FLIP, 0xb, 1, 0),
+    OAM_ENTRY(8, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(8, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(16, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(16, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(24, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(24, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(32, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(32, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(40, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(40, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(48, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(48, -8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(8, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(8, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(16, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(16, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(24, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(24, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(32, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(32, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(40, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(40, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(48, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(48, 16, OAM_DIMS_8x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(-8, 0, OAM_DIMS_8x8, OAM_X_FLIP, 0xe, 1, 0),
+    OAM_ENTRY(-8, 8, OAM_DIMS_8x8, OAM_X_FLIP, 0xe, 1, 0),
+    OAM_ENTRY(64, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0xe, 1, 0),
+    OAM_ENTRY(64, 8, OAM_DIMS_8x8, OAM_NO_FLIP, 0xe, 1, 0),
+    OAM_ENTRY(56, -8, OAM_DIMS_16x8, OAM_NO_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(56, 16, OAM_DIMS_16x8, OAM_Y_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(-8, 16, OAM_DIMS_16x8, OAM_XY_FLIP, 0xc, 1, 0),
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x8, OAM_X_FLIP, 0xc, 1, 0),
 };
 
 static const u16 sBootDebugOam_418610_Frame0[OAM_DATA_SIZE(4)] = {
-    0x4,
-    0xfc, 0x1fc, 0x2046,
-    0xfc, OBJ_X_FLIP | 0x4, 0x2046,
-    0x4, OBJ_Y_FLIP | 0x1fc, 0x2046,
-    0x4, OBJ_X_FLIP | OBJ_Y_FLIP | 0x4, 0x2046
+    4,
+    OAM_ENTRY(-4, -4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x46, 2, 0),
+    OAM_ENTRY(4, -4, OAM_DIMS_8x8, OAM_X_FLIP, 0x46, 2, 0),
+    OAM_ENTRY(-4, 4, OAM_DIMS_8x8, OAM_Y_FLIP, 0x46, 2, 0),
+    OAM_ENTRY(4, 4, OAM_DIMS_8x8, OAM_XY_FLIP, 0x46, 2, 0),
 };
 
 static const u16 sBootDebugOam_418610_Frame1[OAM_DATA_SIZE(4)] = {
-    0x4,
-    0xfb, 0x1fb, 0x2046,
-    0xfb, OBJ_X_FLIP | 0x5, 0x2046,
-    0x5, OBJ_Y_FLIP | 0x1fb, 0x2046,
-    0x5, OBJ_X_FLIP | OBJ_Y_FLIP | 0x5, 0x2046
+    4,
+    OAM_ENTRY(-5, -5, OAM_DIMS_8x8, OAM_NO_FLIP, 0x46, 2, 0),
+    OAM_ENTRY(5, -5, OAM_DIMS_8x8, OAM_X_FLIP, 0x46, 2, 0),
+    OAM_ENTRY(-5, 5, OAM_DIMS_8x8, OAM_Y_FLIP, 0x46, 2, 0),
+    OAM_ENTRY(5, 5, OAM_DIMS_8x8, OAM_XY_FLIP, 0x46, 2, 0),
 };
 
 static const u16 sBootDebugOam_418610_Frame2[OAM_DATA_SIZE(4)] = {
-    0x4,
-    0xfa, 0x1fa, 0x2046,
-    0xfa, OBJ_X_FLIP | 0x6, 0x2046,
-    0x6, OBJ_Y_FLIP | 0x1fa, 0x2046,
-    0x6, OBJ_X_FLIP | OBJ_Y_FLIP | 0x6, 0x2046
+    4,
+    OAM_ENTRY(-6, -6, OAM_DIMS_8x8, OAM_NO_FLIP, 0x46, 2, 0),
+    OAM_ENTRY(6, -6, OAM_DIMS_8x8, OAM_X_FLIP, 0x46, 2, 0),
+    OAM_ENTRY(-6, 6, OAM_DIMS_8x8, OAM_Y_FLIP, 0x46, 2, 0),
+    OAM_ENTRY(6, 6, OAM_DIMS_8x8, OAM_XY_FLIP, 0x46, 2, 0),
 };
 
 static const struct FrameData sBootDebugOam_4185B0[5] = {
@@ -184,7 +184,7 @@ static const struct FrameData sBootDebugOam_418610[5] = {
    [4] = FRAME_DATA_TERMINATOR
 };
 
-const u32 sBootDebugBgGfx[771] = INCBIN_U32("data/menus/BootDebug/Background.gfx.lz");
+const u32 sBootDebugBgGfx[771] = INCBIN_U32("data/menus/boot_debug/background.gfx.lz");
 
 const u8 sBootDebug_CutsceneB_EscapeShip_Text[8] = SHIFT_JIS("コガタテイ");
 const u8 sBootDebug_CutsceneB_MechaRidley_Text[12] = SHIFT_JIS("メカ リドリー");

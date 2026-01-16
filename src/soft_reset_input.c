@@ -66,6 +66,10 @@ void SoftReset(void)
     CallbackSetVblank(SoftResetVBlankCallback);
     SramRead_All();
     InitializeAudio();
+    #ifdef BUGFIX
+    SramRead_SoundMode();
+    FileSelectApplyStereo();
+    #endif // BUGFIX
 
     WRITE_16(REG_IE, IF_VBLANK | IF_DMA2 | IF_GAMEPAK);
     WRITE_16(REG_DISPSTAT, DSTAT_IF_VBLANK);
@@ -79,7 +83,7 @@ void SoftReset(void)
 
     gSubGameMode1 = 0;
     gSubGameMode2 = 0;
-    gResetGame = 0;
+    gResetGame = FALSE;
     gStereoFlag = 0;
 
     #ifdef REGION_EU

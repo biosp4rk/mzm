@@ -2,13 +2,13 @@
 #include "macros.h"
 
 static const u16 sUnusedSpritesOam_Idle_Frame0[OAM_DATA_SIZE(1)] = {
-    0x1,
-    0xfc, 0x1fc, 0x3151
+    1,
+    OAM_ENTRY(-4, -4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x151, 3, 0),
 };
 
 static const u16 sUnusedSpritesOam_Idle_Frame1[OAM_DATA_SIZE(1)] = {
-    0x1,
-    0xfc, 0x1fc, 0x3150
+    1,
+    OAM_ENTRY(-4, -4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x150, 3, 0),
 };
 
 const struct FrameData sUnusedSpritesOam_Idle[3] = {
@@ -31,5 +31,5 @@ const struct FrameData sUnusedSpritesOam_Unused[2] = {
     [1] = FRAME_DATA_TERMINATOR
 };
 
-const u32 sUnusedSpritesGfx[6] = INCBIN_U32("data/sprites/UnusedSprites.gfx.lz");
-const u16 sUnusedSpritesPal[16] = INCBIN_U16("data/sprites/UnusedSprites.pal");
+const u32 sUnusedSpritesGfx[6] = INCBIN_U32("data/sprites/unused_sprites.gfx.lz");
+const u16 sUnusedSpritesPal[16] = INCBIN_U16("data/sprites/unused_sprites.pal");

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 
-DATA_PATH = "data/"
+DATA_PATH = "data"
 DATABASE_PATH = "database.json"
 DATABASE_DEBUG_PATH = "database_debug.json"
 
@@ -23,7 +23,8 @@ def extract_data(region: str, debug: bool, quiet: bool = False) -> None:
             print(f"Extracting {path}")
 
         # Create directories if they don't exist
-        path_obj = Path(DATA_PATH + path)
+        root_dir = entry.get("dir", DATA_PATH)
+        path_obj = Path(root_dir, path)
         path_obj.parent.mkdir(parents=True, exist_ok=True)
 
         addr = entry["addr"].get(region)
@@ -31,8 +32,8 @@ def extract_data(region: str, debug: bool, quiet: bool = False) -> None:
             count = entry["count"]
             if isinstance(count, dict):
                 count = count[region]
-            size: int = count * entry["size"]
-            rom.seek(entry["addr"][region])
+            size: int = int(count, 16) * entry["size"]
+            rom.seek(int(addr, 16))
             with open(path_obj, "wb") as f:
                 f.write(rom.read(size))
 

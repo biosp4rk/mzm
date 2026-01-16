@@ -1,9 +1,10 @@
 # Bugs and Glitches
-These are known bugs and glitches in the game: code that clearly does not work as intended or was designed poorly. Some of them cause visible gameplay issues, while others are harmless. The bugs listed here can be fixed by compiling with the `BUGFIX` flag (bugs in the TODO section don't have a fix implemented yet). 
 
+These are known bugs and glitches in the game: code that clearly does not work as intended or was designed poorly. Some of them cause visible gameplay issues, while others are harmless. The bugs listed here can be fixed by compiling with the `BUGFIX` flag (bugs in the TODO section don't have a fix implemented yet). 
 
 ## Contents
 
+- [Contents](#contents)
 - [Bugs](#bugs)
   - ["Ground" Dessgeegas always set the "Dessgeega long beam killed" event and unlock doors](#ground-dessgeegas-always-set-the-dessgeega-long-beam-killed-event-and-unlock-doors)
   - [Mother Brain block does not spawn when there are too many sprites](#mother-brain-block-does-not-spawn-when-there-are-too-many-sprites)
@@ -18,10 +19,14 @@ These are known bugs and glitches in the game: code that clearly does not work a
   - ["Stop enemy" clipdata prevents bomb jumping](#stop-enemy-clipdata-prevents-bomb-jumping)
   - [Samus can get refilled while collecting a Chozo statue item](#samus-can-get-refilled-while-collecting-a-chozo-statue-item)
   - [Samus can clip into blocks on the right when uncrouching next to a frozen enemy](#samus-can-clip-into-blocks-on-the-right-when-uncrouching-next-to-a-frozen-enemy)
+  - [Ridley updates sub sprite data even if he's dead](#ridley-updates-sub-sprite-data-even-if-hes-dead)
+  - [The first frame of power bomb explosions has a visual bug](#the-first-frame-of-power-bomb-explosions-has-a-visual-bug)
+  - [The fully powered suit cutscene fades to black after fading to white](#the-fully-powered-suit-cutscene-fades-to-black-after-fading-to-white)
 - [Oversights and Design Flaws](#oversights-and-design-flaws)
   - [Floating point math is used when fixed point could have been used](#floating-point-math-is-used-when-fixed-point-could-have-been-used)
   - [`ClipdataConvertToCollision` is copied to RAM but still runs in ROM](#clipdataconverttocollision-is-copied-to-ram-but-still-runs-in-rom)
   - [Upgrading suit cutscene code is still called after the cutscene ends](#upgrading-suit-cutscene-code-is-still-called-after-the-cutscene-ends)
+  - [Game always boots in mono even if stereo is enabled in settings](#game-always-boots-in-mono-even-if-stereo-is-enabled-in-settings)
 - [Uninitialized Variables](#uninitialized-variables)
 - [TODO](#todo)
   - [Bugs](#bugs-1)
@@ -67,7 +72,7 @@ Whenever there are too many (24) active sprites in the Mother Brain room, the bl
 The code skips the check for the "grabbed by Metroid" flag to apply the slowed physics if Samus is currently in a liquid.
 So when Samus is in a liquid that doesn't slow her, she also won't be slowed even if she's grabbed by a Metroid.
 
-**Fix:** Edit `SamusUpdatePhysics` in [mother_brain.c](../src/samus.c) and simply remove the break in the cases for the liquid check.
+**Fix:** Edit `SamusUpdatePhysics` in [samus.c](../src/samus.c) and simply remove the break in the cases for the liquid check.
 
 ```diff
   case HAZARD_TYPE_WATER:
@@ -170,7 +175,7 @@ After the Ruins Test fight, the game tries to lock you in place in the center of
 
 During a door transition, the game calls various "update" routines for one frame in order to initialize data, such as Samus and sprites. When entering a door transition while submerged in lava or acid, it's possible for Samus to take damage during that one frame and die. This sets `gSubGameMode1` to `SUB_GAME_MODE_DYING`, which then gets incremented by one. This is supposed to change the mode from 0 to 1 (`SUB_GAME_MODE_DOOR_TRANSITION`), but instead changes it from 5 to 6 (`SUB_GAME_MODE_NO_CLIP`). This was fixed in the European release.
 
-**Fix:** Edit `SamusExecutePoseSubroutine` in [samus.c](../src/samus.c) to only check for hazard damage if `gSubGameMode1` isn't 0.
+**Fix:** Edit `SamusExecutePoseMainLoop` in [samus.c](../src/samus.c) to only check for hazard damage if `gSubGameMode1` isn't 0.
 
 ```diff
 + if (gSubGameMode1 != 0)
@@ -188,7 +193,7 @@ During a door transition, the game calls various "update" routines for one frame
 
 During Samus's death animation, missiles can be highlighted and super missiles can be toggled. Even though the HUD isn't displayed, the sound for each will still play. This was fixed in the European release.
 
-**Fix:** Edit `SamusExecutePoseSubroutine` in [samus.c](../src/samus.c) to check if Samus is dying before updating the highlighted weapon.
+**Fix:** Edit `SamusExecutePoseMainLoop` in [samus.c](../src/samus.c) to check if Samus is dying before updating the highlighted weapon.
 
 ```diff
   // Update weapon highlight
@@ -236,7 +241,7 @@ The game checks for solid blocks above and below Samus to see if you can bomb ju
 
 By falling into a Chozo statue item and opening the orb as late as possible, you can reach the hand before Samus is stopped to collect the item. If you fall while morphed or morph on the last possible frame, Samus will be refilled and collect the item at the same time. This happens because the Chozo statue returns to the idle pose once the message box is open, which checks if Samus is in position to get refilled.
 
-**Fix:** Edit `ChozoStatuePartArmCheckGrabSamusRefill` in [chozo_statue.c](../src/sprites_AI/chozo_statue.c) to check if Samus's movement is prevented before setting the "grabbed" pose.
+**Fix:** Edit `ChozoStatuePartArmCheckGrabSamusRefill` in [chozo_statue.c](../src/sprites_AI/chozo_statue.c) and `UnknownItemChozoStatuePartArmCheckGrabSamusRefill` in [unknown_item_chozo_statue.c](../src/sprites_AI/unknown_item_chozo_statue.c) to check if Samus's movement is prevented before setting the "grabbed" pose.
 
 ```diff
   if (gSamusData.pose == SPOSE_MORPH_BALL)
@@ -254,7 +259,7 @@ By falling into a Chozo statue item and opening the orb as late as possible, you
 
 If Samus is up against a wall on the right and an enemy is frozen up against Samus on the left, uncrouching will push Samus one block to the right, clipping into the wall. When Samus is up against the right side of a solid sprite, she's moved 1 unit to the right, even if she's up against a wall. When Samus uncrouches, the game checks if Samus is slightly under a block in order to push her out to be flush with the block (this also happens when Samus unmorphs). However, the wrong hitbox side is used when collision is detected on the right side. This was likely missed because there aren't any normal situations where Samus can be crouched directly under a block.
 
-**Fix:** Edit `SamusCrouching` in [samus.c](../src/samus.c) to fix which hitbox value is used.
+**Fix:** Edit `SamusCrouching` and `SamusTurningAroundAndCrouching` in [samus.c](../src/samus.c) to fix which hitbox value is used.
 
 ```diff
   // Smooth clamp the X position
@@ -271,6 +276,53 @@ If Samus is up against a wall on the right and an enemy is frozen up against Sam
 +     xPosition = (pData->xPosition & BLOCK_POSITION_FLAG) -
 +         sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_RIGHT] + SUB_PIXEL_POSITION_FLAG;
   }
+```
+
+### Ridley updates sub sprite data even if he's dead
+
+Ridley constantly updates sub sprite data at the end of its main function. However, it's possible for the sub sprite data to be uninitialized at this point if Ridley is killed during initialization (Samus doesn't have gravity suit, or Ridley has already been killed). As such, sub sprite data is updated using invalid data (either an old pointer or a null pointer).
+
+**Fix:** Edit `Ridley` in [ridley.c](../src/sprites_AI/ridley.c) to check if Ridley is still alive.
+
+```diff
++ if (gCurrentSprite.status & SPRITE_STATUS_EXISTS)
++ {
+        SpriteUtilUpdateSubSprite1Anim();
+        RidleySyncSubSprites();
++ }
+```
+
+### The first frame of power bomb explosions has a visual bug
+
+On the first frame of a power bomb explosion, the background becomes black (it should be white) and the top of the screen becomes white (which covers the HUD). This was fixed in the European release. The same issue occurs in Fusion, but without the white bar at the top of the screen.
+
+**Fix:** Edit `HazeSetupCode` in [haze.c](../src/haze.c) to set `COLOR_DATA_BG_EWRAM` to `COLOR_WHITE`.
+
+```diff
+  PowerBombYellowTint(0);
+
++ WRITE_16(COLOR_DATA_BG_EWRAM, COLOR_WHITE);
+
+  if (gIoRegistersBackup.Dispcnt_NonGameplay & DCNT_BG0 && gCurrentRoomEntry.bg0Prop != BG_PROP_DISABLE_TRANSPARENCY)
+      gWrittenToDispcnt = READ_16(REG_DISPCNT) ^ DCNT_BG0;
+
+  gBackdropColor = COLOR_WHITE;
+```
+
+### The fully powered suit cutscene fades to black after fading to white
+
+At the start of the fully powered suit cutscene (after Samus is locked in place), the screen fades to white. Right before the image of suitless Samus is shown, the screen becomes black. Since the image of Samus is relatively bright, this creates an unnecessary flash between dark and light.
+
+**Fix:** Edit `GettingFullyPoweredSuitInit` in [getting_fully_powered_suit.c](../src/cutscenes/getting_fully_powered_suit.c) to call `CutsceneFadeScreenToWhite` instead of `CutsceneFadeScreenToBlack`.
+
+```diff
+- CutsceneFadeScreenToBlack();
++ CutsceneFadeScreenToWhite();
+
+  // Load palette, in both background and object
+  DmaTransfer(3, sGettingFullyPoweredSuitPal, PALRAM_BASE, 11 * PAL_ROW_SIZE, 16);
+  DmaTransfer(3, PALRAM_BASE, PALRAM_OBJ, PAL_SIZE, 32);
+  SET_BACKDROP_COLOR(COLOR_BLACK);
 ```
 
 
@@ -347,6 +399,15 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
       break;
 ```
 
+### Game always boots in mono even if stereo is enabled in settings
+
+**Fix:** Edit `InitializeGame` in [init_game.c](../src/init_game.c) and `SoftReset` in [soft_reset_input.c](../src/soft_reset_input.c) to apply stereo after calling `InitializeAudio`.
+
+```diff
+  InitializeAudio();
++ SramRead_SoundMode();
++ FileSelectApplyStereo();
+```
 
 ## Uninitialized Variables
 
@@ -367,8 +428,8 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
 | `src` | `TitleScreenTransferGroundGraphics` | [title_screen.c](../src/menus/title_screen.c) |
 | `currSlot` | `unk_818cc` | [tourian_escape.c](../src/tourian_escape.c) |
 | `diff` | `SramWriteChecked` | [sram.c](../src/sram/sram.c) |
-| `updateTextAndEvents` | `BootDebugModeSubroutine` | [boot_debug.c](../src/menus/boot_debug.c) |
-| `updateText` | `BootDebugSoundSubroutine` | [boot_debug.c](../src/menus/boot_debug.c) |
+| `updateTextAndEvents` | `BootDebugModeMainLoop` | [boot_debug.c](../src/menus/boot_debug.c) |
+| `updateText` | `BootDebugSoundMainLoop` | [boot_debug.c](../src/menus/boot_debug.c) |
 
 
 ## TODO
@@ -376,10 +437,12 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
 ### Bugs
 
 - PowerBombExplosion doesn't check if out of bounds, which can lead to memory corruption
-  - Fix: don't check collision with any blocks outside of the room
+  - Fix: Don't check collision with any blocks outside of the room
 - Bomb hover on frozen enemies ([video](https://youtu.be/UIK8YnT1sG4))
 - Warping when Samus stands on multiple respawning enemies and kills one ([video](https://youtu.be/WfxkYSPTjWw))
 - Frame perfect pause buffering on ziplines ignores collision
 - Clipping into slopes ([video](https://www.youtube.com/watch?v=XiZRJesXHWw))
+- It is possible to get an invalid time attack password without cheating, because the time attack anti-cheat check doesn't check wheather maximum ingame time was reached
+  - Fix: Edit the if statement in line 283 in `TimeAttackCheckSaveFileValidity` in [time_attack.c](../src/time_attack.c) to check if max ingame time was reached if the times are equal
 
 ### Oversights and Design Flaws

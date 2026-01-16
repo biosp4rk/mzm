@@ -735,7 +735,7 @@ static void ParasiteIdle(struct SpriteData* pSprite)
         return;
     }
 
-    unk_f594();
+    SpriteUtilAlignYPositionOnSlopeAtOrigin();
 
     if (gPreviousVerticalCollisionCheck == COLLISION_AIR)
     {
@@ -1097,7 +1097,7 @@ static void ParasiteFalling(struct SpriteData* pSprite)
  */
 static void ParasiteDyingInit(struct SpriteData* pSprite)
 {
-    pSprite->status &= ~(SPRITE_STATUS_UNKNOWN_80 | SPRITE_STATUS_Y_FLIP);
+    pSprite->status &= ~(SPRITE_STATUS_ROTATION_SCALING_SINGLE | SPRITE_STATUS_Y_FLIP);
     pSprite->pose = PARASITE_POSE_DYING;
 
     pSprite->pOam = sParasiteOam_Dying;
