@@ -39,6 +39,8 @@
 #include "structs/transparency.h"
 #include "structs/visual_effects.h"
 
+#include "structs/chaos.h"
+
 #include "sprite_debris.h"
 #include "oam.h"
 #include "temp_globals.h"
@@ -69,3 +71,13 @@ IWRAM_DATA u8 gUnk_3005B55[11] = {};
 #endif
 
 IWRAM_DATA struct LinkInfo gLink = {};
+
+#ifdef CHAOS
+IWRAM_DATA u32 gChaosRng;
+IWRAM_DATA u32 gActiveChaosEffects;
+IWRAM_DATA u8 gPrevOneTimeChaosEffect;
+IWRAM_DATA u8 gCrumbleCityActive;
+IWRAM_DATA struct HudPositions gHudPositions;
+IWRAM_DATA const u16* gChaosTextPointer;
+IWRAM_DATA struct ChaosEffectData gChaosEffects[MAX_NUM_CHAOS_EFFECTS];
+#endif // CHAOS

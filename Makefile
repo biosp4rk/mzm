@@ -232,11 +232,13 @@ tools/%: tools/%.c
 	$(MSG) HOSTCC $@
 	$Q$(HOSTCC) $< $(HOSTCFLAGS) $(HOSTCPPFLAGS) -o $@
 
-.PHONY: chaos us us_debug us_beta eu eu_debug eu_beta jp jp_debug
+.PHONY: chaos chaos_debug us us_debug us_beta eu eu_debug eu_beta jp jp_debug
 # cn cn_debug
 
 chaos:
 	$(MAKE) REGION=us CHAOS=1
+chaos_debug
+	$(MAKE) REGION=us CHAOS=1 DEBUG=1
 
 us:
 	$(MAKE) REGION=us
