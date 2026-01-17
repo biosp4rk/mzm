@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define OPTIMIZED
+
 /**
  * @brief Enables debug features, mainly the boot debug menu and the pause debug menu, among other things
  * 

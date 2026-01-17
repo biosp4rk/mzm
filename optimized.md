@@ -1,0 +1,2 @@
+## Optimizations
+- Faster ProjectileCheckHittingSprite

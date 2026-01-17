@@ -1188,7 +1188,11 @@ void ProjectileCheckHitBlock(struct ProjectileData* pProj, u8 caa, ParticleEffec
 void ProjectileCheckHittingSprite(void)
 {
     struct Equipment* pEquipment;
+#ifdef OPTIMIZED
+    s32 i;
+#else // !OPTIMIZED
     u8 i;
+#endif // OPTIMIZED
     u8 drawOrder;
     u16 statusCheck;
 
@@ -1208,6 +1212,15 @@ void ProjectileCheckHittingSprite(void)
     u16 o2Bottom;
     u16 o2Left;
     u16 o2Right;
+
+#ifdef OPTIMIZED
+    u8 activeProjs[MAX_AMOUNT_OF_PROJECTILES];
+    s32 projCount;
+    u8 drawOrderStarts[16];
+    u8 drawOrderEnds[16];
+    u8 nextIdx[MAX_AMOUNT_OF_SPRITES];
+    s32 j;
+#endif // OPTIMIZED
 
     pEquipment = &gEquipment;
 
@@ -1240,6 +1253,51 @@ void ProjectileCheckHittingSprite(void)
         }
     }
 
+#ifdef OPTIMIZED
+
+    // First check if there are any active projectiles. The updates to gSpriteDrawOrder
+    // are only used by this function, so it can be skipped if there are no projectiles
+    projCount = 0;
+    statusCheck = PROJ_STATUS_EXISTS | PROJ_STATUS_CAN_AFFECT_ENVIRONMENT;
+    i = 0;
+    for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
+    {
+        if ((pProj->status & statusCheck) == statusCheck)
+            activeProjs[projCount++] = i;
+        i++;
+    }
+
+    if (projCount == 0)
+        return;
+    
+    // Sort sprites by draw order. An array of linked lists can be used to sort
+    // them in linear time
+    for (i = 0; i < 16; i++)
+        drawOrderStarts[i] = UCHAR_MAX;
+    statusCheck = SPRITE_STATUS_EXISTS | SPRITE_STATUS_IGNORE_PROJECTILES;
+    i = 0;
+    for (pSprite = gSpriteData; pSprite < gSpriteData + MAX_AMOUNT_OF_SPRITES; pSprite++)
+    {
+        if ((pSprite->status & statusCheck) == SPRITE_STATUS_EXISTS && pSprite->health != 0)
+        {
+            drawOrder = pSprite->drawOrder - 1;
+            if (drawOrderStarts[drawOrder] == UCHAR_MAX)
+            {
+                drawOrderStarts[drawOrder] = i;
+                drawOrderEnds[drawOrder] = i;
+            }
+            else
+            {
+                nextIdx[drawOrderEnds[drawOrder]] = i;
+                drawOrderEnds[drawOrder] = i;
+            }
+        }
+
+        i++;
+    }
+
+#else // !OPTIMIZED
+
     statusCheck = SPRITE_STATUS_EXISTS | SPRITE_STATUS_IGNORE_PROJECTILES;
     i = 0;
     for (pSprite = gSpriteData; pSprite < gSpriteData + MAX_AMOUNT_OF_SPRITES; pSprite++)
@@ -1252,6 +1310,19 @@ void ProjectileCheckHittingSprite(void)
         i++;
     }
 
+#endif // OPTIMIZED
+
+#ifdef OPTIMIZED
+    for (drawOrder = 0; drawOrder < 16; drawOrder++)
+    {
+        i = drawOrderStarts[drawOrder];
+        if (i == UCHAR_MAX)
+            continue;
+
+        while (TRUE)
+        {
+            pSprite = &gSpriteData[i];
+#else // !OPTIMIZED
     for (drawOrder = 1; drawOrder < 17; drawOrder++)
     {
         i = 0;
@@ -1259,6 +1330,7 @@ void ProjectileCheckHittingSprite(void)
         for (pSprite = gSpriteData; pSprite < gSpriteData + MAX_AMOUNT_OF_SPRITES; pSprite++)
         {
             if (gSpriteDrawOrder[i] == drawOrder)
+#endif // OPTIMIZED
             {
                 o1y = pSprite->yPosition;
                 o1x = pSprite->xPosition;
@@ -1267,12 +1339,17 @@ void ProjectileCheckHittingSprite(void)
                 o1Left = o1x + pSprite->hitboxLeft;
                 o1Right = o1x + pSprite->hitboxRight;
 
+#ifdef OPTIMIZED
+                for (j = 0; j < projCount; j++)
+                {
+                    pProj = &gProjectileData[activeProjs[j]];
+#else // !OPTIMIZED
                 statusCheck = PROJ_STATUS_EXISTS | PROJ_STATUS_CAN_AFFECT_ENVIRONMENT;
                 for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
                 {
                     if ((pProj->status & statusCheck) != statusCheck)
                         continue;
-                    
+#endif // OPTIMIZED
                     o2y = pProj->yPosition;
                     o2x = pProj->xPosition;
                     o2Top = o2y + pProj->hitboxTop;
@@ -1555,8 +1632,13 @@ void ProjectileCheckHittingSprite(void)
                     }
                 }
             }
-
+#ifdef OPTIMIZED
+            if (i == drawOrderEnds[drawOrder])
+                break;
+            i = nextIdx[i];
+#else // !OPTIMIZED
             i++;
+#endif // OPTIMIZED
         }
     }
 }
