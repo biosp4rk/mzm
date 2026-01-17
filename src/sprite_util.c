@@ -3780,3 +3780,19 @@ u32 SpriteUtilGetFinalCompletionPercentage(void)
 
     return completionPercentage;
 }
+
+#ifdef OPTIMIZED
+
+void SpriteUtilUpdateRng(void)
+{
+    gSpriteRngSeed = (gSpriteRngSeed * 0x41C64E6D) + 0x3039;
+}
+
+u8 SpriteUtilRand4Bit()
+{
+    SpriteUtilUpdateRng();
+    // Return upper 4 bits
+    return gSpriteRngSeed >> 28;
+}
+
+#endif // OPTIMIZED

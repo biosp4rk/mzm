@@ -33,6 +33,11 @@ void agbmain(void)
         APPLY_DELTA_TIME_INC(gFrameCounter8Bit);
         APPLY_DELTA_TIME_INC(gFrameCounter16Bit);
 
+#ifdef OPTIMIZED
+        // Update sprite RNG at least once per frame
+        SpriteUtilUpdateRng();
+#endif // OPTIMIZED
+
         switch (gMainGameMode)
         {
             case GM_SOFT_RESET:

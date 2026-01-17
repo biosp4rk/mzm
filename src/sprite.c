@@ -901,14 +901,18 @@ static const u8* sSpritesetPointers[MAX_AMOUNT_OF_SPRITESET] = {
  */
 void SpriteUpdate(void)
 {
+#ifndef OPTIMIZED
     u16 rngParam1;
     u16 rngParam2;
+#endif // !OPTIMIZED
     u8 count;
     struct SpriteData* pCurrent;
 
     pCurrent = &gCurrentSprite;
+#ifndef OPTIMIZED
     rngParam1 = gFrameCounter8Bit;
     rngParam2 = gFrameCounter16Bit / 16;
+#endif // !OPTIMIZED
 
     if (gSubGameMode1 == SUB_GAME_MODE_PLAYING)
     {
@@ -931,8 +935,10 @@ void SpriteUpdate(void)
                 // Transfer sprite to current
                 DMA_SET(3, &gSpriteData[count], &gCurrentSprite, C_32_2_16(DMA_ENABLE, sizeof(struct SpriteData) / 2));
 
+#ifndef OPTIMIZED
                 // Update random number
                 gSpriteRng = ARRAY_ACCESS(sSpriteRandomNumberTable, rngParam1 + count + rngParam2 + pCurrent->xPosition + pCurrent->yPosition);
+#endif // !OPTIMIZED
 
                 // Update stun timer
                 SpriteUtilUpdateStunTimer(pCurrent);
@@ -977,8 +983,10 @@ void SpriteUpdate(void)
                     // Transfer sprite to current
                     DMA_SET(3, &gSpriteData[count], &gCurrentSprite, C_32_2_16(DMA_ENABLE, sizeof(struct SpriteData) / 2));
                     
+#ifndef OPTIMIZED
                     // Update random number
                     gSpriteRng = ARRAY_ACCESS(sSpriteRandomNumberTable, rngParam1 + count + rngParam2 + pCurrent->xPosition + pCurrent->yPosition);
+#endif // !OPTIMIZED
 
                     // Update stun timer
                     SpriteUtilUpdateStunTimer(pCurrent);
@@ -1026,9 +1034,11 @@ void SpriteUpdate(void)
             // Transfer sprite to current
             DMA_SET(3, &gSpriteData[count], &gCurrentSprite, C_32_2_16(DMA_ENABLE, sizeof(struct SpriteData) / 2));
 
+#ifndef OPTIMIZED
             // Update random number
             gSpriteRng = ARRAY_ACCESS(sSpriteRandomNumberTable, rngParam1 + count + rngParam2 + pCurrent->xPosition + pCurrent->yPosition);
-            
+#endif // !OPTIMIZED
+
             // Update stun timer
             SpriteUtilUpdateStunTimer(pCurrent);
 
@@ -1067,8 +1077,10 @@ void SpriteUpdate(void)
             // Transfer sprite to current
             DMA_SET(3, &gSpriteData[count], &gCurrentSprite, C_32_2_16(DMA_ENABLE, sizeof(struct SpriteData) / 2));
 
+#ifndef OPTIMIZED
             // Update random number
             gSpriteRng = ARRAY_ACCESS(sSpriteRandomNumberTable, rngParam1 + count + rngParam2 + pCurrent->xPosition + pCurrent->yPosition);
+#endif // !OPTIMIZED
 
             // Only call init code
             if (pCurrent->pose == SPRITE_POSE_UNINITIALIZED)

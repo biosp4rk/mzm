@@ -135,7 +135,15 @@ extern u8 gPreviousCollisionCheck;
 extern u8 gIgnoreSamusAndSpriteCollision;
 extern u8 gSpriteDrawOrder[MAX_AMOUNT_OF_SPRITES];
 extern struct BossWork gBossWork;
+
+#ifdef OPTIMIZED
+extern u32 gSpriteRngSeed;
+// Replace existing reads of gSpriteRng with a function call
+#define gSpriteRng SpriteUtilRand4Bit()
+#else // !OPTIMIZED
 extern u8 gSpriteRng;
+#endif // OPTIMIZED
+
 extern u8 gDisableDrawingSprites;
 
 #endif /* SPRITE_STRUCT_H */

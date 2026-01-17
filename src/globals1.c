@@ -162,7 +162,11 @@ IWRAM_DATA u8 gPreviousCollisionCheck = 0;
 IWRAM_DATA u8 gIgnoreSamusAndSpriteCollision = 0;
 IWRAM_DATA u8 gSpriteDrawOrder[MAX_AMOUNT_OF_SPRITES] = {};
 IWRAM_DATA struct BossWork gBossWork = {};
+#ifdef OPTIMIZED
+IWRAM_DATA u32 gSpriteRngSeed = 0;
+#else // !OPTIMIZED
 IWRAM_DATA u8 gSpriteRng = 0;
+#endif // OPTIMIZED
 IWRAM_DATA struct ParticleEffect gParticleEffects[MAX_AMOUNT_OF_PARTICLES] = {};
 IWRAM_DATA HudHighlightStatus gMissileHighlightStatus = 0;
 IWRAM_DATA HudHighlightStatus gPowerBombHighlightStatus = 0;

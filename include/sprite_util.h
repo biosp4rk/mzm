@@ -94,4 +94,9 @@ boolu32 SpriteUtilCheckOutOfRoomEffect(u16 oldY, u16 yPosition, u16 xPosition, S
 boolu32 SpriteUtilCheckInRoomEffect(u16 oldY, u16 yPosition, u16 xPosition, SplashSize size);
 u32 SpriteUtilGetFinalCompletionPercentage(void);
 
+#ifdef OPTIMIZED
+void SpriteUtilUpdateRng(void);
+u8 SpriteUtilRand4Bit();
+#endif // OPTIMIZED
+
 #endif /* SPRITE_UTIL_H */

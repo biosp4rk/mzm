@@ -12,6 +12,7 @@
 #include "structs/game_state.h"
 #include "structs/minimap.h"
 #include "structs/save_file.h"
+#include "structs/sprite.h"
 
 const struct SaveDemo* sDemoRamDataPointers[MAX_AMOUNT_OF_DEMOS] = {
     [0] = &sDemo0_Ram,
@@ -137,6 +138,9 @@ void DemoInit(void)
     // Reset frame counters, also resets randomness
     gFrameCounter8Bit = 0;
     gFrameCounter16Bit = 0;
+#ifdef OPTIMIZED
+    gSpriteRngSeed = 0;
+#endif // OPTIMIZED
 
     CallbackSetVblank(DemoVBlank);
 }
@@ -168,6 +172,9 @@ void unk_60cbc(u8 param_1)
     // Reset frame counters, also resets randomness
     gFrameCounter8Bit = 0;
     gFrameCounter16Bit = 0;
+#ifdef OPTIMIZED
+    gSpriteRngSeed = 0;
+#endif // OPTIMIZED
 
     if (gDemoState == DEMO_STATE_NONE)
         gCurrentDemo.noDemoShuffle = FALSE;
