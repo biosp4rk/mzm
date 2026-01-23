@@ -19,7 +19,9 @@ extern const u8 sOamXFlipOffsets[3][4];
 
 extern const u8 sOamYFlipOffsets[3][4];
 
+#ifndef OPTIMIZED
 extern const u8 sSpriteRandomNumberTable[32];
+#endif // !OPTIMIZED
 
 extern const s16 sSpritesFallingCeilingSpeed[16];
 
