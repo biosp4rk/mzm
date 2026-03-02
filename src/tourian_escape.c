@@ -30,7 +30,7 @@
  */
 static void TourianEscapeVBlank(void)
 {
-    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
 
     WRITE_16(REG_DISPCNT, TOURIAN_ESCAPE_DATA.dispcnt);
     WRITE_16(REG_BLDCNT, TOURIAN_ESCAPE_DATA.bldcnt);
@@ -59,7 +59,7 @@ static void TourianEscapeVBlank(void)
  */
 static void TourianEscapeVBlankZebesExploding(void)
 {
-    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
 
     WRITE_16(REG_DISPCNT, TOURIAN_ESCAPE_DATA.dispcnt);
     WRITE_16(REG_BLDCNT, TOURIAN_ESCAPE_DATA.bldcnt);
@@ -449,7 +449,7 @@ static void unk_81ad8(void)
     #ifdef REGION_EU
     DmaTransfer(3, pal, PALRAM_OBJ + 5 * PAL_ROW_SIZE, PAL_ROW_SIZE, 16);
     #else // !REGION_EU
-    DMA_SET(3, pal, PALRAM_OBJ + 5 * PAL_ROW_SIZE, C_32_2_16(DMA_ENABLE, PAL_ROW));
+    DMA3_COPY_16(pal, PALRAM_OBJ + 5 * PAL_ROW_SIZE, PAL_ROW);
     #endif // REGION_EU
 
     dst = (u16*)gOamData;
@@ -512,7 +512,7 @@ static void TourianEscapeInit(void)
     CallbackSetVblank(NULL);
     WRITE_16(REG_IME, TRUE);
 
-    DMA_FILL_32(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam));
+    DMA3_FILL_32(0, &gNonGameplayRam, sizeof(gNonGameplayRam));
     ClearGfxRam();
 
     LZ77UncompVRAM(sMotherShipBlowingUpExplosionsGfx, VRAM_OBJ);
@@ -521,7 +521,7 @@ static void TourianEscapeInit(void)
     #ifdef REGION_EU
     DmaTransfer(3, sMotherShipBlowingUpExplosionsPal, PALRAM_OBJ, sizeof(sMotherShipBlowingUpExplosionsPal), 16);
     #else // !REGION_EU
-    DMA_SET(3, sMotherShipBlowingUpExplosionsPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sMotherShipBlowingUpExplosionsPal)));
+    DMA3_COPY_16(sMotherShipBlowingUpExplosionsPal, PALRAM_OBJ, ARRAY_SIZE(sMotherShipBlowingUpExplosionsPal));
     #endif // REGION_EU
 
     LoadRoomCutscene(AREA_TOURIAN, 4 + 1, BLOCK_SIZE * 5, BLOCK_SIZE * 10);
@@ -680,8 +680,8 @@ static u8 TourianEscapeZebesExploding(void)
             DmaTransfer(3, sTourianEscapeExplodingPal, PALRAM_BASE, sizeof(sTourianEscapeExplodingPal), 16);
             DmaTransfer(3, sTourianEscapeExplodingPal, PALRAM_OBJ, sizeof(sTourianEscapeExplodingPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeExplodingPal)));
-            DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeExplodingPal)));
+            DMA3_COPY_16(sTourianEscapeExplodingPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeExplodingPal));
+            DMA3_COPY_16(sTourianEscapeExplodingPal, PALRAM_OBJ, ARRAY_SIZE(sTourianEscapeExplodingPal));
             #endif // REGION_EU
 
             WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
@@ -915,8 +915,7 @@ static u8 TourianEscapeSamusInHerShip(void)
                 DmaTransfer(3, sTourianEscapeSamusInHerShipVariaSuitPal, PALRAM_BASE,
                     sizeof(sTourianEscapeSamusInHerShipVariaSuitPal), 16);
                 #else // !REGION_EU
-                DMA_SET(3, sTourianEscapeSamusInHerShipVariaSuitPal, PALRAM_BASE,
-                    C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusInHerShipVariaSuitPal)));
+                DMA3_COPY_16(sTourianEscapeSamusInHerShipVariaSuitPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusInHerShipVariaSuitPal));
                 #endif // REGION_EU
             }
             else
@@ -925,8 +924,7 @@ static u8 TourianEscapeSamusInHerShip(void)
                 DmaTransfer(3, sTourianEscapeSamusInHerShipPowerSuitPal, PALRAM_BASE,
                     sizeof(sTourianEscapeSamusInHerShipPowerSuitPal), 16);
                 #else // !REGION_EU
-                DMA_SET(3, sTourianEscapeSamusInHerShipPowerSuitPal, PALRAM_BASE,
-                    C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusInHerShipPowerSuitPal)));
+                DMA3_COPY_16(sTourianEscapeSamusInHerShipPowerSuitPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusInHerShipPowerSuitPal));
                 #endif // REGION_EU
             }
             break;
@@ -973,8 +971,7 @@ static u8 TourianEscapeSamusInHerShip(void)
             DmaTransfer(3, sTourianEscapeSamusInHerShipSuitlessPal, PALRAM_BASE,
                 sizeof(sTourianEscapeSamusInHerShipSuitlessPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusInHerShipSuitlessPal, PALRAM_BASE,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusInHerShipSuitlessPal)));
+            DMA3_COPY_16(sTourianEscapeSamusInHerShipSuitlessPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusInHerShipSuitlessPal));
             #endif // REGION_EU
             break;
 
@@ -1104,10 +1101,8 @@ static u8 TourianEscapeSamusLookingAround(void)
             DmaTransfer(3, sTourianEscapeSamusLookingAroundPal, PALRAM_OBJ,
                 sizeof(sTourianEscapeSamusLookingAroundPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusLookingAroundPal, PALRAM_BASE,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAroundPal)));
-            DMA_SET(3, sTourianEscapeSamusLookingAroundPal, PALRAM_OBJ,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAroundPal)));
+            DMA3_COPY_16(sTourianEscapeSamusLookingAroundPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusLookingAroundPal));
+            DMA3_COPY_16(sTourianEscapeSamusLookingAroundPal, PALRAM_OBJ, ARRAY_SIZE(sTourianEscapeSamusLookingAroundPal));
             #endif // REGION_EU
             break;
 
@@ -1178,7 +1173,7 @@ static u8 TourianEscapeSamusSurrounded(void)
             #ifdef REGION_EU
             DmaTransfer(3, sTourianEscapeSamusSurroundedPal, PALRAM_BASE, sizeof(sTourianEscapeSamusSurroundedPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusSurroundedPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusSurroundedPal)));
+            DMA3_COPY_16(sTourianEscapeSamusSurroundedPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusSurroundedPal));
             #endif // REGION_EU
 
             gBg0XPosition = 0;
@@ -1264,8 +1259,8 @@ static u8 TourianEscapeSamusFlyingIn(void)
             DmaTransfer(3, sIntroTextAndShipPal, PALRAM_BASE, sizeof(sIntroTextAndShipPal) + PAL_ROW_SIZE, 16);
             DmaTransfer(3, sIntroTextAndShipPal, PALRAM_OBJ, sizeof(sIntroTextAndShipPal) + PAL_ROW_SIZE, 16);
             #else // !REGION_EU
-            DMA_SET(3, sIntroTextAndShipPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW));
-            DMA_SET(3, sIntroTextAndShipPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW));
+            DMA3_COPY_16(sIntroTextAndShipPal, PALRAM_BASE, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW);
+            DMA3_COPY_16(sIntroTextAndShipPal, PALRAM_OBJ, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW);
             #endif // REGION_EU
 
             WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
@@ -1350,10 +1345,8 @@ static u8 TourianEscapeSamusChasedByPirates(void)
             DmaTransfer(3, sTourianEscapeSamusChasedShipsPal, PALRAM_OBJ,
                 sizeof(sTourianEscapeSamusChasedShipsPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusChasedBackgroundPal, PALRAM_BASE,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusChasedBackgroundPal)));
-            DMA_SET(3, sTourianEscapeSamusChasedShipsPal, PALRAM_OBJ,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusChasedShipsPal)));
+            DMA3_COPY_16(sTourianEscapeSamusChasedBackgroundPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusChasedBackgroundPal));
+            DMA3_COPY_16(sTourianEscapeSamusChasedShipsPal, PALRAM_OBJ, ARRAY_SIZE(sTourianEscapeSamusChasedShipsPal));
             #endif // REGION_EU
 
             TOURIAN_ESCAPE_DATA.unk_8[0] = FALSE;
@@ -1551,8 +1544,8 @@ static u8 TourianEscapeSamusChasedByPiratesFiring(void)
             DmaTransfer(3, sTourianEscapeSamusChasedByPiratesFiringPal, PALRAM_OBJ,
                 sizeof(sTourianEscapeSamusChasedByPiratesFiringPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusChasedByPiratesFiringPal, PALRAM_OBJ,
-                DMA_ENABLE << 16 | ARRAY_SIZE(sTourianEscapeSamusChasedByPiratesFiringPal));
+            DMA3_COPY_16(sTourianEscapeSamusChasedByPiratesFiringPal, PALRAM_OBJ,
+                ARRAY_SIZE(sTourianEscapeSamusChasedByPiratesFiringPal));
             #endif // REGION_EU
 
             TOURIAN_ESCAPE_DATA.unk_8[0] = TRUE;
@@ -1790,7 +1783,7 @@ static u8 TourianEscapeSamusGettingShot(void)
             #ifdef REGION_EU
             DmaTransfer(3, sTourianEscapeSamusGettingShotPal, PALRAM_OBJ, sizeof(sTourianEscapeSamusGettingShotPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusGettingShotPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusGettingShotPal)));
+            DMA3_COPY_16(sTourianEscapeSamusGettingShotPal, PALRAM_OBJ, ARRAY_SIZE(sTourianEscapeSamusGettingShotPal));
             #endif // REGION_EU
 
             gBg0XPosition = BLOCK_SIZE + HALF_BLOCK_SIZE;
@@ -1835,7 +1828,7 @@ static u8 TourianEscapeSamusGettingShot(void)
             #ifdef REGION_EU
             DmaTransfer(3, sTourianEscapeSamusGettingShotPal, PALRAM_BASE, sizeof(sTourianEscapeSamusGettingShotPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusGettingShotPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusGettingShotPal)));
+            DMA3_COPY_16(sTourianEscapeSamusGettingShotPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusGettingShotPal));
             #endif // REGION_EU
             WRITE_16(REG_BG1CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG1 | DCNT_OBJ;
@@ -2025,10 +2018,8 @@ static u8 TourianEscapeSamusGoingToCrash(void)
             DmaTransfer(3, sTourianEscapeSamusGoingToCrashPal, PALRAM_OBJ,
                 sizeof(sTourianEscapeSamusGoingToCrashPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeExplodingPal, PALRAM_BASE,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeExplodingPal)));
-            DMA_SET(3, sTourianEscapeSamusGoingToCrashPal, PALRAM_OBJ,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusGoingToCrashPal)));
+            DMA3_COPY_16(sTourianEscapeExplodingPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeExplodingPal));
+            DMA3_COPY_16(sTourianEscapeSamusGoingToCrashPal, PALRAM_OBJ, ARRAY_SIZE(sTourianEscapeSamusGoingToCrashPal));
             #endif // REGION_EU
 
             TOURIAN_ESCAPE_DATA.unk_8[0] = TRUE;
@@ -2108,8 +2099,7 @@ static u8 TourianEscapeSamusCrashing(void)
             DmaTransfer(3, sTourianEscapeSamusCrashingForegroundPal, PALRAM_BASE,
                 sizeof(sTourianEscapeSamusCrashingForegroundPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusCrashingForegroundPal, PALRAM_BASE,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusCrashingForegroundPal)));
+            DMA3_COPY_16(sTourianEscapeSamusCrashingForegroundPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusCrashingForegroundPal));
             #endif // REGION_EU
             break;
 
@@ -2118,8 +2108,7 @@ static u8 TourianEscapeSamusCrashing(void)
             DmaTransfer(3, sTourianEscapeShipCrashingBackgroundAndShipPal, PALRAM_OBJ,
                 sizeof(sTourianEscapeShipCrashingBackgroundAndShipPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeShipCrashingBackgroundAndShipPal, PALRAM_OBJ,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeShipCrashingBackgroundAndShipPal)));
+            DMA3_COPY_16(sTourianEscapeShipCrashingBackgroundAndShipPal, PALRAM_OBJ, ARRAY_SIZE(sTourianEscapeShipCrashingBackgroundAndShipPal));
             #endif // REGION_EU
 
             TOURIAN_ESCAPE_DATA.unk_8[1] = TRUE;
@@ -2155,7 +2144,7 @@ static u8 TourianEscapeSamusCrashing(void)
             #ifdef REGION_EU
             DmaTransfer(3, sTourianEscape_479f80, PALRAM_BASE, sizeof(sTourianEscape_479f80), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscape_479f80, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscape_479f80)));
+            DMA3_COPY_16(sTourianEscape_479f80, PALRAM_BASE, ARRAY_SIZE(sTourianEscape_479f80));
             #endif // REGION_EU
             TOURIAN_ESCAPE_DATA.dispcnt = DCNT_BG0 | DCNT_BG1 | DCNT_OBJ;
             
@@ -2231,8 +2220,8 @@ static u8 TourianEscapeSamusLookingAtSky(void)
             DmaTransfer(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_BASE, sizeof(sTourianEscapeSamusLookingAtSkyPal), 16);
             DmaTransfer(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_OBJ, sizeof(sTourianEscapeSamusLookingAtSkyPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAtSkyPal)));
-            DMA_SET(3, sTourianEscapeSamusLookingAtSkyPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAtSkyPal)));
+            DMA3_COPY_16(sTourianEscapeSamusLookingAtSkyPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusLookingAtSkyPal));
+            DMA3_COPY_16(sTourianEscapeSamusLookingAtSkyPal, PALRAM_OBJ, ARRAY_SIZE(sTourianEscapeSamusLookingAtSkyPal));
             #endif // REGION_EU
 
             gBg0YPosition = 0;
@@ -2351,8 +2340,7 @@ static u8 TourianEscapeSamusLookingAtMotherShip(void)
             DmaTransfer(3, sTourianEscapeSamusLookingAtMotherShipPal, PALRAM_BASE,
                 sizeof(sTourianEscapeSamusLookingAtMotherShipPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeSamusLookingAtMotherShipPal, PALRAM_BASE,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeSamusLookingAtMotherShipPal)));
+            DMA3_COPY_16(sTourianEscapeSamusLookingAtMotherShipPal, PALRAM_BASE, ARRAY_SIZE(sTourianEscapeSamusLookingAtMotherShipPal));
             #endif // REGION_EU
 
             gBg0XPosition = 16;
@@ -2366,8 +2354,8 @@ static u8 TourianEscapeSamusLookingAtMotherShip(void)
             DmaTransfer(3, sTourianEscapeRainPal, PALRAM_OBJ, sizeof(sTourianEscapeRainPal), 16);
             DmaTransfer(3, sStoryTextCutscenePal, PALRAM_OBJ + 15 * PAL_ROW_SIZE, sizeof(sStoryTextCutscenePal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sTourianEscapeRainPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sTourianEscapeRainPal)));
-            DMA_SET(3, sStoryTextCutscenePal, PALRAM_OBJ + 15 * PAL_ROW_SIZE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sStoryTextCutscenePal)));
+            DMA3_COPY_16(sTourianEscapeRainPal, PALRAM_OBJ, ARRAY_SIZE(sTourianEscapeRainPal));
+            DMA3_COPY_16(sStoryTextCutscenePal, PALRAM_OBJ + 15 * PAL_ROW_SIZE, ARRAY_SIZE(sStoryTextCutscenePal));
             #endif // REGION_EU
 
             for (i = 0; i < TOURIAN_ESCAPE_MAX_OBJECTS; i++)

@@ -3,6 +3,7 @@
 #include "macros.h"
 #include "block.h"
 #include "temp_globals.h"
+#include "event.h"
 
 #include "data/clipdata_data.h"
 
@@ -22,8 +23,7 @@
 void ClipdataSetupCode(void)
 {
     // Copy code to RAM
-    DMA_SET(3, ClipdataConvertToCollision + 1, gNonGameplayRam.inGame.clipdataCode,
-        C_32_2_16(DMA_ENABLE, sizeof(gNonGameplayRam.inGame.clipdataCode) / 2));
+    DMA3_COPY_16(ClipdataConvertToCollision + 1, gNonGameplayRam.inGame.clipdataCode, sizeof(gNonGameplayRam.inGame.clipdataCode) / 2);
 
     // Set pointer
     gClipdataCodePointer = (ClipFunc_T)(gNonGameplayRam.inGame.clipdataCode + 1);
@@ -142,9 +142,9 @@ u32 ClipdataProcess(u16 yPosition, u16 xPosition)
  * @param pCollision Pointer to a collision data structure
  * @return u32 Clipdata type (including solid flag)
  */
-u32 ClipdataConvertToCollision(struct CollisionData* pCollision)
+ClipdataType ClipdataConvertToCollision(struct CollisionData* pCollision)
 {
-    u32 result;
+    ClipdataType result;
 
     result = CLIPDATA_TYPE_AIR;
 
@@ -486,7 +486,7 @@ u32 ClipdataUpdateCurrentAffecting(u16 yPosition, u16 tileY, u16 tileX, u8 dontC
     else
     {
         // Check for hazard behavior (effect based)
-        if (gCurrentRoomEntry.bg0Prop != 0 && gCurrentRoomEntry.damageEffect != 0)
+        if (gCurrentRoomEntry.bg0Prop != 0 && gCurrentRoomEntry.damageEffect != EFFECT_NONE)
         {
             if (gCurrentRoomEntry.damageEffect < ARRAY_SIZE(sHazardsDefinitions))
             {
@@ -544,7 +544,7 @@ u32 ClipdataCheckCantUseElevator(u32 movementClip)
             // Check escaped zebes
             if (i == ELEVATOR_ROUTE_CRATERIA_TO_TOURIAN_2)
             {
-                if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ESCAPED_ZEBES))
+                if (CHECK_EVENT(EVENT_ESCAPED_ZEBES))
                     i = ELEVATOR_ROUTE_CRATERIA_TO_TOURIAN;
                 else
                     direction = 0;

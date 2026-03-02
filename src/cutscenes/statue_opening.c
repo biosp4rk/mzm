@@ -1,6 +1,7 @@
 #include "cutscenes/statue_opening.h"
 #include "cutscenes/cutscene_utils.h"
 #include "dma.h"
+#include "event.h"
 
 #include "data/shortcut_pointers.h"
 #include "data/cutscenes/statue_opening_data.h"
@@ -159,14 +160,14 @@ static u8 StatueOpeningInit(void)
     CUTSCENE_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
     gWrittenToBldy_NonGameplay = BLDY_MAX_VALUE;
 
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[0].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE);
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[1].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_X, sStatueOpeningPageData[0].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_X, sStatueOpeningPageData[1].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE);
 
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_VOFS, sStatueOpeningPageData[0].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE * 6);
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_VOFS, sStatueOpeningPageData[1].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE * 6);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_Y, sStatueOpeningPageData[0].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE * 6);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_Y, sStatueOpeningPageData[1].bg, NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE * 6);
 
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_HOFS, sStatueOpeningPageData[2].bg, NON_GAMEPLAY_START_BG_POS / 2 + HALF_BLOCK_SIZE);
-    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_VOFS, sStatueOpeningPageData[2].bg, NON_GAMEPLAY_START_BG_POS / 2);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_X, sStatueOpeningPageData[2].bg, NON_GAMEPLAY_START_BG_POS / 2 + HALF_BLOCK_SIZE);
+    CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_Y, sStatueOpeningPageData[2].bg, NON_GAMEPLAY_START_BG_POS / 2);
 
     CUTSCENE_DATA.oam[0].xPosition = BLOCK_SIZE * 8;
     CUTSCENE_DATA.oam[0].yPosition = BLOCK_SIZE * 7;
@@ -180,11 +181,11 @@ static u8 StatueOpeningInit(void)
     CUTSCENE_DATA.oam[1].boundBackground = 1;
     CUTSCENE_DATA.oam[1].exists = 1;
 
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_KRAID_STATUE_OPENED))
+    if (CHECK_EVENT(EVENT_KRAID_STATUE_OPENED))
         oamId = STATUE_OPENING_OAM_ID_KRAID_OPENED;
     else
     {
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_KRAID_KILLED))
+        if (CHECK_EVENT(EVENT_KRAID_KILLED))
             oamId = STATUE_OPENING_OAM_ID_KRAID_ACTIVATED;
         else
             oamId = STATUE_OPENING_OAM_ID_KRAID_IDLE;
@@ -194,11 +195,11 @@ static u8 StatueOpeningInit(void)
     }
     CUTSCENE_DATA.oam[0].oamID = oamId;
 
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_RIDLEY_STATUE_OPENED))
+    if (CHECK_EVENT(EVENT_RIDLEY_STATUE_OPENED))
        oamId = STATUE_OPENING_OAM_ID_RIDLEY_OPENED;
     else
     {
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_RIDLEY_KILLED))
+        if (CHECK_EVENT(EVENT_RIDLEY_KILLED))
            oamId = STATUE_OPENING_OAM_ID_RIDLEY_ACTIVATED;
         else
            oamId = STATUE_OPENING_OAM_ID_RIDLEY_IDLE;

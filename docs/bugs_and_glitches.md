@@ -22,6 +22,8 @@ These are known bugs and glitches in the game: code that clearly does not work a
   - [Ridley updates sub sprite data even if he's dead](#ridley-updates-sub-sprite-data-even-if-hes-dead)
   - [The first frame of power bomb explosions has a visual bug](#the-first-frame-of-power-bomb-explosions-has-a-visual-bug)
   - [The fully powered suit cutscene fades to black after fading to white](#the-fully-powered-suit-cutscene-fades-to-black-after-fading-to-white)
+  - [Reaching the maximum in-game time causes the time attack password to be invalid](#reaching-the-maximum-in-game-time-causes-the-time-attack-password-to-be-invalid)
+  - [Samus can warp when standing on multiple enemies and one is killed](#samus-can-warp-when-standing-on-multiple-enemies-and-one-is-killed)
 - [Oversights and Design Flaws](#oversights-and-design-flaws)
   - [Floating point math is used when fixed point could have been used](#floating-point-math-is-used-when-fixed-point-could-have-been-used)
   - [`ClipdataConvertToCollision` is copied to RAM but still runs in ROM](#clipdataconverttocollision-is-copied-to-ram-but-still-runs-in-rom)
@@ -37,13 +39,14 @@ These are known bugs and glitches in the game: code that clearly does not work a
 
 ### "Ground" Dessgeegas always set the "Dessgeega long beam killed" event and unlock doors
 
-**Fix:** Edit `DessgeegaDeath` in [dessgeega.c](../src/sprites_AI/dessgeega.c) to check for the sprite id to run the event and door logic.
+**Fix:** Edit `DessgeegaDeath` in [dessgeega.c](../src/sprites_ai/dessgeega.c) to check for the sprite id to run the event and door logic.
 
 ```diff
+- // BUG: There's no check for the sprite ID, so the event set and door unlock is done for every "ground" dessgeega
 + if (gCurrentSprite.spriteId == PSPRITE_DESSGEEGA_AFTER_LONG_BEAM)
 + {
-      // Set event every time a ground dessgeega is killed instead of checking for the sprite ID ?
-      EventFunction(EVENT_ACTION_SETTING, EVENT_LONG_BEAM_DESSGEEGA_KILLED);
+      // Set event
+      SET_EVENT(EVENT_LONG_BEAM_DESSGEEGA_KILLED);
       // Unlock doors
       gDoorUnlockTimer = -ONE_THIRD_SECOND;
 + }
@@ -53,7 +56,7 @@ These are known bugs and glitches in the game: code that clearly does not work a
 
 Whenever there are too many (24) active sprites in the Mother Brain room, the block that is meant to prevent Samus from leaving the Mother Brain fight fails to spawn. This happens because the block is its own independent sprite, and needs an additional free sprite slot to spawn. The code tries to spawn the block only once, and does not check if it was successfully spawned. The fight continues regardless, and the next Mother Brain pose is set.
 
-**Fix:** Edit `MotherBrainSpawnBlock` in [mother_brain.c](../src/sprites_AI/mother_brain.c) to check if the block sprite was spawned successfully before changing to the next Mother Brain sprite pose. The `SpriteSpawnSecondary()` function returns `0xFF` if it failed to spawn the sprite. By not changing the pose, the game will keep trying to spawn the block until it succeeds. This usually happens just a few frames after the first attempt, so no side effects are noticeable in the Mother Brain fight.
+**Fix:** Edit `MotherBrainSpawnBlock` in [mother_brain.c](../src/sprites_ai/mother_brain.c) to check if the block sprite was spawned successfully before changing to the next Mother Brain sprite pose. The `SpriteSpawnSecondary()` function returns `0xFF` if it failed to spawn the sprite. By not changing the pose, the game will keep trying to spawn the block until it succeeds. This usually happens just a few frames after the first attempt, so no side effects are noticeable in the Mother Brain fight.
 
 ```diff
 - SpriteSpawnSecondary(SSPRITE_MOTHER_BRAIN_BLOCK, 0, SPRITE_GFX_SLOT_SPECIAL,
@@ -94,7 +97,7 @@ So when Samus is in a liquid that doesn't slow her, she also won't be slowed eve
 
 If there's a missile on screen when Mecha Ridley dies, you can jump in circles and keep the missile alive until the message box spawns, which will overwrite the missile's graphics. There's another issue where any fireballs or missiles won't animate after Mecha Ridley dies.
 
-**Fix:** Both issues can be avoided by destroying any remaining missiles or fireballs when Mecha Ridley dies. Add the following code to the end of `MechaRidleyDyingInit` in [mecha_ridley.c](../src/sprites_AI/mecha_ridley.c).
+**Fix:** Both issues can be avoided by destroying any remaining missiles or fireballs when Mecha Ridley dies. Add the following code to the end of `MechaRidleyDyingInit` in [mecha_ridley.c](../src/sprites_ai/mecha_ridley.c).
 
 ```diff
 + // Destroy any remaining missiles or fireballs
@@ -115,7 +118,7 @@ If there's a missile on screen when Mecha Ridley dies, you can jump in circles a
 
 When the message banner for a new item closes, it sets `gPreventMovementTimer` to 0 and tries to open the status screen. However, if a power bomb is active, the status screen won't open because the game cannot be paused while a power bomb is active. This allows Samus to move for a short amount of time before the status screen opens.
 
-**Fix:** Edit `MessageBannerStatic` in [message_banner.c](../src/sprites_AI/message_banner.c) to check if a power bomb is active before setting the pose to remove the banner.
+**Fix:** Edit `MessageBannerStatic` in [message_banner.c](../src/sprites_ai/message_banner.c) to check if a power bomb is active before setting the pose to remove the banner.
 
 ```diff
   // Check if should remove (input or demo active, ignore for save prompt)
@@ -135,7 +138,7 @@ When the message banner for a new item closes, it sets `gPreventMovementTimer` t
 
 When a normal (non-boss) enemy is killed, its AI code usually has a default case for the pose that calls `SpriteUtilSpriteDeath`. This handles being killed via various methods, such as shinespark or pseudo screw attack. Imago can be damaged by pseudo screw attack, but its AI code doesn't have a default case or a case for pseudo screw attack. This will cause the game to softlock if the final hit is done using pseudo screw attack.
 
-**Fix:** Edit `Imago` in [imago.c](../src/sprites_AI/imago.c) to remove the `IMAGO_POSE_DYING_INIT` case and add a `default` case at the end that calls `ImagoDyingInit`.
+**Fix:** Edit `Imago` in [imago.c](../src/sprites_ai/imago.c) to remove the `IMAGO_POSE_DYING_INIT` case and add a `default` case at the end that calls `ImagoDyingInit`.
 
 ```diff
 - case IMAGO_POSE_DYING_INIT:
@@ -210,7 +213,7 @@ During Samus's death animation, missiles can be highlighted and super missiles c
 
 Sidehoppers and Dessgeegas use the `work1` variable to store the delay before jumping. However, this value isn't initialized when they spawn, so `work1` could potentially contain any value that was set by a previous sprite. Normally this is a value between 0-3, but if it's higher, it means their first jump won't happen for an abnormally long amount of time. This bug also occurs in Fusion.
 
-**Fix:** Edit `SidehopperInit` in [sidehopper.c](../src/sprites_AI/sidehopper.c) and `DessgeegaInit` in [dessgeega.c](../src/sprites_AI/dessgeega.c) to initialize `work1`.
+**Fix:** Edit `SidehopperInit` in [sidehopper.c](../src/sprites_ai/sidehopper.c) and `DessgeegaInit` in [dessgeega.c](../src/sprites_ai/dessgeega.c) to initialize `work1`.
 
 ```diff
   gCurrentSprite.work0 = 0;
@@ -241,7 +244,7 @@ The game checks for solid blocks above and below Samus to see if you can bomb ju
 
 By falling into a Chozo statue item and opening the orb as late as possible, you can reach the hand before Samus is stopped to collect the item. If you fall while morphed or morph on the last possible frame, Samus will be refilled and collect the item at the same time. This happens because the Chozo statue returns to the idle pose once the message box is open, which checks if Samus is in position to get refilled.
 
-**Fix:** Edit `ChozoStatuePartArmCheckGrabSamusRefill` in [chozo_statue.c](../src/sprites_AI/chozo_statue.c) and `UnknownItemChozoStatuePartArmCheckGrabSamusRefill` in [unknown_item_chozo_statue.c](../src/sprites_AI/unknown_item_chozo_statue.c) to check if Samus's movement is prevented before setting the "grabbed" pose.
+**Fix:** Edit `ChozoStatuePartArmCheckGrabSamusRefill` in [chozo_statue.c](../src/sprites_ai/chozo_statue.c) and `UnknownItemChozoStatuePartArmCheckGrabSamusRefill` in [unknown_item_chozo_statue.c](../src/sprites_ai/unknown_item_chozo_statue.c) to check if Samus's movement is prevented before setting the "grabbed" pose.
 
 ```diff
   if (gSamusData.pose == SPOSE_MORPH_BALL)
@@ -282,7 +285,7 @@ If Samus is up against a wall on the right and an enemy is frozen up against Sam
 
 Ridley constantly updates sub sprite data at the end of its main function. However, it's possible for the sub sprite data to be uninitialized at this point if Ridley is killed during initialization (Samus doesn't have gravity suit, or Ridley has already been killed). As such, sub sprite data is updated using invalid data (either an old pointer or a null pointer).
 
-**Fix:** Edit `Ridley` in [ridley.c](../src/sprites_AI/ridley.c) to check if Ridley is still alive.
+**Fix:** Edit `Ridley` in [ridley.c](../src/sprites_ai/ridley.c) to check if Ridley is still alive.
 
 ```diff
 + if (gCurrentSprite.status & SPRITE_STATUS_EXISTS)
@@ -323,6 +326,31 @@ At the start of the fully powered suit cutscene (after Samus is locked in place)
   DmaTransfer(3, sGettingFullyPoweredSuitPal, PALRAM_BASE, 11 * PAL_ROW_SIZE, 16);
   DmaTransfer(3, PALRAM_BASE, PALRAM_OBJ, PAL_SIZE, 32);
   SET_BACKDROP_COLOR(COLOR_BLACK);
+```
+
+### Reaching the maximum in-game time causes the time attack password to be invalid
+
+When checking if a time attack safe file is valid, the game makes sure the bosses were beat in order. However, the time each boss was beat can be the same if the max in-game time was reached.
+
+**Fix:** Edit `TimeAttackCheckSaveFileValidity` in [time_attack.c](../src/time_attack.c) to check if the max in-game time was reached if the times are equal.
+
+```diff
+- if (convertedIgt[i] >= convertedIgt[j])
++ if (convertedIgt[i] > convertedIgt[j] ||
++     (convertedIgt[i] == convertedIgt[j] && convertedIgt[i] != (99 << 24) + (59 << 16) + (59 << 8) + 63))
+  {
+      return FALSE;
+  }
+```
+
+### Samus can warp when standing on multiple enemies and one is killed
+
+When Samus stands on two enemies and kills one that respawns, the enemy's standing status isn't updated, so Samus is still considered to be standing on the enemy. This warps Samus to the enemy's Y position.
+
+**Fix:** Edit `GametRespawn` in [gamet.c](../src/sprites_ai/gamet.c), `GeegaRespawn` in [geega.c](../src/sprites_ai/geega.c), `RinkaRespawn` and `RinkaMotherBrainRespawn` in [rinka.c](../src/sprites_ai/rinka.c), `ZebRespawn` in [zeb.c](../src/sprites_ai/zeb.c), and `ZebboRespawn` in [zebbo.c](../src/sprites_ai/zebbo.c) to clear the standing on sprite flag when the enemy respawns.
+
+```diff
++ gCurrentSprite.standingOnSprite = SAMUS_STANDING_ON_SPRITE_OFF;
 ```
 
 
@@ -409,6 +437,7 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
 + FileSelectApplyStereo();
 ```
 
+
 ## Uninitialized Variables
 
 | Variable | Function | File |
@@ -439,10 +468,7 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
 - PowerBombExplosion doesn't check if out of bounds, which can lead to memory corruption
   - Fix: Don't check collision with any blocks outside of the room
 - Bomb hover on frozen enemies ([video](https://youtu.be/UIK8YnT1sG4))
-- Warping when Samus stands on multiple respawning enemies and kills one ([video](https://youtu.be/WfxkYSPTjWw))
 - Frame perfect pause buffering on ziplines ignores collision
 - Clipping into slopes ([video](https://www.youtube.com/watch?v=XiZRJesXHWw))
-- It is possible to get an invalid time attack password without cheating, because the time attack anti-cheat check doesn't check wheather maximum ingame time was reached
-  - Fix: Edit the if statement in line 283 in `TimeAttackCheckSaveFileValidity` in [time_attack.c](../src/time_attack.c) to check if max ingame time was reached if the times are equal
 
 ### Oversights and Design Flaws

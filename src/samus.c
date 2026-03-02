@@ -26,7 +26,7 @@
 #include "structs/screen_shake.h"
 #include "structs/scroll.h"
 
-static SamusFunc_T sSamusPoseFunctionPointers[SPOSE_END] = {
+static SamusFunc_T sSamusPoseFunctionPointers[SPOSE_COUNT] = {
     [SPOSE_RUNNING] = SamusRunning,
     [SPOSE_STANDING] = SamusStanding,
     [SPOSE_TURNING_AROUND] = SamusTurningAround,
@@ -93,10 +93,10 @@ static SamusFunc_T sSamusPoseFunctionPointers[SPOSE_END] = {
     [SPOSE_TURNING_FROM_FACING_THE_BACKGROUND_SUITLESS] = SamusInactivity,
     [SPOSE_ACTIVATING_ZIPLINES] = SamusInactivity,
     [SPOSE_IN_ESCAPE_SHIP] = SamusInactivity,
-    [SPOSE_TURNING_TO_ENTER_ESCAPE_SHIP] = SamusInactivity,
+    [SPOSE_TURNING_TO_ENTER_ESCAPE_SHIP] = SamusInactivity
 };
 
-static SamusFunc_T sSamusPoseGfxFunctionPointers[SPOSE_END] = {
+static SamusFunc_T sSamusPoseGfxFunctionPointers[SPOSE_COUNT] = {
     [SPOSE_RUNNING] = SamusRunningGfx,
     [SPOSE_STANDING] = SamusStandingGfx,
     [SPOSE_TURNING_AROUND] = SamusTurningAroundGfx,
@@ -163,7 +163,7 @@ static SamusFunc_T sSamusPoseGfxFunctionPointers[SPOSE_END] = {
     [SPOSE_TURNING_FROM_FACING_THE_BACKGROUND_SUITLESS] = SamusTurningFromFacingTheBackgroundGfx,
     [SPOSE_ACTIVATING_ZIPLINES] = SamusStandingGfx,
     [SPOSE_IN_ESCAPE_SHIP] = SamusInactivity,
-    [SPOSE_TURNING_TO_ENTER_ESCAPE_SHIP] = SamusTurningToEnterEscapeShipGfx,
+    [SPOSE_TURNING_TO_ENTER_ESCAPE_SHIP] = SamusTurningToEnterEscapeShipGfx
 };
 
 /**
@@ -241,10 +241,10 @@ void SamusCheckScrewSpeedboosterAffectingEnvironment(struct SamusData* pData, st
  * @param pSlope Slope result pointer
  * @return u8 Collision result
  */
-u8 SamusCheckCollisionAtPosition(u16 xPosition, u16 yPosition, u16* pXPosition, u16* pYPosition, u16* pSlope)
+CollisionResult SamusCheckCollisionAtPosition(u16 xPosition, u16 yPosition, u16* pXPosition, u16* pYPosition, SlopeType* pSlope)
 {
     u32 clipdata;
-    u8 collision;
+    CollisionResult collision;
     u16 newX;
     u16 newY;
     u16 slopeType;
@@ -316,11 +316,11 @@ u8 SamusCheckCollisionAtPosition(u16 xPosition, u16 yPosition, u16* pXPosition, 
  * @param pPhysics Samus Physics Pointer
  * @param xPosition X Position
  * @param pPosition Result X Position
- * @return u8 Collision result
+ * @return SamusCollisionDetection Collision result
  */
-u8 unk_5604(struct SamusData* pData, struct SamusPhysics* pPhysics, u16 xPosition, u16* pPosition)
+SamusCollisionDetection unk_5604(struct SamusData* pData, struct SamusPhysics* pPhysics, u16 xPosition, u16* pPosition)
 {
-    u8 result;
+    SamusCollisionDetection result;
     u16 yPosition;
     s32 clipdata;
 
@@ -379,11 +379,11 @@ u8 unk_5604(struct SamusData* pData, struct SamusPhysics* pPhysics, u16 xPositio
  * @param pPhysics Samus Physics Pointer
  * @param xPosition X Position
  * @param pPosition Pointer To X Position
- * @return u8 Collision result
+ * @return SamusCollisionDetection Collision result
  */
-u8 SamusCheckTopSideCollisionMidAir(struct SamusData* pData, struct SamusPhysics* pPhysics, u16 xPosition, u16* pPosition)
+SamusCollisionDetection SamusCheckTopSideCollisionMidAir(struct SamusData* pData, struct SamusPhysics* pPhysics, u16 xPosition, u16* pPosition)
 {
-    u8 result;
+    SamusCollisionDetection result;
     s32 clipdata;
     u16 yPosition;
 
@@ -458,11 +458,11 @@ u8 SamusCheckTopSideCollisionMidAir(struct SamusData* pData, struct SamusPhysics
  * 
  * @param pData Samus data pointer
  * @param xPosition X Position
- * @return u8 Collision result
+ * @return SamusCollisionDetection Collision result
  */
-u8 SamusCheckWalkingOnSlope(struct SamusData* pData, u16 xPosition)
+SamusCollisionDetection SamusCheckWalkingOnSlope(struct SamusData* pData, u16 xPosition)
 {
-    u8 result;
+    SamusCollisionDetection result;
     s32 clipdata;
 
     result = SAMUS_COLLISION_DETECTION_NONE;
@@ -511,11 +511,11 @@ u8 SamusCheckWalkingOnSlope(struct SamusData* pData, u16 xPosition)
  * 
  * @param pData Samus data pointer
  * @param hitbox Hitbox
- * @return u8 Collision result
+ * @return SamusCollisionDetection Collision result
  */
-u8 SamusCheckCollisionAbove(struct SamusData* pData, s32 hitbox)
+SamusCollisionDetection SamusCheckCollisionAbove(struct SamusData* pData, s32 hitbox)
 {
-    u8 result;
+    SamusCollisionDetection result;
     u16 yPosition;
     s32 clipdata;
     struct SamusPhysics* pPhysics;
@@ -563,7 +563,7 @@ SamusPose SamusCheckWalkingSidesCollision(struct SamusData* pData, struct SamusP
     u16 nextY;
     u16 nextSlope;
 
-    u8 result;
+    SamusCollisionDetection result;
 
     if (pPhysics->horizontalMovingDirection == HDMOVING_LEFT)
     {
@@ -985,7 +985,7 @@ SamusPose SamusCheckTopCollision(struct SamusData* pData, struct SamusPhysics* p
         pData->xPosition = (pData->xPosition & BLOCK_POSITION_FLAG) - pPhysics->blockHitboxRight + SUB_PIXEL_POSITION_FLAG;
         gPreviousXPosition = pData->xPosition;
     }
-    else if (result & SAMUS_COLLISION_DETECTION_MIDDILE)
+    else if (result & SAMUS_COLLISION_DETECTION_MIDDLE)
     {
         topOffset = pData->yPosition + pPhysics->blockHitboxTop;
         pData->yPosition = (topOffset & BLOCK_POSITION_FLAG) - pPhysics->blockHitboxTop + BLOCK_SIZE;
@@ -1965,7 +1965,7 @@ void SamusSetLandingPose(struct SamusData* pData, struct SamusData* pCopy, struc
                 // Check bounce from maintained A
                 collision = SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]);
 
-                if (!(collision & SAMUS_COLLISION_DETECTION_MIDDILE))
+                if (!(collision & SAMUS_COLLISION_DETECTION_MIDDLE))
                     pData->forcedMovement = FORCED_MOVEMENT_MORPH_BALL_BOUNCE_BEFORE_JUMP;
             }
             else
@@ -4341,7 +4341,7 @@ SamusPose SamusCrouching(struct SamusData* pData)
     }
 
     // Check can jump
-    if (SamusCheckJumping(pData) && !(collision & SAMUS_COLLISION_DETECTION_MIDDILE))
+    if (SamusCheckJumping(pData) && !(collision & SAMUS_COLLISION_DETECTION_MIDDLE))
     {
         // Check apply clamped position
         if (collision == SAMUS_COLLISION_DETECTION_LEFT_MOST || collision == SAMUS_COLLISION_DETECTION_RIGHT_MOST)
@@ -4352,7 +4352,7 @@ SamusPose SamusCrouching(struct SamusData* pData)
     }
 
     // Check getting up
-    if (gChangedInput & KEY_UP && !(collision & SAMUS_COLLISION_DETECTION_MIDDILE))
+    if (gChangedInput & KEY_UP && !(collision & SAMUS_COLLISION_DETECTION_MIDDLE))
     {
         // Not aiming diagonally or aiming diagonally up
         if (gSamusWeaponInfo.diagonalAim == DIAG_AIM_NONE || pData->armCannonDirection == ACD_DIAGONALLY_UP)
@@ -4399,7 +4399,7 @@ SamusPose SamusCrouching(struct SamusData* pData)
     if (gButtonInput & pData->direction)
     {
         // No ceiling and held for long enough
-        if (!(collision & SAMUS_COLLISION_DETECTION_MIDDILE) && pData->timer++ > 5)
+        if (!(collision & SAMUS_COLLISION_DETECTION_MIDDLE) && pData->timer++ > 5)
         {
             // Check apply clamped position
             if (collision == SAMUS_COLLISION_DETECTION_LEFT_MOST || collision == SAMUS_COLLISION_DETECTION_RIGHT_MOST)
@@ -4465,7 +4465,7 @@ SamusPose SamusTurningAroundAndCrouching(struct SamusData* pData)
     }
 
     // Check can jump
-    if (SamusCheckJumping(pData) && !(collision & SAMUS_COLLISION_DETECTION_MIDDILE))
+    if (SamusCheckJumping(pData) && !(collision & SAMUS_COLLISION_DETECTION_MIDDLE))
     {
         // Check apply clamped position
         if (collision == SAMUS_COLLISION_DETECTION_LEFT_MOST || collision == SAMUS_COLLISION_DETECTION_RIGHT_MOST)
@@ -4476,7 +4476,7 @@ SamusPose SamusTurningAroundAndCrouching(struct SamusData* pData)
     }
 
     // Check getting up
-    if (gChangedInput & KEY_UP && !(collision & SAMUS_COLLISION_DETECTION_MIDDILE) &&
+    if (gChangedInput & KEY_UP && !(collision & SAMUS_COLLISION_DETECTION_MIDDLE) &&
         (gSamusWeaponInfo.diagonalAim == DIAG_AIM_NONE || pData->armCannonDirection == ACD_DIAGONALLY_UP))
     {
         // Check apply clamped position
@@ -8185,10 +8185,10 @@ void SamusInit(void)
         if (!gIsLoadingFile)
         {
             // Zero out most of samus's data
-            DMA_FILL_32(3, 0, &gSamusData, sizeof(gSamusData));
-            DMA_FILL_32(3, 0, &gEquipment, sizeof(gEquipment));
-            DMA_FILL_32(3, 0, &gSamusWeaponInfo, sizeof(gSamusWeaponInfo));
-            DMA_FILL_32(3, 0, &gScrewSpeedAnimation, sizeof(gScrewSpeedAnimation));
+            DMA3_FILL_32(0, &gSamusData, sizeof(gSamusData));
+            DMA3_FILL_32(0, &gEquipment, sizeof(gEquipment));
+            DMA3_FILL_32(0, &gSamusWeaponInfo, sizeof(gSamusWeaponInfo));
+            DMA3_FILL_32(0, &gScrewSpeedAnimation, sizeof(gScrewSpeedAnimation));
 
             // Clear env effects
             for (i = 0; i < ARRAY_SIZE(gSamusEnvironmentalEffects); i++)
@@ -8204,7 +8204,7 @@ void SamusInit(void)
         else
         {
             // Clear physics
-            DMA_FILL_32(3, 0, &gSamusPhysics, sizeof(gSamusPhysics));
+            DMA3_FILL_32(0, &gSamusPhysics, sizeof(gSamusPhysics));
         }
     }
 }
