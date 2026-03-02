@@ -43,7 +43,7 @@ static struct PauseScreenStateData sPauseScreenStateInfo_Empty = {
     .fadeWireframeTimer = 0
 };
 
-static const u32* sMapScreenAreaNamesGfxPointers[LANGUAGE_END] = {
+static const u32* sMapScreenAreaNamesGfxPointers[LANGUAGE_COUNT] = {
     [LANGUAGE_JAPANESE] = sMapScreenAreaNamesEnglishGfx,
     [LANGUAGE_HIRAGANA] = sMapScreenAreaNamesHiraganaGfx,
     [LANGUAGE_ENGLISH] = sMapScreenAreaNamesEnglishGfx,
@@ -53,7 +53,7 @@ static const u32* sMapScreenAreaNamesGfxPointers[LANGUAGE_END] = {
     [LANGUAGE_SPANISH] = sMapScreenAreaNamesEnglishGfx
 };
 
-static const u32* sMapScreenChozoStatueAreaNamesGfxPointers[LANGUAGE_END] = {
+static const u32* sMapScreenChozoStatueAreaNamesGfxPointers[LANGUAGE_COUNT] = {
     [LANGUAGE_JAPANESE] = sMapScreenChozoStatueAreaNamesEnglishGfx,
     [LANGUAGE_HIRAGANA] = sMapScreenChozoStatueAreaNamesHiraganaGfx,
     [LANGUAGE_ENGLISH] = sMapScreenChozoStatueAreaNamesEnglishGfx,
@@ -63,7 +63,7 @@ static const u32* sMapScreenChozoStatueAreaNamesGfxPointers[LANGUAGE_END] = {
     [LANGUAGE_SPANISH] = sMapScreenChozoStatueAreaNamesEnglishGfx
 };
 
-static const u32* sMapScreenUnknownItemsNamesGfxPointers[LANGUAGE_END] = {
+static const u32* sMapScreenUnknownItemsNamesGfxPointers[LANGUAGE_COUNT] = {
     [LANGUAGE_JAPANESE] = sMapScreenUnknownItemsNamesJapaneseGfx,
     [LANGUAGE_HIRAGANA] = sMapScreenUnknownItemsNamesHiraganaGfx,
     [LANGUAGE_ENGLISH] = sMapScreenUnknownItemsNamesEnglishGfx,
@@ -80,7 +80,7 @@ static const u32* sMapScreenUnknownItemsNamesGfxPointers[LANGUAGE_END] = {
     #endif // REGION_EU || REGION_US_BETA
 };
 
-static const u32* sMapScreenEquipmentNamesGfxPointers[LANGUAGE_END] = {
+static const u32* sMapScreenEquipmentNamesGfxPointers[LANGUAGE_COUNT] = {
     [LANGUAGE_JAPANESE] = sEquipmentNamesJapaneseGfx,
     [LANGUAGE_HIRAGANA] = sEquipmentNamesHiraganaGfx,
     [LANGUAGE_ENGLISH] = sEquipmentNamesEnglishGfx,
@@ -97,7 +97,7 @@ static const u32* sMapScreenEquipmentNamesGfxPointers[LANGUAGE_END] = {
     #endif // REGION_EU || REGION_US_BETA
 };
 
-static const u32* sMapScreenMenuNamesGfxPointers[LANGUAGE_END] = {
+static const u32* sMapScreenMenuNamesGfxPointers[LANGUAGE_COUNT] = {
     [LANGUAGE_JAPANESE] = sMenuNamesJapaneseGfx,
     [LANGUAGE_HIRAGANA] = sMenuNamesHiraganaGfx,
     [LANGUAGE_ENGLISH] = sMenuNamesEnglishGfx,
@@ -152,7 +152,7 @@ const u8* sStatusScreenFlagsOrderPointers[4] = {
     [ABILITY_GROUP_BEAMS] = sStatusScreenBeamFlagsOrder,
     [ABILITY_GROUP_BOMBS] = sStatusScreenBombFlagsOrder,
     [ABILITY_GROUP_SUITS] = sStatusScreenSuitFlagsOrder,
-    [ABILITY_GROUP_MISC] = sStatusScreenMiscFlagsOrder,
+    [ABILITY_GROUP_MISC] = sStatusScreenMiscFlagsOrder
 };
 
 const u32* sMinimapDataPointers[AREA_COUNT] = {
@@ -170,9 +170,9 @@ const u32* sMinimapDataPointers[AREA_COUNT] = {
 };
 
 #ifdef REGION_EU
-static const u8* sMaintainedInputDelaysPointers[2] = {
+static const u8* sMaintainedInputDelaysPointers[MAINTAINED_INPUT_SPEED_COUNT] = {
     [MAINTAINED_INPUT_SPEED_FAST] = sMaintainedInputDelays_Fast,
-    [MAINTAINED_INPUT_SPEED_SLOW] = sMaintainedInputDelays_Slow,
+    [MAINTAINED_INPUT_SPEED_SLOW] = sMaintainedInputDelays_Slow
 };
 #endif // REGION_EU
 
@@ -278,7 +278,7 @@ u8 PauseScreenApplyFading(void)
  * @param stage Stage to start
  * @return u32 bool, ended
  */
-u32 PauseScreenUpdateOrStartFading(u8 stage)
+u32 PauseScreenUpdateOrStartFading(PauseScreenFading stage)
 {
     u16* src;
     u16* dst;
@@ -288,14 +288,14 @@ u32 PauseScreenUpdateOrStartFading(u8 stage)
 
     switch (PAUSE_SCREEN_DATA.mapScreenFading.stage)
     {
-        case 0:
+        case PAUSE_SCREEN_FADING_NONE:
             break;
 
-        case 1:
+        case PAUSE_SCREEN_FADING_INIT:
             if (!PAUSE_SCREEN_DATA.mapScreenFading.paletteUpdated)
             {
                 PAUSE_SCREEN_DATA.mapScreenFading.colorToApply = 0;
-                PAUSE_SCREEN_DATA.mapScreenFading.stage = 0;
+                PAUSE_SCREEN_DATA.mapScreenFading.stage = PAUSE_SCREEN_FADING_NONE;
                 return TRUE;
             }
             break;
@@ -340,7 +340,7 @@ u32 PauseScreenUpdateOrStartFading(u8 stage)
             {
                 DmaTransfer(3, PAUSE_SCREEN_EWRAM.originalBackgroundPalette, PAUSE_SCREEN_EWRAM.backgroundPalette, PALRAM_SIZE, 16);
                 PAUSE_SCREEN_DATA.mapScreenFading.paletteUpdated = TRUE;
-                PAUSE_SCREEN_DATA.mapScreenFading.stage = 1;
+                PAUSE_SCREEN_DATA.mapScreenFading.stage = PAUSE_SCREEN_FADING_INIT;
             }
             break;
 
@@ -382,7 +382,7 @@ u32 PauseScreenUpdateOrStartFading(u8 stage)
             {
                 BitFill(3, 0, PAUSE_SCREEN_EWRAM.backgroundPalette, PALRAM_SIZE, 16);
                 PAUSE_SCREEN_DATA.mapScreenFading.paletteUpdated = TRUE;
-                PAUSE_SCREEN_DATA.mapScreenFading.stage = 1;
+                PAUSE_SCREEN_DATA.mapScreenFading.stage = PAUSE_SCREEN_FADING_INIT;
             }
     }
 
@@ -413,7 +413,7 @@ void PauseScreenCopyPalramToEwram_Unused(u8 param_1)
         DmaTransfer(3, PALRAM_BASE, PAUSE_SCREEN_EWRAM.originalBackgroundPalette, PALRAM_SIZE, 16);
     }
 
-    PAUSE_SCREEN_DATA.mapScreenFading.stage = 0;
+    PAUSE_SCREEN_DATA.mapScreenFading.stage = PAUSE_SCREEN_FADING_NONE;
 }
 
 /**
@@ -505,7 +505,7 @@ void PauseScreenUpdateBossIcons(void)
         PAUSE_SCREEN_DATA.bossIconOam[0].yPosition = sBossIcons[PAUSE_SCREEN_DATA.currentArea][3] * HALF_BLOCK_SIZE;
 
         // Check event
-        if (EventFunction(EVENT_ACTION_CHECKING, status))
+        if (CHECK_EVENT(status))
         {
             // Boss dead, set new oam id
             if (PAUSE_SCREEN_DATA.currentArea != AREA_CRATERIA)
@@ -598,7 +598,7 @@ void PauseScreenDrawCompletionInfo(u8 dontDraw)
  * @param samusWireframeDataIndex The current wireframe data index
  * @return u8 2 if the header is to be drawn, 0 otherwise
  */
-u8 PauseScreenStatusScreenShouldDrawHeader(u8 samusWireframeDataIndex)
+u8 PauseScreenStatusScreenShouldDrawHeader(SamusWireframeDataId samusWireframeDataIndex)
 {
     u8 result;
 
@@ -1339,7 +1339,7 @@ void ProcessMenuOam(u8 length, struct MenuOamData* pOam, const struct OamArray* 
                     }
                     break;
 
-                case OAM_ARRAY_PRE_ACTION_SWITCH_TO_PREVIOUS_FRAME:
+                case OAM_ARRAY_PRE_ACTION_PLAY_BACKWARDS:
                     pOam->animationDurationCounter = 0;
 
                     // Check animation ended, it's played backwards
@@ -1360,7 +1360,7 @@ void ProcessMenuOam(u8 length, struct MenuOamData* pOam, const struct OamArray* 
                     }
                     break;
 
-                case OAM_ARRAY_PRE_ACTION_DECREMENT_ID_AT_BEGINNING:
+                case OAM_ARRAY_PRE_ACTION_PLAY_BACKWARDS_DECREMENT_ID:
                     pOam->animationDurationCounter = 0;
 
                     // Check animation ended, it's played backwards
@@ -1620,7 +1620,7 @@ void ProcessComplexMenuOam(u8 length, struct MenuOamData* pOam, const struct Oam
                     }
                     break;
 
-                case OAM_ARRAY_PRE_ACTION_SWITCH_TO_PREVIOUS_FRAME:
+                case OAM_ARRAY_PRE_ACTION_PLAY_BACKWARDS:
                     pOam->animationDurationCounter = 0;
 
                     // Check animation ended, it's played backwards
@@ -1641,7 +1641,7 @@ void ProcessComplexMenuOam(u8 length, struct MenuOamData* pOam, const struct Oam
                     }
                     break;
 
-                case OAM_ARRAY_PRE_ACTION_DECREMENT_ID_AT_BEGINNING:
+                case OAM_ARRAY_PRE_ACTION_PLAY_BACKWARDS_DECREMENT_ID:
                     pOam->animationDurationCounter = 0;
 
                     // Check animation ended, it's played backwards
@@ -1918,7 +1918,7 @@ void ProcessCutsceneOam(u8 length, struct CutsceneOamData* pOam, const struct Oa
                     }
                     break;
 
-                case OAM_ARRAY_PRE_ACTION_SWITCH_TO_PREVIOUS_FRAME:
+                case OAM_ARRAY_PRE_ACTION_PLAY_BACKWARDS:
                     pOam->animationDurationCounter = 0;
 
                     // Check animation ended, it's played backwards
@@ -1939,7 +1939,7 @@ void ProcessCutsceneOam(u8 length, struct CutsceneOamData* pOam, const struct Oa
                     }
                     break;
 
-                case OAM_ARRAY_PRE_ACTION_DECREMENT_ID_AT_BEGINNING:
+                case OAM_ARRAY_PRE_ACTION_PLAY_BACKWARDS_DECREMENT_ID:
                     pOam->animationDurationCounter = 0;
 
                     // Check animation ended, it's played backwards
@@ -2159,7 +2159,7 @@ u32 PauseScreenMainLoop(void)
  */
 void PauseScreenVBlank(void)
 {
-    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
 
     WRITE_16(REG_DISPCNT, PAUSE_SCREEN_DATA.dispcnt);
     WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay);
@@ -2209,7 +2209,7 @@ void PauseScreenInit(void)
     BitFill(3, 0, &gNonGameplayRam, sizeof(union NonGameplayRam), 32);
     ResetFreeOam();
     
-    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
 
     PAUSE_SCREEN_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
     PAUSE_SCREEN_DATA.dispcnt = 0;
@@ -2573,7 +2573,7 @@ void PauseScreenInit(void)
     }
 
     PauseScreenProcessOam();
-    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
 
     PauseScreenUpdateOrStartFading(PAUSE_SCREEN_FADING_IN_INIT);
     
@@ -2698,7 +2698,7 @@ void PauseScreenGetMinimapData(Area area, u16* dst)
 
     // Check update boss icons
     position = sBossIcons[area][0]; // Event
-    if (position && EventFunction(EVENT_ACTION_CHECKING, position))
+    if (position && CHECK_EVENT(position))
     {
         position = sBossIcons[area][2] + sBossIcons[area][3] * MINIMAP_SIZE;
 
@@ -2738,7 +2738,7 @@ void PauseScreenGetMinimapData(Area area, u16* dst)
     }
 
     // Check update the varia statue tile if varia suit was skipped
-    if (area == AREA_BRINSTAR && EventFunction(EVENT_ACTION_CHECKING, EVENT_SKIPPED_VARIA_SUIT))
+    if (area == AREA_BRINSTAR && CHECK_EVENT(EVENT_SKIPPED_VARIA_SUIT))
         dst[MINIMAP_SIZE * 2 + 14]++;
 }
 
@@ -3537,10 +3537,10 @@ s32 PauseScreenEasySleepInit(void)
             DmaTransfer(3, &PAUSE_SCREEN_EWRAM.unk_6000[0xE0], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_2[0x1C0],  0x40 * sizeof(u16), 16);
             DmaTransfer(3, &PAUSE_SCREEN_EWRAM.unk_6000[0x2E0], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_2[0x3C0], 0x40 * sizeof(u16), 16);
             #else // !REGION_EU
-            DMA_SET(3, &PAUSE_SCREEN_EWRAM.unk_6000[0], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_1[0x1C0], C_32_2_16(DMA_ENABLE, 0x40));
-            DMA_SET(3, &PAUSE_SCREEN_EWRAM.unk_6000[0x200], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_1[0x3C0], C_32_2_16(DMA_ENABLE, 0x40));
-            DMA_SET(3, &PAUSE_SCREEN_EWRAM.unk_6000[0xE0], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_2[0x1C0],  C_32_2_16(DMA_ENABLE, 0x40));
-            DMA_SET(3, &PAUSE_SCREEN_EWRAM.unk_6000[0x2E0], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_2[0x3C0], C_32_2_16(DMA_ENABLE, 0x40));
+            DMA3_COPY_16(&PAUSE_SCREEN_EWRAM.unk_6000[0], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_1[0x1C0], 0x40);
+            DMA3_COPY_16(&PAUSE_SCREEN_EWRAM.unk_6000[0x200], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_1[0x3C0], 0x40);
+            DMA3_COPY_16(&PAUSE_SCREEN_EWRAM.unk_6000[0xE0], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_2[0x1C0], 0x40);
+            DMA3_COPY_16(&PAUSE_SCREEN_EWRAM.unk_6000[0x2E0], &PAUSE_SCREEN_EWRAM.easySleepTextFormatted_2[0x3C0], 0x40);
             #endif // REGION_EU
             break;
 
@@ -3633,8 +3633,7 @@ s32 PauseScreenQuitEasySleep(void)
             break;
 
         case 3:
-            DMA_SET(3, PAUSE_SCREEN_EWRAM.mapScreenOverlayTilemap, VRAM_BASE + 0xD000,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(PAUSE_SCREEN_EWRAM.mapScreenOverlayTilemap)));
+            DMA3_COPY_16(PAUSE_SCREEN_EWRAM.mapScreenOverlayTilemap, VRAM_BASE + 0xD000, ARRAY_SIZE(PAUSE_SCREEN_EWRAM.mapScreenOverlayTilemap));
             break;
 
         case 4:
@@ -3678,7 +3677,7 @@ s32 PauseScreenQuitEasySleep(void)
  * 
  */
 #ifdef REGION_EU
-void CheckForMaintainedInput(u8 speed)
+void CheckForMaintainedInput(MaintainedInputSpeed speed)
 #else // !REGION_EU
 void CheckForMaintainedInput(void)
 #endif // REGION_EU

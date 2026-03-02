@@ -1,6 +1,7 @@
 #include "demo.h"
 #include "callbacks.h"
 #include "dma.h"
+#include "event.h"
 
 #include "data/demo_data.h"
 
@@ -30,7 +31,7 @@ const struct SaveDemo* sDemoRamDataPointers[MAX_AMOUNT_OF_DEMOS] = {
     [12] = &sDemo12_Ram,
     [13] = &sDemo13_Ram,
     [14] = &sDemo14_Ram,
-    [15] = &sDemo15_Ram,
+    [15] = &sDemo15_Ram
 };
 
 /**
@@ -108,18 +109,18 @@ void DemoInit(void)
     switch (demoNbr)
     {
         case 6:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_ZIPLINES_ACTIVATED);
-            EventFunction(EVENT_ACTION_SETTING, EVENT_SPACE_JUMP_OBTAINED);
-            EventFunction(EVENT_ACTION_SETTING, EVENT_KRAID_KILLED);
+            SET_EVENT(EVENT_ZIPLINES_ACTIVATED);
+            SET_EVENT(EVENT_SPACE_JUMP_OBTAINED);
+            SET_EVENT(EVENT_KRAID_KILLED);
             break;
 
         case 7:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_KRAID_KILLED);
-            EventFunction(EVENT_ACTION_SETTING, EVENT_POWER_GRIP_OBTAINED);
+            SET_EVENT(EVENT_KRAID_KILLED);
+            SET_EVENT(EVENT_POWER_GRIP_OBTAINED);
             break;
 
         case 10:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_ZIPLINES_ACTIVATED);
+            SET_EVENT(EVENT_ZIPLINES_ACTIVATED);
             break;
 
         case 11:
@@ -195,8 +196,8 @@ void DemoEnd(void)
         DmaTransfer(3, gDemoInputData, gSramDemoInputData, sizeof(gSramDemoInputData), 16);
         DmaTransfer(3, gDemoInputDuration, gSramDemoInputDuration, sizeof(gSramDemoInputDuration), 16);
         #else // !REGION_EU
-        DMA_SET(3, gDemoInputData, gSramDemoInputData, C_32_2_16(DMA_ENABLE, sizeof(gSramDemoInputData) / 2));
-        DMA_SET(3, gDemoInputDuration, gSramDemoInputDuration, C_32_2_16(DMA_ENABLE, sizeof(gSramDemoInputDuration) / 2));
+        DMA3_COPY_16(gDemoInputData, gSramDemoInputData, sizeof(gSramDemoInputData) / 2);
+        DMA3_COPY_16(gDemoInputDuration, gSramDemoInputDuration, sizeof(gSramDemoInputDuration) / 2);
         #endif // REGION_EU
     
         DoSramOperation(SRAM_OPERATION_SAVE_RECORDED_DEMO);

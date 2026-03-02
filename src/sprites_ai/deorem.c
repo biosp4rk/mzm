@@ -1,6 +1,7 @@
 #include "sprites_ai/deorem.h"
 #include "gba.h"
 #include "macros.h"
+#include "event.h"
 
 #include "data/sprites/deorem.h"
 #include "data/sprite_data.h"
@@ -19,6 +20,9 @@
 #include "structs/samus.h"
 #include "structs/scroll.h"
 #include "structs/sprite.h"
+
+// Spawn health of deorem
+#define DEOREM_MAX_HEALTH (MISSILE_DAMAGE * 3)
 
 #define DEOREM_POSE_WAITING_FOR_FIGHT 0x8
 #define DEOREM_POSE_SPAWN_GOING_DOWN 0x9
@@ -65,7 +69,7 @@
 
 // Deorem segment
 
-enum DeoremSegment {
+MAKE_ENUM(u8, DeoremSegmentId) {
     DEOREM_SEGMENT_DOWN_JUNCTION,
     DEOREM_SEGMENT_DOWN_1,
     DEOREM_SEGMENT_DOWN_2,
@@ -139,7 +143,7 @@ enum DeoremSegment {
  * 
  * @param caa Clipdata affecting action
  */
-/*static*/ void DeoremChangeLeftWallClipdata(u8 caa)
+static void DeoremChangeLeftWallClipdata(ClipdataAffectingAction caa)
 {
     u16 yPosition;
     u16 xPosition;
@@ -177,7 +181,7 @@ enum DeoremSegment {
  * 
  * @param caa Clipdata affecting action
  */
-/*static*/ void DeoremChangeRightWallClipdata(u8 caa)
+static void DeoremChangeRightWallClipdata(ClipdataAffectingAction caa)
 {
     u16 yPosition;
     u16 xPosition;
@@ -216,7 +220,7 @@ enum DeoremSegment {
  * @param speedCap Speed cap
  * @param dstPosition Destination X position
  */
-/*static*/ void DeoremMoveDiagonallyX(u8 speedCap, u16 dstPosition)
+static void DeoremMoveDiagonallyX(u8 speedCap, u16 dstPosition)
 {
     s32 speed;
 
@@ -291,7 +295,7 @@ enum DeoremSegment {
  * 
  * @param rng Random number
  */
-/*static*/ void DeoremRandomSpriteDebris(u8 rng)
+static void DeoremRandomSpriteDebris(u8 rng)
 {
     u16 yPosition;
     u16 xPosition;
@@ -359,7 +363,7 @@ enum DeoremSegment {
  * @param xPosition X Position
  * @param timer Timer (determines which set to spawn)
  */
-/*static*/ void DeoremSpriteDebrisSpawn(u16 yPosition, u16 xPosition, u8 timer)
+static void DeoremSpriteDebrisSpawn(u16 yPosition, u16 xPosition, u8 timer)
 {
     switch (timer)
     {
@@ -394,7 +398,7 @@ enum DeoremSegment {
  * @param ramSlot Deorem's eye ram slot
  * @return bool, leaving
  */
-/*static*/ u8 DeoremCheckLeaving(u8 eyeSlot)
+static u8 DeoremCheckLeaving(u8 eyeSlot)
 {
     if (gSpriteData[eyeSlot].yPositionSpawn == 0)
     {
@@ -423,7 +427,7 @@ enum DeoremSegment {
  * @param yPosition Y Position
  * @param xPosition X Position
  */
-/*static*/ void DeoremSpawnChargeBeam(u16 yPosition, u16 xPosition)
+static void DeoremSpawnChargeBeam(u16 yPosition, u16 xPosition)
 {
     u8 gfxSlot;
 
@@ -438,7 +442,7 @@ enum DeoremSegment {
  * @brief 210d4 | 3c | Sets the timer for how long the eye stays open
  * 
  */
-/*static*/ void DeoremSetEyeOpeningTimer(void)
+static void DeoremSetEyeOpeningTimer(void)
 {
     if (gDifficulty == DIFF_EASY)
         gCurrentSprite.work0 = EYE_OPENING_TIMER * 3 / 2;
@@ -452,7 +456,7 @@ enum DeoremSegment {
  * @brief 21110 | 2c | Calls the charge beam spawn handler, used when Deorem is already dead but the charge beam hasn't been picked up
  * 
  */
-/*static*/ void DeoremCallSpawnChargeBeam(void)
+static void DeoremCallSpawnChargeBeam(void)
 {
     DeoremSpawnChargeBeam(gCurrentSprite.yPosition + BLOCK_SIZE * 3 - QUARTER_BLOCK_SIZE,
         gCurrentSprite.xPosition + DEOREM_WIDTH / 2);
@@ -463,15 +467,15 @@ enum DeoremSegment {
 /**
  * @brief 2113c | 128 | Initialize a Deorem sprite
  */
-/*static*/ void DeoremInit(void)
+static void DeoremInit(void)
 {
     if (gCurrentSprite.spriteId == PSPRITE_DEOREM_FIRST_LOCATION)
     {
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED))
+        if (CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED))
         {
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED) &&
+            if (CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED) &&
                 !(gEquipment.beamBombs & BBF_CHARGE_BEAM) &&
-                !EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_KILLED_AT_SECOND_LOCATION))
+                !CHECK_EVENT(EVENT_DEOREM_KILLED_AT_SECOND_LOCATION))
             {
                 gCurrentSprite.pose = DEOREM_POSE_CALL_SPAWN_CHARGE_BEAM;
                 gCurrentSprite.status |= SPRITE_STATUS_NOT_DRAWN;
@@ -485,11 +489,11 @@ enum DeoremSegment {
     }
     else
     {
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED))
+        if (CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED))
         {
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED) &&
+            if (CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED) &&
                 !(gEquipment.beamBombs & BBF_CHARGE_BEAM) &&
-                EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_KILLED_AT_SECOND_LOCATION))
+                CHECK_EVENT(EVENT_DEOREM_KILLED_AT_SECOND_LOCATION))
             {
                 gCurrentSprite.pose = DEOREM_POSE_CALL_SPAWN_CHARGE_BEAM;
                 gCurrentSprite.status |= SPRITE_STATUS_NOT_DRAWN;
@@ -532,7 +536,7 @@ enum DeoremSegment {
 /**
  * @brief 21264 | 1b8 | Handles Deorem waiting for the fight to start
  */
-/*static*/ void DeoremWaitingForFight(void)
+static void DeoremWaitingForFight(void)
 {
     u16 samusX;
     u16 xPosition;
@@ -626,7 +630,7 @@ enum DeoremSegment {
  * @brief 2141c | f4 | Handles Deorem going down while spawning
  * 
  */
-/*static*/ void DeoremSpawnGoingDown(void)
+static void DeoremSpawnGoingDown(void)
 {
     u16 xPosition;
     u16 yPosition;
@@ -681,7 +685,7 @@ enum DeoremSegment {
  * @brief 21510 | d0 | Handles Deorem waiting a bit before going up during spawn
  * 
  */
-/*static*/ void DeoremSpawnDelayBeforeGoingUp(void)
+static void DeoremSpawnDelayBeforeGoingUp(void)
 {
     u16 yPosition;
     u8 gfxSlot;
@@ -717,7 +721,7 @@ enum DeoremSegment {
  * @brief 215e0 | e0 | Handles Deorem going up while spawning
  * 
  */
-/*static*/ void DeoremSpawnGoingUp(void)
+static void DeoremSpawnGoingUp(void)
 {
     u16 xPosition;
     u16 yPosition;
@@ -768,7 +772,7 @@ enum DeoremSegment {
  * @brief 216c0 | 117 | Handles Deorem waiting a bit before the head emerges during spawn
  * 
  */
-/*static*/ void DeoremSpawnDelayBeforeHead(void)
+static void DeoremSpawnDelayBeforeHead(void)
 {
     u8 gfxSlot;
     u8 ramSlot;
@@ -816,7 +820,7 @@ enum DeoremSegment {
  * @brief 217d4 | ac | Handles the head spawning part
  * 
  */
-/*static*/ void DeoremSpawnHead(void)
+static void DeoremSpawnHead(void)
 {
     u8 ramSlot;
 
@@ -860,7 +864,7 @@ enum DeoremSegment {
  * @brief 21880 | 284 | Handles deorem being idle and the down attack 
  * 
  */
-/*static*/ void DeoremMainLoop(void)
+static void DeoremMainLoop(void)
 {
     u16 movement;
     u16 yRange;
@@ -1017,7 +1021,7 @@ enum DeoremSegment {
  * @brief 21b04 | 16c | Handles Deorem retracting after going down to attack
  * 
  */
-/*static*/ void DeoremRetracting(void)
+static void DeoremRetracting(void)
 {
     u16 eyeSlot = gCurrentSprite.work3;
     u16 health = gSpriteData[eyeSlot].health;
@@ -1090,7 +1094,7 @@ enum DeoremSegment {
  * @brief 21c70 | f4 | Handles Deorem throwing thorns (doesn't handle the thorn throwing, just the idle state)
  * 
  */
-/*static*/ void DeoremThrowingThorns(void)
+static void DeoremThrowingThorns(void)
 {
     u8 changeAnimTime;
 
@@ -1143,7 +1147,7 @@ enum DeoremSegment {
  * @brief 21d64 | 4c | Called after the last thorn is thrown and before it hits the ground
  * 
  */
-/*static*/ void DeoremAfterThorns(void)
+static void DeoremAfterThorns(void)
 {
     if (gCurrentSprite.pOam == sDeoremOam_Closing && SpriteUtilHasCurrentAnimationEnded())
     {
@@ -1164,7 +1168,7 @@ enum DeoremSegment {
  * @brief 21db0 | 78 | Intiializes deorem to be dying
  * 
  */
-/*static*/ void DeoremDyingInit(void)
+static void DeoremDyingInit(void)
 {
     gCurrentSprite.pOam = sDeoremOam_Dying;
     gCurrentSprite.animationDurationCounter = 0;
@@ -1177,11 +1181,11 @@ enum DeoremSegment {
     DeoremChangeRightWallClipdata(CAA_REMOVE_SOLID);
 
     gLockScreen.lock = LOCK_SCREEN_TYPE_NONE;
-    EventFunction(EVENT_ACTION_SETTING, EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED);
-    EventFunction(EVENT_ACTION_SETTING, EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED);
+    SET_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED);
+    SET_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED);
 
     if (gCurrentSprite.spriteId == PSPRITE_DEOREM_SECOND_LOCATION)
-        EventFunction(EVENT_ACTION_SETTING, EVENT_DEOREM_KILLED_AT_SECOND_LOCATION);
+        SET_EVENT(EVENT_DEOREM_KILLED_AT_SECOND_LOCATION);
 
     SoundPlay(SOUND_DEOREM_DYING);
     FadeCurrentMusicAndQueueNextMusic(CONVERT_SECONDS(5.f / 6), MUSIC_BRINSTAR, 0);
@@ -1191,7 +1195,7 @@ enum DeoremSegment {
  * @brief 21e28 | 4c | Handles Deorem dying
  * 
  */
-/*static*/ void DeoremDying(void)
+static void DeoremDying(void)
 {
     gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
 
@@ -1212,7 +1216,7 @@ enum DeoremSegment {
  * @brief 21e74 | 38 | Calls Sprite Death
  * 
  */
-/*static*/ void DeoremDeath(void)
+static void DeoremDeath(void)
 {
     gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
 
@@ -1228,7 +1232,7 @@ enum DeoremSegment {
  * @brief 21eac | 60 | Checks if the leaving to the ceiling animation has ended
  *
  */
-/*static*/ void DeoremWaitToLeave(void)
+static void DeoremWaitToLeave(void)
 {
     if (gCurrentSprite.pOam == sDeoremOam_Closing || gCurrentSprite.pOam == sDeoremOam_ClosedFast)
     {
@@ -1251,7 +1255,7 @@ enum DeoremSegment {
  * @brief 21f0c | 180 | Handles Deorem starting to leave the fight
  * 
  */
-/*static*/ void DeoremStartLeaving(void)
+static void DeoremStartLeaving(void)
 {
     u8 i;
     u8 timer;
@@ -1319,14 +1323,14 @@ enum DeoremSegment {
         if (gCurrentSprite.spriteId == PSPRITE_DEOREM_FIRST_LOCATION)
         {
             // Leaving first location
-            EventFunction(EVENT_ACTION_SETTING, EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED);
-            EventFunction(EVENT_ACTION_CLEARING, EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED);
+            SET_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED);
+            CLEAR_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED);
         }
         else
         {
             // Leaving second location
-            EventFunction(EVENT_ACTION_CLEARING, EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED);
-            EventFunction(EVENT_ACTION_SETTING, EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED);
+            CLEAR_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED);
+            SET_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED);
         }
 
         SoundPlay(SOUND_DEOREM_LEAVING);
@@ -1338,7 +1342,7 @@ enum DeoremSegment {
  * @brief 2208c | 64 | Handles Deorem leaving the fight
  * 
  */
-/*static*/ void DeoremLeaving(void)
+static void DeoremLeaving(void)
 {
     if (MOD_AND(gFrameCounter8Bit, CONVERT_SECONDS(.25f + 1.f / 60)) == 0)
     {
@@ -1365,7 +1369,7 @@ enum DeoremSegment {
  * (Called when Deorem is leaving and it has its head on the ground)
  * 
  */
-/*static*/ void DeoremLeavingInGroundDebris(void)
+static void DeoremLeavingInGroundDebris(void)
 {
     gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
 
@@ -1387,7 +1391,7 @@ enum DeoremSegment {
  * @brief 22140 | 21c | Initialize a Deorem segment sprite
  * 
  */
-/*static*/ void DeoremSegmentInit(void)
+static void DeoremSegmentInit(void)
 {
     u8 roomSlot;
     
@@ -1535,7 +1539,7 @@ enum DeoremSegment {
  * @brief 2235c | 90 | Handles the movement of a "down" segment when spawning
  * 
  */
-/*static*/ void DeoremSegmentSpawnGoingDown(void)
+static void DeoremSegmentSpawnGoingDown(void)
 {
     u8 ramSlot;
     u32 tmp1;
@@ -1572,7 +1576,7 @@ enum DeoremSegment {
  * @brief 223ec | 9c80 | Handles the spawning movement of a "down" segment while the "up" segments are spawning
  * 
  */
-/*static*/ void DeoremSegmentSpawnGoingDownAfter(void)
+static void DeoremSegmentSpawnGoingDownAfter(void)
 {
     u8 ramSlot;
     u16 movement;
@@ -1611,7 +1615,7 @@ enum DeoremSegment {
  * @brief 224b4 | 90 | Handles the movement of a "up" segment when spawning
  * 
  */
-/*static*/ void DeoremSegmentSpawnGoingUp(void)
+static void DeoremSegmentSpawnGoingUp(void)
 {
     u8 ramSlot;
     s32 yPosition;
@@ -1645,7 +1649,7 @@ enum DeoremSegment {
  * @brief 22544 | c8 | Handles the spawning movement of a "up" segment while the "neck" segments are spawning
  * 
  */
-/*static*/ void DeoremSegmentSpawnGoingUpAfter(void)
+static void DeoremSegmentSpawnGoingUpAfter(void)
 {
     u32 ramSlot;
     s32 movement;
@@ -1686,7 +1690,7 @@ enum DeoremSegment {
  * @brief 2260c | 144 | Handles a "down" segment being idle
  * 
  */
-/*static*/ void DeoremSegmentDownIdle(void)
+static void DeoremSegmentDownIdle(void)
 {
     u8 ramSlot;
     u8 deoremTimer;
@@ -1787,7 +1791,7 @@ enum DeoremSegment {
  * @brief 22750 | 144 | Handles the idle animation and the thorn throwing of the segments on the left side
  * 
  */
-/*static*/ void DeoremSegmentUpIdle(void)
+static void DeoremSegmentUpIdle(void)
 {
     u16 yPosition;
     u8 ramSlot;
@@ -1889,7 +1893,7 @@ enum DeoremSegment {
  * @brief 22894 | 8c | Handles the segments going down when Deorem is going down
  * 
  */
-/*static*/ void DeoremSegmentGoingDown(void)
+static void DeoremSegmentGoingDown(void)
 {
     u32 xMovement;
     u32 work2;
@@ -1926,7 +1930,7 @@ enum DeoremSegment {
  * @brief 22920 | 8c | Handles the segments going up when Deorem is going down
  * 
  */
-/*static*/ void DeoremSegmentGoingUp(void)
+static void DeoremSegmentGoingUp(void)
 {
     u32 xMovement;
     u32 work2;
@@ -1963,7 +1967,7 @@ enum DeoremSegment {
  * @brief 229ac | b4 | Handles a "neck" part being idle
  * 
  */
-/*static*/ void DeoremSegmentNeckIdle(void)
+static void DeoremSegmentNeckIdle(void)
 {
     u16 deoremXPos;
     u16 xPosition;
@@ -2014,7 +2018,7 @@ enum DeoremSegment {
  * @brief 22a60 | b4 | Handles an "up" segment leaving
  * 
  */
-/*static*/ void DeoremSegmentUpLeaving(void)
+static void DeoremSegmentUpLeaving(void)
 {
     gCurrentSprite.yPosition -= DEOREM_LEAVING_SPEED;
 
@@ -2063,7 +2067,7 @@ enum DeoremSegment {
  * @brief 22b14 | 28 | Handles an "up" segment despawning when leaving
  * 
  */
-/*static*/ void DeoremSegmentUpDespawn(void)
+static void DeoremSegmentUpDespawn(void)
 {
     gCurrentSprite.yPosition -= DEOREM_LEAVING_SPEED;
 
@@ -2076,7 +2080,7 @@ enum DeoremSegment {
  * @brief 22b3c | 28 | Handles a "down" segment despawning when leaving
  * 
  */
-/*static*/ void DeoremSegmentDownDespawn(void)
+static void DeoremSegmentDownDespawn(void)
 {
     gCurrentSprite.yPosition += DEOREM_LEAVING_SPEED;
 
@@ -2089,7 +2093,7 @@ enum DeoremSegment {
  * @brief 22b64 | 90 | Handles a "neck" segment leaving
  * 
  */
-/*static*/ void DeoremSegmentNeckLeaving(void)
+static void DeoremSegmentNeckLeaving(void)
 {
     u8 ramSlot;
     s32 yPosition;
@@ -2121,7 +2125,7 @@ enum DeoremSegment {
  * @brief 22bf4 | a0 | Handles a "neck" segment burrowing into the ground when leaving
  * 
  */
-/*static*/ void DeoremSegmentNeckBurrow(void)
+static void DeoremSegmentNeckBurrow(void)
 {
     gCurrentSprite.yPosition += DEOREM_LEAVING_SPEED;
 
@@ -2161,7 +2165,7 @@ enum DeoremSegment {
  * @brief 22c94 | 28 | Handles a "neck" segment despawning when leaving
  * 
  */
-/*static*/ void DeoremSegmentNeckDespawn(void)
+static void DeoremSegmentNeckDespawn(void)
 {
     gCurrentSprite.yPosition += DEOREM_LEAVING_SPEED;
 
@@ -2174,7 +2178,7 @@ enum DeoremSegment {
  * @brief 22cbc | f8 | Initializes a deorem segment to be dying
  * 
  */
-/*static*/ void DeoremSegmentDyingInit(void)
+static void DeoremSegmentDyingInit(void)
 {
     u8 timer;
 
@@ -2258,7 +2262,7 @@ enum DeoremSegment {
  * @brief 22db4 | 94 | Handles the death of a Deorem segment
  * 
  */
-/*static*/ void DeoremSegmentDying(void)
+static void DeoremSegmentDying(void)
 {
     u16 xPosition;
     u16 yPosition;
@@ -2297,7 +2301,7 @@ enum DeoremSegment {
  * @brief 22e48 | e0 | Initialize a Deorem eye sprite
  * 
  */
-/*static*/ void DeoremEyeInit(void)
+static void DeoremEyeInit(void)
 {
     gCurrentSprite.status |= SPRITE_STATUS_ROTATION_SCALING_WHOLE;
     gCurrentSprite.scaling = Q_8_8(1.f);
@@ -2325,8 +2329,8 @@ enum DeoremSegment {
     // Duration of the fight
     gCurrentSprite.yPositionSpawn = CONVERT_SECONDS(30.f);
 
-    if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED) &&
-        !EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED))
+    if (!CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED) &&
+        !CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED))
     {
         // Half the time if it's the first encounter
         gCurrentSprite.yPositionSpawn /= 2;
@@ -2350,7 +2354,7 @@ enum DeoremSegment {
  * @brief 22f28 | 10 | Initializes the Deorem eye to be idle
  * 
  */
-/*static*/ void DeoremEyeIdleInit(void)
+static void DeoremEyeIdleInit(void)
 {
     gCurrentSprite.pose = DEOREM_EYE_POSE_IDLE;
 }
@@ -2359,7 +2363,7 @@ enum DeoremSegment {
  * @brief 22f38 | 19c | Handles the movement of the eye
  * 
  */
-/*static*/ void DeoremEyeMove(void)
+static void DeoremEyeMove(void)
 {
     u8 ramSlot;
     s32 samusY;
@@ -2491,7 +2495,7 @@ enum DeoremSegment {
  * @brief 230d4 | 9c | Main loop for the deorem eye
  * 
  */
-/*static*/ void DeoremEyeIdle(void)
+static void DeoremEyeIdle(void)
 {
     u8 rng;
 
@@ -2520,8 +2524,8 @@ enum DeoremSegment {
     DeoremEyeMove();
 
     // Update fight duration timer
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED) ||
-        EventFunction(EVENT_ACTION_CHECKING, EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED) ||
+    if (CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED) ||
+        CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED) ||
         gCurrentSprite.health != DEOREM_MAX_HEALTH)
     {   
         // Timer only goes down if Deorem has been hit
@@ -2534,7 +2538,7 @@ enum DeoremSegment {
  * @brief 23170 | 38 | Initialize the Gfx for the eye dying (also sets Deorem pose to 62)
  * 
  */
-/*static*/ void DeoremEyeDyingInit(void)
+static void DeoremEyeDyingInit(void)
 {
     u8 ramSlot;
 
@@ -2551,7 +2555,7 @@ enum DeoremSegment {
  * @brief 231a8 | 80 | Handles the eye spinning when Deorem is dying (body still here)
  * 
  */
-/*static*/ void DeoremEyeDyingSpinning(void)
+static void DeoremEyeDyingSpinning(void)
 {
     u8 ramSlot;
 
@@ -2576,7 +2580,7 @@ enum DeoremSegment {
  * @brief 23228 | b0 | Handles the eye spinning and moving when Deorem is dying (body dying/not here)
  * 
  */
-/*static*/ void DeoremEyeDyingMoving(void)
+static void DeoremEyeDyingMoving(void)
 {
     u16 targetX;
     u8 timer;
@@ -2615,7 +2619,7 @@ enum DeoremSegment {
  * @brief 232d8 | dc | Initialize a Deorem thorn sprite
  * 
  */
-/*static*/ void DeoremThornInit(void)
+static void DeoremThornInit(void)
 {
     gCurrentSprite.status |= SPRITE_STATUS_ROTATION_SCALING_SINGLE;
     
@@ -2664,7 +2668,7 @@ enum DeoremSegment {
  * @brief 233b4 | 70 | Handles the spinning animation when the thorn is spawning, before is moves
  * 
  */
-/*static*/ void DeoremThornSpawning(void)
+static void DeoremThornSpawning(void)
 {
     APPLY_DELTA_TIME_DEC(gCurrentSprite.work3);
     if (gCurrentSprite.work3 == 0)
@@ -2689,7 +2693,7 @@ enum DeoremSegment {
  * @brief 23424 | fc | Handles the movement of the Deorem thorn
  * 
  */
-/*static*/ void DeoremThornMovement(void)
+static void DeoremThornMovement(void)
 {
     u8 offset;
     u16 xMovement;

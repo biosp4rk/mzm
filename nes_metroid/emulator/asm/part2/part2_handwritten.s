@@ -6,11 +6,40 @@
 
 	.section .data
 
-    .global sUnk_030023DC
-sUnk_030023DC:
-    .byte 0x05, 0x7F, 0x0A, 0x01
-	.byte 0x13, 0x02, 0x28, 0x03, 0x50, 0x04, 0x1E, 0x05, 0x07, 0x06, 0x0D, 0x07, 0x06, 0x08, 0x0C, 0x09
-	.byte 0x18, 0x0A, 0x30, 0x0B, 0x60, 0x0C, 0x24, 0x0D, 0x08, 0x0E, 0x10, 0x0F
+    .global sEmulatorAudio_LengthCounterTable
+sEmulatorAudio_LengthCounterTable: @ 0x030023DC
+    .byte 10/2
+	.byte 254/2
+	.byte 20/2
+	.byte 2/2
+	.byte 40/2 - 1
+	.byte 4/2
+	.byte 80/2
+	.byte 6/2
+	.byte 160/2
+	.byte 8/2
+	.byte 60/2
+	.byte 10/2
+	.byte 14/2
+	.byte 12/2
+	.byte 26/2
+	.byte 14/2
+	.byte 12/2
+	.byte 16/2
+	.byte 24/2
+	.byte 18/2
+	.byte 48/2
+	.byte 20/2
+	.byte 96/2
+	.byte 22/2
+	.byte 192/2
+	.byte 24/2
+	.byte 72/2
+	.byte 26/2
+	.byte 16/2
+	.byte 28/2
+	.byte 32/2
+	.byte 30/2
 
 _030023FC:
 	.byte 0x00, 0x00, 0x00, 0x00
@@ -204,26 +233,26 @@ sUnk_03002948:
 sUnk_03002988:
 	.4byte 0x00000000
 
-	@ Loads
+	@ Reads
 _0300298C: .4byte sub_03005250 @ Addresses $1XXXX-$11XXX (Is this possible?)
 _03002990: .4byte sub_03002E38 @ Addresses $EXXX-$FXXX (ROM)
 _03002994: .4byte sub_03002E38 @ Addresses $CXXX-$DXXX (ROM)
 _03002998: .4byte sub_03002E38 @ Addresses $AXXX-$BXXX (ROM)
 _0300299C: .4byte sub_03002E38 @ Addresses $8XXX-$9XXX (ROM)
-_030029A0: .4byte sub_03002E2C @ Addresses $6XXX-$7XXX (RAM)
+_030029A0: .4byte sub_03002E2C @ Addresses $6XXX-$7XXX (WRAM)
 _030029A4: .4byte sub_03002EFC @ Addresses $4XXX-$5XXX (APU/2A03)
 _030029A8: .4byte sub_03002E44 @ Addresses $2XXX-$3XXX (PPU)
 
 	.global _030029AC
-_030029AC: .4byte 0x00000000
-_030029B0: .4byte 0x00000000
-_030029B4: .4byte 0x00000000
-_030029B8: .4byte 0x00000000
-_030029BC: .4byte 0x00000000
-_030029C0: .4byte 0x00000000
-_030029C4: .4byte 0x00000000
-_030029C8: .4byte 0x00000000
-_030029CC: .4byte 0x00000000
+_030029AC: .4byte 0x00000000 @ Addresses $0XXX-$1XXX (RAM) (usually 0x06030072)
+_030029B0: .4byte 0x00000000 @ Addresses $2XXX-$3XXX (PPU) (usually 0x00000000)
+_030029B4: .4byte 0x00000000 @ Addresses $4XXX-$5XXX (APU/2A03) (usually 0x00000000)
+_030029B8: .4byte 0x00000000 @ Addresses $6XXX-$7XXX (WRAM) (usually 0x06020360)
+_030029BC: .4byte 0x00000000 @ Addresses $8XXX-$9XXX (ROM) (usually 0x06020140 or 0x06020180)
+_030029C0: .4byte 0x00000000 @ Addresses $AXXX-$BXXX (ROM) (usually 0x06020140 or 0x06020180)
+_030029C4: .4byte 0x00000000 @ Addresses $CXXX-$DXXX (ROM) (usually 0x060202C0)
+_030029C8: .4byte 0x00000000 @ Addresses $EXXX-$FXXX (ROM) (usually 0x060202C0)
+_030029CC: .4byte 0x00000000 @ Addresses $1XXXX-$11XXX (usually 0x0602FF72)
 
 	@ Writes
 _030029D0: .4byte sub_0600B000 @ Addresses $1XXXX-$11XXX (Is this possible?)
@@ -231,7 +260,7 @@ _030029D4: .4byte sub_03005844 @ Addresses $EXXX-$FXXX (ROM)
 _030029D8: .4byte sub_03005844 @ Addresses $CXXX-$DXXX (ROM)
 _030029DC: .4byte sub_03005844 @ Addresses $AXXX-$BXXX (ROM)
 _030029E0: .4byte sub_03005844 @ Addresses $8XXX-$9XXX (ROM)
-_030029E4: .4byte sub_03003044 @ Addresses $6XXX-$7XXX (RAM)
+_030029E4: .4byte sub_03003044 @ Addresses $6XXX-$7XXX (WRAM)
 _030029E8: .4byte sub_030033A4 @ Addresses $4XXX-$5XXX (APU/2A03)
 _030029EC: .4byte sub_0300305C @ Addresses $2XXX-$3XXX (PPU)
 
@@ -525,7 +554,7 @@ sub_03002E0C: @ 0x03002E0C
 	@ Goto r12[r1]
 	ldr pc, [r12, r1, lsl #2]
 
-	@ Reads from RAM
+	@ Reads from WRAM
 	arm_func_start sub_03002E2C
 sub_03002E2C: @ 0x03002E2C
 	ldr r1, [sp, #SP_858]
@@ -598,18 +627,19 @@ _03002EE4:
 	b _03002EC8
 
 	@ Reads from APU/2A03 registers
+	@ r0 = APU register address
 	arm_func_start sub_03002EFC
 sub_03002EFC: @ 0x03002EFC
-	tst r0, #0x1f00
+	tst r0, #0x1f00 @ TODO: is this checking for outside APU space?
 	bne _03002F2C
-	and r2, r0, #0xff
+	and r2, r0, #0xff @ r2 = low byte of APU register address
 	cmp r2, #0x15
-	beq _03002F58
-	blo _03002F2C
+	beq _03002F58 @ if r2 == SND_CHN: goto _03002F58
+	blo _03002F2C @ if r2 < SND_CHN: goto _03002F2C
 	cmp r2, #0x17
-	blo _03002F68
-	beq _03003010
-	cmp r2, #0x30
+	blo _03002F68 @ if r2 < JOY2: goto _03002F68
+	beq _03003010 @ if r2 == JOY2: goto _03003010
+	cmp r2, #0x30 @ NOTE: this code should be unreachable
 	blo _03002F2C
 	bhs _03002F34
 _03002F2C:
@@ -619,7 +649,7 @@ _03002F34:
 	str r0, [sp, #SP_93C]
 	str lr, [sp, #SP_938]
 	add lr, pc, #0x4 @ =_03002F48
-	ldr r2, _030031C8 @ =sub_03000380
+	ldr r2, _030031C8 @ =EmulatorAudio_GetActiveChannels
 	bx r2
 _03002F48:
 	add r12, r11, #0x44
@@ -652,22 +682,53 @@ _03002F94:
 	orrne r3, r3, #4
 	mov pc, lr
 
+	@ Convert GBA keys into NES keys
+	@ r0 = GBA keys
     arm_func_start sub_03002FAC
 sub_03002FAC: @ 0x03002FAC
 	lsl r1, r0, #0x1c
-	add r2, pc, r1, lsr #27
-	ldrh r3, [r2, #0x18]
+	add r2, pc, r1, lsr #0x1B
+	ldrh r3, [r2, #0x18] @ r3 = _03002FD0[LOW_NYBBLE((u8)r0)]
 	and r1, r0, #0xf0
 	add r2, pc, r1, lsr #3
-	ldrh r4, [r2, #0x2c]
+	ldrh r4, [r2, #0x2c] @ r4 = _03002FF0[HIGH_NYBBLE((u8)r0)]
 	orr r3, r3, r4
-	strb r3, [sp, #SP_823]
+	strb r3, [sp, #SP_823] @ SP_823 = r3 | r4
 	bx lr
 _03002FD0:
-	.byte 0x00, 0x00, 0x80, 0x00, 0x40, 0x00, 0xC0, 0x00, 0x20, 0x00, 0xA0, 0x00, 0x60, 0x00, 0xE0, 0x00
-	.byte 0x10, 0x00, 0x90, 0x00, 0x50, 0x00, 0xD0, 0x00, 0x30, 0x00, 0xB0, 0x00, 0x70, 0x00, 0xF0, 0x00
-	.byte 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x08, 0x00, 0x09, 0x00, 0x0A, 0x00, 0x00, 0x00
-	.byte 0x04, 0x00, 0x05, 0x00, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	.2byte 0x0000 @ 0
+	.2byte 0x0080 @ A
+	.2byte 0x0040 @ B
+	.2byte 0x00C0 @ B|A
+	.2byte 0x0020 @ SE
+	.2byte 0x00A0 @ SE|A
+	.2byte 0x0060 @ SE|B
+	.2byte 0x00E0 @ SE|B|A
+	.2byte 0x0010 @ ST
+	.2byte 0x0090 @ ST|A
+	.2byte 0x0050 @ ST|B
+	.2byte 0x00D0 @ ST|B|A
+	.2byte 0x0030 @ ST|SE
+	.2byte 0x00B0 @ ST|SE|A
+	.2byte 0x0070 @ ST|SE|B
+	.2byte 0x00F0 @ ST|SE|B|A
+_03002FF0:
+	.2byte 0x0000 @ 0
+	.2byte 0x0001 @ R
+	.2byte 0x0002 @ L
+	.2byte 0x0000 @ L|R
+	.2byte 0x0008 @ U
+	.2byte 0x0009 @ U|R
+	.2byte 0x000A @ U|L
+	.2byte 0x0000 @ U|L|R
+	.2byte 0x0004 @ D
+	.2byte 0x0005 @ D|R
+	.2byte 0x0006 @ D|L
+	.2byte 0x0000 @ D|L|R
+	.2byte 0x0000 @ D|U
+	.2byte 0x0000 @ D|U|R
+	.2byte 0x0000 @ D|U|L
+	.2byte 0x0000 @ D|U|L|R
 _03003010:
 	ldr r2, [sp, #SP_82C]
 	mov r3, #0x40
@@ -675,7 +736,6 @@ _03003010:
 	ldrb r1, [sp, #SP_A3B]
 	tst r1, #1
 	movne pc, lr
-_03003028:
 	lsl r2, r2, #1
 	str r2, [sp, #SP_82C]
 	mov pc, lr
@@ -688,7 +748,7 @@ sub_03003034: @ 0x03003034
 	ldrlt pc, [r12, r1, lsl #2]
 	b _03005398
 
-	@ Writes to RAM
+	@ Writes to WRAM
 	arm_func_start sub_03003044
 sub_03003044: @ 0x03003044
 	ldr r2, [sp, #SP_858]
@@ -746,65 +806,67 @@ sub_03003088: @ 0x03003088
 
 	arm_func_start sub_030030E8
 sub_030030E8: @ 0x030030E8
+	@ if r1 is between 0x06015400 and 0x06015540, return
 	ldr r3, _030031CC @ =0x06015400
 	cmp r1, r3
 	blo _03003100
 	ldr r3, _030031D0 @ =0x06015540
 	cmp r1, r3
 	bxlo lr
+
 _03003100:
-	ldm r1, {r3, r4, r5, r6, r7, r8, r9, r10}
-	sub r11, r1, #0x4000
+	ldm r1, {r3, r4, r5, r6, r7, r8, r9, r10} @ load r3-r10 from r1
+	sub r11, r1, #0x4000 @ r11 = r1 - 0x4000
 	mov r12, #0x7c00
-	orr r12, r12, #0x6000000
+	orr r12, r12, #0x6000000 @ r12 = 0x06007C00
 	and r0, r3, #0xff
 	ldr r0, [r12, r0, lsl #2]
 	and r1, r7, #0xff
 	ldr r1, [r12, r1, lsl #2]
-	orr r1, r0, r1, lsl #1
+	orr r1, r0, r1, lsl #1 @ r1 = r12[r3 & 0xFF] | (r12[r7 & 0xFF] << 1)
 	and r3, r3, #0xff0000
 	ldr r3, [r12, r3, lsr #14]
 	and r7, r7, #0xff0000
 	ldr r7, [r12, r7, lsr #14]
-	orr r2, r3, r7, lsl #1
+	orr r2, r3, r7, lsl #1 @ r2 = r12[(r3 & 0xFF0000) >> 14] | (r12[(r7 & 0xFF0000) >> 14] << 1)
 	and r0, r4, #0xff
 	ldr r0, [r12, r0, lsl #2]
 	and r7, r8, #0xff
 	ldr r7, [r12, r7, lsl #2]
-	orr r3, r0, r7, lsl #1
+	orr r3, r0, r7, lsl #1 @ r3 = r12[r4 & 0xFF] | (r12[r8 & 0xFF] << 1)
 	and r4, r4, #0xff0000
 	ldr r4, [r12, r4, lsr #14]
 	and r8, r8, #0xff0000
 	ldr r8, [r12, r8, lsr #14]
-	orr r4, r4, r8, lsl #1
+	orr r4, r4, r8, lsl #1 @ r4 = r12[(r4 & 0xFF0000) >> 14] | (r12[(r8 & 0xFF0000) >> 14] << 1)
 	and r0, r6, #0xff
 	ldr r0, [r12, r0, lsl #2]
 	and r7, r10, #0xff
 	ldr r7, [r12, r7, lsl #2]
-	orr r7, r0, r7, lsl #1
+	orr r7, r0, r7, lsl #1 @ r7 = r12[r6 & 0xFF] | (r12[r10 & 0xFF] << 1)
 	and r6, r6, #0xff0000
 	ldr r6, [r12, r6, lsr #14]
 	and r10, r10, #0xff0000
 	ldr r10, [r12, r10, lsr #14]
-	orr r8, r6, r10, lsl #1
+	orr r8, r6, r10, lsl #1 @ r8 = r12[(r6 & 0xFF0000) >> 14] | (r12[(r10 & 0xFF0000) >> 14] << 1)
 	and r0, r5, #0xff0000
 	ldr r0, [r12, r0, lsr #14]
 	and r6, r9, #0xff0000
 	ldr r6, [r12, r6, lsr #14]
-	orr r6, r0, r6, lsl #1
+	orr r6, r0, r6, lsl #1 @ r6 = r12[r5 & 0xFF] | (r12[r9 & 0xFF] << 1)
 	and r5, r5, #0xff
 	ldr r5, [r12, r5, lsl #2]
 	and r9, r9, #0xff
 	ldr r9, [r12, r9, lsl #2]
-	orr r5, r5, r9, lsl #1
-	stm r11, {r1, r2, r3, r4, r5, r6, r7, r8}
+	orr r5, r5, r9, lsl #1 @ r5 = r12[(r5 & 0xFF0000) >> 14] | (r12[(r9 & 0xFF0000) >> 14] << 1)
+	stm r11, {r1, r2, r3, r4, r5, r6, r7, r8} @ store r1-r8 to r11
 	tst r11, #0x2000
-	subeq r11, r11, #0x10000
-	subne r11, r11, #0xe000
-	stm r11, {r1, r2, r3, r4, r5, r6, r7, r8}
+	subeq r11, r11, #0x10000 @ if (r11 & 0x2000) == 0: r11 -= 0x10000
+	subne r11, r11, #0xe000  @ else: r11 -= 0xE000
+	stm r11, {r1, r2, r3, r4, r5, r6, r7, r8} @ store r1-r8 to r11
 	bx lr
 	.align 2, 0
-_030031C8: .4byte sub_03000380
+_030031C8: .4byte EmulatorAudio_GetActiveChannels
 _030031CC: .4byte 0x06015400
 _030031D0: .4byte 0x06015540
 
@@ -939,19 +1001,19 @@ _03003380:
 	arm_func_start sub_030033A4
 sub_030033A4: @ 0x030033A4
 	tst r0, #0x1fc0
-	bne _030034A8
+	bne sub_030034A8
 	and r2, r0, #0x3f
 	cmp r2, #0x20
-	bge _030034A8
+	bge sub_030034A8
 	subs r2, r2, #0x14
-	blt _030034A8
+	blt sub_030034A8
 	@ goto _030033C8[r2]
 	ldr pc, [pc, r2, lsl #2]
 _030033C4:
 	.4byte 0x000000
 _030033C8:
 	.4byte sub_030033F8 @ OAMDMA
-	.4byte _030034A8 @ SND_CHN
+	.4byte sub_030034A8 @ SND_CHN
 	.4byte sub_03003444 @ JOY1
 	.4byte sub_03003494 @ JOY2
 	.4byte sub_03003034 @ Invalid/Unused/Dontcare registers
@@ -971,15 +1033,15 @@ sub_030033F8: @ 0x030033F8
 	lsr r0, r1, #0xd
 	ldr r0, [r11, r0, lsl #2]
 	add r0, r0, r1
-	lsl r0, r0, #8
+	lsl r0, r0, #8 @ r0 = (_030029AC[r1 >> 13] + r1) << 8
 	mov r1, #0x6700
 	orr r1, r1, #0x6000000
 	mov r2, #-0x7c000000
 	orr r2, r2, #0x40
-	stm lr, {r0, r1, r2}
+	stm lr, {r0, r1, r2} @ DMA3(src=r0, dst=0x06006700, cnt=Enable, 32bit, 0x100 bytes)
 	ldr r0, [sp, #SP_8B4]
-	cmp r0, #0x80
-	addlt r0, r0, #4
+	cmp r0, #0x80         @ if SP_8B4 < 0x80:
+	addlt r0, r0, #4          @ SP_8B4 += 4
 	str r0, [sp, #SP_8B4]
 	adds r4, r4, #0x38000000
 	ldrblt r1, [r5], #1
@@ -1016,14 +1078,19 @@ _03003484:
 sub_03003494: @ 0x03003494
 	ands r2, r1, #0xc0
 	strb r2, [sp, #SP_A3C]
-	bne _030034A8
+	bne sub_030034A8
 	mov r2, #0x40
 	str r2, [sp, #SP_9D0]
-_030034A8:
+
+	@ Writes to APU
+	arm_func_start sub_030034A8
+sub_030034A8: @ 0x030034A8
 	str r3, [sp, #SP_884]
+	@ Call SP_9B4 (EmulatorAudio_WriteToApu(apuRegister=r0, value=r1))
 	ldr r3, [sp, #SP_9B4]
-	add lr, pc, #0x0 @ =0x030034B8
+	add lr, pc, #0x0 @ =_030034B8
 	bx r3
+_030034B8:
 	ldr r3, [sp, #SP_884]
 	add r12, r11, #0x44
 	cmp r4, #0
@@ -1033,7 +1100,7 @@ _030034A8:
 
 @ Register usage:
 @ r0-r3 are scratch
-@ r4 seems to be a set of flags (TODO: possibly status register?)
+@ r4 top 2 bytes is the cycle counter (TODO: what are the rest of the bytes?)
 @ r5 points to code execution (ROM)
 @ r6 is likely the NES stack pointer (TODO: confirm)
 @ r7 is used for Register A
@@ -3204,9 +3271,9 @@ _03005394: .4byte 0xA2600002
     arm_func_start _03005398
 _03005398: @ 0x03005398
 	ldr r12, [sp, #SP_8B4]
-	cmp r12, #0xf0 @ if SP_8B4 > 0xF0:
+	cmp r12, #0xf0 @ if SP_8B4 >= 0xF0:
 	bhs _0300552C     @ goto _0300552C
-	cmp r12, #0xe2 @ if SP_8B4 > 0xE2:
+	cmp r12, #0xe2 @ if SP_8B4 >= 0xE2:
 	bhs _03005478     @ goto _03005478
 	subs r0, r12, #0xc @ r0 = SP_8B4 - 0xC
 	ldrlo r0, [sp, #SP_9C0] @ if r0 < 0: r0 = SP_9C0
@@ -3328,38 +3395,39 @@ _03005564: .4byte 0x80000010
 
 	arm_func_start sub_03005568
 sub_03005568: @ 0x03005568
-	ldrb r0, [sp, #SP_A46]
-	cmp r0, #0x18
-	movhs r0, #0
-	lsr r1, r0, #2
-	add r0, r0, #1
-	strb r0, [sp, #SP_A46]
-	sub r0, pc, #0x30
+	ldrb r0, [sp, #SP_A46] @ r0 = SP_A46
+	cmp r0, #0x18 @ if SP_A46 >= 0x18:
+	movhs r0, #0      @ r0 = 0
+	lsr r1, r0, #2 @ r1 = r0 >> 2
+	add r0, r0, #1 @ r0 += 1
+	strb r0, [sp, #SP_A46] @ SP_A46 = r0
+	sub r0, pc, #0x30 @ r0 = &_03005558
 	ldm r0, {r2, r3, r4, r5}
 	add r3, r3, r1, lsl #5
-	stm r2, {r3, r4, r5}
+	stm r2, {r3, r4, r5} @ DMA3(src=sUnk_0203E634+(r1<<5), dst=0x06003060, cnt=Enable, 16bit, 0x20 bytes)
 _03005590:
 	ldr r12, [sp, #SP_8EC]
 	ldr r0, [sp, #SP_8F4]
-	cmp r0, r12
-	svceq #0x20000
-	beq _03005590
-	ldr r0, [sp, #SP_830]
-	cmp r0, #0
-	moveq r0, #0x9600000
-	lslne r0, r0, #0x18
-	addne r0, r0, #0xc000000
-	str r0, [sp, #SP_838]
-	moveq r0, #0xc00000
-	movne r0, #0x1000000
-	str r0, [sp, #SP_834]
+	cmp r0, r12    @ if SP_8F4 == SP_8EC:
+	svceq #0x20000     @ Halt
+	beq _03005590      @ Goto _03005590
+	ldr r0, [sp, #SP_830] @ r0 = SP_830
+	cmp r0, #0               @ if r0 == 0:
+	moveq r0, #0x9600000         @ r0 = 0x09600000
+	lslne r0, r0, #0x18      @ else:
+	addne r0, r0, #0xc000000     @ r0 = (r0 << 0x18) + 0x0C000000
+	str r0, [sp, #SP_838] @ SP_838 = r0
+	moveq r0, #0xc00000   @ if r0 == 0: r0 = 0x00C00000
+	movne r0, #0x1000000  @ else: r0 = 0x01000000
+	str r0, [sp, #SP_834] @ SP_834 = r0
 	ldr r1, [sp, #SP_8F8]
 	sub r1, r1, r12
-	str r1, [sp, #SP_8EC]
+	str r1, [sp, #SP_8EC] @ SP_8EC = SP_8F8 - SP_8EC
+
 	mov r7, #0x6700
-	orr r7, r7, #0x6000000
-	add r6, r12, #0x200
-	sub lr, r7, #0x760
+	orr r7, r7, #0x6000000 @ r7 = 0x06006700
+	add r6, r12, #0x200 @ r6 = r12 + 0x200
+	sub lr, r7, #0x760 @ lr = 0x06005FA0
 _030055E4:
 	ldr r10, [r7], #4
 	and r9, r10, #0xff
@@ -3511,7 +3579,7 @@ _030057E4:
 	ldr r12, [pc, r2]
 	bx r12
 _030057F8:
-	.4byte sub_030004E0 @ Timer 1 Interrupt
+	.4byte EmulatorAudio_Timer1Callback @ Timer 1 Interrupt
 	.4byte sub_0300525C @ V-Blank Interrupt
 	.4byte sub_0300582C @ Timer 3 Interrupt
 	.4byte sub_0300583C @ All other interrupts

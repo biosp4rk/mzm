@@ -1,5 +1,6 @@
 #include "sprites_ai/zipline_generator.h"
 #include "macros.h"
+#include "event.h"
 
 #include "data/sprites/zipline_generator.h"
 
@@ -16,7 +17,7 @@
 
 #define ZIPLINE_GENERATOR_POSE_DETECT_SAMUS 0x9
 #define ZIPLINE_GENERATOR_POSE_ACTIVATING 0xB
-#define ZIPLINE_GENERATOR_POSE_ACTIVATED 0xc
+#define ZIPLINE_GENERATOR_POSE_ACTIVATED 0xC
 #define ZIPLINE_GENERATOR_POSE_ALREADY_ACTIVATED 0xF
 
 // Zipline generator part
@@ -24,7 +25,7 @@
 #define ZIPLINE_GENERATOR_PART_POSE_MORPH_SYMBOL_ACTIVATING 0xB
 #define ZIPLINE_GENERATOR_PART_POSE_IDLE 0x61
 
-enum ZiplineGeneratorPart {
+MAKE_ENUM(u8, ZiplineGeneratorPartId) {
     ZIPLINE_GENERATOR_PART_CONDUCTOR,
     ZIPLINE_GENERATOR_PART_MORPH_SYMBOL,
     ZIPLINE_GENERATOR_PART_ELECTRICITY
@@ -35,7 +36,7 @@ enum ZiplineGeneratorPart {
  * 
  * @param caa Clipdata affecting action
  */
-static void ZiplineGeneratorChangeClipdata(u8 caa)
+static void ZiplineGeneratorChangeClipdata(ClipdataAffectingAction caa)
 {
     u16 yPosition;
     u16 xPosition;
@@ -96,7 +97,7 @@ static void ZiplineGeneratorInit(void)
         return;
     }
     
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ZIPLINES_ACTIVATED))
+    if (CHECK_EVENT(EVENT_ZIPLINES_ACTIVATED))
     {
         // Set already activated
         gCurrentSprite.pOam = sZiplineGeneratorOam_Activated;
@@ -197,7 +198,7 @@ static void ZiplineGeneratorActivating(void)
         gSpriteData[ramSlot].status = 0;
 
         // Set event
-        EventFunction(EVENT_ACTION_SETTING, EVENT_ZIPLINES_ACTIVATED);
+        SET_EVENT(EVENT_ZIPLINES_ACTIVATED);
     }
     else if (gCurrentSprite.work0 == CONVERT_SECONDS(1.5f))
     {

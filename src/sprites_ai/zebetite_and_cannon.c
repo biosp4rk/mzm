@@ -1,5 +1,6 @@
 #include "sprites_ai/zebetite_and_cannon.h"
 #include "macros.h"
+#include "event.h"
 
 #include "data/sprites/zebetite_and_cannon.h"
 #include "data/sprite_data.h"
@@ -24,7 +25,7 @@
 #define CANNON_POSE_IDLE 0x9
 #define CANNON_BULLET_POSE_IDLE 0x9
 
-enum CannonAim {
+MAKE_ENUM(u8, CannonAim) {
     CANNON_AIM_LEFT,
     CANNON_AIM_LEFT_TO_DOWN_LEFT_TRANSITION,
     CANNON_AIM_DOWN_LEFT,
@@ -36,7 +37,7 @@ enum CannonAim {
     CANNON_AIM_RIGHT
 };
 
-enum CannonView {
+MAKE_ENUM(u8, CannonView) {
     CANNON_VIEW_EVERWHERE,
     CANNON_VIEW_RIGHT,
     CANNON_VIEW_LEFT
@@ -64,19 +65,19 @@ void Zebetite(void)
         switch (gCurrentSprite.spriteId)
         {
             case PSPRITE_ZEBETITE_ONE_AND_THREE:
-                if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ZEBETITE_ONE_DESTROYED))
+                if (CHECK_EVENT(EVENT_ZEBETITE_ONE_DESTROYED))
                 {
                     gCurrentSprite.xPosition -= BLOCK_SIZE * 20;
-                    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ZEBETITE_THREE_DESTROYED))
+                    if (CHECK_EVENT(EVENT_ZEBETITE_THREE_DESTROYED))
                         alreadyDead++;
                 }
                 break;
 
             case PSPRITE_ZEBETITE_TWO_AND_FOUR:
-                if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ZEBETITE_TWO_DESTROYED))
+                if (CHECK_EVENT(EVENT_ZEBETITE_TWO_DESTROYED))
                 {
                     gCurrentSprite.xPosition -= BLOCK_SIZE * 20;
-                    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ZEBETITE_FOUR_DESTROYED))
+                    if (CHECK_EVENT(EVENT_ZEBETITE_FOUR_DESTROYED))
                         alreadyDead++;
                 }
                 break;
@@ -210,30 +211,30 @@ void Zebetite(void)
             switch (gCurrentSprite.spriteId)
             {
                 case PSPRITE_ZEBETITE_ONE_AND_THREE:
-                    if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_ZEBETITE_ONE_DESTROYED))
+                    if (!CHECK_EVENT(EVENT_ZEBETITE_ONE_DESTROYED))
                     {
                         gCurrentSprite.status |= SPRITE_STATUS_NOT_DRAWN;
                         gCurrentSprite.pose = SPRITE_POSE_UNINITIALIZED;
-                        EventFunction(EVENT_ACTION_SETTING, EVENT_ZEBETITE_ONE_DESTROYED);
+                        SET_EVENT(EVENT_ZEBETITE_ONE_DESTROYED);
                     }
                     else
                     {
                         gCurrentSprite.status = 0;
-                        EventFunction(EVENT_ACTION_SETTING, EVENT_ZEBETITE_THREE_DESTROYED);
+                        SET_EVENT(EVENT_ZEBETITE_THREE_DESTROYED);
                     }
                     break;
 
                 case PSPRITE_ZEBETITE_TWO_AND_FOUR:
-                    if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_ZEBETITE_TWO_DESTROYED))
+                    if (!CHECK_EVENT(EVENT_ZEBETITE_TWO_DESTROYED))
                     {
                         gCurrentSprite.status |= SPRITE_STATUS_NOT_DRAWN;
                         gCurrentSprite.pose = SPRITE_POSE_UNINITIALIZED;
-                        EventFunction(EVENT_ACTION_SETTING, EVENT_ZEBETITE_TWO_DESTROYED);
+                        SET_EVENT(EVENT_ZEBETITE_TWO_DESTROYED);
                     }
                     else
                     {
                         gCurrentSprite.status = 0;
-                        EventFunction(EVENT_ACTION_SETTING, EVENT_ZEBETITE_FOUR_DESTROYED);
+                        SET_EVENT(EVENT_ZEBETITE_FOUR_DESTROYED);
                     }
                     break;
 
@@ -319,7 +320,7 @@ void Cannon(void)
 
     gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
 
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MOTHER_BRAIN_KILLED))
+    if (CHECK_EVENT(EVENT_MOTHER_BRAIN_KILLED))
     {
         if (gCurrentSprite.status & SPRITE_STATUS_ONSCREEN)
             ParticleSet(gCurrentSprite.yPosition, gCurrentSprite.xPosition, PE_SPRITE_EXPLOSION_SMALL);
@@ -739,7 +740,7 @@ void Cannon(void)
  */
 void CannonBullet(void)
 {
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MOTHER_BRAIN_KILLED))
+    if (CHECK_EVENT(EVENT_MOTHER_BRAIN_KILLED))
     {
         gCurrentSprite.status = 0;
         return;

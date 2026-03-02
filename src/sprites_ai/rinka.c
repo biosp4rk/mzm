@@ -3,6 +3,7 @@
 #include "gba/display.h"
 #include "syscalls.h"
 #include "macros.h"
+#include "event.h"
 
 #include "data/sprites/rinka.h"
 #include "data/sprites/zebetite_and_cannon.h"
@@ -93,6 +94,10 @@ static void RinkaRespawn(void)
 
     gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
     gCurrentSprite.freezeTimer = 0;
+
+    #ifdef BUGFIX
+    gCurrentSprite.standingOnSprite = SAMUS_STANDING_ON_SPRITE_OFF;
+    #endif // BUGFIX
 
     // Set spawn delay
     if (gCurrentSprite.status & SPRITE_STATUS_MOSAIC)
@@ -419,6 +424,10 @@ static void RinkaMotherBrainRespawn(void)
     gCurrentSprite.work1 = CONVERT_SECONDS(1.f);
     gCurrentSprite.status |= SPRITE_STATUS_NOT_DRAWN | SPRITE_STATUS_IGNORE_PROJECTILES;
     gCurrentSprite.ignoreSamusCollisionTimer = DELTA_TIME;
+
+    #ifdef BUGFIX
+    gCurrentSprite.standingOnSprite = SAMUS_STANDING_ON_SPRITE_OFF;
+    #endif // BUGFIX
 }
 
 /**
@@ -710,7 +719,7 @@ void Rinka(void)
  */
 void RinkaMotherBrain(void)
 {
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MOTHER_BRAIN_KILLED))
+    if (CHECK_EVENT(EVENT_MOTHER_BRAIN_KILLED))
     {
         // Kill if mother brain is dead
         if (gCurrentSprite.status & SPRITE_STATUS_ONSCREEN)

@@ -1,6 +1,7 @@
 #include "sprites_ai/space_pirate.h"
 #include "macros.h"
 #include "gba/display.h"
+#include "event.h"
 
 #include "data/sprites/space_pirate.h"
 #include "data/sprite_data.h"
@@ -25,7 +26,7 @@
 
 #define SPACE_PIRATE_HEIGHT (BLOCK_SIZE * 3 + THREE_QUARTER_BLOCK_SIZE + PIXEL_SIZE)
 
-enum SpacePirateClimingDirection {
+MAKE_ENUM(u8, SpacePirateClimingDirection) {
     SPACE_PIRATE_CLIMBING_DIRECTION_UP,
     SPACE_PIRATE_CLIMBING_DIRECTION_DOWN
 };
@@ -55,7 +56,7 @@ enum SpacePirateClimingDirection {
 #define SPACE_PIRATE_LASER_POSE_EXPLODING_INIT 0x42
 #define SPACE_PIRATE_LASER_POSE_EXPLODING 0x43
 
-enum SpacePirateLaserDirection {
+MAKE_ENUM(u8, SpacePirateLaserDirection) {
     SPACE_PIRATE_LASER_FORWARD,
     SPACE_PIRATE_LASER_DIAGONALLY_UP,
     SPACE_PIRATE_LASER_DIAGONALLY_DOWN,
@@ -71,7 +72,7 @@ enum SpacePirateLaserDirection {
  */
 void DisableChozodiaAlarm(void)
 {
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MECHA_RIDLEY_KILLED))
+    if (CHECK_EVENT(EVENT_MECHA_RIDLEY_KILLED))
     {
         // Restart alarm if escape
         gAlarmTimer = ALARM_TIMER_ACTIVE_TIMER;
@@ -83,7 +84,7 @@ void DisableChozodiaAlarm(void)
     gDisableAnimatedPalette = -1;
 
     // Check is in stealth
-    if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_FULLY_POWERED_SUIT_OBTAINED))
+    if (!CHECK_EVENT(EVENT_FULLY_POWERED_SUIT_OBTAINED))
         UpdateMusicAfterAlarmDisable();
 }
 
@@ -104,7 +105,7 @@ void DecrementChozodiaAlarm(void)
     }
 
     gDisableAnimatedPalette = FALSE;
-    if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_FULLY_POWERED_SUIT_OBTAINED))
+    if (!CHECK_EVENT(EVENT_FULLY_POWERED_SUIT_OBTAINED))
         PlayMusic(MUSIC_ALARM_ACTIVATED, 0x40);
 }
 
@@ -122,7 +123,7 @@ void SpawnWaitingPirates(void)
 
     foundPirate = FALSE;
 
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MECHA_RIDLEY_KILLED))
+    if (CHECK_EVENT(EVENT_MECHA_RIDLEY_KILLED))
     {
         gAlarmTimer = ALARM_TIMER_ACTIVE_TIMER;
     }

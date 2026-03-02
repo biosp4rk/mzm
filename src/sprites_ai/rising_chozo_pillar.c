@@ -1,5 +1,6 @@
 #include "sprites_ai/rising_chozo_pillar.h"
 #include "macros.h"
+#include "event.h"
 
 #include "data/sprites/rising_chozo_pillar.h"
 #include "data/sprites/enemy_drop.h"
@@ -25,7 +26,7 @@
 #define RISING_CHOZO_PILLAR_PLATFORM_POSE_SPAWNING 0x8
 #define RISING_CHOZO_PILLAR_PLATFORM_POSE_IDLE 0x9
 
-enum ChozoPillarPlatformPart {
+MAKE_ENUM(u8, ChozoPillarPlatformPartId) {
     CHOZO_PILLAR_PLATFORM_NO_SHADOW,
     CHOZO_PILLAR_PLATFORM_SHADOW
 };
@@ -115,7 +116,7 @@ static void RisingChozoPillarRandomParticles(u16 yPosition, u16 xPosition, u8 rn
  * @param xPosition X Position
  * @param caa Clipdata affecting action
  */
-static void RisingChozoPillarSpawnThreePlatforms(u16 yPosition, u16 xPosition, u8 caa)
+static void RisingChozoPillarSpawnThreePlatforms(u16 yPosition, u16 xPosition, ClipdataAffectingAction caa)
 {
     gCurrentClipdataAffectingAction = caa;
     ClipdataProcess(yPosition - BLOCK_SIZE * 3, xPosition + BLOCK_SIZE * 3);
@@ -153,7 +154,7 @@ static void RisingChozoPillarSpawnThreePlatforms(u16 yPosition, u16 xPosition, u
  * @param xPosition X Position
  * @param caa Clipdata affecting action
  */
-static void RisingChozoPillarSpawnTwoPlatforms(u16 yPosition, u16 xPosition, u8 caa)
+static void RisingChozoPillarSpawnTwoPlatforms(u16 yPosition, u16 xPosition, ClipdataAffectingAction caa)
 {
     gCurrentClipdataAffectingAction = caa;
     ClipdataProcess(yPosition - BLOCK_SIZE * 7, xPosition);
@@ -180,7 +181,7 @@ static void RisingChozoPillarSpawnTwoPlatforms(u16 yPosition, u16 xPosition, u8 
  * @param xPosition X Position
  * @param caa Clipdata affecting action
  */
-static void RisingChozoPillarSpawnOnePlatform(u16 yPosition, u16 xPosition, u8 caa)
+static void RisingChozoPillarSpawnOnePlatform(u16 yPosition, u16 xPosition, ClipdataAffectingAction caa)
 {
     gCurrentClipdataAffectingAction = caa;
     ClipdataProcess(yPosition - BLOCK_SIZE * 15, xPosition + BLOCK_SIZE * 6);
@@ -198,7 +199,7 @@ static void RisingChozoPillarSpawnOnePlatform(u16 yPosition, u16 xPosition, u8 c
  */
 void RisingChozoPillar(void)
 {
-    u8 caa;
+    ClipdataAffectingAction caa;
     u16 yPosition;
     u16 xPosition;
     u16 debrisY;
@@ -211,7 +212,7 @@ void RisingChozoPillar(void)
     switch (gCurrentSprite.pose)
     {
         case SPRITE_POSE_UNINITIALIZED:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_CHOZO_PILLAR_FULLY_EXTENDED))
+            if (CHECK_EVENT(EVENT_CHOZO_PILLAR_FULLY_EXTENDED))
             {
                 // Already extended, spawn all platforms
                 RisingChozoPillarSpawnThreePlatforms(yPosition, xPosition, caa);
@@ -240,7 +241,7 @@ void RisingChozoPillar(void)
             break;
 
         case RISING_CHOZO_PILLAR_POSE_WAIT_FOR_POWER_GRIP:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_POWER_GRIP_OBTAINED))
+            if (CHECK_EVENT(EVENT_POWER_GRIP_OBTAINED))
             {
                 gCurrentSprite.pose = RISING_CHOZO_PILLAR_POSE_EXTENDING;
                 gCurrentSprite.scaling = 704;
@@ -289,7 +290,7 @@ void RisingChozoPillar(void)
             break;
 
         case RISING_CHOZO_PILLAR_POSE_KILL:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_CHOZO_PILLAR_FULLY_EXTENDED);
+            SET_EVENT(EVENT_CHOZO_PILLAR_FULLY_EXTENDED);
             gCurrentSprite.status = 0;
     }
 }
@@ -322,7 +323,7 @@ void ChozoPillarPlatform(void)
             gCurrentSprite.animationDurationCounter = 0;
             gCurrentSprite.currentAnimationFrame = 0;
 
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_CHOZO_PILLAR_FULLY_EXTENDED))
+            if (CHECK_EVENT(EVENT_CHOZO_PILLAR_FULLY_EXTENDED))
             {
                 gCurrentSprite.pose = RISING_CHOZO_PILLAR_PLATFORM_POSE_IDLE;
                 if (gCurrentSprite.roomSlot != CHOZO_PILLAR_PLATFORM_NO_SHADOW)

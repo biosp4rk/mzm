@@ -1,5 +1,6 @@
 #include "sprites_ai/escape_ship.h"
 #include "gba.h"
+#include "event.h"
 
 #include "data/sprites/escape_ship.h"
 
@@ -25,11 +26,11 @@
 
 // Escape ship part
 
-enum EscapeShipPart {
+MAKE_ENUM(u8, EscapeShipPartId) {
     ESCAPE_SHIP_PART_TOP,
     ESCAPE_SHIP_PART_BODY,
     ESCAPE_SHIP_PART_TAIL,
-    ESCAPE_SHIP_PART_FLAMES,
+    ESCAPE_SHIP_PART_FLAMES
 };
 
 #define ESCAPE_SHIP_PART_POSE_WAIT_FOR_MOVING_TAIL 0x8
@@ -73,7 +74,7 @@ static void EscapeShipPartUpdatePalette(u8 delay)
         }
 
         offset = MOD_AND(gCurrentSprite.work1, 128);
-        DMA_SET(3, &sEscapeShipFlashingPal[offset * 16], (PALRAM_OBJ + 9 * PAL_ROW_SIZE + (gCurrentSprite.spritesetGfxSlot * PAL_ROW_SIZE)), C_32_2_16(DMA_ENABLE, 0x10));
+        DMA3_COPY_16(&sEscapeShipFlashingPal[offset * 16], (PALRAM_OBJ + 9 * PAL_ROW_SIZE + (gCurrentSprite.spritesetGfxSlot * PAL_ROW_SIZE)), 0x10);
     }
 }
 
@@ -250,7 +251,7 @@ void EscapeShip(void)
             break;
 
         case ESCAPE_SHIP_POSE_CHECK_OPEN:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MECHA_RIDLEY_KILLED) &&
+            if (CHECK_EVENT(EVENT_MECHA_RIDLEY_KILLED) &&
                 gSamusData.yPosition <= yPosition && (yPosition - gSamusData.yPosition) <= BLOCK_SIZE * 12 &&
                 gSamusData.xPosition < xPosition && (xPosition - gSamusData.xPosition) < BLOCK_SIZE * 4)
             {
@@ -291,7 +292,7 @@ void EscapeShip(void)
                 else
                     SamusSetPose(SPOSE_TURNING_TO_ENTER_ESCAPE_SHIP);
 
-                EventFunction(EVENT_ACTION_SETTING, EVENT_ESCAPED_CHOZODIA);
+                SET_EVENT(EVENT_ESCAPED_CHOZODIA);
 
                 gCurrentSprite.hitboxTop = -(BLOCK_SIZE * 2 + HALF_BLOCK_SIZE);
                 gCurrentSprite.hitboxBottom = 0;

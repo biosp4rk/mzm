@@ -39,6 +39,12 @@
     ENDING_DATA.oamFramePointers[line] = endingOam[line].pFrame; \
 }
 
+MAKE_ENUM(u32, EndingImageTextSet) {
+    ENDING_IMAGE_OAM_SET_CLEAR_TIME,
+    ENDING_IMAGE_OAM_SET_YOUR_RATE,
+    ENDING_IMAGE_OAM_SET_COLLECTING
+};
+
 /**
  * @brief 84c34 | 48 | Checks if an ending letter should display
  * 
@@ -62,7 +68,7 @@ static void EndingImageUpdateLettersSpawnDelay(u32 offset)
  * 
  * @param set Set to load
  */
-static void EndingImageLoadTextOAM(u32 set)
+static void EndingImageLoadTextOam(EndingImageTextSet set)
 {
     s32 i;
 
@@ -180,7 +186,7 @@ static void EndingImageLoadTextOAM(u32 set)
  * 
  * @param line Line
  */
-static void EndingImageDisplayLinePermanently(u32 line)
+static void EndingImageDisplayLinePermanently(EndingImageLine line)
 {
     s32 i;
 
@@ -281,8 +287,8 @@ static void EndingImageLoadIGTAndPercentageGraphics(void)
         DmaTransfer(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ, 64, 16);
         DmaTransfer(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x400, 64, 16);
         #else // !REGION_EU
-        DMA_SET(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ, C_32_2_16(DMA_ENABLE, 64 / 2));
-        DMA_SET(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x400, C_32_2_16(DMA_ENABLE, 64 / 2));
+        DMA3_COPY_16(&sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ, 64 / 2);
+        DMA3_COPY_16(&sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x400, 64 / 2);
         #endif // REGION_EU
     }
 
@@ -291,8 +297,8 @@ static void EndingImageLoadIGTAndPercentageGraphics(void)
     DmaTransfer(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x040, 64, 16);
     DmaTransfer(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x440, 64, 16);
     #else // !REGION_EU
-    DMA_SET(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x040, C_32_2_16(DMA_ENABLE, 64 / 2));
-    DMA_SET(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x440, C_32_2_16(DMA_ENABLE, 64 / 2));
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x040, 64 / 2);
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x440, 64 / 2);
     #endif // REGION_EU
 
     offset = minutesTens * 64;
@@ -300,8 +306,8 @@ static void EndingImageLoadIGTAndPercentageGraphics(void)
     DmaTransfer(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x0A0, 64, 16);
     DmaTransfer(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x4A0, 64, 16);
     #else // !REGION_EU
-    DMA_SET(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x0A0, C_32_2_16(DMA_ENABLE, 64 / 2));
-    DMA_SET(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x4A0, C_32_2_16(DMA_ENABLE, 64 / 2));
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x0A0, 64 / 2);
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x4A0, 64 / 2);
     #endif // REGION_EU
 
     offset = minutesOnes * 64;
@@ -309,8 +315,8 @@ static void EndingImageLoadIGTAndPercentageGraphics(void)
     DmaTransfer(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x0E0, 64, 16);
     DmaTransfer(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x4E0, 64, 16);
     #else // !REGION_EU
-    DMA_SET(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x0E0, C_32_2_16(DMA_ENABLE, 64 / 2));
-    DMA_SET(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x4E0, C_32_2_16(DMA_ENABLE, 64 / 2));
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x0E0, 64 / 2);
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x4E0, 64 / 2);
     #endif // REGION_EU
 
     offset = secondsTens * 64;
@@ -318,8 +324,8 @@ static void EndingImageLoadIGTAndPercentageGraphics(void)
     DmaTransfer(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x140, 64, 16);
     DmaTransfer(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x540, 64, 16);
     #else // !REGION_EU
-    DMA_SET(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x140, C_32_2_16(DMA_ENABLE, 64 / 2));
-    DMA_SET(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x540, C_32_2_16(DMA_ENABLE, 64 / 2));
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x140, 64 / 2);
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x540, 64 / 2);
     #endif // REGION_EU
 
     offset = secondsOnes * 64;
@@ -327,8 +333,8 @@ static void EndingImageLoadIGTAndPercentageGraphics(void)
     DmaTransfer(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x180, 64, 16);
     DmaTransfer(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x580, 64, 16);
     #else // !REGION_EU
-    DMA_SET(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x180, C_32_2_16(DMA_ENABLE, 64 / 2));
-    DMA_SET(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x580, C_32_2_16(DMA_ENABLE, 64 / 2));
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x180, 64 / 2);
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x580, 64 / 2);
     #endif // REGION_EU
 
     percentageHundreds = 0;
@@ -354,8 +360,8 @@ static void EndingImageLoadIGTAndPercentageGraphics(void)
         DmaTransfer(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x1C0, 64, 16);
         DmaTransfer(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x5C0, 64, 16);
         #else // !REGION_EU
-        DMA_SET(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x1C0, C_32_2_16(DMA_ENABLE, 64 / 2));
-        DMA_SET(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x5C0, C_32_2_16(DMA_ENABLE, 64 / 2));
+        DMA3_COPY_16(&sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x1C0, 64 / 2);
+        DMA3_COPY_16(&sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x5C0, 64 / 2);
         #endif // REGION_EU
     }
     
@@ -366,8 +372,8 @@ static void EndingImageLoadIGTAndPercentageGraphics(void)
         DmaTransfer(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x200, 64, 16);
         DmaTransfer(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x600, 64, 16);
         #else // !REGION_EU
-        DMA_SET(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x200, C_32_2_16(DMA_ENABLE, 64 / 2));
-        DMA_SET(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x600, C_32_2_16(DMA_ENABLE, 64 / 2));
+        DMA3_COPY_16(&sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x200, 64 / 2);
+        DMA3_COPY_16(&sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x600, 64 / 2);
         #endif // REGION_EU
     }
 
@@ -376,8 +382,8 @@ static void EndingImageLoadIGTAndPercentageGraphics(void)
     DmaTransfer(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x240, 64, 16);
     DmaTransfer(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x640, 64, 16);
     #else // !REGION_EU
-    DMA_SET(3, &sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x240, C_32_2_16(DMA_ENABLE, 64 / 2));
-    DMA_SET(3, &sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x640, C_32_2_16(DMA_ENABLE, 64 / 2));
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Upper[offset], VRAM_OBJ + 0x240, 64 / 2);
+    DMA3_COPY_16(&sEndingImageNumbersGfx_Lower[offset], VRAM_OBJ + 0x640, 64 / 2);
     #endif // REGION_EU
 }
 
@@ -390,29 +396,25 @@ static void GalleryVBlank(void)
     u32 buffer;
     u32 bgPos;
 
-    DMA_SET(3, gOamData, OAM_BASE, (DMA_ENABLE | DMA_32BIT) << 16 | OAM_SIZE / sizeof(u32));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
 
     // On even length lines
     if (ENDING_DATA.unk_6 == 1)
     {
-        DMA_SET(3, ENDING_DATA.creditLineTilemap_1, VRAM_BASE + ENDING_DATA.creditLineOffset_1,
-            C_32_2_16(DMA_ENABLE, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_1)));
-        DMA_SET(3, ENDING_DATA.creditLineTilemap_2, VRAM_BASE + ENDING_DATA.creditLineOffset_2,
-            C_32_2_16(DMA_ENABLE, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_2)));
+        DMA3_COPY_16(ENDING_DATA.creditLineTilemap_1, VRAM_BASE + ENDING_DATA.creditLineOffset_1, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_1));
+        DMA3_COPY_16(ENDING_DATA.creditLineTilemap_2, VRAM_BASE + ENDING_DATA.creditLineOffset_2, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_2));
 
-        DMA_FILL_32(3, 0, VRAM_BASE + 0x800 + ENDING_DATA.creditLineOffset_1, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_1) * 2);
-        DMA_FILL_32(3, 0, VRAM_BASE + 0x800 + ENDING_DATA.creditLineOffset_2, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_2) * 2);
+        DMA3_FILL_32(0, VRAM_BASE + 0x800 + ENDING_DATA.creditLineOffset_1, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_1) * 2);
+        DMA3_FILL_32(0, VRAM_BASE + 0x800 + ENDING_DATA.creditLineOffset_2, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_2) * 2);
     }
     // On odd length lines
     else if (ENDING_DATA.unk_6 != 0)
     {
-        DMA_SET(3, ENDING_DATA.creditLineTilemap_1, VRAM_BASE + 0x800 + ENDING_DATA.creditLineOffset_1,
-            C_32_2_16(DMA_ENABLE, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_1)));
-        DMA_SET(3, ENDING_DATA.creditLineTilemap_2, VRAM_BASE + 0x800 + ENDING_DATA.creditLineOffset_2,
-            C_32_2_16(DMA_ENABLE, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_2)));
+        DMA3_COPY_16(ENDING_DATA.creditLineTilemap_1, VRAM_BASE + 0x800 + ENDING_DATA.creditLineOffset_1, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_1));
+        DMA3_COPY_16(ENDING_DATA.creditLineTilemap_2, VRAM_BASE + 0x800 + ENDING_DATA.creditLineOffset_2, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_2));
 
-        DMA_FILL_32(3, 0, VRAM_BASE + ENDING_DATA.creditLineOffset_1, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_1) * 2);
-        DMA_FILL_32(3, 0, VRAM_BASE + ENDING_DATA.creditLineOffset_2, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_2) * 2);
+        DMA3_FILL_32(0, VRAM_BASE + ENDING_DATA.creditLineOffset_1, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_1) * 2);
+        DMA3_FILL_32(0, VRAM_BASE + ENDING_DATA.creditLineOffset_2, ARRAY_SIZE(ENDING_DATA.creditLineTilemap_2) * 2);
     }
 
     WRITE_16(REG_DISPCNT, ENDING_DATA.dispcnt);
@@ -433,7 +435,7 @@ static void GalleryVBlank(void)
  */
 static void EndScreenVBlank(void)
 {
-    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
 
     WRITE_16(REG_DISPCNT, ENDING_DATA.dispcnt);
     WRITE_16(REG_BLDCNT, ENDING_DATA.bldcnt);
@@ -452,7 +454,7 @@ static void EndScreenVBlank(void)
  */
 static void UnlockedOptionsVBlank(void)
 {
-    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
 
     WRITE_16(REG_DISPCNT, ENDING_DATA.dispcnt);
     WRITE_16(REG_BLDCNT, ENDING_DATA.bldcnt);
@@ -482,7 +484,7 @@ static void CreditsInit(void)
     CallbackSetVblank(GalleryVBlank);
     WRITE_16(REG_IME, TRUE);
 
-    DMA_FILL_32(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam))
+    DMA3_FILL_32(0, &gNonGameplayRam, sizeof(gNonGameplayRam))
 
     ClearGfxRam();
 
@@ -495,8 +497,8 @@ static void CreditsInit(void)
     DmaTransfer(3, sCreditsChozoWallPal, PALRAM_BASE, sizeof(sCreditsChozoWallPal), 16);
     DmaTransfer(3, sCreditsCharactersPal, PALRAM_BASE + 13 * PAL_ROW_SIZE, sizeof(sCreditsCharactersPal), 16);
     #else // !REGION_EU
-    DMA_SET(3, sCreditsChozoWallPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sCreditsChozoWallPal)));
-    DMA_SET(3, sCreditsCharactersPal, PALRAM_BASE + 13 * PAL_ROW_SIZE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sCreditsCharactersPal)));
+    DMA3_COPY_16(sCreditsChozoWallPal, PALRAM_BASE, ARRAY_SIZE(sCreditsChozoWallPal));
+    DMA3_COPY_16(sCreditsCharactersPal, PALRAM_BASE + 13 * PAL_ROW_SIZE, ARRAY_SIZE(sCreditsCharactersPal));
     #endif // REGION_EU
 
     WRITE_16(REG_BG0CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
@@ -625,7 +627,7 @@ static u8 CreditsDisplayLine(u32 line)
             ret_0 = 1;
             break;
 
-        case CREDIT_LINE_TYPE_END:
+        case CREDIT_LINE_TYPE_COUNT:
             ret_0 = 9;
             break;
 
@@ -642,7 +644,7 @@ static u8 CreditsDisplayLine(u32 line)
             ret_0 = 1;
             break;
 
-        case 5:
+        case CREDIT_LINE_TYPE_BLANK:
             ret_0 = 1;
             break;
 
@@ -906,7 +908,7 @@ static u8 CreditsChozoWallZoom(void)
             #ifdef REGION_EU
             DmaTransfer(3, sCreditsChozoWallPal, PALRAM_BASE, sizeof(sCreditsChozoWallPal), 16);
             #else // !REGION_EU
-            DMA_SET(3, sCreditsChozoWallPal, PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sCreditsChozoWallPal));
+            DMA3_COPY_16(sCreditsChozoWallPal, PALRAM_BASE, ARRAY_SIZE(sCreditsChozoWallPal));
             #endif // REGION_EU
             gBg0YPosition = 0;
             gWrittenToBldalpha_L = 0;
@@ -1024,7 +1026,7 @@ static void EndScreenInit(void)
     #ifdef REGION_EU
     DmaTransfer(3, sEndingPosingPal, PALRAM_BASE, sizeof(sEndingPosingPal), 16);
     #else // !REGION_EU
-    DMA_SET(3, sEndingPosingPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sEndingPosingPal)));
+    DMA3_COPY_16(sEndingPosingPal, PALRAM_BASE, ARRAY_SIZE(sEndingPosingPal));
     #endif // REGION_EU
 
     WRITE_16(REG_BG0CNT, CREATE_BGCNT(2, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
@@ -1037,7 +1039,7 @@ static void EndScreenInit(void)
     #ifdef REGION_EU
     DmaTransfer(3, gOamData, OAM_BASE, OAM_SIZE, 32);
     #else // !REGION_EU
-    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
     #endif // REGION_EU
 
     gBg0XPosition = 0;
@@ -1058,7 +1060,7 @@ static void EndScreenInit(void)
     WRITE_16(REG_BG3HOFS, 0);
     WRITE_16(REG_BG3VOFS, 0);
 
-    DMA_FILL_32(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam));
+    DMA3_FILL_32(0, &gNonGameplayRam, sizeof(gNonGameplayRam));
 
     ENDING_DATA.endingNumber = PEN_GET_ENDING(ChozodiaEscapeGetItemCountAndEndingNumber()) & 7;
     ENDING_DATA.dispcnt = DCNT_BG1 | DCNT_BG2 | DCNT_BG3 | DCNT_OBJ;
@@ -1224,8 +1226,8 @@ static u8 EndScreenSamusPosing(void)
             DmaTransfer(3, sEndingWhitePalPointers[(u8)temp / 4],
                 PALRAM_BASE, sizeof(sEndingPosingPal_White1), 16);
             #else // !REGION_EU
-            DMA_SET(3, sEndingWhitePalPointers[(u8)temp / 4],
-                PALRAM_BASE, DMA_ENABLE << 16 | ARRAY_SIZE(sEndingPosingPal_White1));
+            DMA3_COPY_16(sEndingWhitePalPointers[(u8)temp / 4],
+                PALRAM_BASE, ARRAY_SIZE(sEndingPosingPal_White1));
             #endif // REGION_EU
             break;
 
@@ -1359,7 +1361,7 @@ static u8 EndScreenSamusPosing(void)
             #ifdef REGION_EU
             DmaTransfer(3, sEndingPosingPal, PALRAM_BASE, 5 * PAL_ROW_SIZE, 16);
             #else // !REGION_EU
-            DMA_SET(3, sEndingPosingPal, PALRAM_BASE, C_32_2_16(DMA_ENABLE, 0x50));
+            DMA3_COPY_16(sEndingPosingPal, PALRAM_BASE, 0x50);
             #endif // REGION_EU
             ENDING_DATA.oamTypes[1]++;
             break;
@@ -1405,7 +1407,7 @@ static void EndingImageInit(void)
     CallbackSetVblank(GalleryVBlank);
     WRITE_16(REG_IME, TRUE);
 
-    DMA_FILL_32(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam));
+    DMA3_FILL_32(0, &gNonGameplayRam, sizeof(gNonGameplayRam));
 
     pen = ChozodiaEscapeGetItemCountAndEndingNumber();
 
@@ -1424,7 +1426,7 @@ static void EndingImageInit(void)
     #ifdef REGION_EU
     DmaTransfer(3, sEndingImagesPalPointers[endingNbr], PALRAM_BASE, PAL_SIZE, 16);
     #else // !REGION_EU
-    DMA_SET(3, sEndingImagesPalPointers[endingNbr], PALRAM_BASE, C_32_2_16(DMA_ENABLE, 0x100));
+    DMA3_COPY_16(sEndingImagesPalPointers[endingNbr], PALRAM_BASE, 0x100);
     #endif // REGION_EU
 
     ENDING_DATA.completionPercentage = energyNbr + missilesNbr + superMissilesNbr + powerBombNbr + abilityCount;
@@ -1481,7 +1483,7 @@ static void EndingImageInit(void)
     #ifdef REGION_EU
     DmaTransfer(3, sEndingImageTextPal, PALRAM_OBJ, sizeof(sEndingImageTextPal), 16);
     #else // !REGION_EU
-    DMA_SET(3, sEndingImageTextPal, PALRAM_OBJ, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sEndingImageTextPal)));
+    DMA3_COPY_16(sEndingImageTextPal, PALRAM_OBJ, ARRAY_SIZE(sEndingImageTextPal));
     #endif // REGION_EU
 
     EndingImageLoadIGTAndPercentageGraphics();
@@ -1641,7 +1643,7 @@ static u8 EndingImageDisplay(void)
             break;
 
         case CONVERT_SECONDS(.5f):
-            EndingImageLoadTextOAM(ENDING_IMAGE_OAM_SET_CLEAR_TIME);
+            EndingImageLoadTextOam(ENDING_IMAGE_OAM_SET_CLEAR_TIME);
             ENDING_DATA.unk_1 = TRUE;
             break;
 
@@ -1656,7 +1658,7 @@ static u8 EndingImageDisplay(void)
             break;
 
         case CONVERT_SECONDS(5.5f):
-            EndingImageLoadTextOAM(ENDING_IMAGE_OAM_SET_YOUR_RATE);
+            EndingImageLoadTextOam(ENDING_IMAGE_OAM_SET_YOUR_RATE);
             break;
 
         case CONVERT_SECONDS(6.25f):
@@ -1668,7 +1670,7 @@ static u8 EndingImageDisplay(void)
         case CONVERT_SECONDS(6.f) + ONE_THIRD_SECOND:
             if (ENDING_DATA.language == LANGUAGE_JAPANESE || ENDING_DATA.language == LANGUAGE_ENGLISH ||
                 ENDING_DATA.language == LANGUAGE_ITALIAN)
-                EndingImageLoadTextOAM(ENDING_IMAGE_OAM_SET_COLLECTING);
+                EndingImageLoadTextOam(ENDING_IMAGE_OAM_SET_COLLECTING);
             break;
 
         case CONVERT_SECONDS(7.f) + TWO_THIRD_SECOND:
@@ -1745,7 +1747,7 @@ static void UnlockedOptionsInit(void)
     CallbackSetVblank(UnlockedOptionsVBlank);
     WRITE_16(REG_IME, TRUE);
 
-    DMA_FILL_32(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam));
+    DMA3_FILL_32(0, &gNonGameplayRam, sizeof(gNonGameplayRam));
     ClearGfxRam();
 
     LZ77UncompVRAM(sUnlockedOptionsTileTable, VRAM_BASE + 0x8000);
@@ -1755,7 +1757,7 @@ static void UnlockedOptionsInit(void)
     #ifdef REGION_EU
     DmaTransfer(3, sUnlockedOptionsPal, PALRAM_BASE + 15 * PAL_ROW_SIZE, sizeof(sUnlockedOptionsPal), 16);
     #else // !REGION_EU
-    DMA_SET(3, sUnlockedOptionsPal, PALRAM_BASE + 15 * PAL_ROW_SIZE, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(sUnlockedOptionsPal)));
+    DMA3_COPY_16(sUnlockedOptionsPal, PALRAM_BASE + 15 * PAL_ROW_SIZE, ARRAY_SIZE(sUnlockedOptionsPal));
     #endif // REGION_EU
 
     WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 16, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
@@ -2028,7 +2030,7 @@ u32 CreditsMainLoop(void)
             stageResult = sUnlockedOptionsFunctionPointers[ENDING_DATA.stage]();
             if (stageResult)
             {
-                gEndingFlags = 0;
+                gEndingFlags = ENDING_FLAG_NONE;
                 ENDING_DATA.stage++;
                 ENDING_DATA.unk_1 = 0;
                 ENDING_DATA.endScreenTimer = 0;
@@ -2070,7 +2072,7 @@ static void GalleryInit(void)
     if (gSubGameMode1 == 0)
     {
         ClearGfxRam();
-        DMA_FILL_32(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam));
+        DMA3_FILL_32(0, &gNonGameplayRam, sizeof(gNonGameplayRam));
     }
 
     endingNbr = ENDING_DATA.endingNumber;
@@ -2109,7 +2111,7 @@ static void GalleryInit(void)
     #ifdef REGION_EU
     DmaTransfer(3, sEndingImagesPalPointers[endingNbr], PALRAM_BASE, PAL_SIZE, 16);
     #else // !REGION_EU
-    DMA_SET(3, sEndingImagesPalPointers[endingNbr], PALRAM_BASE, C_32_2_16(DMA_ENABLE, COLORS_IN_PAL));
+    DMA3_COPY_16(sEndingImagesPalPointers[endingNbr], PALRAM_BASE, COLORS_IN_PAL);
     #endif // REGION_EU
 
     WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 28, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x512));

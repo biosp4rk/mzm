@@ -36,10 +36,10 @@ static void LinkSendRecvDone(void);
 
 /**
  * @brief 89e30 | 164 | Handle transfer of fusion gallery images
- * 
+ * ²
  * @return u8 The result of the transfer
  */
-u8 FusionGalleryLinkProcess(void)
+TransferResult FusionGalleryLinkProcess(void)
 {
     gIoTransferInfo.result = TRANSFER_RESULT_NONE;
     APPLY_DELTA_TIME_INC(gIoTransferInfo.timer);
@@ -47,8 +47,8 @@ u8 FusionGalleryLinkProcess(void)
     switch (gIoTransferInfo.linkStage)
     {
         case LINK_STAGE_INIT:
-            dma_fill16(3, 0, gSendCmd, sizeof(gSendCmd));
-            dma_fill16(3, 0, gRecvCmds, sizeof(gRecvCmds));
+            DMA3_FILL_16(0, gSendCmd, sizeof(gSendCmd));
+            DMA3_FILL_16(0, gRecvCmds, sizeof(gRecvCmds));
 
             gLinkStatus = 0;
             gShouldAdvanceLinkState = 0;

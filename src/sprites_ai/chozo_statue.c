@@ -1,5 +1,6 @@
 #include "sprites_ai/chozo_statue.h"
 #include "sprites_ai/unknown_item_chozo_statue.h"
+#include "event.h"
 
 #include "data/sprites/chozo_statue.h"
 
@@ -29,7 +30,7 @@
 
 #define DELAY_BEFORE_HINT (CONVERT_SECONDS(2.f))
 
-static const struct FrameData* sChozoStatueFrameDataPointers[CHOZO_STATUE_OAM_END] = {
+static const struct FrameData* sChozoStatueFrameDataPointers[CHOZO_STATUE_OAM_COUNT] = {
     [CHOZO_STATUE_OAM_LEG_STANDING] = sChozoStatuePartOam_LegStanding,
     [CHOZO_STATUE_OAM_LEG_SITTING] = sChozoStatuePartOam_LegSitting,
     [CHOZO_STATUE_OAM_LEG_SEATED] = sChozoStatuePartOam_LegSeated,
@@ -45,7 +46,7 @@ static const struct FrameData* sChozoStatueFrameDataPointers[CHOZO_STATUE_OAM_EN
     [CHOZO_STATUE_OAM_BALL_NORMAL_REVEALING] = sChozoBallOam_NormalRevealing,
     [CHOZO_STATUE_OAM_BALL_NORMAL_REVEALED] = sChozoBallOam_NormalRevealed,
     [CHOZO_STATUE_OAM_REFILL] = sChozoStatueRefillOam,
-    [CHOZO_STATUE_OAM_REFILL_GLOW_IDLE] = sChozoStatuePartOam_GlowIdle,
+    [CHOZO_STATUE_OAM_REFILL_GLOW_IDLE] = sChozoStatuePartOam_GlowIdle
 };
 
 /**
@@ -80,7 +81,7 @@ static void ChozoStatueSyncSubSprites(void)
  * 
  * @param spriteId Chozo statue sprite ID
  */
-void ChozoStatueRegisterItem(u8 spriteId)
+void ChozoStatueRegisterItem(PrimarySprite spriteId)
 {
     switch (spriteId)
     {
@@ -88,74 +89,74 @@ void ChozoStatueRegisterItem(u8 spriteId)
             gEquipment.beamBombs |= BBF_LONG_BEAM;
 
         case PSPRITE_CHOZO_STATUE_LONG_HINT:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_STATUE_LONG_BEAM_GRABBED);
+            SET_EVENT(EVENT_STATUE_LONG_BEAM_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_ICE:
             gEquipment.beamBombs |= BBF_ICE_BEAM;
 
         case PSPRITE_CHOZO_STATUE_ICE_HINT:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_STATUE_ICE_BEAM_GRABBED);
+            SET_EVENT(EVENT_STATUE_ICE_BEAM_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_WAVE:
             gEquipment.beamBombs |= BBF_WAVE_BEAM;
 
         case PSPRITE_CHOZO_STATUE_WAVE_HINT:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_STATUE_WAVE_BEAM_GRABBED);
+            SET_EVENT(EVENT_STATUE_WAVE_BEAM_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_BOMB:
             gEquipment.beamBombs |= BBF_BOMBS;
 
         case PSPRITE_CHOZO_STATUE_BOMB_HINT:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_STATUE_BOMBS_GRABBED);
+            SET_EVENT(EVENT_STATUE_BOMBS_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER:
             gEquipment.suitMisc |= SMF_SPEEDBOOSTER;
 
         case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER_HINT:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_STATUE_SPEEDBOOSTER_GRABBED);
+            SET_EVENT(EVENT_STATUE_SPEEDBOOSTER_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_HIGH_JUMP:
             gEquipment.suitMisc |= SMF_HIGH_JUMP;
-            EventFunction(EVENT_ACTION_SETTING, EVENT_HIGH_JUMP_OBTAINED);
+            SET_EVENT(EVENT_HIGH_JUMP_OBTAINED);
 
         case PSPRITE_CHOZO_STATUE_HIGH_JUMP_HINT:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_STATUE_HIGH_JUMP_GRABBED);
+            SET_EVENT(EVENT_STATUE_HIGH_JUMP_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_SCREW:
             gEquipment.suitMisc |= SMF_SCREW_ATTACK;
-            EventFunction(EVENT_ACTION_SETTING, EVENT_SCREW_ATTACK_OBTAINED);
+            SET_EVENT(EVENT_SCREW_ATTACK_OBTAINED);
 
         case PSPRITE_CHOZO_STATUE_SCREW_HINT:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_STATUE_SCREW_ATTACK_GRABBED);
+            SET_EVENT(EVENT_STATUE_SCREW_ATTACK_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_VARIA:
             gEquipment.suitMisc |= SMF_VARIA_SUIT;
-            EventFunction(EVENT_ACTION_SETTING, EVENT_VARIA_SUIT_OBTAINED);
+            SET_EVENT(EVENT_VARIA_SUIT_OBTAINED);
 
         case PSPRITE_CHOZO_STATUE_VARIA_HINT:
-            EventFunction(EVENT_ACTION_SETTING, EVENT_STATUE_VARIA_SUIT_GRABBED);
+            SET_EVENT(EVENT_STATUE_VARIA_SUIT_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_SPACE_JUMP:
             gEquipment.suitMisc |= SMF_SPACE_JUMP;
-            EventFunction(EVENT_ACTION_SETTING, EVENT_SPACE_JUMP_OBTAINED);
+            SET_EVENT(EVENT_SPACE_JUMP_OBTAINED);
             break;
 
         case PSPRITE_CHOZO_STATUE_GRAVITY:
             gEquipment.suitMisc |= SMF_GRAVITY_SUIT;
-            EventFunction(EVENT_ACTION_SETTING, EVENT_GRAVITY_SUIT_OBTAINED);
+            SET_EVENT(EVENT_GRAVITY_SUIT_OBTAINED);
             break;
 
         case PSPRITE_CHOZO_STATUE_PLASMA_BEAM:
             gEquipment.beamBombs |= BBF_PLASMA_BEAM;
-            EventFunction(EVENT_ACTION_SETTING, EVENT_PLASMA_BEAM_OBTAINED);
+            SET_EVENT(EVENT_PLASMA_BEAM_OBTAINED);
             break;
     }
 }
@@ -198,67 +199,67 @@ void ChozoStatueSetDirection(void)
  * @brief 13de0 | 2bc | Gets the behavior of the chozo statue with the ID in parameter
  * 
  * @param spriteId Chozo statue sprite ID
- * @return u8 Behavior
+ * @return ChozoStatueBehavior Behavior
  */
-u8 ChozoStatueGetBehavior(u8 spriteId)
+ChozoStatueBehavior ChozoStatueGetBehavior(PrimarySprite spriteId)
 {
-    u8 behavior;
+    ChozoStatueBehavior behavior;
 
     behavior = CHOZO_STATUE_BEHAVIOR_ITEM;
 
     switch (spriteId)
     {
         case PSPRITE_CHOZO_STATUE_LONG_HINT:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_STATUE_LONG_BEAM_GRABBED))
+            if (CHECK_EVENT(EVENT_STATUE_LONG_BEAM_GRABBED))
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
             else
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT;
             break;
 
         case PSPRITE_CHOZO_STATUE_ICE_HINT:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_STATUE_ICE_BEAM_GRABBED))
+            if (CHECK_EVENT(EVENT_STATUE_ICE_BEAM_GRABBED))
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
             else
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT;
             break;
 
         case PSPRITE_CHOZO_STATUE_WAVE_HINT:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_STATUE_WAVE_BEAM_GRABBED))
+            if (CHECK_EVENT(EVENT_STATUE_WAVE_BEAM_GRABBED))
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
             else
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT;
             break;
 
         case PSPRITE_CHOZO_STATUE_BOMB_HINT:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_STATUE_BOMBS_GRABBED))
+            if (CHECK_EVENT(EVENT_STATUE_BOMBS_GRABBED))
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
             else
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT;
             break;
 
         case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER_HINT:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_STATUE_SPEEDBOOSTER_GRABBED))
+            if (CHECK_EVENT(EVENT_STATUE_SPEEDBOOSTER_GRABBED))
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
             else
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT;
             break;
 
         case PSPRITE_CHOZO_STATUE_HIGH_JUMP_HINT:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_STATUE_HIGH_JUMP_GRABBED))
+            if (CHECK_EVENT(EVENT_STATUE_HIGH_JUMP_GRABBED))
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
             else
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT;
             break;
 
         case PSPRITE_CHOZO_STATUE_SCREW_HINT:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_STATUE_SCREW_ATTACK_GRABBED))
+            if (CHECK_EVENT(EVENT_STATUE_SCREW_ATTACK_GRABBED))
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
             else
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT;
             break;
 
         case PSPRITE_CHOZO_STATUE_VARIA_HINT:
-            if (EventFunction(EVENT_ACTION_CHECKING, EVENT_STATUE_VARIA_SUIT_GRABBED))
+            if (CHECK_EVENT(EVENT_STATUE_VARIA_SUIT_GRABBED))
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
             else
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT;
@@ -329,7 +330,7 @@ u8 ChozoStatueGetBehavior(u8 spriteId)
  */
 static void ChozoStatueInit(void)
 {
-    u8 behavior;
+    ChozoStatueBehavior behavior;
     u8 gfxSlot;
     u8 ramSlot;
     u16 yPosition;
@@ -695,7 +696,7 @@ static void ChozoStatueSleeping(void)
 static void ChozoStatuePartInit(void)
 {
     u8 ramSlot;
-    u8 behavior;
+    ChozoStatueBehavior behavior;
 
     ramSlot = gCurrentSprite.primarySpriteRamSlot;
 

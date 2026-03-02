@@ -29,7 +29,7 @@ void EraseSram(void)
  * @param operation Operation to perform
  * @return u8* Pointer to difference
  */
-u8* DoSramOperation(u8 operation)
+u8* DoSramOperation(SramOperation operation)
 {
     u8* diff;
 
@@ -51,8 +51,7 @@ u8* DoSramOperation(u8 operation)
         switch (operation)
         {
             case SRAM_OPERATION_WRITE_FILE_SCREEN_OPTIONS:
-                DMA_SET(3, &sSramEwramPointer->fileScreenOptions_fileA, &sSramEwramPointer->fileScreenOptions_fileC,
-                    C_32_2_16(DMA_ENABLE, sizeof(struct SaveFileScreenOptions) / sizeof(u16)));
+                DMA3_COPY_16(&sSramEwramPointer->fileScreenOptions_fileA, &sSramEwramPointer->fileScreenOptions_fileC, sizeof(struct SaveFileScreenOptions) / sizeof(u16));
 
                 diff = SramWriteChecked((u8*)&sSramEwramPointer->fileScreenOptions_fileA,
                     (u8*)&sSramFlashPointer->fileScreenOptions_fileA, sizeof(struct SaveFileScreenOptions));

@@ -1,6 +1,7 @@
 #include "room.h"
 #include "dma.h"
 #include "gba.h"
+#include "event.h"
 
 #include "data/empty_datatypes.h"
 #include "data/common_pals.h"
@@ -293,7 +294,7 @@ void RoomLoadEntry(void)
     gCurrentRoomEntry.firstSpritesetEvent = entry.firstSpritesetEvent;
     gCurrentRoomEntry.secondSpritesetEvent = entry.secondSpritesetEvent;
 
-    if (gCurrentRoomEntry.secondSpritesetEvent != EVENT_NONE && EventFunction(EVENT_ACTION_CHECKING, gCurrentRoomEntry.secondSpritesetEvent))
+    if (gCurrentRoomEntry.secondSpritesetEvent != EVENT_NONE && CHECK_EVENT(gCurrentRoomEntry.secondSpritesetEvent))
     {
         gCurrentRoomEntry.pEnemyRoomData = entry.pSecondSpriteData;
         gSpriteset = entry.secondSpriteset;
@@ -301,7 +302,7 @@ void RoomLoadEntry(void)
     }
 
     if (gCurrentRoomEntry.firstSpritesetEvent != EVENT_NONE && gSpritesetEntryUsed == 0
-        && EventFunction(EVENT_ACTION_CHECKING, gCurrentRoomEntry.firstSpritesetEvent))
+        && CHECK_EVENT(gCurrentRoomEntry.firstSpritesetEvent))
     {
         gCurrentRoomEntry.pEnemyRoomData = entry.pFirstSpriteData;
         gSpriteset = entry.firstSpriteset;
@@ -890,8 +891,10 @@ void RoomUpdateGfxInfo(void)
     else
         gDisableDoorAndTanks |= 0x80;
 
-    if (gMonochromeBgFading != 0)
+    if (gMonochromeBgFading != MONOCHROME_FADING_NONE)
+    {
         ColorFadingApplyMonochrome();
+    }
     else
     {
         MinimapUpdate();
@@ -990,7 +993,7 @@ void RoomUpdateHatchFlashingAnimation(void)
             #ifdef REGION_EU
             DmaTransfer(3, &pPalette[gHatchFlashingAnimation.row2 * PAL_ROW + 6], PALRAM_BASE + 2 * PAL_ROW_SIZE + 6 * sizeof(u16), 2 * sizeof(u16), 16);
             #else // !REGION_EU
-            DMA_SET(3, &pPalette[gHatchFlashingAnimation.row2 * PAL_ROW + 6], PALRAM_BASE + 2 * PAL_ROW_SIZE + 6 * sizeof(u16), C_32_2_16(DMA_ENABLE, 2));
+            DMA3_COPY_16(&pPalette[gHatchFlashingAnimation.row2 * PAL_ROW + 6], PALRAM_BASE + 2 * PAL_ROW_SIZE + 6 * sizeof(u16), 2);
             #endif // REGION_EU
         }
     }

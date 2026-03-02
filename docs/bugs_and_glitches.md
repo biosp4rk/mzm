@@ -22,6 +22,8 @@ These are known bugs and glitches in the game: code that clearly does not work a
   - [Ridley updates sub sprite data even if he's dead](#ridley-updates-sub-sprite-data-even-if-hes-dead)
   - [The first frame of power bomb explosions has a visual bug](#the-first-frame-of-power-bomb-explosions-has-a-visual-bug)
   - [The fully powered suit cutscene fades to black after fading to white](#the-fully-powered-suit-cutscene-fades-to-black-after-fading-to-white)
+  - [Reaching the maximum in-game time causes the time attack password to be invalid](#reaching-the-maximum-in-game-time-causes-the-time-attack-password-to-be-invalid)
+  - [Samus can warp when standing on multiple enemies and one is killed](#samus-can-warp-when-standing-on-multiple-enemies-and-one-is-killed)
 - [Oversights and Design Flaws](#oversights-and-design-flaws)
   - [Floating point math is used when fixed point could have been used](#floating-point-math-is-used-when-fixed-point-could-have-been-used)
   - [`ClipdataConvertToCollision` is copied to RAM but still runs in ROM](#clipdataconverttocollision-is-copied-to-ram-but-still-runs-in-rom)
@@ -40,10 +42,11 @@ These are known bugs and glitches in the game: code that clearly does not work a
 **Fix:** Edit `DessgeegaDeath` in [dessgeega.c](../src/sprites_ai/dessgeega.c) to check for the sprite id to run the event and door logic.
 
 ```diff
+- // BUG: There's no check for the sprite ID, so the event set and door unlock is done for every "ground" dessgeega
 + if (gCurrentSprite.spriteId == PSPRITE_DESSGEEGA_AFTER_LONG_BEAM)
 + {
-      // Set event every time a ground dessgeega is killed instead of checking for the sprite ID ?
-      EventFunction(EVENT_ACTION_SETTING, EVENT_LONG_BEAM_DESSGEEGA_KILLED);
+      // Set event
+      SET_EVENT(EVENT_LONG_BEAM_DESSGEEGA_KILLED);
       // Unlock doors
       gDoorUnlockTimer = -ONE_THIRD_SECOND;
 + }
@@ -325,6 +328,31 @@ At the start of the fully powered suit cutscene (after Samus is locked in place)
   SET_BACKDROP_COLOR(COLOR_BLACK);
 ```
 
+### Reaching the maximum in-game time causes the time attack password to be invalid
+
+When checking if a time attack safe file is valid, the game makes sure the bosses were beat in order. However, the time each boss was beat can be the same if the max in-game time was reached.
+
+**Fix:** Edit `TimeAttackCheckSaveFileValidity` in [time_attack.c](../src/time_attack.c) to check if the max in-game time was reached if the times are equal.
+
+```diff
+- if (convertedIgt[i] >= convertedIgt[j])
++ if (convertedIgt[i] > convertedIgt[j] ||
++     (convertedIgt[i] == convertedIgt[j] && convertedIgt[i] != (99 << 24) + (59 << 16) + (59 << 8) + 63))
+  {
+      return FALSE;
+  }
+```
+
+### Samus can warp when standing on multiple enemies and one is killed
+
+When Samus stands on two enemies and kills one that respawns, the enemy's standing status isn't updated, so Samus is still considered to be standing on the enemy. This warps Samus to the enemy's Y position.
+
+**Fix:** Edit `GametRespawn` in [gamet.c](../src/sprites_ai/gamet.c), `GeegaRespawn` in [geega.c](../src/sprites_ai/geega.c), `RinkaRespawn` and `RinkaMotherBrainRespawn` in [rinka.c](../src/sprites_ai/rinka.c), `ZebRespawn` in [zeb.c](../src/sprites_ai/zeb.c), and `ZebboRespawn` in [zebbo.c](../src/sprites_ai/zebbo.c) to clear the standing on sprite flag when the enemy respawns.
+
+```diff
++ gCurrentSprite.standingOnSprite = SAMUS_STANDING_ON_SPRITE_OFF;
+```
+
 
 ## Oversights and Design Flaws
 
@@ -409,6 +437,7 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
 + FileSelectApplyStereo();
 ```
 
+
 ## Uninitialized Variables
 
 | Variable | Function | File |
@@ -439,10 +468,7 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
 - PowerBombExplosion doesn't check if out of bounds, which can lead to memory corruption
   - Fix: Don't check collision with any blocks outside of the room
 - Bomb hover on frozen enemies ([video](https://youtu.be/UIK8YnT1sG4))
-- Warping when Samus stands on multiple respawning enemies and kills one ([video](https://youtu.be/WfxkYSPTjWw))
 - Frame perfect pause buffering on ziplines ignores collision
 - Clipping into slopes ([video](https://www.youtube.com/watch?v=XiZRJesXHWw))
-- It is possible to get an invalid time attack password without cheating, because the time attack anti-cheat check doesn't check wheather maximum ingame time was reached
-  - Fix: Edit the if statement in line 283 in `TimeAttackCheckSaveFileValidity` in [time_attack.c](../src/time_attack.c) to check if max ingame time was reached if the times are equal
 
 ### Oversights and Design Flaws

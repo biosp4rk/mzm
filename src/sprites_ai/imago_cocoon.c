@@ -1,6 +1,7 @@
 #include "sprites_ai/imago_cocoon.h"
 #include "fixed_point.h"
 #include "macros.h"
+#include "event.h"
 
 #include "data/sprites/imago_cocoon.h"
 #include "data/sprites/enemy_drop.h"
@@ -74,7 +75,7 @@
 #define EVENT_TRIGGER_DISCOVERED_IMAGO_PASSAGE_POSE_IDLE 0x8
 #define IMAGO_COCOON_AFTER_FIGHT_POSE_IDLE 0x9
 
-static const struct FrameData* sImagoCocoonFrameDataPointers[IMAGO_COCOON_OAM_END] = {
+static const struct FrameData* sImagoCocoonFrameDataPointers[IMAGO_COCOON_OAM_COUNT] = {
     [IMAGO_COCOON_OAM_CEILING_VINE_MOTIONLESS] = sImagoCocoonOam_CeilingVineMotionless,
     [IMAGO_COCOON_OAM_CEILING_VINE_MOVING] = sImagoCocoonOam_CeilingVineMoving,
     [IMAGO_COCOON_OAM_CEILING_VINE_BROKEN] = sImagoCocoonOam_CeilingVineBroken,
@@ -126,7 +127,7 @@ static void ImagoCocoonSyncSprites(void)
  * 
  * @param caa Clipdata Affecting Action
  */
-static void ImagoCocoonChangeOneCcaa(u8 caa)
+static void ImagoCocoonChangeOneCcaa(ClipdataAffectingAction caa)
 {
     u16 yPosition;
     u16 xPosition;
@@ -144,7 +145,7 @@ static void ImagoCocoonChangeOneCcaa(u8 caa)
  * 
  * @param caa Clipdata Affecting Action
  */
-static void ImagoCocoonChangeTwoMiddleCcaa(u8 caa)
+static void ImagoCocoonChangeTwoMiddleCcaa(ClipdataAffectingAction caa)
 {
     u16 yPosition;
     u16 xPosition;
@@ -169,7 +170,7 @@ static void ImagoCocoonChangeTwoMiddleCcaa(u8 caa)
  * 
  * @param caa Clipdata Affecting Action
  */
-static void ImagoCocoonChangeTwoAroundCcaa(u8 caa)
+static void ImagoCocoonChangeTwoAroundCcaa(ClipdataAffectingAction caa)
 {
     u16 yPosition;
     u16 xPosition;
@@ -194,7 +195,7 @@ static void ImagoCocoonChangeTwoAroundCcaa(u8 caa)
  * 
  * @param caa Clipdata Affecting Action
  */
-static void ImagoCocoonChangeTwoBlockingCcaa(u8 caa)
+static void ImagoCocoonChangeTwoBlockingCcaa(ClipdataAffectingAction caa)
 {
     u16 yPosition;
     u16 xPosition;
@@ -250,12 +251,12 @@ static void ImagoCocoonInit(void)
     gSubSpriteData1.yPosition = gCurrentSprite.yPosition;
     gSubSpriteData1.xPosition = gCurrentSprite.xPosition;
 
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_IMAGO_COCOON_KILLED))
+    if (CHECK_EVENT(EVENT_IMAGO_COCOON_KILLED))
     {
         SpriteSpawnSecondary(SSPRITE_IMAGO_CEILING_VINE, 0, gCurrentSprite.spritesetGfxSlot,
             gCurrentSprite.primarySpriteRamSlot, gSubSpriteData1.yPosition, gSubSpriteData1.xPosition, 0);
 
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ENTER_RIDLEY_DEMO_PLAYED))
+        if (CHECK_EVENT(EVENT_ENTER_RIDLEY_DEMO_PLAYED))
         {
             gCurrentSprite.status = 0;
             return;
@@ -446,7 +447,7 @@ static void ImagoCocoonIdle(void)
         gCurrentSprite.pose = IMAGO_COCOON_POSE_FALLING_BEFORE_BLOCKS;
 
         // Set falling
-        EventFunction(EVENT_ACTION_SETTING, EVENT_IMAGO_COCOON_KILLED);
+        SET_EVENT(EVENT_IMAGO_COCOON_KILLED);
         SoundPlay(SOUND_IMAGO_COCOON_VINES_CRACKING);
     }
 }
@@ -1665,7 +1666,7 @@ void EventTriggerDiscoveredImagoPassage(void)
 {
     if (gCurrentSprite.pose == SPRITE_POSE_UNINITIALIZED)
     {
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_IMAGO_TUNNEL_DISCOVERED))
+        if (CHECK_EVENT(EVENT_IMAGO_TUNNEL_DISCOVERED))
         {
             gCurrentSprite.status = 0;
             return;
@@ -1692,7 +1693,7 @@ void EventTriggerDiscoveredImagoPassage(void)
     {
         // Set event
         gCurrentSprite.status = 0;
-        EventFunction(EVENT_ACTION_SETTING, EVENT_IMAGO_TUNNEL_DISCOVERED);
+        SET_EVENT(EVENT_IMAGO_TUNNEL_DISCOVERED);
     }
 }
 

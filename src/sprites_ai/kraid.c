@@ -1,6 +1,7 @@
 #include "sprites_ai/kraid.h"
 #include "gba.h"
 #include "macros.h"
+#include "event.h"
 
 #include "data/sprites/kraid.h"
 #include "data/sprite_data.h"
@@ -64,14 +65,14 @@
 
 // Kraid nail
 
-enum KraidNailType {
+MAKE_ENUM(u8, KraidNailType) {
     KRAID_NAIL_TYPE_SLOW_ROTATION,
     KRAID_NAIL_TYPE_FAST_ROTATION
 };
 
 #define KRAID_NAIL_POSE_MOVING 0x9
 
-static const struct FrameData* sKraidFrameDataPointers[KRAID_OAM_END] = {
+static const struct FrameData* sKraidFrameDataPointers[KRAID_OAM_COUNT] = {
     [KRAID_OAM_MOUTH_CLOSED] = sKraidOam_MouthClosed,
     [KRAID_OAM_MOUTH_CLOSED_BLINK] = sKraidOam_MouthClosedBlink,
     [KRAID_OAM_OPENING_MOUTH] = sKraidOam_OpeningMouth,
@@ -514,19 +515,19 @@ static void KraidOpenCloseRoutineAndProjectileCollision(void)
                     {
                         pSprite->absolutePaletteRow = 3;
 
-                        DMA_SET(3, &sKraidPal[PAL_ROW * 4 + PAL_ROW * 3], PALRAM_BASE + PAL_ROW_SIZE * 10, C_32_2_16(DMA_ENABLE, PAL_ROW));
+                        DMA3_COPY_16(&sKraidPal[PAL_ROW * 4 + PAL_ROW * 3], PALRAM_BASE + PAL_ROW_SIZE * 10, PAL_ROW);
                     }
                     else if (pSprite->health < GET_PSPRITE_HEALTH(PSPRITE_KRAID) / 3)
                     {
                         pSprite->absolutePaletteRow = 2;
 
-                        DMA_SET(3, &sKraidPal[PAL_ROW * 4 + PAL_ROW * 2], PALRAM_BASE + PAL_ROW_SIZE * 10, C_32_2_16(DMA_ENABLE, PAL_ROW));
+                        DMA3_COPY_16(&sKraidPal[PAL_ROW * 4 + PAL_ROW * 2], PALRAM_BASE + PAL_ROW_SIZE * 10, PAL_ROW);
                     }
                     else if (pSprite->health < DIV_SHIFT(GET_PSPRITE_HEALTH(PSPRITE_KRAID), 4) * 3)
                     {
                         pSprite->absolutePaletteRow = 1;
 
-                        DMA_SET(3, &sKraidPal[PAL_ROW * 4 + PAL_ROW * 1], PALRAM_BASE + PAL_ROW_SIZE * 10, C_32_2_16(DMA_ENABLE, PAL_ROW));
+                        DMA3_COPY_16(&sKraidPal[PAL_ROW * 4 + PAL_ROW * 1], PALRAM_BASE + PAL_ROW_SIZE * 10, PAL_ROW);
                     }
                 }
                 else
@@ -1648,7 +1649,7 @@ static void KraidDyingInit(void)
     gCurrentSprite.health = 1;
     gCurrentSprite.invincibilityStunFlashTimer = EIGHTH_BLOCK_SIZE;
     gCurrentSprite.drawOrder = 12;
-    EventFunction(EVENT_ACTION_SETTING, EVENT_KRAID_KILLED);
+    SET_EVENT(EVENT_KRAID_KILLED);
     MinimapUpdateChunk(EVENT_KRAID_KILLED);
     SoundPlay(SOUND_KRAID_DYING_1);
 }

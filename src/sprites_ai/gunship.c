@@ -1,6 +1,7 @@
 #include "sprites_ai/gunship.h"
 #include "gba.h"
 #include "sprites_ai/message_banner.h"
+#include "event.h"
 
 #include "data/sprites/gunship.h"
 
@@ -42,13 +43,13 @@
 
 // Gunship part
 
-enum GunshipPart {
+MAKE_ENUM(u8, GunshipPartId) {
     GUNSHIP_PART_MAIN,
     GUNSHIP_PART_ENTRANCE_FRONT,
     GUNSHIP_PART_ENTRANCE_BACK,
     GUNSHIP_PART_PLATFORM,
     GUNSHIP_PART_FLAMES_HORIZONTAL,
-    GUNSHIP_PART_FLAMES_VERTICAL,
+    GUNSHIP_PART_FLAMES_VERTICAL
 };
 
 #define GUNSHIP_PART_POSE_ENTRANCE_FRONT_IDLE 0x8
@@ -107,7 +108,7 @@ static void GunshipFlickerFlames(void)
 
         // Transfer palette
         offset = MOD_AND(gCurrentSprite.scaling, 128);
-        DMA_SET(3, &sGunshipFlashingPal[offset * PAL_ROW], PALRAM_OBJ + 10 * PAL_ROW_SIZE, C_32_2_16(DMA_ENABLE, PAL_ROW));
+        DMA3_COPY_16(&sGunshipFlashingPal[offset * PAL_ROW], PALRAM_OBJ + 10 * PAL_ROW_SIZE, PAL_ROW);
     }
 }
 
@@ -152,8 +153,8 @@ static void GunshipEntranceFlashingAnim(void)
 
         // Transfer palette
         offset = MOD_AND(gCurrentSprite.work1, 128);
-        DMA_SET(3, &sGunshipFlashingPal[0x38 + offset * PAL_ROW], // Not sure
-            PALRAM_OBJ + 9 * PAL_ROW_SIZE + PAL_ROW_SIZE / 2, C_32_2_16(DMA_ENABLE, PAL_ROW / 2));
+        DMA3_COPY_16(&sGunshipFlashingPal[0x38 + offset * PAL_ROW], // Not sure
+            PALRAM_OBJ + 9 * PAL_ROW_SIZE + PAL_ROW_SIZE / 2, PAL_ROW / 2);
     }
 }
 
@@ -274,7 +275,7 @@ static void GunshipInit(void)
         gCurrentSprite.yPositionSpawn = 0;
         gCurrentSprite.samusCollision = SSC_CAN_STAND_ON_TOP;
 
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MOTHER_BRAIN_KILLED))
+        if (CHECK_EVENT(EVENT_MOTHER_BRAIN_KILLED))
             gCurrentSprite.pose = GUNSHIP_POSE_CHECK_ESCAPE;
         else
             gCurrentSprite.pose = GUNSHIP_POSE_IDLE;
@@ -656,7 +657,7 @@ static void GunshipCheckEscapeZebes(void)
         gCurrentSprite.pose = GUNSHIP_POSE_SAMUS_ENTERING_WHEN_ESCAPING;
 
         // Set event and update minimap
-        EventFunction(EVENT_ACTION_SETTING, EVENT_ESCAPED_ZEBES);
+        SET_EVENT(EVENT_ESCAPED_ZEBES);
         MinimapUpdateChunk(EVENT_ESCAPED_ZEBES);
         SoundFade(SOUND_ESCAPE_BEEP, CONVERT_SECONDS(1.f));
         UpdateMusicPriority(0);
@@ -1388,7 +1389,7 @@ void Gunship(void)
 
     GunshipEntranceFlashingAnim();
 
-    if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_ESCAPED_ZEBES) && gCurrentSprite.yPositionSpawn != 0)
+    if (!CHECK_EVENT(EVENT_ESCAPED_ZEBES) && gCurrentSprite.yPositionSpawn != 0)
     {
         gCurrentSprite.yPositionSpawn--;
         if (gCurrentSprite.yPositionSpawn == 0)

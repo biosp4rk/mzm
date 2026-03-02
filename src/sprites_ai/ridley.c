@@ -1,6 +1,7 @@
 #include "sprites_ai/ridley.h"
 #include "gba.h"
 #include "macros.h"
+#include "event.h"
 
 #include "data/sprites/ridley.h"
 #include "data/sprite_data.h"
@@ -43,7 +44,7 @@
 #define RIDLEY_POSE_DYING 0x67
 
 // Spawning
-enum RidleySpawningAction {
+MAKE_ENUM(u8, RidleySpawningAction) {
     RIDLEY_SPAWNING_ACTION_GOING_DOWN,
     RIDLEY_SPAWNING_ACTION_DELAY_BEFORE_OPENING_MOUTH,
     RIDLEY_SPAWNING_ACTION_OPENING_MOUTH,
@@ -53,11 +54,11 @@ enum RidleySpawningAction {
     RIDLEY_SPAWNING_ACTION_TURNING_AROUND_FIRST_PART,
     RIDLEY_SPAWNING_ACTION_TURNING_AROUND_SECOND_PART,
     RIDLEY_SPAWNING_ACTION_TAKING_OFF,
-    RIDLEY_SPAWNING_ACTION_UNKNOWN,
+    RIDLEY_SPAWNING_ACTION_UNKNOWN
 };
 
 // Samus grabbed
-enum RidleySamusGrabbedAction {
+MAKE_ENUM(u8, RidleySamusGrabbedAction) {
     RIDLEY_SAMUS_GRABBED_ACTION_NONE,
     RIDLEY_SAMUS_GRABBED_ACTION_CARRYING_SAMUS,
     RIDLEY_SAMUS_GRABBED_ACTION_LIFTING_SAMUS,
@@ -69,7 +70,7 @@ enum RidleySamusGrabbedAction {
 
 
 // Small fireball attack
-enum RidleySmallFireballsAttackAction {
+MAKE_ENUM(u8, RidleySmallFireballsAttackAction) {
     RIDLEY_SMALL_FIREBALLS_ATTACK_ACTION_GOING_DOWN,
     RIDLEY_SMALL_FIREBALLS_ATTACK_ACTION_DELAY_BEFORE_OPENING_MOUTH,
     RIDLEY_SMALL_FIREBALLS_ATTACK_ACTION_OPENING_MOUTH,
@@ -106,7 +107,7 @@ enum RidleySmallFireballsAttackAction {
 
 // Ridley fireball
 
-enum RidleyFireballType {
+MAKE_ENUM(u8, RidleyFireballType) {
     RIDLEY_FIREBALL_TYPE_TOP,
     RIDLEY_FIREBALL_TYPE_MIDDLE_TOP,
     RIDLEY_FIREBALL_TYPE_MIDDLE,
@@ -127,7 +128,7 @@ enum RidleyFireballType {
 
 #define RIDLEY_FIREBALL_ASCENDING_Y_TARGET_OFFSET (THREE_QUARTER_BLOCK_SIZE + PIXEL_SIZE / 2)
 
-static const struct FrameData* sRidleyFrameDataPointers[RIDLEY_OAM_END] = {
+static const struct FrameData* sRidleyFrameDataPointers[RIDLEY_OAM_COUNT] = {
     [RIDLEY_OAM_IDLE] = sRidleyOam_Idle,
     [RIDLEY_OAM_SPITTING_FIREBALLS] = sRidleyOam_SpittingFireballs,
     [RIDLEY_OAM_TURNING_AROUND_FIRST_PART] = sRidleyOam_TurningAroundFirstPart,
@@ -607,12 +608,12 @@ static void RidleyInit(void)
     u8 gfxSlot;
     u16 health;
     u8 ramSlot;
-    u8 caa;
+    ClipdataAffectingAction caa;
 
     gBossWork.work1 = gCurrentSprite.yPosition;
     gBossWork.work2 = gCurrentSprite.xPosition;
 
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_RIDLEY_KILLED))
+    if (CHECK_EVENT(EVENT_RIDLEY_KILLED))
     {
         // Already dead, destroy blocks
         yPosition = gBossWork.work1 + (BLOCK_SIZE * 6 + HALF_BLOCK_SIZE);
@@ -635,7 +636,7 @@ static void RidleyInit(void)
         return;
     }
     
-    if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_GRAVITY_SUIT_OBTAINED))
+    if (!CHECK_EVENT(EVENT_GRAVITY_SUIT_OBTAINED))
     {
         // Has gravity
         gCurrentSprite.status = 0;
@@ -2009,7 +2010,7 @@ static void RidleyDying(void)
             // Unlock doors
             gDoorUnlockTimer = -CONVERT_SECONDS(1.f);
             // Set event
-            EventFunction(EVENT_ACTION_SETTING, EVENT_RIDLEY_KILLED);
+            SET_EVENT(EVENT_RIDLEY_KILLED);
             // Update minimap
             MinimapUpdateChunk(EVENT_RIDLEY_KILLED);
             PlayMusic(MUSIC_BOSS_KILLED, 0);

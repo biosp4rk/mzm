@@ -33,7 +33,7 @@ static u32 sPauseScreen_7602b0[9] = {
     0xFFFFFFFF ^ 0xFFFFF,
     0xFFFFFFFF ^ 0xFFFFFF,
     0xFFFFFFFF ^ 0xFFFFFFF,
-    0xFFFFFFFF ^ 0xFFFFFFFF,
+    0xFFFFFFFF ^ 0xFFFFFFFF
 };
 
 /**
@@ -254,7 +254,7 @@ void PauseScreenDrawIgtAndTanks(u8 param_1, u8 drawTanks)
             sPauseScreen_IgtAndTanksVramAddresses[IGT_AND_TANKS_VRAM_ADDRESS_POWER_BOMB_TANKS] + HALF_BLOCK_SIZE * 2, HALF_BLOCK_SIZE, 32);
 
         // Draw checkmarks when you have all of the tanks
-        for (i = IGT_AND_TANKS_VRAM_ADDRESS_TANKS_END - 1; i >= IGT_AND_TANKS_VRAM_ADDRESS_ENERGY_TANKS; i--)
+        for (i = IGT_AND_TANKS_VRAM_ADDRESS_TANKS_COUNT - 1; i >= IGT_AND_TANKS_VRAM_ADDRESS_ENERGY_TANKS; i--)
         {
             if ((PAUSE_SCREEN_DATA.tankStatus >> i) & 1)
             {
@@ -320,8 +320,7 @@ void PauseScreenInitMapDownload(void)
         DmaTransfer(3, gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000,
             sizeof(gDecompressedMinimapVisitedTiles), 16);
         #else // !REGION_EU
-        DMA_SET(3, gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000,
-            C_32_2_16(DMA_ENABLE, sizeof(gDecompressedMinimapVisitedTiles) / 2));
+        DMA3_COPY_16(gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000, sizeof(gDecompressedMinimapVisitedTiles) / 2);
         #endif // REGION_EU
     }
 }
@@ -550,8 +549,8 @@ u32 PauseScreenMapDownload(void)
                     if (PAUSE_SCREEN_DATA.currentDownloadedLine < MINIMAP_SIZE)
                     {
                         // "Draw" current line
-                        DMA_SET(3, &gDecompressedMinimapVisitedTiles[PAUSE_SCREEN_DATA.currentDownloadedLine * MINIMAP_SIZE],
-                            VRAM_BASE + 0xE000 + PAUSE_SCREEN_DATA.currentDownloadedLine * MINIMAP_SIZE * 2, DMA_ENABLE << 16 | MINIMAP_SIZE);   
+                        DMA3_COPY_16(&gDecompressedMinimapVisitedTiles[PAUSE_SCREEN_DATA.currentDownloadedLine * MINIMAP_SIZE],
+                            VRAM_BASE + 0xE000 + PAUSE_SCREEN_DATA.currentDownloadedLine * MINIMAP_SIZE * 2, MINIMAP_SIZE);   
                     }
 
                     PAUSE_SCREEN_DATA.unk_4F++;
@@ -602,8 +601,7 @@ u32 PauseScreenMapDownload(void)
             DmaTransfer(3, gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000,
                 sizeof(gDecompressedMinimapVisitedTiles), 16);
             #else // !REGION_EU
-            DMA_SET(3, gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000,
-                C_32_2_16(DMA_ENABLE, ARRAY_SIZE(gDecompressedMinimapVisitedTiles)));
+            DMA3_COPY_16(gDecompressedMinimapVisitedTiles, VRAM_BASE + 0xE000, ARRAY_SIZE(gDecompressedMinimapVisitedTiles));
             #endif // REGION_EU
 
             PAUSE_SCREEN_DATA.downloadStage++;
@@ -612,7 +610,7 @@ u32 PauseScreenMapDownload(void)
 
         case 4:
             // Redraw minimap, so that the download also applies to in game
-            for (i = MINIMAP_UPDATE_FLAG_END - 1; i > MINIMAP_UPDATE_FLAG_NONE; i--)
+            for (i = MINIMAP_UPDATE_FLAG_COUNT - 1; i > MINIMAP_UPDATE_FLAG_NONE; i--)
             {
                 gUpdateMinimapFlag = i;
                 MinimapDraw();

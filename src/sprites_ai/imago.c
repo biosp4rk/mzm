@@ -1,5 +1,6 @@
 #include "sprites_ai/imago.h"
 #include "macros.h"
+#include "event.h"
 
 #include "data/sprites/imago.h"
 #include "data/sprite_data.h"
@@ -17,7 +18,7 @@
 #include "structs/samus.h"
 #include "structs/sprite.h"
 
-enum ImagoMovementStage {
+MAKE_ENUM(u8, ImagoMovementStage) {
     IMAGO_MOVEMENT_STAGE_MOVING_HORIZONTALLY,
     IMAGO_MOVEMENT_STAGE_MOVING_VERTICALLY,
     IMAGO_MOVEMENT_STAGE_GO_UP
@@ -76,7 +77,7 @@ enum ImagoMovementStage {
 #define IMAGO_EGG_PART_NORMAL 0x0
 #define IMAGO_EGG_PART_LAST 0x80
 
-static const struct FrameData* sImagoFrameDataPointers[IMAGO_OAM_END] = {
+static const struct FrameData* sImagoFrameDataPointers[IMAGO_OAM_COUNT] = {
     [IMAGO_OAM_BODY_IDLE] = sImagoPartOam_BodyIdle,
     [IMAGO_OAM_BODY_GROWLING] = sImagoPartOam_BodyGrowling,
     [IMAGO_OAM_BROKEN_STINGER] = sImagoOam_BrokenStinger,
@@ -292,7 +293,7 @@ static void ImagoInit(void)
     u16 status;
     u16 health;
 
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_IMAGO_KILLED))
+    if (CHECK_EVENT(EVENT_IMAGO_KILLED))
     {
         gCurrentSprite.status = 0;
         return;
@@ -892,7 +893,7 @@ static void ImagoCheckSamusAtSuperMissile(void)
  */
 static void ImagoChargeThroughWall(void)
 {
-    u8 caa;
+    ClipdataAffectingAction caa;
     u16 yPosition;
     u16 xPosition;
 
@@ -946,7 +947,7 @@ static void ImagoChargeThroughWall(void)
  */
 static void ImagoDestroyWall(void)
 {
-    u8 caa;
+    ClipdataAffectingAction caa;
     u16 yPosition;
     u16 xPosition;
     
@@ -1152,7 +1153,7 @@ static void ImagoSetEvent(void)
         gDoorUnlockTimer = -CONVERT_SECONDS(1.f);
         gCurrentSprite.status = 0;
         // Set event
-        EventFunction(EVENT_ACTION_SETTING, EVENT_IMAGO_KILLED);
+        SET_EVENT(EVENT_IMAGO_KILLED);
     }
 }
 

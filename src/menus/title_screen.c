@@ -21,8 +21,10 @@
 #include "structs/game_state.h"
 #include "structs/samus.h"
 
+#define TITLE_SCREEN_SPARKLE_DELAY CONVERT_SECONDS(.35f + 1.f / 60)
+
 #ifdef REGION_EU
-static void TitleScreenSetMenuPalette(u8 param0);
+static void TitleScreenSetMenuPalette(TitleScreenMenuOption param0);
 #endif // REGION_EU
 
 static struct TitleScreenAnimatedPalette sTitleScreenAnimatedPaletteTemplates[4] = {
@@ -49,7 +51,7 @@ static struct TitleScreenAnimatedPalette sTitleScreenAnimatedPaletteTemplates[4]
         .maxTimer = 4,
         .timer = 4,
         .unk_4 = 1
-    },
+    }
 };
 
 #ifdef REGION_EU
@@ -61,12 +63,12 @@ static const u8* sRomInfoStringPointers[4] = {
     sTitleScreenRomInfoTime,
     sTitleScreenRomInfoRegionJPN,
     sTitleScreenRomInfoRegionEUR,
-    sTitleScreenRomInfoRegionUSA,
+    sTitleScreenRomInfoRegionUSA
 };
 #endif // REGION_EU
 
 #ifdef REGION_EU
-static const u32* sTitleScreenMenuGfxPointers[(LANGUAGE_END - LANGUAGE_ENGLISH) * 2] = {
+static const u32* sTitleScreenMenuGfxPointers[(LANGUAGE_COUNT - LANGUAGE_ENGLISH) * 2] = {
     sTitleScreenEnglishMenuGfx_Top,
     sTitleScreenEnglishMenuGfx_Bottom,
     sTitleScreenGermanMenuGfx_Top,
@@ -549,7 +551,7 @@ u32 TitleScreenCometsView(void)
 
     screenOffset = 0;
     ended = FALSE;
-    TITLE_SCREEN_DATA.cometsTimer++;
+    APPLY_DELTA_TIME_INC(TITLE_SCREEN_DATA.cometsTimer);
 
     if (gChangedInput & (KEY_A | KEY_START))
     {
@@ -566,7 +568,7 @@ u32 TitleScreenCometsView(void)
 
         case 1:
             // Wait
-            if (TITLE_SCREEN_DATA.cometsTimer > 60)
+            if (TITLE_SCREEN_DATA.cometsTimer > CONVERT_SECONDS(1.f))
             {
                 // Spawn first comet
                 TITLE_SCREEN_DATA.type |= TITLE_SCREEN_TYPE_FIRST_COMET_ACTIVE;
@@ -580,7 +582,7 @@ u32 TitleScreenCometsView(void)
 
         case 2:
             // Wait
-            if (TITLE_SCREEN_DATA.cometsTimer > 60 * 2)
+            if (TITLE_SCREEN_DATA.cometsTimer > CONVERT_SECONDS(2.f))
             {
                 // Spawn second comet
                 TITLE_SCREEN_DATA.type |= TITLE_SCREEN_TYPE_SECOND_COMET_ACTIVE;
@@ -594,7 +596,7 @@ u32 TitleScreenCometsView(void)
 
         case 3:
             // Wait
-            if (TITLE_SCREEN_DATA.cometsTimer > 60 / 2)
+            if (TITLE_SCREEN_DATA.cometsTimer > CONVERT_SECONDS(.5f))
             {
                 TITLE_SCREEN_DATA.cometsStage++;
                 TITLE_SCREEN_DATA.cometsTimer = 0;
@@ -1254,7 +1256,7 @@ void TitleScreenInit(void)
     #ifdef REGION_EU
     BitFill(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam), 32);
     #else // !REGION_EU
-    DMA_FILL_32(3, 0, &gNonGameplayRam, sizeof(gNonGameplayRam))
+    DMA3_FILL_32(0, &gNonGameplayRam, sizeof(gNonGameplayRam))
     #endif // REGION_EU
 
     TITLE_SCREEN_DATA.bldcnt = BLDCNT_SCREEN_FIRST_TARGET | BLDCNT_BRIGHTNESS_DECREASE_EFFECT;
@@ -1275,7 +1277,7 @@ void TitleScreenInit(void)
     #ifdef REGION_EU
     BitFill(3, 0, &gSamusPhysics, sizeof(gSamusPhysics), 32);
     #else // !REGION_EU
-    DMA_FILL_32(3, 0, &gSamusPhysics, sizeof(gSamusPhysics));
+    DMA3_FILL_32(0, &gSamusPhysics, sizeof(gSamusPhysics));
     #endif // REGION_EU
 
     gBootDebugActive = FALSE;
@@ -1394,7 +1396,7 @@ void TitleScreenInit(void)
  */
 void TitleScreenVBlank(void)
 {
-    DMA_SET(3, gOamData, OAM_BASE, C_32_2_16(DMA_ENABLE | DMA_32BIT, OAM_SIZE / sizeof(u32)));
+    DMA3_COPY_32(gOamData, OAM_BASE, OAM_SIZE / sizeof(u32));
 
     WRITE_16(REG_BG0HOFS, SUB_PIXEL_TO_PIXEL(gBg0HOFS_NonGameplay));
     WRITE_16(REG_BG0VOFS, SUB_PIXEL_TO_PIXEL(gBg0VOFS_NonGameplay));
@@ -1429,7 +1431,7 @@ void TitleScreenVBlank_Empty(void)
  * 
  * @param option Which option is selected
  */
-static void TitleScreenSetMenuPalette(u8 option)
+static void TitleScreenSetMenuPalette(TitleScreenMenuOption option)
 {
     s32 temp;
     u16* dst1;
@@ -1485,7 +1487,7 @@ static void TitleScreenSetMenuPalette(u8 option)
  * 
  * @param symbol Which symbol to use
  */
-void TitleScreenSetCopyrightSymbol(u8 symbol)
+void TitleScreenSetCopyrightSymbol(TitleScreenCopyrightSymbol symbol)
 {
     s32 i;
     u32 value;

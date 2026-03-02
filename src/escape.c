@@ -1,5 +1,6 @@
 #include "escape.h"
 #include "gba.h"
+#include "event.h"
 
 #include "data/visual_effects_data.h"
 
@@ -19,9 +20,9 @@
  */
 Escape EscapeDetermineTimer(void)
 {
-    if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_ESCAPED_ZEBES))
+    if (!CHECK_EVENT(EVENT_ESCAPED_ZEBES))
     {
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MOTHER_BRAIN_KILLED))
+        if (CHECK_EVENT(EVENT_MOTHER_BRAIN_KILLED))
         {
             // Didn't escape zebes, and mother brain killed
             return ESCAPE_MOTHER_BRAIN;
@@ -29,7 +30,7 @@ Escape EscapeDetermineTimer(void)
     }
     else
     {
-        if (!EventFunction(EVENT_ACTION_CHECKING, EVENT_ESCAPED_CHOZODIA) && EventFunction(EVENT_ACTION_CHECKING, EVENT_MECHA_RIDLEY_KILLED))
+        if (!CHECK_EVENT(EVENT_ESCAPED_CHOZODIA) && CHECK_EVENT(EVENT_MECHA_RIDLEY_KILLED))
         {
             // Didn't escape chozodia, and mecha ridley killed
             return ESCAPE_MECHA_RIDLEY;
@@ -47,16 +48,16 @@ Escape EscapeDetermineTimer(void)
 boolu8 EscapeCheckHasEscaped(void)
 {
 
-    if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MECHA_RIDLEY_KILLED))
+    if (CHECK_EVENT(EVENT_MECHA_RIDLEY_KILLED))
     {
         // Chozodia escape
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ESCAPED_CHOZODIA))
+        if (CHECK_EVENT(EVENT_ESCAPED_CHOZODIA))
             return TRUE;
     }
-    else if (EventFunction(EVENT_ACTION_CHECKING, EVENT_MOTHER_BRAIN_KILLED))
+    else if (CHECK_EVENT(EVENT_MOTHER_BRAIN_KILLED))
     {
         // Tourian escape
-        if (EventFunction(EVENT_ACTION_CHECKING, EVENT_ESCAPED_ZEBES))
+        if (CHECK_EVENT(EVENT_ESCAPED_ZEBES))
             return TRUE;
     }
 
@@ -90,7 +91,7 @@ void EscapeCheckReloadGraphics(void)
 {
     if (EscapeDetermineTimer() != ESCAPE_NONE)
     {
-        DMA_SET(3, sEscapeTimerDigitsGfx, VRAM_OBJ + 0x7800, C_32_2_16(DMA_ENABLE, sizeof(sEscapeTimerDigitsGfx) / 2));
+        DMA3_COPY_16(sEscapeTimerDigitsGfx, VRAM_OBJ + 0x7800, sizeof(sEscapeTimerDigitsGfx) / 2);
     }
 }
 
@@ -100,11 +101,11 @@ void EscapeCheckReloadGraphics(void)
  */
 void EscapeStart(void)
 {
-    DMA_SET(3, sEscapeTimerDigitsGfx, VRAM_OBJ + 0x7800, C_32_2_16(DMA_ENABLE, 0xB0));
-    DMA_SET(3, sEscapeTimerDigitsGfx + 1024, VRAM_OBJ + 0x7C00, C_32_2_16(DMA_ENABLE, 0xB0));
+    DMA3_COPY_16(sEscapeTimerDigitsGfx, VRAM_OBJ + 0x7800, 0xB0);
+    DMA3_COPY_16(sEscapeTimerDigitsGfx + 1024, VRAM_OBJ + 0x7C00, 0xB0);
 
     // Setup oam
-    DMA_SET(3, sParticleEscapeOam_Frame0, gParticleEscapeOamFrames, C_32_2_16(DMA_ENABLE, ARRAY_SIZE(gParticleEscapeOamFrames)));
+    DMA3_COPY_16(sParticleEscapeOam_Frame0, gParticleEscapeOamFrames, ARRAY_SIZE(gParticleEscapeOamFrames));
 
     // Escape timer uses absolute position, which isn't converted to pixel coordinates when drawing,
     // hence pixel coordinates are used when creating it

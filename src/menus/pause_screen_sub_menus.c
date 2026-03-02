@@ -4,6 +4,7 @@
 #include "dma.h"
 #include "syscalls.h"
 #include "oam_id.h"
+#include "event.h"
 
 #include "data/shortcut_pointers.h"
 #include "data/clipdata_data.h"
@@ -280,7 +281,7 @@ void ChozoStatueHintMovement(void)
             PAUSE_SCREEN_DATA.chozoHintMapMovementData.speedMultiplier = 0;
             PAUSE_SCREEN_DATA.chozoHintTarget.movementDelayTimer = 0;
 
-            if (PAUSE_SCREEN_DATA.chozoHintTarget.index < TARGET_ITEM_END)
+            if (PAUSE_SCREEN_DATA.chozoHintTarget.index < TARGET_ITEM_COUNT)
             {
                 PAUSE_SCREEN_DATA.chozoHintOam[0].exists = OAM_ID_CHANGED_FLAG;
                 PAUSE_SCREEN_DATA.chozoHintTarget.movementStage++;
@@ -335,7 +336,7 @@ void ChozoStatueHintMovement(void)
                 norm++;
                 PAUSE_SCREEN_DATA.chozoHintOam[norm] = PAUSE_SCREEN_DATA.chozoHintOam[0];
 
-                if (PAUSE_SCREEN_DATA.chozoHintTarget.index < TARGET_ITEM_END)
+                if (PAUSE_SCREEN_DATA.chozoHintTarget.index < TARGET_ITEM_COUNT)
                 {
                     PAUSE_SCREEN_DATA.chozoHintOam[norm].oamID = 0x7;
                     PAUSE_SCREEN_DATA.chozoHintOam[norm].exists = OAM_ID_CHANGED_FLAG;
@@ -897,7 +898,7 @@ void ChozoStatueHintDeterminePath(u8 param_1)
         }
     }
 
-    for (i = 0; i < TARGET_END; i++)
+    for (i = 0; i < TARGET_COUNT; i++)
     {
         if (i == PAUSE_SCREEN_DATA.chozoHintTarget.index)
             continue;
@@ -932,7 +933,7 @@ s32 ChozoStatueHintCheckTargetIsActivated(u8 target)
     result = -1;
 
     // Check for status 
-    if (EventFunction(EVENT_ACTION_CHECKING, sChozoStatueHintEvents[target]))
+    if (CHECK_EVENT(sChozoStatueHintEvents[target]))
     {
         if (sChozoStatueTargetConditions[target][0] == CHOZO_STATUE_HINT_CONDITION_TYPE_BEAM_BOMBS)
         {
@@ -953,7 +954,7 @@ s32 ChozoStatueHintCheckTargetIsActivated(u8 target)
         else if (sChozoStatueTargetConditions[target][0] == CHOZO_STATUE_HINT_CONDITION_TYPE_EVENT)
         {
             // Check event is set
-            result = (s8)EventFunction(EVENT_ACTION_CHECKING, sChozoStatueTargetConditions[target][1]);
+            result = (s8)CHECK_EVENT(sChozoStatueTargetConditions[target][1]);
         }
 
         // Condition needs to be false (doesn't have item or item not set) for the target to be active, so we flip the result
@@ -975,7 +976,7 @@ void PauseScreenCheckActivatedTargets(void)
     // Clear
     PAUSE_SCREEN_DATA.chozoHintTarget.activatedTargets = 0;
 
-    for (i = 0; i < TARGET_END; i++)
+    for (i = 0; i < TARGET_COUNT; i++)
     {
         // Check
         if ((s8)ChozoStatueHintCheckTargetIsActivated(i) > 0)
@@ -997,7 +998,7 @@ void PauseScreenCheckAreasWithTargets(void)
     // Clear
     PAUSE_SCREEN_DATA.areasWithHints = 0;
 
-    for (i = 0; i < TARGET_END; i++)
+    for (i = 0; i < TARGET_COUNT; i++)
     {
         // Check
         if ((s8)ChozoStatueHintCheckTargetIsActivated(i) > 0)
