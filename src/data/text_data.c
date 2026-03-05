@@ -326,6 +326,29 @@ const u16 sEnglishText_Message_PressSelectLAndR[] = INCTEXT("{GAP(44)}press {Sel
 const u16 sEnglishText_Message_EasySleepPrompt[] = INCTEXT("{GAP(102)}Yes\n{GAP(104)}No");
 #else // !REGION_EU
 const u16 sEnglishText_Message_Dummy[] = INCTEXT("{GAP(24)}DUMMY MESSAGE (OBJ Cell B1)\n{GAP(110)}");
+#ifdef UNHUNDO
+const u16 sEnglishText_Message_EnergyTankAcquired[] = INCTEXT("{GAP(64)}{COLOR(5)}Energy Tank lost.\n{GAP(38)}{COLOR(0)}Energy capacity decreased.");
+const u16 sEnglishText_Message_MissileTankAcquired[] = INCTEXT("{GAP(66)}{COLOR(5)}Missile Tank lost.\n{GAP(39)}{COLOR(0)}Missile capacity decreased.");
+const u16 sEnglishText_Message_FirstMissileTank[] = INCTEXT("{GAP(66)}{COLOR(5)}Last Missile Tank\n{GAP(110)}");
+const u16 sEnglishText_Message_SuperMissileTankAcquired[] = INCTEXT("{GAP(48)}{COLOR(5)}Super Missile Tank lost.\n{GAP(21)}{COLOR(0)}Super Missile capacity decreased.");
+const u16 sEnglishText_Message_FirstSuperMissileTank[] = INCTEXT("{GAP(48)}{COLOR(5)}Last Super Missile Tank\n{GAP(110)}");
+const u16 sEnglishText_Message_PowerBombTankAcquired[] = INCTEXT("{GAP(52)}{COLOR(5)}Power Bomb Tank lost.\n{GAP(25)}{COLOR(0)}Power Bomb capacity decreased.");
+const u16 sEnglishText_Message_FirstPowerBombTank[] = INCTEXT("{GAP(52)}{COLOR(5)}Last Power Bomb Tank\n{GAP(110)}");
+const u16 sEnglishText_Message_LongBeam[] = INCTEXT("{GAP(69)}{COLOR(5)}Lost Long Beam\n{GAP(110)}");
+const u16 sEnglishText_Message_ChargeBeam[] = INCTEXT("{GAP(63)}{COLOR(5)}Lost Charge Beam\n{GAP(110)}");
+const u16 sEnglishText_Message_IceBeam[] = INCTEXT("{GAP(72)}{COLOR(5)}Lost Ice Beam\n{GAP(110)}");
+const u16 sEnglishText_Message_WaveBeam[] = INCTEXT("{GAP(68)}{COLOR(5)}Lost Wave Beam\n{GAP(110)}");
+const u16 sEnglishText_Message_UnknownItemPlasma[] = INCTEXT("{GAP(64)}{COLOR(5)}Lost Plasma Beam\n{GAP(110)}");
+const u16 sEnglishText_Message_Bomb[] = INCTEXT("{GAP(84)}{COLOR(5)}Lost Bomb\n{GAP(110)}");
+const u16 sEnglishText_Message_VariaSuit[] = INCTEXT("{GAP(70)}{COLOR(5)}Lost Varia Suit\n{GAP(110)}");
+const u16 sEnglishText_Message_UnknownItemGravity[] = INCTEXT("{GAP(65)}{COLOR(5)}Lost Gravity Suit\n{GAP(110)}");
+const u16 sEnglishText_Message_MorphBall[] = INCTEXT("{GAP(73)}{COLOR(5)}Lost All Items\n{GAP(110)}");
+const u16 sEnglishText_Message_SpeedBooster[] = INCTEXT("{GAP(58)}{COLOR(5)}Lost Speed Booster\n{GAP(110)}");
+const u16 sEnglishText_Message_HighJump[] = INCTEXT("{GAP(76)}{COLOR(5)}Lost Hi-Jump\n{GAP(110)}");
+const u16 sEnglishText_Message_ScrewAttack[] = INCTEXT("{GAP(62)}{COLOR(5)}Lost Screw Attack\n{GAP(110)}");
+const u16 sEnglishText_Message_UnknownItemSpaceJump[] = INCTEXT("{GAP(66)}{COLOR(5)}Lost Space Jump\n{GAP(110)}");
+const u16 sEnglishText_Message_PowerGrip[] = INCTEXT("{GAP(69)}{COLOR(5)}Lost Power Grip\n{GAP(110)}");
+#else // !UNHUNDO
 const u16 sEnglishText_Message_EnergyTankAcquired[] = INCTEXT("{GAP(51)}{COLOR(5)}Energy Tank acquired.\n{GAP(38)}{COLOR(0)}Energy capacity increased.");
 const u16 sEnglishText_Message_MissileTankAcquired[] = INCTEXT("{GAP(52)}{COLOR(5)}Missile Tank acquired.\n{GAP(40)}{COLOR(0)}Missile capacity increased.");
 const u16 sEnglishText_Message_FirstMissileTank[] = INCTEXT("{GAP(79)}{COLOR(5)}Missile Tank\n{GAP(110)}");
@@ -347,6 +370,7 @@ const u16 sEnglishText_Message_HighJump[] = INCTEXT("{GAP(89)}{COLOR(5)}Hi-Jump\
 const u16 sEnglishText_Message_ScrewAttack[] = INCTEXT("{GAP(75)}{COLOR(5)}Screw Attack\n{GAP(110)}");
 const u16 sEnglishText_Message_UnknownItemSpaceJump[] = INCTEXT("{GAP(74)}{COLOR(5)}Unknown Item\n{GAP(110)}");
 const u16 sEnglishText_Message_PowerGrip[] = INCTEXT("{GAP(82)}{COLOR(5)}Power Grip\n{GAP(110)}");
+#endif // UNHUNDO
 const u16 sEnglishText_Message_SavePrompt[] = INCTEXT("{GAP(94)}Save？\n{GAP(94)}{INDENT(64)}Yes{INDENT(160)}No");
 const u16 sEnglishText_Message_SaveComplete[] = INCTEXT("{GAP(72)}Save Complete\n{GAP(110)}");
 const u16 sEnglishText_Message_WeaponResupplyComplete[] = INCTEXT("{GAP(68)}Weapons system\n{GAP(61)}resupply complete.");
@@ -359,7 +383,11 @@ const u16 sEnglishText_Message_RidleyMap[] = INCTEXT("{GAP(42)}{COLOR(7)}Ridley{
 const u16 sEnglishText_Message_MotherShipMap[] = INCTEXT("{GAP(26)}{COLOR(10)}Mother Ship{COLOR(0)} {COLOR(5)}map data{COLOR(0)} acquired.\n{GAP(110)}");
 const u16 sEnglishText_Message_FullyPoweredSuit[] = INCTEXT("{GAP(22)}You got your {COLOR(5)}fully powered suit{COLOR(0)}.\n{GAP(110)}");
 const u16 sEnglishText_Message_ZebesEscape[] = INCTEXT("{GAP(15)}Self-destruct mechanism activated!\n{GAP(53)}Evacuate immediately!");
+#ifdef UNHUNDO
+const u16 sEnglishText_Message_ChozodiaEscape[] = INCTEXT("{GAP(59)}Not all items lost...\n{GAP(110)}");
+#else // !UNHUNDO
 const u16 sEnglishText_Message_ChozodiaEscape[] = INCTEXT("{GAP(15)}Self-destruct mechanism activated!\n{GAP(53)}Evacuate immediately!");
+#endif // UNHUNDO
 const u16 sEnglishText_Message_EnemyLocationAbnormal[] = INCTEXT("{GAP(44)}Enemy location abnormal.\n{GAP(30)}Check message frame position.");
 const u16 sEnglishText_Message_ActivateEasySleep[] = INCTEXT("{GAP(52)}Activate Easy Sleep？\n{GAP(57)}To exit Easy Sleep,");
 const u16 sEnglishText_Message_PressSelectLAndR[] = INCTEXT("{GAP(37)}press {Select_button}, {L_button}, and {R_button}\n{GAP(72)}simultaneously.");

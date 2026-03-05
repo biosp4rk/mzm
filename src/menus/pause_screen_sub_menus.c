@@ -976,6 +976,7 @@ void PauseScreenCheckActivatedTargets(void)
     // Clear
     PAUSE_SCREEN_DATA.chozoHintTarget.activatedTargets = 0;
 
+#ifndef UNHUNDO
     for (i = 0; i < TARGET_COUNT; i++)
     {
         // Check
@@ -985,6 +986,7 @@ void PauseScreenCheckActivatedTargets(void)
             PAUSE_SCREEN_DATA.chozoHintTarget.activatedTargets |= 1 << i;
         }
     }
+#endif // !UNHUNDO
 }
 
 /**

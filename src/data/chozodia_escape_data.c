@@ -23,6 +23,20 @@ const u16 sChozodiaEscapeOam_ShipExterior_Frame0[OAM_DATA_SIZE(10)] = {
     OAM_ENTRY(0, -112, OAM_DIMS_64x32, OAM_NO_FLIP, 0x90, 0, 1)
 };
 
+#ifdef UNHUNDO
+const u16 sChozodiaEscapeOam_BlueShipAngledDown_Frame0[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-16, -24, OAM_DIMS_32x8, OAM_Y_FLIP, 0x38c, 3, 0),
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_Y_FLIP, 0x30c, 3, 0)
+};
+
+const u16 sChozodiaEscapeOam_BlueShipAngledUp_Frame0[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-32, -32, OAM_DIMS_32x16, OAM_Y_FLIP, 0x310, 2, 0),
+    OAM_ENTRY(0, -32, OAM_DIMS_32x16, OAM_Y_FLIP, 0x314, 2, 0),
+    OAM_ENTRY(-32, -16, OAM_DIMS_64x64, OAM_Y_FLIP, 0x318, 2, 0)
+};
+#else // !UNHUNDO
 const u16 sChozodiaEscapeOam_BlueShipAngledDown_Frame0[OAM_DATA_SIZE(2)] = {
     2,
     OAM_ENTRY(-16, -24, OAM_DIMS_32x32, OAM_NO_FLIP, 0x30c, 3, 0),
@@ -35,6 +49,7 @@ const u16 sChozodiaEscapeOam_BlueShipAngledUp_Frame0[OAM_DATA_SIZE(3)] = {
     OAM_ENTRY(-32, 32, OAM_DIMS_32x16, OAM_NO_FLIP, 0x310, 2, 0),
     OAM_ENTRY(0, 32, OAM_DIMS_32x16, OAM_NO_FLIP, 0x314, 2, 0)
 };
+#endif // UNHUNDO
 
 const u16 sChozodiaEscapeOam_MotherShipDoorClosed_Frame0[OAM_DATA_SIZE(6)] = {
     6,

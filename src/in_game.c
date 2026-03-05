@@ -19,6 +19,7 @@
 #include "constants/demo.h"
 #include "constants/haze.h"
 #include "constants/game_state.h"
+#include "constants/samus.h"
 
 #include "structs/bg_clip.h"
 #include "structs/haze.h"
@@ -29,6 +30,7 @@
 #include "structs/room.h"
 #include "structs/sprite.h"
 #include "structs/connection.h"
+#include "structs/hud.h"
 
 /**
  * @brief c4b4 | 244 | Main loop in game
@@ -122,6 +124,14 @@ u32 InGameMainLoop(void)
                 gSubGameMode1 = 0;
                 if (gPauseScreenFlag != PAUSE_SCREEN_NONE || gCurrentCutscene != 0 || gTourianEscapeCutsceneStage != 0)
                     changing = TRUE;
+#ifdef UNHUNDO
+                if (gCurrentArea == AREA_CRATERIA && gLastDoorUsed == 0)
+                {
+                    gSamusData.xVelocity = 0;
+                    gSamusData.yVelocity = 0;
+                    SamusSetPose(SPOSE_FACING_THE_FOREGROUND);
+                }
+#endif // UNHUNDO
             }
             break;
 

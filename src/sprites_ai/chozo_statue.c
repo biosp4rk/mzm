@@ -1,6 +1,7 @@
 #include "sprites_ai/chozo_statue.h"
 #include "sprites_ai/unknown_item_chozo_statue.h"
 #include "event.h"
+#include "projectile_util.h"
 
 #include "data/sprites/chozo_statue.h"
 
@@ -86,42 +87,75 @@ void ChozoStatueRegisterItem(PrimarySprite spriteId)
     switch (spriteId)
     {
         case PSPRITE_CHOZO_STATUE_LONG:
+#ifdef UNHUNDO
+            gEquipment.beamBombs &= ~BBF_LONG_BEAM;
+            gEquipment.beamBombsActivation &= ~BBF_LONG_BEAM;
+            ProjectileLoadGraphics();
+#else // !UNHUNDO
             gEquipment.beamBombs |= BBF_LONG_BEAM;
+#endif // UNHUNDO
 
         case PSPRITE_CHOZO_STATUE_LONG_HINT:
             SET_EVENT(EVENT_STATUE_LONG_BEAM_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_ICE:
+#ifdef UNHUNDO
+            gEquipment.beamBombs &= ~BBF_ICE_BEAM;
+            gEquipment.beamBombsActivation &= ~BBF_ICE_BEAM;
+            ProjectileLoadGraphics();
+#else // !UNHUNDO
             gEquipment.beamBombs |= BBF_ICE_BEAM;
+#endif // UNHUNDO
 
         case PSPRITE_CHOZO_STATUE_ICE_HINT:
             SET_EVENT(EVENT_STATUE_ICE_BEAM_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_WAVE:
+#ifdef UNHUNDO
+            gEquipment.beamBombs &= ~BBF_WAVE_BEAM;
+            gEquipment.beamBombsActivation &= ~BBF_WAVE_BEAM;
+            ProjectileLoadGraphics();
+#else // !UNHUNDO
             gEquipment.beamBombs |= BBF_WAVE_BEAM;
+#endif // UNHUNDO
 
         case PSPRITE_CHOZO_STATUE_WAVE_HINT:
             SET_EVENT(EVENT_STATUE_WAVE_BEAM_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_BOMB:
+#ifdef UNHUNDO
+            gEquipment.beamBombs &= ~BBF_BOMBS;
+            gEquipment.beamBombsActivation &= ~BBF_BOMBS;
+#else // !UNHUNDO
             gEquipment.beamBombs |= BBF_BOMBS;
+#endif // UNHUNDO
 
         case PSPRITE_CHOZO_STATUE_BOMB_HINT:
             SET_EVENT(EVENT_STATUE_BOMBS_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER:
+#ifdef UNHUNDO
+            gEquipment.suitMisc &= ~SMF_SPEEDBOOSTER;
+            gEquipment.suitMiscActivation &= ~SMF_SPEEDBOOSTER;
+#else // !UNHUNDO
             gEquipment.suitMisc |= SMF_SPEEDBOOSTER;
+#endif // UNHUNDO
 
         case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER_HINT:
             SET_EVENT(EVENT_STATUE_SPEEDBOOSTER_GRABBED);
             break;
 
         case PSPRITE_CHOZO_STATUE_HIGH_JUMP:
+#ifdef UNHUNDO
+            gEquipment.suitMisc &= ~SMF_HIGH_JUMP;
+            gEquipment.suitMiscActivation &= ~SMF_HIGH_JUMP;
+#else // !UNHUNDO
             gEquipment.suitMisc |= SMF_HIGH_JUMP;
+#endif // UNHUNDO
             SET_EVENT(EVENT_HIGH_JUMP_OBTAINED);
 
         case PSPRITE_CHOZO_STATUE_HIGH_JUMP_HINT:
@@ -129,7 +163,12 @@ void ChozoStatueRegisterItem(PrimarySprite spriteId)
             break;
 
         case PSPRITE_CHOZO_STATUE_SCREW:
+#ifdef UNHUNDO
+            gEquipment.suitMisc &= ~SMF_SCREW_ATTACK;
+            gEquipment.suitMiscActivation &= ~SMF_SCREW_ATTACK;
+#else // !UNHUNDO
             gEquipment.suitMisc |= SMF_SCREW_ATTACK;
+#endif // UNHUNDO
             SET_EVENT(EVENT_SCREW_ATTACK_OBTAINED);
 
         case PSPRITE_CHOZO_STATUE_SCREW_HINT:
@@ -137,7 +176,12 @@ void ChozoStatueRegisterItem(PrimarySprite spriteId)
             break;
 
         case PSPRITE_CHOZO_STATUE_VARIA:
+#ifdef UNHUNDO
+            gEquipment.suitMisc &= ~SMF_VARIA_SUIT;
+            gEquipment.suitMiscActivation &= ~SMF_VARIA_SUIT;
+#else // !UNHUNDO
             gEquipment.suitMisc |= SMF_VARIA_SUIT;
+#endif // UNHUNDO
             SET_EVENT(EVENT_VARIA_SUIT_OBTAINED);
 
         case PSPRITE_CHOZO_STATUE_VARIA_HINT:
@@ -145,17 +189,34 @@ void ChozoStatueRegisterItem(PrimarySprite spriteId)
             break;
 
         case PSPRITE_CHOZO_STATUE_SPACE_JUMP:
+#ifdef UNHUNDO
+            gEquipment.suitMisc &= ~SMF_SPACE_JUMP;
+            gEquipment.suitMiscActivation &= ~SMF_SPACE_JUMP;
+#else // !UNHUNDO
             gEquipment.suitMisc |= SMF_SPACE_JUMP;
+#endif // UNHUNDO
             SET_EVENT(EVENT_SPACE_JUMP_OBTAINED);
             break;
 
         case PSPRITE_CHOZO_STATUE_GRAVITY:
+#ifdef UNHUNDO
+            gEquipment.suitMisc &= ~SMF_GRAVITY_SUIT;
+            gEquipment.suitMiscActivation &= ~SMF_GRAVITY_SUIT;
+            gEquipment.suitType = SUIT_NORMAL;
+#else // !UNHUNDO
             gEquipment.suitMisc |= SMF_GRAVITY_SUIT;
+#endif // UNHUNDO
             SET_EVENT(EVENT_GRAVITY_SUIT_OBTAINED);
             break;
 
         case PSPRITE_CHOZO_STATUE_PLASMA_BEAM:
+#ifdef UNHUNDO
+            gEquipment.beamBombs &= ~BBF_PLASMA_BEAM;
+            gEquipment.beamBombsActivation &= ~BBF_PLASMA_BEAM;
+            ProjectileLoadGraphics();
+#else // !UNHUNDO
             gEquipment.beamBombs |= BBF_PLASMA_BEAM;
+#endif // UNHUNDO
             SET_EVENT(EVENT_PLASMA_BEAM_OBTAINED);
             break;
     }
@@ -209,6 +270,73 @@ ChozoStatueBehavior ChozoStatueGetBehavior(PrimarySprite spriteId)
 
     switch (spriteId)
     {
+#ifdef UNHUNDO
+        case PSPRITE_CHOZO_STATUE_LONG_HINT:
+        case PSPRITE_CHOZO_STATUE_ICE_HINT:
+        case PSPRITE_CHOZO_STATUE_WAVE_HINT:
+        case PSPRITE_CHOZO_STATUE_BOMB_HINT:
+        case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER_HINT:
+        case PSPRITE_CHOZO_STATUE_HIGH_JUMP_HINT:
+        case PSPRITE_CHOZO_STATUE_SCREW_HINT:
+        case PSPRITE_CHOZO_STATUE_VARIA_HINT:
+            behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_LONG:
+            if (!(gEquipment.beamBombs & BBF_LONG_BEAM))
+                behavior++;
+            break;
+        
+        case PSPRITE_CHOZO_STATUE_ICE:
+            if (!(gEquipment.beamBombs & BBF_ICE_BEAM))
+                behavior++;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_WAVE:
+            if (!(gEquipment.beamBombs & BBF_WAVE_BEAM))
+                behavior++;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_PLASMA_BEAM:
+            if (!(gEquipment.beamBombs & BBF_PLASMA_BEAM))
+                behavior++;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_BOMB:
+            if (!(gEquipment.beamBombs & BBF_BOMBS))
+                behavior++;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER:
+            if (!(gEquipment.suitMisc & SMF_SPEEDBOOSTER))
+                behavior++;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_HIGH_JUMP:
+            if (!(gEquipment.suitMisc & SMF_HIGH_JUMP))
+                behavior++;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_SCREW:
+            if (!(gEquipment.suitMisc & SMF_SCREW_ATTACK))
+                behavior++;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_VARIA:
+            if (!(gEquipment.suitMisc & SMF_VARIA_SUIT))
+                behavior++;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_SPACE_JUMP:
+            if (!(gEquipment.suitMisc & SMF_SPACE_JUMP))
+                behavior++;
+            break;
+
+        case PSPRITE_CHOZO_STATUE_GRAVITY:
+            if (!(gEquipment.suitMisc & SMF_GRAVITY_SUIT))
+                behavior++;
+            break;
+#else // !UNHUNDO
         case PSPRITE_CHOZO_STATUE_LONG_HINT:
             if (CHECK_EVENT(EVENT_STATUE_LONG_BEAM_GRABBED))
                 behavior = CHOZO_STATUE_BEHAVIOR_HINT_TAKEN;
@@ -319,6 +447,7 @@ ChozoStatueBehavior ChozoStatueGetBehavior(PrimarySprite spriteId)
             if (gEquipment.suitMisc & SMF_GRAVITY_SUIT)
                 behavior++;
             break;
+#endif // UNHUNDO
     }
 
     return behavior;

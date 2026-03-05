@@ -1980,9 +1980,15 @@ void SramWrite_FileInfo(void)
         if (!gSaveFilesInfo[i].introPlayed)
             continue;
 
+#ifdef UNHUNDO
+        gSaveFilesInfo[i].currentArea = AREA_CHOZODIA;
+        gSaveFilesInfo[i].currentEnergy = gSaveFilesInfo[i].maxEnergy =
+            sStartingHealthAmmo.energy + sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].energy * sTankIncreaseAmount[gDifficulty].energy;
+#else // !UNHUNDO
         gSaveFilesInfo[i].currentArea = AREA_CRATERIA;
         gSaveFilesInfo[i].currentEnergy = 99;
         gSaveFilesInfo[i].maxEnergy = 99;
+#endif // UNHUNDO
         gSaveFilesInfo[i].difficulty = DIFF_EASY;
 
         if (pFile->difficulty > DIFF_HARD)
@@ -2137,9 +2143,14 @@ void Sram_CheckLoadSaveFile(void)
         gEquipment.downloadedMapStatus = 0;
         gCurrentArea = gSectionInfo.sectionIndex;
         gAreaBeforeTransition = gSectionInfo.sectionIndex;
-        
+
+#ifdef UNHUNDO
+        gCurrentRoom = 70;
+        gLastDoorUsed = 154;
+#else // !UNHUNDO
         gCurrentRoom = 0;
         gLastDoorUsed = 0;
+#endif // UNHUNDO
 
         gGameCompletion.completedGame = gSaveFilesInfo[gMostRecentSaveFile].completedGame;
         gGameCompletion.introPlayed = gSaveFilesInfo[gMostRecentSaveFile].introPlayed;
@@ -2148,7 +2159,11 @@ void Sram_CheckLoadSaveFile(void)
         gDifficulty = gSaveFilesInfo[gMostRecentSaveFile].difficulty;
         gTimeAttackFlag = gSaveFilesInfo[gMostRecentSaveFile].timeAttack;
         gUseMotherShipDoors = FALSE;
+#ifdef UNHUNDO
+        gShipLandingFlag = FALSE;
+#else // !UNHUNDO
         gShipLandingFlag = TRUE;
+#endif // UNHUNDO
     }
     else
     {

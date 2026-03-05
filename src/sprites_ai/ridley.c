@@ -1923,9 +1923,15 @@ static void RidleyDying(void)
                 APPLY_DELTA_TIME_DEC(gCurrentSprite.work2);
 
             if (gCurrentSprite.work2 == DELTA_TIME)
+            {
+#ifndef UNHUNDO
                 StartEffectForCutscene(EFFECT_CUTSCENE_STATUE_OPENING);
+#endif // !UNHUNDO
+            }
             else if (gCurrentSprite.work2 == 0)
+            {
                 FadeMusic(CONVERT_SECONDS(2.5f));
+            }
         }
     }
 

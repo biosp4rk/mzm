@@ -109,7 +109,11 @@ const struct HatchLockEvent sHatchLockEventsCrateria[2] = {
     }
 };
 
+#ifdef UNHUNDO
+const struct HatchLockEvent sHatchLockEventsChozodia[16] = {
+#else // !UNHUNDO
 const struct HatchLockEvent sHatchLockEventsChozodia[15] = {
+#endif // UNHUNDO
     {
         .room = 13,
         .event = EVENT_MECHA_RIDLEY_KILLED,
@@ -424,7 +428,30 @@ const struct HatchLockEvent sHatchLockEventsChozodia[15] = {
         .hatchesToLock_13 = FALSE,
         .hatchesToLock_14 = FALSE,
         .hatchesToLock_15 = FALSE
-    }
+    },
+#ifdef UNHUNDO
+    {
+        .room = 70,
+        .event = EVENT_END_UNUSED,
+        .type = HATCH_LOCK_EVENT_TYPE_BEFORE,
+        .hatchesToLock_0 = FALSE,
+        .hatchesToLock_1 = TRUE,
+        .hatchesToLock_2 = FALSE,
+        .hatchesToLock_3 = FALSE,
+        .hatchesToLock_4 = FALSE,
+        .hatchesToLock_5 = FALSE,
+        .hatchesToLock_6 = FALSE,
+        .hatchesToLock_7 = FALSE,
+        .hatchesToLock_8 = FALSE,
+        .hatchesToLock_9 = FALSE,
+        .hatchesToLock_10 = FALSE,
+        .hatchesToLock_11 = FALSE,
+        .hatchesToLock_12 = FALSE,
+        .hatchesToLock_13 = FALSE,
+        .hatchesToLock_14 = FALSE,
+        .hatchesToLock_15 = FALSE
+    },
+#endif // UNHUNDO
 };
 
 const u8 sEventBasedConnections[41][EVENT_BASED_CONNECTION_FIELD_COUNT] = {

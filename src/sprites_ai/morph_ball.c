@@ -2,6 +2,7 @@
 #include "macros.h"
 
 #include "data/sprites/morph_ball.h"
+#include "data/block_data.h"
 
 #include "constants/sprite.h"
 #include "constants/samus.h"
@@ -21,7 +22,11 @@
  */
 static void MorphBallInit(void)
 {
+#ifdef UNHUNDO
+    if (!(gEquipment.suitMisc & SMF_MORPH_BALL))
+#else // !UNHUNDO
     if (gEquipment.suitMisc & SMF_MORPH_BALL)
+#endif // UNHUNDO
     {
         gCurrentSprite.status = 0;
         return;
@@ -58,6 +63,10 @@ static void MorphBallInit(void)
  */
 static void MorphBallGet(void)
 {
+#ifdef UNHUNDO
+    u8 msg;
+#endif // UNHUNDO
+
     if (gCurrentSprite.status & SPRITE_STATUS_SAMUS_COLLIDING)
     {
         gPreventMovementTimer = SAMUS_ITEM_PMT;
@@ -68,10 +77,30 @@ static void MorphBallGet(void)
 
         gCurrentSprite.work0 = 0;
 
+#ifdef UNHUNDO
+        gEquipment.suitMisc &= ~SMF_MORPH_BALL;
+        gEquipment.suitMiscActivation &= ~SMF_MORPH_BALL;
+
+        if (gEquipment.beamBombs == BBF_NONE && gEquipment.suitMisc == SMF_NONE && 
+            gEquipment.maxEnergy == sStartingHealthAmmo.energy &&
+            gEquipment.maxMissiles == sStartingHealthAmmo.missile &&
+            gEquipment.maxSuperMissiles == sStartingHealthAmmo.superMissile &&
+            gEquipment.maxPowerBombs == sStartingHealthAmmo.powerBomb)
+        {
+            msg = MESSAGE_MORPH_BALL;
+        }
+        else
+        {
+            msg = MESSAGE_CHOZODIA_ESCAPE;
+        }
+
+        SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, msg, SPRITE_GFX_SLOT_SPECIAL, gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
+#else // !UNHUNDO
         // Give morph ball
         gEquipment.suitMisc |= SMF_MORPH_BALL;
 
         SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_MORPH_BALL, SPRITE_GFX_SLOT_SPECIAL, gCurrentSprite.yPosition, gCurrentSprite.xPosition, 0);
+#endif // UNHUNDO
     }
 }
 

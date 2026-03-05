@@ -29,7 +29,11 @@
  */
 static void ChargeBeamInit(void)
 {
+#ifdef UNHUNDO
+    if (!(gEquipment.beamBombs & BBF_CHARGE_BEAM))
+#else // !UNHUNDO
     if (gEquipment.beamBombs & BBF_CHARGE_BEAM)
+#endif // UNHUNDO
     {
         gCurrentSprite.status = 0;
         return;
@@ -132,8 +136,14 @@ static void ChargeBeamIdle(void)
         gCurrentSprite.animationDurationCounter = 0;
         gCurrentSprite.currentAnimationFrame = 0;
 
+#ifdef UNHUNDO
+        gEquipment.beamBombs &= ~BBF_CHARGE_BEAM;
+        gEquipment.beamBombsActivation &= ~BBF_CHARGE_BEAM;
+        ProjectileLoadGraphics();
+#else // !UNHUNDO
         // Set charge beam
         gEquipment.beamBombs |= BBF_CHARGE_BEAM;
+#endif // UNHUNDO
 
         // Set event
         SET_EVENT(EVENT_CHARGE_BEAM_OBTAINED);

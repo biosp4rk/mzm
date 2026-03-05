@@ -10,6 +10,7 @@
 #include "structs/demo.h"
 #include "structs/game_state.h"
 #include "structs/display.h"
+#include "structs/save_file.h"
 
 void agbmain(void)
 {
@@ -114,7 +115,23 @@ void agbmain(void)
                     if (gSubGameMode2 == 1)
                         gMainGameMode = GM_INGAME;
                     else if (gSubGameMode2 == 2)
+                    {
+#ifdef UNHUNDO
+                        // There's probably a better way to check this
+                        if (gSaveFilesInfo[gMostRecentSaveFile].igtHours == 0 &&
+                            gSaveFilesInfo[gMostRecentSaveFile].igtMinutes == 0 &&
+                            gSaveFilesInfo[gMostRecentSaveFile].igtSeconds == 0)
+                        {
+                            gMainGameMode = GM_CHOZODIA_ESCAPE;
+                        }
+                        else
+                        {
+                            gMainGameMode = GM_INGAME;
+                        }
+#else // !UNHUNDO
                         gMainGameMode = GM_INGAME;
+#endif // UNHUNDO
+                    }
                     else if (gSubGameMode2 == 4)
                         gMainGameMode = GM_FUSION_GALLERY;
                     else if (gSubGameMode2 == 5)
@@ -203,7 +220,11 @@ void agbmain(void)
                 if (ChozodiaEscapeMainLoop())
                 {
                     gSubGameMode1 = 0;
+#ifdef UNHUNDO
+                    gMainGameMode = GM_INGAME;
+#else // !UNHUNDO
                     gMainGameMode = GM_CREDITS;
+#endif // UNHUNDO
                 }
                 break;
 

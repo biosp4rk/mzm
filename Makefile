@@ -60,6 +60,12 @@ ifeq ($(DEBUG),1)
 	TARGET := $(TARGET)_debug
 endif
 
+ifeq ($(UNHUNDO),1)
+	CPPFLAGS += -DUNHUNDO
+	ASFLAGS += --defsym UNHUNDO=1
+	TARGET := $(TARGET)_unhundo
+endif
+
 BASEROM := $(TARGET)_baserom.gba
 TARGET := $(TARGET).gba
 
@@ -254,8 +260,13 @@ src/dma.s: src/dma.c
 src/sram/%.s: CFLAGS = -Werror -O1 -mthumb-interwork -fhex-asm -f2003-patch
 src/sram/%.s: src/sram/%.c
 
-.PHONY: us us_debug us_beta eu eu_debug eu_beta jp jp_debug
+.PHONY: unhundo unhundo_debug us us_debug us_beta eu eu_debug eu_beta jp jp_debug
 # cn cn_debug
+
+unhundo:
+	$(MAKE) REGION=us UNHUNDO=1
+unhundo_debug:
+	$(MAKE) REGION=us UNHUNDO=1 DEBUG=1
 
 us:
 	$(MAKE) REGION=us

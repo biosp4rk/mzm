@@ -1010,6 +1010,15 @@ u8 ColorFadingProcess_BeforeIntroText(void)
             break;
 
         case 3:
+#ifdef UNHUNDO
+            gMainGameMode = GM_CREDITS;
+            gSubGameMode1 = 0;
+            gSubGameMode2 = 0;
+            gSubGameMode3 = 0;
+
+            ColorFadingFinishDoorFade();
+            ColorFadingStart(COLOR_FADING_CANCEL);
+#else // !UNHUNDO
             gCurrentCutscene = CUTSCENE_INTRO_TEXT;
 
             ColorFadingFinishDoorFade();
@@ -1028,6 +1037,7 @@ u8 ColorFadingProcess_BeforeIntroText(void)
                     break;
                 }
             }
+#endif // UNHUNDO
 
             return TRUE;
     }

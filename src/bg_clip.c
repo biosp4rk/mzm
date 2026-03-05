@@ -512,6 +512,53 @@ void BgClipCheckTouchingTransitionOrTank(void)
                 gLastTankCollected.xPosition = xPositions[sBlockTouchOffsets[j][1]];
                 gLastTankCollected.yPosition = yPositions[sBlockTouchOffsets[j][0]];
 
+#ifdef UNHUNDO
+                if (i == ITEM_TYPE_MISSILE)
+                {
+                    if (gEquipment.maxMissiles >= sTankIncreaseAmount[gDifficulty].missile)
+                    {
+                        gEquipment.maxMissiles -= sTankIncreaseAmount[gDifficulty].missile;
+                        if (gEquipment.currentMissiles > gEquipment.maxMissiles)
+                            gEquipment.currentMissiles = gEquipment.maxMissiles;
+
+                        if (gEquipment.maxMissiles == 0)
+                            isFirstTank = TRUE;
+                    }
+                }
+                else if (i == ITEM_TYPE_ENERGY)
+                {
+                    if (gEquipment.maxEnergy >= sTankIncreaseAmount[gDifficulty].energy)
+                    {
+                        gEquipment.maxEnergy -= sTankIncreaseAmount[gDifficulty].energy;
+                        if (gEquipment.currentEnergy > gEquipment.maxEnergy)
+                            gEquipment.currentEnergy = gEquipment.maxEnergy;
+                    }
+                }
+                else if (i == ITEM_TYPE_SUPER_MISSILE)
+                {
+                    if (gEquipment.maxSuperMissiles >= sTankIncreaseAmount[gDifficulty].superMissile)
+                    {
+                        gEquipment.maxSuperMissiles -= sTankIncreaseAmount[gDifficulty].superMissile;
+                        if (gEquipment.currentSuperMissiles > gEquipment.maxSuperMissiles)
+                            gEquipment.currentSuperMissiles = gEquipment.maxSuperMissiles;
+
+                        if (gEquipment.maxSuperMissiles == 0)
+                            isFirstTank = TRUE;
+                    }
+                }
+                else if (i == ITEM_TYPE_POWER_BOMB)
+                {
+                    if (gEquipment.maxPowerBombs >= sTankIncreaseAmount[gDifficulty].powerBomb)
+                    {
+                        gEquipment.maxPowerBombs -= sTankIncreaseAmount[gDifficulty].powerBomb;
+                        if (gEquipment.currentPowerBombs > gEquipment.maxPowerBombs)
+                            gEquipment.currentPowerBombs = gEquipment.maxPowerBombs;
+
+                        if (gEquipment.maxPowerBombs == 0)
+                            isFirstTank = TRUE;
+                    }
+                }
+#else // !UNHUNDO
                 // Apply tank :
                 // Check not above max (max number of tanks * increase amount + starting) >= current max + increase
                 // Check if it's not first tank of that type (except for energy)
@@ -558,6 +605,7 @@ void BgClipCheckTouchingTransitionOrTank(void)
                         gEquipment.currentPowerBombs += sTankIncreaseAmount[gDifficulty].powerBomb;
                     }
                 }
+#endif // UNHUNDO
 
                 // Spawn the message banner
                 i = sTankBehaviors[BEHAVIOR_TO_TANK(behaviors[j])].messageId + isFirstTank;

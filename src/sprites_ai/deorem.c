@@ -474,7 +474,11 @@ static void DeoremInit(void)
         if (CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED))
         {
             if (CHECK_EVENT(EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED) &&
+#ifdef UNHUNDO
+                (gEquipment.beamBombs & BBF_CHARGE_BEAM) &&
+#else // !UNHUNDO
                 !(gEquipment.beamBombs & BBF_CHARGE_BEAM) &&
+#endif // UNHUNDO
                 !CHECK_EVENT(EVENT_DEOREM_KILLED_AT_SECOND_LOCATION))
             {
                 gCurrentSprite.pose = DEOREM_POSE_CALL_SPAWN_CHARGE_BEAM;

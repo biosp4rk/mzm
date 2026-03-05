@@ -171,12 +171,21 @@ MAKE_ENUM(u8, DescriptionTextId) {
  * @param msg Message id
  * @return Is item message
  */
+#ifdef UNHUNDO
+#define MESSAGE_IS_ITEM(msg)                                                                                \
+    (msg) == MESSAGE_LONG_BEAM || (msg) == MESSAGE_CHARGE_BEAM || (msg) == MESSAGE_ICE_BEAM ||              \
+    (msg) == MESSAGE_WAVE_BEAM || (msg) == MESSAGE_UKNOWN_ITEM_PLASMA || (msg) == MESSAGE_BOMB ||           \
+    (msg) == MESSAGE_VARIA_SUIT || (msg) == MESSAGE_UNKNOWN_ITEM_GRAVITY || (msg) == MESSAGE_MORPH_BALL ||  \
+    (msg) == MESSAGE_SPEED_BOOSTER || (msg) == MESSAGE_HIGH_JUMP || (msg) == MESSAGE_SCREW_ATTACK ||        \
+    (msg) == MESSAGE_UNKNOWN_ITEM_SPACE_JUMP || (msg) == MESSAGE_POWER_GRIP || (msg) == MESSAGE_CHOZODIA_ESCAPE
+#else // !UNHUNDO
 #define MESSAGE_IS_ITEM(msg)                                                                                \
     (msg) == MESSAGE_LONG_BEAM || (msg) == MESSAGE_CHARGE_BEAM || (msg) == MESSAGE_ICE_BEAM ||              \
     (msg) == MESSAGE_WAVE_BEAM || (msg) == MESSAGE_UKNOWN_ITEM_PLASMA || (msg) == MESSAGE_BOMB ||           \
     (msg) == MESSAGE_VARIA_SUIT || (msg) == MESSAGE_UNKNOWN_ITEM_GRAVITY || (msg) == MESSAGE_MORPH_BALL ||  \
     (msg) == MESSAGE_SPEED_BOOSTER || (msg) == MESSAGE_HIGH_JUMP || (msg) == MESSAGE_SCREW_ATTACK ||        \
     (msg) == MESSAGE_UNKNOWN_ITEM_SPACE_JUMP || (msg) == MESSAGE_POWER_GRIP
+#endif // UNHUNDO
 
 /**
  * @brief Checks whether a provided message is an "unknown item" message

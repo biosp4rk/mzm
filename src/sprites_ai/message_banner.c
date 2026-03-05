@@ -2,6 +2,9 @@
 #include "gba.h"
 #include "sprites_ai/ruins_test.h"
 #include "macros.h"
+#include "color_fading.h"
+#include "audio_wrappers.h"
+#include "samus.h"
 
 #include "data/sprites/message_banner.h"
 
@@ -11,6 +14,7 @@
 #include "constants/sprite.h"
 #include "constants/samus.h"
 #include "constants/text.h"
+#include "constants/color_fading.h"
 
 #include "structs/bg_clip.h"
 #include "structs/demo.h"
@@ -18,6 +22,7 @@
 #include "structs/sprite.h"
 #include "structs/samus.h"
 #include "structs/power_bomb_explosion.h"
+#include "structs/hud.h"
 
 // Save yes no cursor
 
@@ -164,10 +169,19 @@ static void MessageBannerPopUp(void)
                 BackupTrackData2SoundChannels();
 
                 // Play item jingle
+#ifdef UNHUNDO
+                if (msg == MESSAGE_MORPH_BALL)
+                    PlayMusic(MUSIC_GETTING_FULLY_POWERED_SUIT_JINGLE, FALSE);
+                else if (msg == MESSAGE_CHOZODIA_ESCAPE)
+                    PlayMusic(MUSIC_GETTING_UNKNOWN_ITEM_JINGLE, FALSE);
+                else
+                    InsertMusicAndQueueCurrent(MUSIC_GETTING_ITEM_JINGLE, FALSE);
+#else // !UNHUNDO
                 if (MESSAGE_IS_UNKNOWN_ITEM(msg))
                     InsertMusicAndQueueCurrent(MUSIC_GETTING_UNKNOWN_ITEM_JINGLE, FALSE);
                 else
                     InsertMusicAndQueueCurrent(MUSIC_GETTING_ITEM_JINGLE, FALSE);
+#endif // !UNHUNDO
             }
             else if (MESSAGE_IS_FIRST_TANK(msg))
             {
@@ -218,9 +232,22 @@ static void MessageBannerPopUp(void)
             gCurrentSprite.pOam = sMessageBannerOam_OneLineStatic;
 
             if (msg == MESSAGE_FULLY_POWERED_SUIT)
+            {
                 gCurrentSprite.MESSAGE_BANNER_TIMER = CONVERT_SECONDS(5) + TWO_THIRD_SECOND; // Long because jingle is long
+            }
             else
+            {
+#ifdef UNHUNDO
+                if (msg == MESSAGE_MORPH_BALL)
+                    gCurrentSprite.MESSAGE_BANNER_TIMER = CONVERT_SECONDS(7.4f);
+                else if (msg == MESSAGE_CHOZODIA_ESCAPE)
+                    gCurrentSprite.MESSAGE_BANNER_TIMER = CONVERT_SECONDS(4.4f);
+                else
+                    gCurrentSprite.MESSAGE_BANNER_TIMER = CONVERT_SECONDS(1) + TWO_THIRD_SECOND;
+#else // !UNHUNDO
                 gCurrentSprite.MESSAGE_BANNER_TIMER = CONVERT_SECONDS(1) + TWO_THIRD_SECOND;
+#endif // UNHUNDO
+            }
         }
         else
         {
@@ -261,6 +288,30 @@ static void MessageBannerStatic(void)
         APPLY_DELTA_TIME_DEC(gCurrentSprite.MESSAGE_BANNER_TIMER);
         return;
     }
+
+#ifdef UNHUNDO
+    if (message == MESSAGE_MORPH_BALL)
+    {
+        gShipLandingFlag = TRUE;
+        gHideHud = TRUE;
+        StopAllMusicAndSounds();
+
+        gCurrentArea = AREA_CRATERIA;
+        gCurrentRoom = 0;
+        gLastDoorUsed = 0;
+        gSubGameMode1 = SUB_GAME_MODE_LOADING_ROOM;
+        
+        return;
+    }
+    else if (message == MESSAGE_CHOZODIA_ESCAPE)
+    {
+        gPreventMovementTimer = 1000;
+        StopAllMusicAndSounds();
+        StartEffectForCutscene(EFFECT_CUTSCENE_ESCAPE_FAILED);
+
+        return;
+    }
+#endif // UNHUNDO
 
     // Check if should remove (input or demo active, ignore for save prompt)
     if (message != MESSAGE_SAVE_PROMPT &&
@@ -327,15 +378,21 @@ static void MessageBannerRemovalAnimation(void)
                 gBossWork.work2 + BLOCK_SIZE * 12, 0);
         }
         // Check replay sounds
+#ifdef UNHUNDO
+        else if (MESSAGE_IS_ITEM(msg) || MESSAGE_IS_TANK(msg) || MESSAGE_IS_FIRST_TANK(msg))
+#else // !UNHUNDO
         else if (MESSAGE_IS_TANK(msg))
+#endif // UNHUNDO
         {
             RetrieveTrackData2SoundChannels();
         }
 
         gPreventMovementTimer = 0;
 
+#ifndef UNHUNDO 
         if (gCurrentSprite.MESSAGE_BANNER_NEW_ITEM)
             gPauseScreenFlag = PAUSE_SCREEN_ITEM_ACQUISITION;
+#endif // !UNHUNDO
     }
 }
 

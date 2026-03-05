@@ -5745,8 +5745,13 @@ const struct Door sCrateriaDoors[53] = {
 		.sourceRoom = 0,
 		.xStart = 39,
 		.xEnd = 39,
+#ifdef UNHUNDO
+		.yStart = 62 + 6,
+		.yEnd = 62 + 6,
+#else // !UNHUNDO
 		.yStart = 62,
 		.yEnd = 62,
+#endif // UNHUNDO
 		.destinationDoor = 0,
 		.xExit = BLOCK_TO_PIXEL(0),
 		.yExit = BLOCK_TO_PIXEL(0)

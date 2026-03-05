@@ -2,9 +2,11 @@
 #include "sprites_ai/ruins_test.h"
 #include "dma.h"
 #include "gba.h"
+#include "event.h"
 
 #include "data/in_game_cutscene_data.h"
 #include "data/samus_close_up_data.h"
+#include "data/block_data.h"
 
 #include "constants/audio.h"
 #include "constants/animated_graphics.h"
@@ -14,6 +16,9 @@
 #include "constants/samus.h"
 #include "constants/in_game_cutscene.h"
 #include "constants/power_bomb_explosion.h"
+#include "constants/connection.h"
+#include "constants/samus.h"
+#include "constants/event.h"
 
 #include "structs/display.h"
 #include "structs/hud.h"
@@ -52,13 +57,19 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
             break;
 
         case 1:
+#ifndef UNHUNDO
             TransparencyUpdateBldalpha(16, 0, 7, 1);
+#endif // !UNHUNDO
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 2:
+#ifndef UNHUNDO
             if (gIoRegistersBackup.BLDALPHA_NonGameplay_EVA == 16 && gIoRegistersBackup.BLDALPHA_NonGameplay_EVB == 0)
+#endif // !UNHUNDO
+            {
                 result = IGC_RESULT_NEXT_STAGE;
+            }
             break;
 
         case 5:
@@ -74,6 +85,7 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
             break;
 
         case 4:
+#ifndef UNHUNDO
             // Warning: DMA is out of bounds
             DmaTransfer(3, &sSamusCloseUpEyesGfx_1[0], VRAM_BASE + 0xB940, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B000, VRAM_BASE + 0x294, 0x14, 16);
@@ -92,10 +104,12 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
 
             DmaTransfer(3, &sSamusCloseUpEyesGfx_1[1280], VRAM_BASE + 0xCD40, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B140, VRAM_BASE + 0x3D4, 0x14, 16);
+#endif // !UNHUNDO
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 6:
+#ifndef UNHUNDO
             DmaTransfer(3, &sSamusCloseUpEyesGfx_2[0], VRAM_BASE + 0xB940, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B014, VRAM_BASE + 0x294, 0x14, 16);
 
@@ -113,10 +127,12 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
 
             DmaTransfer(3, &sSamusCloseUpEyesGfx_2[1280], VRAM_BASE + 0xCD40, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B154, VRAM_BASE + 0x3D4, 0x14, 16);
+#endif // !UNHUNDO
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 8:
+#ifndef UNHUNDO
             DmaTransfer(3, &sSamusCloseUpEyesGfx_3[0], VRAM_BASE + 0xB940, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B028, VRAM_BASE + 0x294, 0x14, 16);
 
@@ -134,16 +150,21 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
             
             DmaTransfer(3, &sSamusCloseUpEyesGfx_3[1280], VRAM_BASE + 0xCD40, 0x140, 16);
             DmaTransfer(3, EWRAM_BASE + 0x2B168, VRAM_BASE + 0x3D4, 0x14, 16);
+#endif // !UNHUNDO
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 10:
+#ifndef UNHUNDO
             TransparencyUpdateBldalpha(0, 16, 0, 16);
+#endif // !UNHUNDO
             result = IGC_RESULT_NEXT_STAGE;
             break;
 
         case 11:
+#ifndef UNHUNDO
             if (gIoRegistersBackup.BLDALPHA_NonGameplay_EVA == 0 && gIoRegistersBackup.BLDALPHA_NonGameplay_EVB == 16)
+#endif // !UNHUNDO
             {
                 gHideHud = FALSE;
                 result = TRUE;
@@ -151,7 +172,9 @@ u32 InGameCutsceneSamusCloseUp(InGameCutsceneScene cutsceneNumber, InGameCutscen
             break;
 
         case 12:
+#ifndef UNHUNDO
             DmaTransfer(3, EWRAM_BASE + 0x1E000, VRAM_BASE + 0x9000, 0x2000, 16);
+#endif // !UNHUNDO
             gSramOperationStage = 0;
             result = IGC_RESULT_NEXT_STAGE;
             break;
@@ -737,7 +760,12 @@ void InGameCutsceneInit(void)
     switch (gInGameCutscene.cutsceneNumber)
     {
         case IGC_CLOSE_UP:
+#ifdef UNHUNDO
+            // For some reason this number ends up being too high, possibly related to fading
             gPreventMovementTimer = CONVERT_SECONDS(6.f);
+#else // !UNHUNDO
+            gPreventMovementTimer = CONVERT_SECONDS(6.f);
+#endif // UNHUNDO
             exists = TRUE;
             break;
 
@@ -799,12 +827,48 @@ void InGameCutsceneCheckPlayOnTransition(void)
             gDisablePause = TRUE;
             gDisplayLocationText = FALSE;
 
+#ifdef UNHUNDO
+            PlayMusic(gCurrentRoomEntry.musicTrack, 0);
+#else // !UNHUNDO
             // Queue brinstar and play loading jingle
             PlayMusic(MUSIC_BRINSTAR, 0);
+#endif // UNHUNDO
             InsertMusicAndQueueCurrent(MUSIC_LOADING_JINGLE, TRUE);
 
             // Set samus to facing foreground
             SamusSetPose(SPOSE_FACING_THE_FOREGROUND);
+#ifdef UNHUNDO
+            gSamusData.xPosition = gPreviousXPosition = 8 * BLOCK_SIZE;
+            gSamusData.yPosition = gPreviousYPosition = 11 * BLOCK_SIZE - 1;
+
+            gEquipment.maxEnergy = gEquipment.currentEnergy =
+                sStartingHealthAmmo.energy + sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].energy * sTankIncreaseAmount[gDifficulty].energy;
+            gEquipment.maxMissiles = gEquipment.currentMissiles =
+                sStartingHealthAmmo.missile + sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].missile * sTankIncreaseAmount[gDifficulty].missile;
+            gEquipment.maxSuperMissiles = gEquipment.currentSuperMissiles =
+                sStartingHealthAmmo.superMissile + sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].superMissile * sTankIncreaseAmount[gDifficulty].superMissile;
+            gEquipment.maxPowerBombs = gEquipment.currentPowerBombs =
+                sStartingHealthAmmo.powerBomb + sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].powerBomb * sTankIncreaseAmount[gDifficulty].powerBomb;
+
+            gEquipment.suitType = SUIT_FULLY_POWERED;
+            gEquipment.beamBombsActivation = gEquipment.beamBombs =
+                BBF_LONG_BEAM | BBF_ICE_BEAM | BBF_WAVE_BEAM | BBF_PLASMA_BEAM | BBF_CHARGE_BEAM | BBF_BOMBS;
+            gEquipment.suitMiscActivation = gEquipment.suitMisc =
+                SMF_HIGH_JUMP | SMF_SPEEDBOOSTER | SMF_SPACE_JUMP | SMF_SCREW_ATTACK | SMF_VARIA_SUIT | SMF_GRAVITY_SUIT | SMF_MORPH_BALL | SMF_POWER_GRIP;
+
+            // No Mother Brain or Ruins Test
+            SET_EVENT(EVENT_MOTHER_BRAIN_KILLED);
+            SET_EVENT(EVENT_ESCAPED_ZEBES);
+            SET_EVENT(EVENT_FULLY_POWERED_SUIT_OBTAINED);
+            // PB pirate
+            SET_EVENT(EVENT_POWER_BOMB_STOLEN);
+            SET_EVENT(EVENT_SPACE_PIRATE_WITH_POWER_BOMB_ONE);
+
+            InGameCutsceneCheckFlag(TRUE, IGC_LONG_BEAM_HINT);
+
+            ColorFadingStart(COLOR_FADING_NO_TRANSITION);
+            gHideHud = FALSE;
+#else // !UNHUNDO
             // Starting Y position
             gSamusData.yPosition = gPreviousYPosition = BLOCK_SIZE * 30 - 1;
 
@@ -844,6 +908,7 @@ void InGameCutsceneCheckPlayOnTransition(void)
 
             ColorFadingStart(COLOR_FADING_NO_TRANSITION_HUD_HIDE);
             gHideHud = TRUE;
+#endif // UNHUNDO
             break;
 
         case IGC_LONG_BEAM_HINT:
@@ -875,8 +940,16 @@ u32 InGameCutsceneTryQueue(InGameCutsceneScene cutscene)
     switch (cutscene)
     {
         case IGC_CLOSE_UP:
-            if (gCurrentRoom == 0 && gLastDoorUsed == 0 && !gIsLoadingFile && gSubGameMode3 == 0 && !gDebugMode && gDemoState == 0)
+#ifdef UNHUNDO
+            if (gCurrentRoom == 70 && gLastDoorUsed == 154 &&
+                !gIsLoadingFile && gSubGameMode3 == 0 && !gDebugMode && gDemoState == 0)
+#else // !UNHUNDO
+            if (gCurrentRoom == 0 && gLastDoorUsed == 0 &&
+                !gIsLoadingFile && gSubGameMode3 == 0 && !gDebugMode && gDemoState == 0)
+#endif // UNHUNDO
+            {
                 queued = TRUE;
+            }
             break;
 
         case 6:

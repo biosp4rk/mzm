@@ -143,7 +143,11 @@ static const struct FrameData sTitleScreenOam_SparkleDisappearing[6] = {
     [5] = FRAME_DATA_TERMINATOR
 };
 
+#ifdef UNHUNDO
+const u32 sTitleScreenTitleGfx[1266] = INCBIN_U32("data_unhundo/title.gfx.lz");
+#else // !UNHUNDO
 const u32 sTitleScreenTitleGfx[1095] = INCBIN_U32("data/menus/title_screen/title.gfx.lz");
+#endif // UNHUNDO
 const u32 sTitleScreenSparklesGfx[256] = INCBIN_U32("data/menus/title_screen/sparkles.gfx.lz");
 const u32 sTitleScreenSpaceBackgroundGfx[3203] = INCBIN_U32("data/menus/title_screen/space_background.gfx.lz");
 const u32 sTitleScreenSpaceBackgroundDecorationGfx[797] = INCBIN_U32("data/menus/title_screen/space_background_decoration.gfx.lz");
@@ -162,7 +166,11 @@ const u32 sTitleScreenSpanishMenuGfx_Top[64] = INCBIN_U32("data/menus/title_scre
 const u32 sTitleScreenSpanishMenuGfx_Bottom[45] = INCBIN_U32("data/menus/title_screen/spanish_menu_bottom.gfx.lz");
 #endif // REGION_EU
 
+#ifdef UNHUNDO
+const u32 sTitleScreenTitleTileTable[215] = INCBIN_U32("data_unhundo/title.tm.lz");
+#else // !UNHUNDO
 const u32 sTitleScreenTitleTileTable[] = INCBIN_U32("data/menus/title_screen/title.tt");
+#endif // UNHUNDO
 const u32 sTitleScreenSpaceBackgroundTileTable[702] = INCBIN_U32("data/menus/title_screen/space_background.tt");
 
 const u8 sTitleScreenRomInfoPosition[4] = {

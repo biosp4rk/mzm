@@ -70,8 +70,13 @@ const u8 sUnk_411520[4] = {
 };
 
 const struct SectionInfo sSectionInfo = {
+#ifdef UNHUNDO
+    .sectionIndex = AREA_CHOZODIA,
+    .starIndex = AREA_CHOZODIA,
+#else // !UNHUNDO
     .sectionIndex = AREA_CRATERIA,
     .starIndex = AREA_CRATERIA,
+#endif // UNHUNDO
     .downloadedMaps = 0,
     .onMapScreen = FALSE,
     .unk_3_1 = 0

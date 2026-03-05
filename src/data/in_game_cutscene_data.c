@@ -27,7 +27,11 @@ const struct InGameCutsceneData sInGameCutsceneData[IGC_COUNT] = {
     },
     [IGC_CLOSE_UP] = {
         .unk_0 = 0,
+#ifdef UNHUNDO
+        .area = AREA_CHOZODIA,
+#else // !UNHUNDO
         .area = AREA_BRINSTAR,
+#endif // UNHUNDO
         .pFunction = InGameCutsceneSamusCloseUp
     },
     [5] = {

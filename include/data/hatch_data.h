@@ -15,7 +15,11 @@ extern const struct HatchLockEvent sHatchLockEventsKraid[1];
 
 extern const struct HatchLockEvent sHatchLockEventsCrateria[2];
 
+#ifdef UNHUNDO
+extern const struct HatchLockEvent sHatchLockEventsChozodia[16];
+#else // !UNHUNDO
 extern const struct HatchLockEvent sHatchLockEventsChozodia[15];
+#endif // UNHUNDO
 
 extern const u8 sEventBasedConnections[41][EVENT_BASED_CONNECTION_FIELD_COUNT];
 

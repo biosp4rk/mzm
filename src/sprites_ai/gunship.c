@@ -202,7 +202,9 @@ static void GunshipInit(void)
     if (gLastDoorUsed == 0)
     {
         introCutscene = TRUE;
+#ifndef UNHUNDO
         gCurrentSprite.yPosition -= BLOCK_SIZE * 6;
+#endif // !UNHUNDO
         SoundPlay(SOUND_GUNSHIP_LANDING);
     }
 
@@ -254,7 +256,11 @@ static void GunshipInit(void)
         // Landing
         gCurrentSprite.samusCollision = SSC_NONE;
         gCurrentSprite.pose = GUNSHIP_POSE_LANDING;
+#ifdef UNHUNDO
+        gCurrentSprite.work0 = CONVERT_SECONDS(4.2f);
+#else // !UNHUNDO
         gCurrentSprite.work0 = CONVERT_SECONDS(3.2f);
+#endif // UNHUNDO
 
         SamusSetPose(SPOSE_SAVING_LOADING_GAME);
         gSamusData.timer = 1 * DELTA_TIME;
@@ -293,7 +299,11 @@ static void GunshipLanding(void)
     if (gCurrentSprite.work0 != 0)
     {
         APPLY_DELTA_TIME_DEC(gCurrentSprite.work0);
+#ifdef UNHUNDO
+        gCurrentSprite.yPosition -= PIXEL_SIZE / 2;
+#else // !UNHUNDO
         gCurrentSprite.yPosition += PIXEL_SIZE / 2;
+#endif // UNHUNDO
         gSamusData.yPosition = gCurrentSprite.yPosition - PIXEL_SIZE;
         gSamusData.xPosition = gCurrentSprite.xPosition;
 

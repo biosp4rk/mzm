@@ -14,7 +14,11 @@ extern const u16 sTitleScreenPromptPal[5 * 16];
 extern const u16 sTitleScreenUnselectedMenuPal[1 * 16];
 #endif // REGION_EU
 
+#ifdef UNHUNDO
+extern const u32 sTitleScreenTitleGfx[1266];
+#else // !UNHUNDO
 extern const u32 sTitleScreenTitleGfx[1095];
+#endif // UNHUNDO
 extern const u32 sTitleScreenSparklesGfx[256];
 extern const u32 sTitleScreenSpaceBackgroundGfx[3203];
 extern const u32 sTitleScreenSpaceBackgroundDecorationGfx[797];
@@ -33,7 +37,11 @@ extern const u32 sTitleScreenSpanishMenuGfx_Top[64];
 extern const u32 sTitleScreenSpanishMenuGfx_Bottom[45];
 #endif // REGION_EU
 
+#ifdef UNHUNDO
+extern const u32 sTitleScreenTitleTileTable[215];
+#else // !UNHUNDO
 extern const u32 sTitleScreenTitleTileTable[];
+#endif // UNHUNDO
 extern const u32 sTitleScreenSpaceBackgroundTileTable[702];
 
 extern const u8 sTitleScreenRomInfoPosition[4];

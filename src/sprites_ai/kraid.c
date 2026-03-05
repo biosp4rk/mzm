@@ -1693,9 +1693,15 @@ static void KraidDying(void)
     {
         APPLY_DELTA_TIME_DEC(gCurrentSprite.work2);
         if (gCurrentSprite.work2 == DELTA_TIME)
+        {
+#ifndef UNHUNDO
             StartEffectForCutscene(EFFECT_CUTSCENE_STATUE_OPENING);
+#endif // !UNHUNDO
+        }
         else if (gCurrentSprite.work2 == 0)
+        {
             SoundPlay(SOUND_KRAID_DYING_3);
+        }
     }
 
     // Play effects

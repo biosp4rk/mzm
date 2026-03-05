@@ -1070,6 +1070,7 @@ void ConnectionCheckPlayCutsceneDuringTransition(Area area, u8 dstRoomPlusOne)
                 if (!CHECK_EVENT(EVENT_FULLY_POWERED_SUIT_OBTAINED))
                     gCurrentCutscene = CUTSCENE_BEFORE_RUINS_TEST;
             }
+#ifndef UNHUNDO
             // Room 0xA is the suitless entry of the mothership
             else if (dstRoomPlusOne == 0xB && !CHECK_EVENT(EVENT_ENTER_MOTHERSHIP_DEMO_PLAYED))
             {
@@ -1077,6 +1078,7 @@ void ConnectionCheckPlayCutsceneDuringTransition(Area area, u8 dstRoomPlusOne)
                     SoundFade(SOUND_RAIN, CONVERT_SECONDS(1.f / 6));
                 gCurrentCutscene = CUTSCENE_MECHA_RIDLEY_SEES_SAMUS;
             }
+#endif // !UNHUNDO
             break;
 
         case AREA_BRINSTAR:
@@ -1099,11 +1101,15 @@ void ConnectionCheckPlayCutsceneDuringAreaConnection(void)
         case ELEVATOR_ROUTE_BRINSTAR_TO_NORFAIR:
             if (gLastElevatorUsed.direction == ELEVATOR_DIRECTION_DOWN && !CHECK_EVENT(EVENT_ENTER_NORFAIR_DEMO_PLAYED))
             {
+#ifdef UNHUNDO
+                SET_EVENT(EVENT_ENTER_NORFAIR_DEMO_PLAYED);
+#else // !UNHUNDO
                 gCurrentCutscene = CUTSCENE_MOTHER_BRAIN_CLOSE_UP;
 
                 ColorFadingStart(COLOR_FADING_CANCEL);
                 SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
                 FadeMusic(CONVERT_SECONDS(1.f / 6));
+#endif // UNHUNDO
             }
             break;
 
@@ -1116,33 +1122,45 @@ void ConnectionCheckPlayCutsceneDuringAreaConnection(void)
                     break;
                 }
 
+#ifdef UNHUNDO
+                SET_EVENT(EVENT_EXIT_KRAID_DEMO_PLAYED);
+#else // !UNHUNDO
                 gCurrentCutscene = CUTSCENE_RIDLEY_IN_SPACE;
 
                 ColorFadingStart(COLOR_FADING_CANCEL);
                 SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
                 FadeMusic(CONVERT_SECONDS(1.f / 6));
+#endif // UNHUNDO
             }
             break;
 
         case ELEVATOR_ROUTE_NORFAIR_TO_RIDLEY:
             if (gLastElevatorUsed.direction == ELEVATOR_DIRECTION_DOWN && !CHECK_EVENT(EVENT_ENTER_RIDLEY_DEMO_PLAYED))
             {
+#ifdef UNHUNDO
+                SET_EVENT(EVENT_ENTER_RIDLEY_DEMO_PLAYED);
+#else // !UNHUNDO
                 gCurrentCutscene = CUTSCENE_RIDLEY_LANDING;
 
                 ColorFadingStart(COLOR_FADING_CANCEL);
                 SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
                 FadeMusic(CONVERT_SECONDS(1.f / 6));
+#endif // UNHUNDO
             }
             break;
 
         case ELEVATOR_ROUTE_BRINSTAR_TO_TOURIAN:
             if (gLastElevatorUsed.direction == ELEVATOR_DIRECTION_DOWN && !CHECK_EVENT(EVENT_ENTER_TOURIAN_DEMO_PLAYED))
             {
+#ifdef UNHUNDO
+                SET_EVENT(EVENT_ENTER_TOURIAN_DEMO_PLAYED);
+#else // !UNHUNDO
                 gCurrentCutscene = CUTSCENE_ENTER_TOURIAN;
 
                 ColorFadingStart(COLOR_FADING_CANCEL);
                 SoundFade(SOUND_ELEVATOR, CONVERT_SECONDS(1.f / 6));
                 FadeMusic(CONVERT_SECONDS(1.f / 6));
+#endif // UNHUNDO
             }
             break;
 
