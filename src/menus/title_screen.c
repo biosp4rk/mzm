@@ -133,7 +133,7 @@ void TitleScreenSetBGCNTPageData(const struct TitleScreenPageData* const pPageDa
  */
 void TitleScreenLoadPageData(const struct TitleScreenPageData* const pPageData)
 {
-    LZ77UncompVRAM(pPageData->tiletablePointer, VRAM_BASE + pPageData->tiletablePage * 0x800);
+    LZ77UncompVram(pPageData->tiletablePointer, VRAM_BASE + pPageData->tiletablePage * 0x800);
 }
 
 /**
@@ -143,7 +143,7 @@ void TitleScreenLoadPageData(const struct TitleScreenPageData* const pPageData)
  */
 void TitleScreenLoadPageData_Copy(const struct TitleScreenPageData* const pPageData)
 {
-    LZ77UncompVRAM(pPageData->tiletablePointer, VRAM_BASE + pPageData->tiletablePage * 0x800);
+    LZ77UncompVram(pPageData->tiletablePointer, VRAM_BASE + pPageData->tiletablePage * 0x800);
 }
 
 /**
@@ -154,7 +154,7 @@ void TitleScreenLoadPageData_Copy(const struct TitleScreenPageData* const pPageD
  */
 void TitleScreenUpdateOamId(u8 offset, u8 oamId)
 {
-    TITLE_SCREEN_DATA.oam[offset].oamID = oamId;
+    TITLE_SCREEN_DATA.oam[offset].oamId = oamId;
     TITLE_SCREEN_DATA.oam[offset].animationDurationCounter = 0;
     TITLE_SCREEN_DATA.oam[offset].currentAnimationFrame = 0;
 }
@@ -163,7 +163,7 @@ void TitleScreenUpdateOamId(u8 offset, u8 oamId)
  * @brief 7644c | 2c | Calls the OAM process handler
  * 
  */
-void TitleScreenCallProcessOAM(void)
+void TitleScreenCallProcessOam(void)
 {
     gNextOamSlot = 0;
     ProcessMenuOam(ARRAY_SIZE(TITLE_SCREEN_DATA.oam), TITLE_SCREEN_DATA.oam, sTitleScreenOam);
@@ -174,7 +174,7 @@ void TitleScreenCallProcessOAM(void)
  * @brief 76478 | 50 | Resets the OAM
  * 
  */
-void TitleScreenResetOAM(void)
+void TitleScreenResetOam(void)
 {
     s32 i;
     struct MenuOamData* pOam;
@@ -691,7 +691,7 @@ void TitleScreenTransferGroundGraphics(void)
  * @brief 76d90 | 88 | Processes the comets and the sparkles
  * 
  */
-void TitleScreenProcessOAM(void)
+void TitleScreenProcessOam(void)
 {
     if (TITLE_SCREEN_DATA.type & TITLE_SCREEN_TYPE_TOP_SPARKLE_ACTIVE)
         TitleScreenProcessTopSparkle(&TITLE_SCREEN_DATA.oamTimings[0], &TITLE_SCREEN_DATA.oam[5]);
@@ -702,8 +702,8 @@ void TitleScreenProcessOAM(void)
     {
         if (TitleScreenProcessBottomSparkle(&TITLE_SCREEN_DATA.oamTimings[1], &TITLE_SCREEN_DATA.oam[6]))
         {
-            UpdateMenuOamDataID(&TITLE_SCREEN_DATA.oam[5], TITLE_SCREEN_OAM_ID_SPARKLE_GROWING);
-            UpdateMenuOamDataID(&TITLE_SCREEN_DATA.oam[6], TITLE_SCREEN_OAM_ID_SPARKLE_GROWING);
+            UpdateMenuOamDataId(&TITLE_SCREEN_DATA.oam[5], TITLE_SCREEN_OAM_ID_SPARKLE_GROWING);
+            UpdateMenuOamDataId(&TITLE_SCREEN_DATA.oam[6], TITLE_SCREEN_OAM_ID_SPARKLE_GROWING);
         }
     }
     else if (TITLE_SCREEN_DATA.type & TITLE_SCREEN_TYPE_SECOND_COMET_ACTIVE)
@@ -742,7 +742,7 @@ void TitleScreenProcessComets(struct TitleScreenOamTiming* pTiming, struct MenuO
 
             pOam->animationDurationCounter = 0;
             pOam->currentAnimationFrame = 0;
-            pOam->oamID = TITLE_SCREEN_OAM_ID_COMET_SPAWNING;
+            pOam->oamId = TITLE_SCREEN_OAM_ID_COMET_SPAWNING;
 
             pOam->exists = TRUE;
             pOam->boundBackground = 3;
@@ -756,7 +756,7 @@ void TitleScreenProcessComets(struct TitleScreenOamTiming* pTiming, struct MenuO
             // Wait
             if (pTiming->timer > 20)
             {
-                pOam->oamID = TITLE_SCREEN_OAM_ID_COMET_APPEARING;
+                pOam->oamId = TITLE_SCREEN_OAM_ID_COMET_APPEARING;
                 pTiming->stage++;
                 pTiming->timer = 0;
             }
@@ -764,7 +764,7 @@ void TitleScreenProcessComets(struct TitleScreenOamTiming* pTiming, struct MenuO
 
         case 2:
             // Wait for animation to end
-            if (pOam->oamID == TITLE_SCREEN_OAM_ID_COMET_FLYING)
+            if (pOam->oamId == TITLE_SCREEN_OAM_ID_COMET_FLYING)
             {
                 pTiming->stage++;
                 pTiming->timer = 0;
@@ -843,7 +843,7 @@ void TitleScreenProcessTopSparkle(struct TitleScreenOamTiming* pTiming, struct M
             pOam->xPosition += 12;
 
             // Check animation has ended
-            if (pOam->oamID == 0)
+            if (pOam->oamId == 0)
             {
                 pTiming->stage++;
                 pTiming->timer = 0;
@@ -925,7 +925,7 @@ u32 TitleScreenProcessBottomSparkle(struct TitleScreenOamTiming* pTiming, struct
             // Move to the left
             pOam->xPosition -= PIXEL_SIZE * 3;
             // Check animation has ended
-            if (pOam->oamID == 0)
+            if (pOam->oamId == 0)
             {
                 pTiming->stage++;
                 pTiming->timer = 0;
@@ -1044,7 +1044,7 @@ u32 TitleScreenCheckPlayEffects(void)
  * 
  * @return u32 bool, leaving
  */
-u32 TitleScreenMainLoop(void)
+u32 TitleScreenHandler(void)
 {
     u32 leaving;
     u32 ret;
@@ -1115,12 +1115,12 @@ u32 TitleScreenMainLoop(void)
             }
 
             TitleScreenUpdateAnimatedPalette();
-            TitleScreenProcessOAM();
+            TitleScreenProcessOam();
             break;
 
         case 3:
             TitleScreenUpdateAnimatedPalette();
-            TitleScreenProcessOAM();
+            TitleScreenProcessOam();
 
             if (TITLE_SCREEN_DATA.animatedPalettes[2].paletteRow == 0 && TITLE_SCREEN_DATA.timer > 40)
             {
@@ -1146,7 +1146,7 @@ u32 TitleScreenMainLoop(void)
     }
 
     if (!leaving)
-        TitleScreenCallProcessOAM();
+        TitleScreenCallProcessOam();
 
     return leaving;
 }
@@ -1373,8 +1373,8 @@ void TitleScreenInit(void)
         TITLE_SCREEN_DATA.timer = 0;
     }
 
-    TitleScreenResetOAM();
-    TitleScreenCallProcessOAM();
+    TitleScreenResetOam();
+    TitleScreenCallProcessOam();
     TitleScreenVBlank();
     unk_76710(FALSE);
 

@@ -24,6 +24,7 @@ These are known bugs and glitches in the game: code that clearly does not work a
   - [The fully powered suit cutscene fades to black after fading to white](#the-fully-powered-suit-cutscene-fades-to-black-after-fading-to-white)
   - [Reaching the maximum in-game time causes the time attack password to be invalid](#reaching-the-maximum-in-game-time-causes-the-time-attack-password-to-be-invalid)
   - [Samus can warp when standing on multiple enemies and one is killed](#samus-can-warp-when-standing-on-multiple-enemies-and-one-is-killed)
+  - [The pause debug TANK option can toggle abilities without redrawing them](#the-pause-debug-tank-option-can-toggle-abilities-without-redrawing-them)
 - [Oversights and Design Flaws](#oversights-and-design-flaws)
   - [Floating point math is used when fixed point could have been used](#floating-point-math-is-used-when-fixed-point-could-have-been-used)
   - [`ClipdataConvertToCollision` is copied to RAM but still runs in ROM](#clipdataconverttocollision-is-copied-to-ram-but-still-runs-in-rom)
@@ -178,7 +179,7 @@ After the Ruins Test fight, the game tries to lock you in place in the center of
 
 During a door transition, the game calls various "update" routines for one frame in order to initialize data, such as Samus and sprites. When entering a door transition while submerged in lava or acid, it's possible for Samus to take damage during that one frame and die. This sets `gSubGameMode1` to `SUB_GAME_MODE_DYING`, which then gets incremented by one. This is supposed to change the mode from 0 to 1 (`SUB_GAME_MODE_DOOR_TRANSITION`), but instead changes it from 5 to 6 (`SUB_GAME_MODE_NO_CLIP`). This was fixed in the European release.
 
-**Fix:** Edit `SamusExecutePoseMainLoop` in [samus.c](../src/samus.c) to only check for hazard damage if `gSubGameMode1` isn't 0.
+**Fix:** Edit `SamusExecutePoseHandler` in [samus.c](../src/samus.c) to only check for hazard damage if `gSubGameMode1` isn't 0.
 
 ```diff
 + if (gSubGameMode1 != 0)
@@ -196,7 +197,7 @@ During a door transition, the game calls various "update" routines for one frame
 
 During Samus's death animation, missiles can be highlighted and super missiles can be toggled. Even though the HUD isn't displayed, the sound for each will still play. This was fixed in the European release.
 
-**Fix:** Edit `SamusExecutePoseMainLoop` in [samus.c](../src/samus.c) to check if Samus is dying before updating the highlighted weapon.
+**Fix:** Edit `SamusExecutePoseHandler` in [samus.c](../src/samus.c) to check if Samus is dying before updating the highlighted weapon.
 
 ```diff
   // Update weapon highlight
@@ -314,7 +315,7 @@ On the first frame of a power bomb explosion, the background becomes black (it s
 
 ### The fully powered suit cutscene fades to black after fading to white
 
-At the start of the fully powered suit cutscene (after Samus is locked in place), the screen fades to white. Right before the image of suitless Samus is shown, the screen becomes black. Since the image of Samus is relatively bright, this creates an unnecessary flash between dark and light.
+At the start of the fully powered suit cutscene (after Samus is locked in place), the screen fades to white. Right before the image of suitless Samus is shown, the screen becomes black. Since the image of Samus is relatively bright, it causes an unnecessary flash between dark and light. This was fixed in the European release.
 
 **Fix:** Edit `GettingFullyPoweredSuitInit` in [getting_fully_powered_suit.c](../src/cutscenes/getting_fully_powered_suit.c) to call `CutsceneFadeScreenToWhite` instead of `CutsceneFadeScreenToBlack`.
 
@@ -353,6 +354,54 @@ When Samus stands on two enemies and kills one that respawns, the enemy's standi
 + gCurrentSprite.standingOnSprite = SAMUS_STANDING_ON_SPRITE_OFF;
 ```
 
+### The pause debug TANK option can toggle abilities without redrawing them
+
+When R or Start is pressed on the TANK option, all ammo is set to the max amount, in addition to equipping morph ball, power grip, and bombs. It then calls `UpdateSuitType`, which updates the activated abilities. However, only the "bomb" and "misc" groups are redrawn, but the "beam" and "suit" groups can be affected too.
+
+**Fix:** The simplest fix is to avoid updating any abilities for the TANK option (it's unclear why power grip is equipped anyway.) Edit `PauseDebugEquipTank` in [status_screen.c](../src/menus/status_screen.c) to skip setting equipment and skip calling `UpdateSuitType`.
+
+```diff
+      if (gChangedInput & (KEY_R | KEY_START))
+      {
+          gEquipment.maxEnergy = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].energy *
+              sTankIncreaseAmount[gDifficulty].energy + sStartingHealthAmmo.energy;
+          gEquipment.maxMissiles = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].missile *
+              sTankIncreaseAmount[gDifficulty].missile + sStartingHealthAmmo.missile;
+          gEquipment.maxSuperMissiles = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].superMissile *
+              sTankIncreaseAmount[gDifficulty].superMissile + sStartingHealthAmmo.superMissile;
+          gEquipment.maxPowerBombs = sNumberOfTanksPerArea[MAX_AMOUNT_OF_AREAS - 1].powerBomb *
+              sTankIncreaseAmount[gDifficulty].powerBomb + sStartingHealthAmmo.powerBomb;
+
+-             gEquipment.suitMisc |= SMF_MORPH_BALL | SMF_POWER_GRIP;
+-             gEquipment.beamBombs |= BBF_BOMBS;
+
+          change = 1;
+      }
+
+  ...
+
+- if (change != 0)
++ if (change == 2)
+  {
+      UpdateSuitType(gEquipment.suitType);
+      PauseDebugActivateAbilities();
+  }
+
+  if (change == 1) // Tank
+  {
+      gEquipment.currentEnergy = gEquipment.maxEnergy;
+      gEquipment.currentMissiles = gEquipment.maxMissiles;
+      gEquipment.currentSuperMissiles = gEquipment.maxSuperMissiles;
+      gEquipment.currentPowerBombs = gEquipment.maxPowerBombs;
+
+-     PauseDebugDrawAffectedGroups((1 << PAUSE_DEBUG_GROUP_BOMB) | (1 << PAUSE_DEBUG_GROUP_MISC) |
+-         (1 << PAUSE_DEBUG_GROUP_CURRENT_ENERGY) | (1 << PAUSE_DEBUG_GROUP_CURRENT_MISSILES) |
+-         (1 << PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES) | (1 << PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS));
++     PauseDebugDrawAffectedGroups((1 << PAUSE_DEBUG_GROUP_CURRENT_ENERGY) | (1 << PAUSE_DEBUG_GROUP_CURRENT_MISSILES) |
++         (1 << PAUSE_DEBUG_GROUP_CURRENT_SUPER_MISSILES) | (1 << PAUSE_DEBUG_GROUP_CURRENT_POWER_BOMBS));
+  }
+```
+
 
 ## Oversights and Design Flaws
 
@@ -366,18 +415,18 @@ Floating point math is used in a few instances even when the result is assigned 
 ```diff
   verticalAxis = gCurrentPowerBomb.semiMinorAxis * 4;
   horizontalAxis = gCurrentPowerBomb.semiMinorAxis * 8;
-+ verticalAxis = FixedMultiplication(verticalAxis, Q_8_8(0.95));
-+ horizontalAxis = FixedMultiplication(horizontalAxis, Q_8_8(0.95));
 - verticalAxis *= 0.95;
 - horizontalAxis *= 0.95;
++ verticalAxis = FixedMultiplication(verticalAxis, Q_8_8(0.95));
++ horizontalAxis = FixedMultiplication(horizontalAxis, Q_8_8(0.95));
 ```
 Could also do `verticalAxis * 19 / 20`
 
 `ImagoCocoonSporeMove`:
 ```diff
   case IMAGO_COCOON_SPORE_PART_DIAG_RIGHT_UP:
-+     movement = FixedMultiplication(movement, Q_8_8(0.8));
 -     movement *= 0.8; // 4 * 0.8 = 3.2
++     movement = FixedMultiplication(movement, Q_8_8(0.8));
       gCurrentSprite.yPosition -= movement;
       gCurrentSprite.xPosition += movement;
       break;
@@ -386,8 +435,8 @@ Could also do `movement * 4 / 5`
 
 `RidleyLandingShipLanding`:
 ```diff
-+ if (movement >= 2848 - FixedMultiplication(sRidleyLandingScrollingInfo[1].length, Q_8_8(2.f / 3)))
 - if (movement >= 2848 - sRidleyLandingScrollingInfo[1].length / 1.5)
++ if (movement >= 2848 - FixedMultiplication(sRidleyLandingScrollingInfo[1].length, Q_8_8(2.f / 3)))
   {
       CUTSCENE_DATA.dispcnt |= sRidleyLandingPageData[2].bg;
       CutsceneStartBackgroundScrolling(sRidleyLandingScrollingInfo[1], sRidleyLandingPageData[2].bg);
@@ -397,7 +446,7 @@ Could also do `sRidleyLandingScrollingInfo[1].length * 2 / 3`
 
 ### `ClipdataConvertToCollision` is copied to RAM but still runs in ROM
 
-`ClipdataConvertToCollision` is copied to RAM, presumably for performance reasons, because it is often called many times per frame and code runs faster in RAM. However, the switch statement gets compiled as a jump table, which ends up jumping to the code in ROM.
+`ClipdataConvertToCollision` is copied to RAM, presumably for performance reasons, because it is often called many times per frame and code runs faster in RAM. However, the switch statement gets compiled as a jump table, which ends up jumping to the code in ROM. This issue also occurs in Fusion.
 
 **Fix:** Convert the switch statement to a series of if statements. Order them such that common block types (like solid and air) are checked first.
 
@@ -435,6 +484,17 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
   InitializeAudio();
 + SramRead_SoundMode();
 + FileSelectApplyStereo();
+
+  ...
+
+- gStereoFlag = FALSE;
+```
+
+Applying stereo can also be removed from `FileSelectInit` in [file_select.c](../src/menus/file_select.c).
+
+```diff
+- SramRead_SoundMode();
+- FileSelectApplyStereo();
 ```
 
 
@@ -457,8 +517,8 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
 | `src` | `TitleScreenTransferGroundGraphics` | [title_screen.c](../src/menus/title_screen.c) |
 | `currSlot` | `unk_818cc` | [tourian_escape.c](../src/tourian_escape.c) |
 | `diff` | `SramWriteChecked` | [sram.c](../src/sram/sram.c) |
-| `updateTextAndEvents` | `BootDebugModeMainLoop` | [boot_debug.c](../src/menus/boot_debug.c) |
-| `updateText` | `BootDebugSoundMainLoop` | [boot_debug.c](../src/menus/boot_debug.c) |
+| `updateTextAndEvents` | `BootDebugModeHandler` | [boot_debug.c](../src/menus/boot_debug.c) |
+| `updateText` | `BootDebugSoundHandler` | [boot_debug.c](../src/menus/boot_debug.c) |
 
 
 ## TODO
@@ -470,5 +530,7 @@ The last cutscene stage for upgrading your suit (obtaining Varia or the fully po
 - Bomb hover on frozen enemies ([video](https://youtu.be/UIK8YnT1sG4))
 - Frame perfect pause buffering on ziplines ignores collision
 - Clipping into slopes ([video](https://www.youtube.com/watch?v=XiZRJesXHWw))
+- The boot debug map screen doesn't update the door ID in rooms with an elevator and no hatch
 
 ### Oversights and Design Flaws
+- The HUD isn't drawn during VBlank, which can cause tearing

@@ -23,7 +23,7 @@ static void EraseSramResetOam(void);
 static void EraseSramUpdateCursorPosition(void);
 static void EraseSramVBlank(void);
 static void EraseSramVBlank_Empty(void);
-static void EraseSramProcessOAM(void);
+static void EraseSramProcessOam(void);
 
 static const u32* sEraseSramTextGfxPointers[LANGUAGE_COUNT][2] = {
     [LANGUAGE_JAPANESE] = {
@@ -80,7 +80,7 @@ static const u32* sEraseSramTextGfxPointers[LANGUAGE_COUNT][2] = {
  * 
  * @return u32 bool, leaving
  */
-u32 EraseSramMainLoop(void)
+u32 EraseSramHandler(void)
 {
     u32 leaving;
 
@@ -169,7 +169,7 @@ u32 EraseSramMainLoop(void)
     }
 
     if (!leaving)
-        EraseSramProcessOAM();
+        EraseSramProcessOam();
 
     return leaving;
 }
@@ -210,7 +210,7 @@ static EraseSramInputAction EraseSramProcessInput(void)
  */
 static void EraseSramApplyInput(void)
 {
-    if (ERASE_SRAM_DATA.oam[0].oamID == ERASE_SRAM_OAM_ID_CURSOR_SELECTING)
+    if (ERASE_SRAM_DATA.oam[0].oamId == ERASE_SRAM_OAM_ID_CURSOR_SELECTING)
         return;
 
     ERASE_SRAM_DATA.nextOption &= ~ERASE_SRAM_OPTION_CHANGED_FLAG;
@@ -219,28 +219,28 @@ static void EraseSramApplyInput(void)
     switch (ERASE_SRAM_DATA.nextOption)
     {
         case ERASE_SRAM_OPTION_QUESTION_NO:
-            ERASE_SRAM_DATA.oam[2].oamID = sEraseSramQuestionWindowNoSelectedOamId;
-            ERASE_SRAM_DATA.oam[1].oamID = 0;
+            ERASE_SRAM_DATA.oam[2].oamId = sEraseSramQuestionWindowNoSelectedOamId;
+            ERASE_SRAM_DATA.oam[1].oamId = 0;
             break;
 
         case ERASE_SRAM_OPTION_QUESTION_YES:
-            ERASE_SRAM_DATA.oam[2].oamID = sEraseSramQuestionWindowYesSelectedOamId;
-            ERASE_SRAM_DATA.oam[1].oamID = 0;
+            ERASE_SRAM_DATA.oam[2].oamId = sEraseSramQuestionWindowYesSelectedOamId;
+            ERASE_SRAM_DATA.oam[1].oamId = 0;
             break;
 
         case ERASE_SRAM_OPTION_CONFIRM_NO:
-            ERASE_SRAM_DATA.oam[1].oamID = sEraseSramConfirmWindowNoSelectedOamId;
+            ERASE_SRAM_DATA.oam[1].oamId = sEraseSramConfirmWindowNoSelectedOamId;
             break;
 
         case ERASE_SRAM_OPTION_CONFIRM_YES:
-            ERASE_SRAM_DATA.oam[1].oamID = sEraseSramConfirmWindowYesSelectedOamId;
+            ERASE_SRAM_DATA.oam[1].oamId = sEraseSramConfirmWindowYesSelectedOamId;
             break;
     }
 
     ERASE_SRAM_DATA.oam[1].exists = OAM_ID_CHANGED_FLAG;
     ERASE_SRAM_DATA.oam[2].exists = OAM_ID_CHANGED_FLAG;
 
-    ERASE_SRAM_DATA.oam[0].oamID = ERASE_SRAM_OAM_ID_CURSOR_IDLE;
+    ERASE_SRAM_DATA.oam[0].oamId = ERASE_SRAM_OAM_ID_CURSOR_IDLE;
     ERASE_SRAM_DATA.oam[0].exists = OAM_ID_CHANGED_FLAG;
 }
 
@@ -334,13 +334,13 @@ static EraseSramInputAction EraseSramCheckForInput(void)
 
     if (exiting)
     {
-        ERASE_SRAM_DATA.oam[0].oamID = ERASE_SRAM_OAM_ID_CURSOR_SELECTING;
+        ERASE_SRAM_DATA.oam[0].oamId = ERASE_SRAM_OAM_ID_CURSOR_SELECTING;
         ERASE_SRAM_DATA.oam[0].exists = OAM_ID_CHANGED_FLAG;
         sound = ERASE_SRAM_SOUND_CONFIRM;
     }
 
-    if (sEraseSramMenuSoundsID[sound])
-        SoundPlay(sEraseSramMenuSoundsID[sound]);
+    if (sEraseSramMenuSoundsId[sound])
+        SoundPlay(sEraseSramMenuSoundsId[sound]);
 
     return result;
 }
@@ -395,17 +395,17 @@ static void EraseSramInit(void)
     
     SET_BACKDROP_COLOR(COLOR_BLACK);
 
-    LZ77UncompVRAM(sEraseSramMenuFirstBoxGfx, VRAM_BASE + 0x1000);
-    LZ77UncompVRAM(sEraseSramMenuObjectsGfx, VRAM_BASE + 0x12000);
-    LZ77UncompVRAM(sTitleScreenSpaceBackgroundDecorationGfx, VRAM_BASE + 0x1800);
-    LZ77UncompVRAM(sTitleScreenSpaceAndGroundBackgroundGfx, VRAM_BASE + 0x3400);
+    LZ77UncompVram(sEraseSramMenuFirstBoxGfx, VRAM_BASE + 0x1000);
+    LZ77UncompVram(sEraseSramMenuObjectsGfx, VRAM_BASE + 0x12000);
+    LZ77UncompVram(sTitleScreenSpaceBackgroundDecorationGfx, VRAM_BASE + 0x1800);
+    LZ77UncompVram(sTitleScreenSpaceAndGroundBackgroundGfx, VRAM_BASE + 0x3400);
 
-    LZ77UncompVRAM(sEraseSramTextGfxPointers[ERASE_SRAM_DATA.language][0], VRAM_BASE);
-    LZ77UncompVRAM(sEraseSramTextGfxPointers[ERASE_SRAM_DATA.language][1], VRAM_BASE + 0x11000);
-    LZ77UncompVRAM(sEraseSramTextGfxPointers[ERASE_SRAM_DATA.language][0], VRAM_OBJ);
+    LZ77UncompVram(sEraseSramTextGfxPointers[ERASE_SRAM_DATA.language][0], VRAM_BASE);
+    LZ77UncompVram(sEraseSramTextGfxPointers[ERASE_SRAM_DATA.language][1], VRAM_BASE + 0x11000);
+    LZ77UncompVram(sEraseSramTextGfxPointers[ERASE_SRAM_DATA.language][0], VRAM_OBJ);
 
-    LZ77UncompVRAM(sEraseSramMenuBoxTileTable, VRAM_BASE + 0xD000);
-    LZ77UncompVRAM(sEraseSramMenuBackgroundTileTable, VRAM_BASE + 0xF000);
+    LZ77UncompVram(sEraseSramMenuBoxTileTable, VRAM_BASE + 0xD000);
+    LZ77UncompVram(sEraseSramMenuBackgroundTileTable, VRAM_BASE + 0xF000);
 
     WRITE_16(REG_BG0CNT, 0);
     WRITE_16(REG_BG2CNT, 0);
@@ -425,7 +425,7 @@ static void EraseSramInit(void)
 
     EraseSramResetOam();
     EraseSramUpdateCursorPosition();
-    EraseSramProcessOAM();
+    EraseSramProcessOam();
     EraseSramVBlank();
 
     ERASE_SRAM_DATA.bldcnt = READ_16(REG_BLDCNT);
@@ -452,17 +452,17 @@ static void EraseSramResetOam(void)
     for (i = 0; i < ARRAY_SIZE(ERASE_SRAM_DATA.oam); i++)
         ERASE_SRAM_DATA.oam[i] = sMenuOamDataEraseSram_Empty;
 
-    ERASE_SRAM_DATA.oam[2].oamID = sEraseSramQuestionWindowNoSelectedOamId;
+    ERASE_SRAM_DATA.oam[2].oamId = sEraseSramQuestionWindowNoSelectedOamId;
     ERASE_SRAM_DATA.oam[2].yPosition = sEraseSramMenuCursorPosition[0][1];
     ERASE_SRAM_DATA.oam[2].xPosition = sEraseSramMenuCursorPosition[0][0];
     ERASE_SRAM_DATA.oam[2].exists = TRUE;
 
-    ERASE_SRAM_DATA.oam[1].oamID = 0;
+    ERASE_SRAM_DATA.oam[1].oamId = 0;
     ERASE_SRAM_DATA.oam[1].yPosition = sEraseSramMenuCursorPosition[1][1];
     ERASE_SRAM_DATA.oam[1].xPosition = sEraseSramMenuCursorPosition[1][0];
     ERASE_SRAM_DATA.oam[1].exists = TRUE;
 
-    ERASE_SRAM_DATA.oam[0].oamID = ERASE_SRAM_OAM_ID_CURSOR_IDLE;
+    ERASE_SRAM_DATA.oam[0].oamId = ERASE_SRAM_OAM_ID_CURSOR_IDLE;
     ERASE_SRAM_DATA.oam[0].exists = TRUE;
 }
 
@@ -513,7 +513,7 @@ static void EraseSramVBlank_Empty(void)
  * @brief 76364 | 2c | Processes the OAM for the erase sram menu
  * 
  */
-static void EraseSramProcessOAM(void)
+static void EraseSramProcessOam(void)
 {
     gNextOamSlot = 0;
     ProcessMenuOam(ARRAY_SIZE(ERASE_SRAM_DATA.oam), ERASE_SRAM_DATA.oam, sEraseSramMenuOam);

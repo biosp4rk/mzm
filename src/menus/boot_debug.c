@@ -91,18 +91,18 @@ void BootDebugSetupMenuOam(void)
 
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MENU_CURSOR].exists = TRUE;
 
-    BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_SAVE_BRACKETS].oamID = 3;
+    BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_SAVE_BRACKETS].oamId = 3;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_SAVE_BRACKETS].exists = TRUE;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_SAVE_BRACKETS].boundBackground = 2;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_SAVE_BRACKETS].priority = 2;
 
-    BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_R_BUTTON_TITLE].oamID = 4;
+    BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_R_BUTTON_TITLE].oamId = 4;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_R_BUTTON_TITLE].exists = TRUE;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_R_BUTTON_TITLE].yPosition = 0x14;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_R_BUTTON_TITLE].xPosition = 0x18;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_R_BUTTON_TITLE].priority = 2;
 
-    BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MAP_CURSOR].oamID = 5;
+    BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MAP_CURSOR].oamId = 5;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MAP_CURSOR].exists = FALSE;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MAP_CURSOR].priority = 1;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MAP_CURSOR].boundBackground = 0;   
@@ -284,9 +284,9 @@ void BootDebugUpdateCursorOam(void)
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MENU_CURSOR].yPosition = yPos;
     BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MENU_CURSOR].xPosition = xPos;
 
-    if (BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MENU_CURSOR].oamID != oamId)
+    if (BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MENU_CURSOR].oamId != oamId)
     {
-        BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MENU_CURSOR].oamID = oamId;
+        BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MENU_CURSOR].oamId = oamId;
         BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MENU_CURSOR].animationDurationCounter = 0;
         BOOT_DEBUG_DATA.menuOam[BOOT_DEBUG_OAM_MENU_CURSOR].currentAnimationFrame = 0;
     }
@@ -354,13 +354,13 @@ void BootDebugUpdateMapScreenPosition(void)
         yOffset = FALSE;
         if (gBg0VOFS_NonGameplay < BOOT_DEBUG_DATA.bg0vofs)
         {
-            gBg0VOFS_NonGameplay += 8;
+            gBg0VOFS_NonGameplay += BOOT_DEBUG_MAP_SCROLL_SPEED;
             if (gBg0VOFS_NonGameplay > BOOT_DEBUG_DATA.bg0vofs)
                 yOffset = TRUE;
         }
         else
         {
-            gBg0VOFS_NonGameplay -= 8;
+            gBg0VOFS_NonGameplay -= BOOT_DEBUG_MAP_SCROLL_SPEED;
             if (gBg0VOFS_NonGameplay < BOOT_DEBUG_DATA.bg0vofs)
                 yOffset = TRUE;
         }
@@ -374,13 +374,13 @@ void BootDebugUpdateMapScreenPosition(void)
         yOffset = FALSE;
         if (gBg0HOFS_NonGameplay < BOOT_DEBUG_DATA.bg0hofs)
         {
-            gBg0HOFS_NonGameplay += 8;
+            gBg0HOFS_NonGameplay += BOOT_DEBUG_MAP_SCROLL_SPEED;
             if (gBg0HOFS_NonGameplay > BOOT_DEBUG_DATA.bg0hofs)
                 yOffset = TRUE;
         }
         else
         {
-            gBg0HOFS_NonGameplay -= 8;
+            gBg0HOFS_NonGameplay -= BOOT_DEBUG_MAP_SCROLL_SPEED;
             if (gBg0HOFS_NonGameplay < BOOT_DEBUG_DATA.bg0hofs)
                 yOffset = TRUE;
         }
@@ -467,7 +467,7 @@ void BootDebugWriteSram(u8 selectSaveFile)
  * 
  * @return s32 bool, changing game mode
  */
-s32 BootDebugMainLoop(void)
+s32 BootDebugHandler(void)
 {
     s32 changing;
     s32 inputResult;
@@ -659,8 +659,8 @@ void BootDebugSetupMenu(void)
     gBg2VOFS_NonGameplay = BLOCK_TO_SUB_PIXEL(BOOT_DEBUG_DATA.bg2vofs) - QUARTER_BLOCK_SIZE;
     gBg2HOFS_NonGameplay = -(BLOCK_SIZE * 5 + HALF_BLOCK_SIZE);
     
-    LZ77UncompVRAM(sBootDebugObjGfx, VRAM_OBJ);
-    LZ77UncompVRAM(sBootDebugBgGfx, VRAM_BASE);
+    LZ77UncompVram(sBootDebugObjGfx, VRAM_OBJ);
+    LZ77UncompVram(sBootDebugBgGfx, VRAM_BASE);
 
     #ifdef REGION_EU
     DmaTransfer(3, sMinimapTilesGfx, BGCNT_TO_VRAM_CHAR_BASE(1), 0x3000, 16);
@@ -862,21 +862,21 @@ s32 BootDebugHandleInput(void)
         switch (BOOT_DEBUG_DATA.menuCursor)
         {
             case BOOT_DEBUG_SUB_MENU_SECTION:
-                subMenuResult = BootDebugSectionMainLoop();
+                subMenuResult = BootDebugSectionHandler();
                 break;
 
             case BOOT_DEBUG_SUB_MENU_MODE:
-                BootDebugModeMainLoop();
+                BootDebugModeHandler();
                 subMenuResult = FALSE;
                 break;
 
             case BOOT_DEBUG_SUB_MENU_SAVE:
-                BootDebugSaveMainLoop();
+                BootDebugSaveHandler();
                 subMenuResult = FALSE;
                 break;
 
             case BOOT_DEBUG_SUB_MENU_SAMUS:
-                BootDebugSamusMainLoop();
+                BootDebugSamusHandler();
 
                 if (BOOT_DEBUG_DATA.subMenuOption - BOOT_DEBUG_DATA.bg2vofs > 7)
                     BOOT_DEBUG_DATA.bg2vofs = BOOT_DEBUG_DATA.subMenuOption - 7;   
@@ -887,11 +887,11 @@ s32 BootDebugHandleInput(void)
                 break;
 
             case BOOT_DEBUG_SUB_MENU_SOUND:
-                BootDebugSoundMainLoop();
+                BootDebugSoundHandler();
                 break;
 
             case BOOT_DEBUG_SUB_MENU_DEMO:
-                tempResult = BootDebugDemoMainLoop();
+                tempResult = BootDebugDemoHandler();
                 if (tempResult != 0)
                 {
                     if (tempResult == 1)
@@ -915,7 +915,7 @@ s32 BootDebugHandleInput(void)
                 break;
 
             case BOOT_DEBUG_SUB_MENU_ETC:
-                gBootDebugActive = BootDebugEtcMainLoop();
+                gBootDebugActive = BootDebugEtcHandler();
                 if (gBootDebugActive != 0)
                 {
                     gSubGameMode2 = gBootDebugActive == 1 ? 4 : 5;
@@ -1000,7 +1000,7 @@ s32 BootDebugHandleInput(void)
  * 
  * @return s32 bool, cursor has moved
  */
-s32 BootDebugSectionMainLoop(void)
+s32 BootDebugSectionHandler(void)
 {
     s32 index;
     u8 prevStarIndex;
@@ -1155,9 +1155,12 @@ void BootDebugSectionMapRoomOrDoorUpdated(u8 roomOrDoor)
                 // We don't want to spawn Samus next to an elevator transition, so
                 // skip this door if it's an elevator to the current room
                 elevator = 1;
-                while (sElevatorRoomPairs[elevator].area1 != gSectionInfo.sectionIndex ||
-                    sElevatorRoomPairs[elevator].room1 != gCurrentRoom)
+                while (TRUE)
                 {
+                    if (sElevatorRoomPairs[elevator].area1 == gSectionInfo.sectionIndex &&
+                        sElevatorRoomPairs[elevator].room1 == gCurrentRoom)
+                        break;
+                    
                     if (sElevatorRoomPairs[elevator].area2 == gSectionInfo.sectionIndex &&
                         sElevatorRoomPairs[elevator].room2 == gCurrentRoom)
                         break;
@@ -1443,7 +1446,7 @@ void BootDebugSectionMapDrawRoomAndDoorIds(u8 initialized)
 /**
  * @brief Handles button input for the "Mode" sub-menu in the boot debug menu
  */
-void BootDebugModeMainLoop(void)
+void BootDebugModeHandler(void)
 {
     s32 updateTextAndEvents;
 
@@ -1538,7 +1541,7 @@ void BootDebugModeMainLoop(void)
 /**
  * @brief Handles button input for the "Save" sub-menu in the boot debug menu
  */
-void BootDebugSaveMainLoop(void)
+void BootDebugSaveHandler(void)
 {
     s32 value;
     
@@ -1741,7 +1744,7 @@ void BootDebugSaveSetSaveTextColor(void)
 /**
  * @brief Handles button input for the "Samus" sub-menu in the boot debug menu
  */
-void BootDebugSamusMainLoop(void)
+void BootDebugSamusHandler(void)
 {
     s32 option;
     u16 flagOrButton;
@@ -1878,7 +1881,7 @@ void BootDebugSamusMainLoop(void)
 /**
  * @brief Handles button input for the "Sound" sub-menu in the boot debug menu
  */
-void BootDebugSoundMainLoop(void)
+void BootDebugSoundHandler(void)
 {
     s32 updateText;
     s32 value;
@@ -2004,7 +2007,7 @@ void BootDebugSetSoundTestIdColor(void)
  * 
  * @return s32 Result (1 if starting cutscene A, 2 if starting cutscene B, 3 if starting demo, 0 otherwise)
  */
-s32 BootDebugDemoMainLoop(void)
+s32 BootDebugDemoHandler(void)
 {
     s32 result;
     s32 updateText;
@@ -2145,7 +2148,7 @@ s32 BootDebugDemoMainLoop(void)
  * 
  * @return s32 Result (1 if playing ending, 2 if playing credits, 0 otherwise)
  */
-s32 BootDebugEtcMainLoop(void)
+s32 BootDebugEtcHandler(void)
 {
     s32 result;
     u8 updateText;

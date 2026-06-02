@@ -88,10 +88,10 @@ static void IntroInit(void)
 
     ClearGfxRam();
 
-    LZ77UncompVRAM(sIntroTextAndShipFlyingInGfx, VRAM_OBJ);
-    LZ77UncompVRAM(sIntroSpaceBackgroundGfx, VRAM_BASE);
-    LZ77UncompVRAM(sIntroSpaceBackgroundTileTable, VRAM_BASE + 0x8000);
-    LZ77UncompVRAM(sIntro_47920c, VRAM_BASE + 0x9000);
+    LZ77UncompVram(sIntroTextAndShipFlyingInGfx, VRAM_OBJ);
+    LZ77UncompVram(sIntroSpaceBackgroundGfx, VRAM_BASE);
+    LZ77UncompVram(sIntroSpaceBackgroundTileTable, VRAM_BASE + 0x8000);
+    LZ77UncompVram(sIntro_47920c, VRAM_BASE + 0x9000);
 
     #ifdef REGION_EU
     DmaTransfer(3, sIntroTextAndShipPal, PALRAM_OBJ, sizeof(sIntroTextAndShipPal), 16);
@@ -136,7 +136,10 @@ static void IntroInit(void)
 
     IntroVBlank();
 }
-
+/**
+ * @brief 803b0 | 1A0 | Processes the OAM for the intro text
+ * 
+ */
 static void IntroTextProcessOam(void)
 {
     const u16* src;
@@ -201,7 +204,7 @@ static void IntroTextProcessOam(void)
         }
     }
 
-    src = sIntroTextMarkerOAM;
+    src = sIntroTextMarkerOam;
     partCount = i + *src++;
 
     yPosition = INTRO_DATA.charDrawerY;
@@ -385,7 +388,7 @@ static u8 IntroEmergencyOrder(void)
     }
     else
     {
-        INTRO_DATA.pTextOamFramePointer = sIntroEmergencyOrderTextOAM;
+        INTRO_DATA.pTextOamFramePointer = sIntroEmergencyOrderTextOam;
         IntroTextProcessOam();
         if (textResult != 0)
             INTRO_DATA.unk_A = 0;
@@ -512,11 +515,11 @@ static u8 IntroSamusInHerShip(void)
     switch (INTRO_DATA.timer)
     {
         case 0:
-            LZ77UncompVRAM(sIntroSamusInHerShipGfx, VRAM_BASE);
+            LZ77UncompVram(sIntroSamusInHerShipGfx, VRAM_BASE);
             break;
 
         case DELTA_TIME * 1:
-            LZ77UncompVRAM(sIntroSamusInHerShipTileTable, VRAM_BASE + 0x8000);
+            LZ77UncompVram(sIntroSamusInHerShipTileTable, VRAM_BASE + 0x8000);
             break;
 
         case DELTA_TIME * 2:
@@ -604,7 +607,7 @@ static u8 IntroExterminate(void)
     }
     else
     {
-        INTRO_DATA.pTextOamFramePointer = sIntroExterminateAllTextOAM;
+        INTRO_DATA.pTextOamFramePointer = sIntroExterminateAllTextOam;
         IntroTextProcessOam();
         if (textResult != 0)
             INTRO_DATA.unk_A = 0;
@@ -619,7 +622,7 @@ static u8 IntroExterminate(void)
  * @brief 80b78 | 154 | Processes the OAM for the view of zebes part of the intro
  * 
  */
-static void IntroViewOfZebesProcessOAM(void)
+static void IntroViewOfZebesProcessOam(void)
 {
     const u16* src;
     u16* dst;
@@ -642,7 +645,7 @@ static void IntroViewOfZebesProcessOAM(void)
         xPosition = SCREEN_X_MIDDLE + 8 - 1;
     }
 
-    src = sIntroViewOfZebesShipOAM;
+    src = sIntroViewOfZebesShipOam;
     partCount = *src++;
 
     for (i = 0; i < partCount; i++)
@@ -665,9 +668,9 @@ static void IntroViewOfZebesProcessOAM(void)
     xPosition = SCREEN_X_MIDDLE + 8;
 
     if (MOD_AND(INTRO_DATA.unk_3d, 8) < 4)
-        src = sIntroViewOfZebesHeatOAM_2;
+        src = sIntroViewOfZebesHeatOam_2;
     else
-        src = sIntroViewOfZebesHeatOAM_1;
+        src = sIntroViewOfZebesHeatOam_1;
 
     partCount += *src++;
 
@@ -705,15 +708,15 @@ static u8 IntroViewOfZebes(void)
     switch (INTRO_DATA.timer)
     {
         case 0:
-            LZ77UncompVRAM(sIntroSamusShipViewOfZebesGfx, VRAM_BASE + 0x10800);
+            LZ77UncompVram(sIntroSamusShipViewOfZebesGfx, VRAM_BASE + 0x10800);
             break;
 
         case DELTA_TIME * 1:
-            LZ77UncompVRAM(sIntroViewOfZebesGfx, VRAM_BASE);
+            LZ77UncompVram(sIntroViewOfZebesGfx, VRAM_BASE);
             break;
 
         case DELTA_TIME * 2:
-            LZ77UncompVRAM(sIntroViewOfZebesTileTable, VRAM_BASE + 0x8000);
+            LZ77UncompVram(sIntroViewOfZebesTileTable, VRAM_BASE + 0x8000);
             #ifdef REGION_EU
             DmaTransfer(3, sIntroViewOfZebesPal, PALRAM_BASE, sizeof(sIntroViewOfZebesPal), 16);
             DmaTransfer(3, sIntroViewOfZebesPal, PALRAM_OBJ, sizeof(sIntroViewOfZebesPal), 16);
@@ -753,7 +756,7 @@ static u8 IntroViewOfZebes(void)
     else
         INTRO_DATA.timer++;
 
-    IntroViewOfZebesProcessOAM();
+    IntroViewOfZebesProcessOam();
 
     return FALSE;
 }
@@ -770,7 +773,7 @@ static u8 IntroDefeat(void)
     switch (INTRO_DATA.timer++)
     {
         case 0:
-            LZ77UncompVRAM(sIntroTextAndShipFlyingInGfx, VRAM_OBJ);
+            LZ77UncompVram(sIntroTextAndShipFlyingInGfx, VRAM_OBJ);
             if (gLanguage != LANGUAGE_ENGLISH)
                 TextStartStory(STORY_TEXT_DEFEAT);
             break;
@@ -800,7 +803,7 @@ static u8 IntroDefeat(void)
     }
     else
     {
-        INTRO_DATA.pTextOamFramePointer = sIntroDefeatTheTextOAM;
+        INTRO_DATA.pTextOamFramePointer = sIntroDefeatTheTextOam;
         IntroTextProcessOam();
         if (textResult != 0)
             INTRO_DATA.unk_A = 0;
@@ -825,15 +828,15 @@ static u8 IntroMotherBrain(void)
     switch (INTRO_DATA.timer)
     {
         case 0:
-            LZ77UncompVRAM(sIntroFuzzGfx, VRAM_OBJ);
+            LZ77UncompVram(sIntroFuzzGfx, VRAM_OBJ);
             break;
 
         case 1 * DELTA_TIME:
-            LZ77UncompVRAM(sIntroMotherBrainGfx, VRAM_BASE);
+            LZ77UncompVram(sIntroMotherBrainGfx, VRAM_BASE);
             break;
 
         case 2 * DELTA_TIME:
-            LZ77UncompVRAM(sIntroMotherBrainTileTable, VRAM_BASE + 0x8000);
+            LZ77UncompVram(sIntroMotherBrainTileTable, VRAM_BASE + 0x8000);
             gBg0XPosition = 0;
             gBg0YPosition = 0x60;
             break;
@@ -875,7 +878,7 @@ static u8 IntroMotherBrain(void)
  * @brief 81018 | 88 | Processes the OAM for the intro fuzz
  * 
  */
-static void IntroFuzzProcessOAM(void)
+static void IntroFuzzProcessOam(void)
 {
     u16* dst;
     const u16* src;
@@ -885,7 +888,7 @@ static void IntroFuzzProcessOAM(void)
     u16 offset;
 
     dst = (u16*)gOamData;
-    src = sIntroFuzzOAM;
+    src = sIntroFuzzOam;
     partCount = *src++;
 
     offset = BLOCK_SIZE * 2;
@@ -967,7 +970,7 @@ static u8 IntroFuzz(void)
     }
 
     INTRO_DATA.unk_A++;
-    IntroFuzzProcessOAM();
+    IntroFuzzProcessOam();
     return FALSE;
 }
 
@@ -987,7 +990,7 @@ static IntroFunc_T sIntroStageFunctionsPointer[8] = {
  * 
  * @return u32 bool, ended
  */
-u32 IntroMainLoop(void)
+u32 IntroHandler(void)
 {
     u32 ended;
 

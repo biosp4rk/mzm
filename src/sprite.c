@@ -1767,7 +1767,7 @@ void SpriteLoadSpriteset(void)
 
     for (i = 0; i < MAX_AMOUNT_OF_SPRITE_TYPES; i++)
     {
-        gSpritesetSpritesID[i] = PSPRITE_UNUSED16;
+        gSpritesetSpritesId[i] = PSPRITE_UNUSED16;
         gSpritesetGfxSlots[i] = 0;
     }
 
@@ -1794,7 +1794,7 @@ void SpriteLoadSpriteset(void)
             EMPTY_DO_WHILE // Needed to produce matching ASM.
         }
 
-        gSpritesetSpritesID[i] = spriteId;
+        gSpritesetSpritesId[i] = spriteId;
         gSpritesetGfxSlots[i] = MOD_AND(gfxSlot, 8);
 
         if (gfxSlot == prevGfxSlot)
@@ -1806,7 +1806,7 @@ void SpriteLoadSpriteset(void)
 
         spriteId = PSPRITE_OFFSET_FOR_GRAPHICS(spriteId);
 
-        LZ77UncompVRAM(sSpritesGraphicsPointers[spriteId], VRAM_BASE + 0x14000 + gfxSlot * 2048);
+        LZ77UncompVram(sSpritesGraphicsPointers[spriteId], VRAM_BASE + 0x14000 + gfxSlot * 2048);
 
         ctrl_1 = ((u8*)sSpritesGraphicsPointers[spriteId])[1];
         ctrl_2 = ((u8*)sSpritesGraphicsPointers[spriteId])[2] << 8;
@@ -1824,7 +1824,7 @@ void SpriteLoadGfx(u8 spriteId, u8 row)
 {
     spriteId = PSPRITE_OFFSET_FOR_GRAPHICS(spriteId);
 
-    LZ77UncompVRAM(sSpritesGraphicsPointers[spriteId], VRAM_BASE + 0x14000 + (row * 0x800));
+    LZ77UncompVram(sSpritesGraphicsPointers[spriteId], VRAM_BASE + 0x14000 + (row * 0x800));
 }
 
 /**
@@ -1927,7 +1927,7 @@ void SpriteInitPrimary(u8 spritesetSlot, u16 yPosition, u16 xPosition, u8 roomSl
 
             // Fetch the gfx slot and the sprite id
             pSprite->spritesetGfxSlot = gSpritesetGfxSlots[spritesetSlot];
-            pSprite->spriteId = gSpritesetSpritesID[spritesetSlot];
+            pSprite->spriteId = gSpritesetSpritesId[spritesetSlot];
         }
         else
         {

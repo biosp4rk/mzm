@@ -67,7 +67,7 @@ IWRAM_DATA s8 gLanguage = 0;
 IWRAM_DATA struct GameCompletion gGameCompletion = {};
 IWRAM_DATA u8 gCompletedGameFlagCopy = 0;
 IWRAM_DATA MonochromeFading gMonochromeBgFading = 0;
-IWRAM_DATA u8 gWhichBGPositionIsWrittenToBG3OFS = 0;
+IWRAM_DATA u8 gWhichBgPositionIsWrittenToBG3OFS = 0;
 IWRAM_DATA u8 gSamusOnTopOfBackgrounds = 0;
 IWRAM_DATA Difficulty gDifficulty = 0;
 IWRAM_DATA boolu8 gUseMotherShipDoors = 0;
@@ -150,7 +150,7 @@ IWRAM_DATA struct LastElevatorUsed gLastElevatorUsed = {};
 IWRAM_DATA struct InGameCutscene gInGameCutscene = {};
 IWRAM_DATA u16 gAlarmTimer = 0;
 IWRAM_DATA struct SpriteData gSpriteData[MAX_AMOUNT_OF_SPRITES] = {};
-IWRAM_DATA u8 gSpritesetSpritesID[MAX_AMOUNT_OF_SPRITE_TYPES] = {};
+IWRAM_DATA u8 gSpritesetSpritesId[MAX_AMOUNT_OF_SPRITE_TYPES] = {};
 IWRAM_DATA u8 gSpritesetGfxSlots[MAX_AMOUNT_OF_SPRITE_TYPES] = {};
 IWRAM_DATA struct SubSpriteData gSubSpriteData1 = {};
 IWRAM_DATA struct SubSpriteData gSubSpriteData2 = {};
@@ -227,7 +227,7 @@ IWRAM_DATA vu16 gVBlankRequestFlag = 0;
 IWRAM_DATA u8 gUnk_3000C7A = 0;
 #endif
 
-IWRAM_DATA u16 gInterruptCode[0x100] = {};
+IWRAM_DATA u32 gInterruptCode[0x80] = {};
 IWRAM_DATA union OamData gOamData[OAM_BUFFER_DATA_SIZE + OAM_BUFFER_AFFINE_SIZE] = {};
 IWRAM_DATA u16 gButtonInput = 0;
 IWRAM_DATA u16 gPreviousButtonInput = 0;
@@ -300,9 +300,9 @@ IWRAM_DATA struct MusicInfo gMusicInfo = {};
 IWRAM_DATA u8 gUnk_3003760[12] = {};
 #endif
 
-IWRAM_DATA struct PSGSoundData gUnk_300376C[1] = {};
+IWRAM_DATA struct PsgSoundData gUnk_300376C[1] = {};
 
-IWRAM_DATA struct PSGSoundData gPsgSounds[4] = {};
+IWRAM_DATA struct PsgSoundData gPsgSounds[4] = {};
 IWRAM_DATA struct SoundChannelBackup gSoundChannelBackup[7] = {};
 IWRAM_DATA struct SoundChannelBackup gSoundChannelTrack2Backup[7] = {};
 IWRAM_DATA struct SoundQueue gSoundQueue[9] = {};

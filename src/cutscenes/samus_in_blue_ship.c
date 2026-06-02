@@ -13,7 +13,7 @@
 
 static void SamusInBlueShipShakeScreen(struct CutsceneGraphicsData* pGraphics);
 static void SamusInBlueShipUpdateControlPanel(struct CutsceneOamData* pOam);
-static void SamusInBlueShipProcessOAM(void);
+static void SamusInBlueShipProcessOam(void);
 
 /**
  * @brief 67d8c | f8 | Handles the sip powering up part (entire cutscene)
@@ -122,7 +122,7 @@ static void SamusInBlueShipUpdateControlPanel(struct CutsceneOamData* pOam)
             break;
 
         case 1:
-            UpdateCutsceneOamDataID(pOam, 2);
+            UpdateCutsceneOamDataId(pOam, 2);
             SoundPlay(SOUND_BLUE_SHIP_TURNING_ON);
             gWrittenToBldalpha_L = BLDALPHA_MAX_VALUE;
             gWrittenToBldalpha_H = 0;
@@ -188,7 +188,7 @@ static u8 SamusInBlueShipInit(void)
 
     CutsceneSetBackgroundPosition(CUTSCENE_BG_EDIT_X | CUTSCENE_BG_EDIT_Y, sSamusInBlueShipPageData[0].bg, NON_GAMEPLAY_START_BG_POS);
 
-    UpdateCutsceneOamDataID(&CUTSCENE_DATA.oam[0], 1);
+    UpdateCutsceneOamDataId(&CUTSCENE_DATA.oam[0], 1);
 
     CUTSCENE_DATA.oam[0].xPosition = NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE * 7 + HALF_BLOCK_SIZE;
     CUTSCENE_DATA.oam[0].yPosition = NON_GAMEPLAY_START_BG_POS + BLOCK_SIZE * 5 - PIXEL_SIZE;
@@ -225,13 +225,13 @@ static struct CutsceneStageData sSamusInBlueShipStageData[3] = {
  * 
  * @return u8 bool, ended
  */
-u8 SamusInBlueShipMainLoop(void)
+u8 SamusInBlueShipHandler(void)
 {
     u8 ended;
 
     ended = sSamusInBlueShipStageData[CUTSCENE_DATA.timeInfo.stage].pFunction();
     CutsceneUpdateBackgroundsPosition(TRUE);
-    SamusInBlueShipProcessOAM();
+    SamusInBlueShipProcessOam();
 
     return ended;
 }
@@ -240,7 +240,7 @@ u8 SamusInBlueShipMainLoop(void)
  * @brief 680f0 | 38 | Processes the OAM
  * 
  */
-static void SamusInBlueShipProcessOAM(void)
+static void SamusInBlueShipProcessOam(void)
 {
     gNextOamSlot = 0;
     ProcessCutsceneOam(sSamusInBlueShipStageData[CUTSCENE_DATA.timeInfo.stage].oamLength, CUTSCENE_DATA.oam, sSamusInBlueShipOam);

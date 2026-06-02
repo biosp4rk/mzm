@@ -35,7 +35,7 @@
  * 
  * @return u32 bool, changing game mode
  */
-u32 InGameMainLoop(void)
+u32 InGameHandler(void)
 {
     u32 changing;
 
@@ -72,7 +72,7 @@ u32 InGameMainLoop(void)
             break;
 
         case SUB_GAME_MODE_PLAYING:
-            DemoMainLoop();
+            DemoHandler();
             #ifndef REGION_EU
             IoWriteRegisters();
             #endif // !REGION_EU
@@ -195,13 +195,18 @@ u32 InGameMainLoop(void)
         if (gDebugVCount_AudioMax <= gOamData[0x7E].split.y)
             gDebugVCount_AudioMax = gOamData[0x7E].split.y;
 
+        // Max audio execution time
         gOamData[0x7D].split.y = gDebugVCount_AudioMax; 
-        gOamData[0x7D].split.x = 234;
+        gOamData[0x7D].split.x = SCREEN_SIZE_X - 6;
         gOamData[0x7D].split.tileNum = 0x76;
         gOamData[0x7D].split.paletteNum = 4;
-        gOamData[0x7E].split.x = 234;
+
+        // Current frame audio execution time
+        gOamData[0x7E].split.x = SCREEN_SIZE_X - 6;
         gOamData[0x7E].split.tileNum = 0x77;
         gOamData[0x7E].split.paletteNum = 4;
+
+        // Current frame total execution time
         gOamData[0x7F].split.y = gDebugVCount_InGameEnd = READ_16(REG_VCOUNT);
         gOamData[0x7F].split.x = 0;
         gOamData[0x7F].split.tileNum = 0x78;
@@ -349,8 +354,8 @@ void VBlankCodeInGameLoad(void)
     WRITE_16(REG_BG2HOFS, gBackgroundPositions.bg[2].x);
     WRITE_16(REG_BG2VOFS, gBackgroundPositions.bg[2].y);
 
-    WRITE_16(REG_BG3HOFS, gBackgroundPositions.bg[gWhichBGPositionIsWrittenToBG3OFS].x);
-    WRITE_16(REG_BG3VOFS, gBackgroundPositions.bg[gWhichBGPositionIsWrittenToBG3OFS].y);
+    WRITE_16(REG_BG3HOFS, gBackgroundPositions.bg[gWhichBgPositionIsWrittenToBG3OFS].x);
+    WRITE_16(REG_BG3VOFS, gBackgroundPositions.bg[gWhichBgPositionIsWrittenToBG3OFS].y);
 
     #ifdef DEBUG
     gDebugVCount_VBlankEnd = READ_16(REG_VCOUNT);
@@ -375,8 +380,8 @@ void TransferSamusAndBgGraphics(void)
     WRITE_16(REG_BG2HOFS, gBackgroundPositions.bg[2].x);
     WRITE_16(REG_BG2VOFS, gBackgroundPositions.bg[2].y);
 
-    WRITE_16(REG_BG3HOFS, gBackgroundPositions.bg[gWhichBGPositionIsWrittenToBG3OFS].x);
-    WRITE_16(REG_BG3VOFS, gBackgroundPositions.bg[gWhichBGPositionIsWrittenToBG3OFS].y);
+    WRITE_16(REG_BG3HOFS, gBackgroundPositions.bg[gWhichBgPositionIsWrittenToBG3OFS].x);
+    WRITE_16(REG_BG3VOFS, gBackgroundPositions.bg[gWhichBgPositionIsWrittenToBG3OFS].y);
 }
 
 /**
@@ -498,7 +503,7 @@ void InitAndLoadGenerics(void)
     do {
     } while ((u16)(READ_16(REG_VCOUNT) - 21) < 140); // READ_16(REG_VCOUNT) <= SCREEN_SIZE_Y
 
-    HudGenericResetHUDData();
+    HudGenericResetHudData();
     SpriteLoadAllData();
     ProjectileCallLoadGraphicsAndClearProjectiles();
 

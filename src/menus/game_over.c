@@ -29,14 +29,14 @@ static void GameOverVBlank(void);
 static void GameOverVBlank_Empty(void);
 static void GameOverUpdateLettersPalette(void);
 static void GameOverUpdateSamusHead(GameOverCursorAction action);
-static void GameOverProcessOAM(void);
+static void GameOverProcessOam(void);
 
 /**
  * @brief 778c4 | 214 | Main loop for the game over
  * 
  * @return u32 bool, ended
  */
-u32 GameOverMainLoop(void)
+u32 GameOverHandler(void)
 {
     u32 ended;
 
@@ -178,7 +178,7 @@ u32 GameOverMainLoop(void)
             break;
     }
 
-    GameOverProcessOAM();
+    GameOverProcessOam();
     return ended;
 }
 
@@ -313,13 +313,13 @@ static void GameOverInit(void)
     DMA3_COPY_16(sFileSelectIconsPal, PALRAM_OBJ, ARRAY_SIZE(sFileSelectIconsPal));
     #endif // REGION_EU
 
-    LZ77UncompVRAM(sGameOverBackgroundTileTable, VRAM_BASE + 0x1800);
-    LZ77UncompVRAM(sGameOverTextTileTable, VRAM_BASE + 0x800);
-    LZ77UncompVRAM(sGameOver_454520, VRAM_BASE);
+    LZ77UncompVram(sGameOverBackgroundTileTable, VRAM_BASE + 0x1800);
+    LZ77UncompVram(sGameOverTextTileTable, VRAM_BASE + 0x800);
+    LZ77UncompVram(sGameOver_454520, VRAM_BASE);
     DmaTransfer(3, VRAM_BASE + 0x1800, VRAM_BASE + 0x1000, 0x1800 - 0x1000, 32);
-    LZ77UncompVRAM(sGameOverTextAndBackgroundGfx, VRAM_BASE + 0x4000);
-    LZ77UncompVRAM(sFileSelectObjIconsGfx, VRAM_OBJ);
-    LZ77UncompVRAM(sGameOverTextPromptGfxPointers[gLanguage], VRAM_BASE + 0xA800);
+    LZ77UncompVram(sGameOverTextAndBackgroundGfx, VRAM_BASE + 0x4000);
+    LZ77UncompVram(sFileSelectObjIconsGfx, VRAM_OBJ);
+    LZ77UncompVram(sGameOverTextPromptGfxPointers[gLanguage], VRAM_BASE + 0xA800);
 
     WRITE_16(REG_BG0CNT, CREATE_BGCNT(1, 0, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));
     WRITE_16(REG_BG1CNT, CREATE_BGCNT(1, 1, BGCNT_HIGH_MID_PRIORITY, BGCNT_SIZE_256x256));
@@ -543,7 +543,7 @@ static void GameOverUpdateLettersPalette(void)
  */
 static void GameOverUpdateSamusHead(GameOverCursorAction action)
 {
-    UpdateMenuOamDataID(&GAME_OVER_DATA.oam[0], sGameOverSamusHeadOamIds[gEquipment.suitType][action]);
+    UpdateMenuOamDataId(&GAME_OVER_DATA.oam[0], sGameOverSamusHeadOamIds[gEquipment.suitType][action]);
 
     GAME_OVER_DATA.oam[0].xPosition = sGameOverSamusHeadXPositions[gLanguage];
     GAME_OVER_DATA.oam[0].yPosition = sGameOverSamusHeadYPositions[GAME_OVER_DATA.optionSelected];
@@ -560,7 +560,7 @@ static void GameOverUpdateSamusHead(GameOverCursorAction action)
  * @brief 781fc | 2c | Processes the OAM for the game over menu
  * 
  */
-static void GameOverProcessOAM(void)
+static void GameOverProcessOam(void)
 {
     gNextOamSlot = 0;
     ProcessComplexMenuOam(ARRAY_SIZE(GAME_OVER_DATA.oam), GAME_OVER_DATA.oam, sGameOverOam);

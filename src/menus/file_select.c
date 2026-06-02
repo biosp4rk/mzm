@@ -38,21 +38,21 @@
 
 static void OptionsUpdateStereoOam(u16 flags);
 static void FileSelectResetIOTransferInfo(void);
-static u8 OptionsNesMetroidMainLoop(void);
+static u8 OptionsNesMetroidHandler(void);
 static u8 OptionsSubMenu_Empty(void);
-static u8 OptionsGalleryMainLoop(void);
-static u8 OptionsStereoMainLoop(void);
-static u8 OptionsSoundTestMainLoop(void);
+static u8 OptionsGalleryHandler(void);
+static u8 OptionsStereoHandler(void);
+static u8 OptionsSoundTestHandler(void);
 static u32 OptionsSoundTestCheckNotAlreadyPlaying(void);
 static void OptionsSoundTestUpdateIdGfx(void);
-static u8 OptionsTimeAttackRecordsMainLoop(void);
+static u8 OptionsTimeAttackRecordsHandler(void);
 #ifndef REGION_US_BETA
 static void OptionsTimeAttackLoadBestTimeMessage(void);
 #endif // !REGION_US_BETA
 static void OptionsTimeAttackLoadRecord(u8 id);
 static void unk_7b854(void);
 static void OptionsTimeAttackLoadPassword(u8 part);
-static u8 OptionsMetroidFusionLinkMainLoop(void);
+static u8 OptionsMetroidFusionLinkHandler(void);
 static u32 FileSelectUpdateFading(void);
 static void FileSelectInitFading(u8 fadingOut);
 static void FileSelectApplyFading(void);
@@ -323,7 +323,7 @@ void FileSelectApplyStereo(void)
  * @brief 7824c | 60 | Processes the OAM for the file select and options screens
  * 
  */
-void FileSelectProcessOAM(void)
+void FileSelectProcessOam(void)
 {
     gNextOamSlot = 0;
 
@@ -355,7 +355,7 @@ void FileSelectProcessOAM(void)
  * @brief 782ac | 258 | Initializes the OAM for the file and options screens
  * 
  */
-static void FileSelectResetOAM(void)
+static void FileSelectResetOam(void)
 {
     s32 i;
     struct MenuOamData* pOam;
@@ -368,15 +368,15 @@ static void FileSelectResetOAM(void)
     // Setup file markers
     pOam[FILE_SELECT_OAM_FILE_A_MARKER].xPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].xPosition;
     pOam[FILE_SELECT_OAM_FILE_A_MARKER].yPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].yPosition;
-    UpdateMenuOamDataID(&pOam[FILE_SELECT_OAM_FILE_A_MARKER], sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId);
+    UpdateMenuOamDataId(&pOam[FILE_SELECT_OAM_FILE_A_MARKER], sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId);
 
     pOam[FILE_SELECT_OAM_FILE_B_MARKER].xPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].xPosition;
     pOam[FILE_SELECT_OAM_FILE_B_MARKER].yPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].yPosition;
-    UpdateMenuOamDataID(&pOam[FILE_SELECT_OAM_FILE_B_MARKER], sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId);
+    UpdateMenuOamDataId(&pOam[FILE_SELECT_OAM_FILE_B_MARKER], sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId);
 
     pOam[FILE_SELECT_OAM_FILE_C_MARKER].xPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].xPosition;
     pOam[FILE_SELECT_OAM_FILE_C_MARKER].yPosition = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].yPosition;
-    UpdateMenuOamDataID(&pOam[FILE_SELECT_OAM_FILE_C_MARKER], sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId);
+    UpdateMenuOamDataId(&pOam[FILE_SELECT_OAM_FILE_C_MARKER], sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId);
 
     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].boundBackground = 1;
     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].priority = BGCNT_LOW_MID_PRIORITY;
@@ -395,9 +395,9 @@ static void FileSelectResetOAM(void)
     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_LOGO].priority = BGCNT_LOW_PRIORITY;
     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_LOGO].priority = BGCNT_LOW_PRIORITY;
 
-    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_LOGO].oamID = FILE_SELECT_OAM_ID_METROID_LOGO;
-    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_LOGO].oamID = FILE_SELECT_OAM_ID_METROID_LOGO;
-    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_LOGO].oamID = FILE_SELECT_OAM_ID_METROID_LOGO;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_LOGO].oamId = FILE_SELECT_OAM_ID_METROID_LOGO;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_LOGO].oamId = FILE_SELECT_OAM_ID_METROID_LOGO;
+    FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_LOGO].oamId = FILE_SELECT_OAM_ID_METROID_LOGO;
 
     // Check enable metroid logos (completed save file indicator)
     if (gSaveFilesInfo[0].completedGame)
@@ -461,7 +461,7 @@ static void FileSelectUpdateCursor(CursorPose cursorPose, FileSelectCursorPositi
 
         case CURSOR_POSE_MOVING:
             // Moving cursor, update oam and position
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], oamId);
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].xPosition = sFileSelectCursorOamData[position].xPosition;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].yPosition = sFileSelectCursorOamData[position].yPosition;
 
@@ -473,31 +473,31 @@ static void FileSelectUpdateCursor(CursorPose cursorPose, FileSelectCursorPositi
                 oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId;
             else
                 oamId = FILE_SELECT_OAM_ID_FILE_A_MARKER_SELECTED_RED;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
 
             // File B
             if (position != FILE_SELECT_CURSOR_POSITION_FILE_B)
                 oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId;
             else
                 oamId = FILE_SELECT_OAM_ID_FILE_B_MARKER_SELECTED_RED;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
 
             // File C
             if (position != FILE_SELECT_CURSOR_POSITION_FILE_C)
                 oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId;
             else
                 oamId = FILE_SELECT_OAM_ID_FILE_C_MARKER_SELECTED_RED;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER], oamId);
             break;
 
         case CURSOR_POSE_OPENING_OPTIONS:
             // Update OAM
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], oamId + 2);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], oamId + 2);
             break;
 
         case CURSOR_POSE_SELECTING_FILE:
             // Update OAM
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], oamId + 2);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], oamId + 2);
 
             if (position != FILE_SELECT_CURSOR_POSITION_FILE_A)
             {
@@ -519,7 +519,7 @@ static void FileSelectUpdateCursor(CursorPose cursorPose, FileSelectCursorPositi
             break;
 
         case CURSOR_POSE_DESELECTING_FILE:
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], ++oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], ++oamId);
 
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER].objMode = 0;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER].objMode = 0;
@@ -530,11 +530,11 @@ static void FileSelectUpdateCursor(CursorPose cursorPose, FileSelectCursorPositi
             break;
 
         case CURSOR_POSE_STARTING_GAME:
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], oamId + 5);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR], oamId + 5);
             break;
 
         case 8:
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].oamID = oamId + 4;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].oamId = oamId + 4;
             break;
     }
 }
@@ -563,7 +563,7 @@ static void FileSelectUpdateCopyCursor(CursorCopyPose cursorPose, FileSelectCurs
 
         case CURSOR_COPY_POSE_MOVING:
             // Update oam id and position
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], oamId);
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].xPosition = sFileSelectCursorOamData[fileNumber].xPosition;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].yPosition = sFileSelectCursorOamData[fileNumber].yPosition;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].boundBackground = 2;
@@ -576,41 +576,41 @@ static void FileSelectUpdateCopyCursor(CursorCopyPose cursorPose, FileSelectCurs
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_A && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_A_MARKER_SELECTED_RED;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
 
             // File B
             oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_B && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_B_MARKER_SELECTED_RED;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
 
             // File C
             oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_C && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_C_MARKER_SELECTED_RED;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER], oamId);
             break;
 
         case CURSOR_COPY_POSE_COPIED:
             // Kill copy cursor OAM
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].exists = FALSE;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].oamID = 0;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].oamId = 0;
 
             // Reset every file marker to non-selected 
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER],
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER],
                 sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId);
 
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER],
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER],
                 sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId);
 
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER],
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER],
                 sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId);
             break;
 
         case CURSOR_COPY_POSE_SELECTING_FILE:
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], oamId + 2);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], oamId + 2);
             break;
     }
 }
@@ -637,7 +637,7 @@ static void FileSelectUpdateCopyArrow(ArrowCopyPose arrowPose, u8 dstFileNumber)
 
             // Update id
             oamId = sFileSelectCopyFileArrowsOamIds[FILE_SELECT_DATA.copySourceFile][dstFileNumber];
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_COPY_ARROW], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_COPY_ARROW], oamId);
 
             // Update each file marker
             // If on file -> green marker, otherwise use idle marker
@@ -650,7 +650,7 @@ static void FileSelectUpdateCopyArrow(ArrowCopyPose arrowPose, u8 dstFileNumber)
                 else
                     oamId = FILE_SELECT_OAM_ID_FILE_A_MARKER_SELECTED_GREEN;
 
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
             }
 
             // File B
@@ -661,7 +661,7 @@ static void FileSelectUpdateCopyArrow(ArrowCopyPose arrowPose, u8 dstFileNumber)
                 else
                     oamId = FILE_SELECT_OAM_ID_FILE_B_MARKER_SELECTED_GREEN;
 
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
             }
 
             // File C
@@ -672,7 +672,7 @@ static void FileSelectUpdateCopyArrow(ArrowCopyPose arrowPose, u8 dstFileNumber)
                 else
                     oamId = FILE_SELECT_OAM_ID_FILE_C_MARKER_SELECTED_GREEN;
 
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER], oamId);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER], oamId);
             }
 
             break;
@@ -684,19 +684,19 @@ static void FileSelectUpdateCopyArrow(ArrowCopyPose arrowPose, u8 dstFileNumber)
             // Reset every file marker
             if (dstFileNumber == FILE_SELECT_CURSOR_POSITION_FILE_A)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER],
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER],
                     sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId);
             }
             
             if (dstFileNumber == FILE_SELECT_CURSOR_POSITION_FILE_B)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER],
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER],
                     sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId);
             }
             
             if (dstFileNumber == FILE_SELECT_CURSOR_POSITION_FILE_C)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER],
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER],
                     sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId);
             }
             break;
@@ -731,7 +731,7 @@ static void FileSelectUpdateEraseCursor(CursorErasePose cursorPose, u8 fileNumbe
 
         case CURSOR_ERASE_POSE_MOVING:
             // Update oam id and position
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], oamId);
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].xPosition = sFileSelectCursorOamData[fileNumber].xPosition;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].yPosition = sFileSelectCursorOamData[fileNumber].yPosition;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].boundBackground = 2;
@@ -744,41 +744,41 @@ static void FileSelectUpdateEraseCursor(CursorErasePose cursorPose, u8 fileNumbe
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_A && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_A_MARKER_SELECTED_RED;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER], oamId);
 
             // File B
             oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_B && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_B_MARKER_SELECTED_RED;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER], oamId);
 
             // File C
             oamId = sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId;
             if (fileNumber == FILE_SELECT_CURSOR_POSITION_FILE_C && (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].exists ||
                 gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].introPlayed))
                 oamId = FILE_SELECT_OAM_ID_FILE_C_MARKER_SELECTED_RED;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER], oamId);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER], oamId);
             break;
 
         case CURSOR_ERASE_POSE_ERASED:
             // Kill erase cursor OAM
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].exists = FALSE;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].oamID = 0;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].oamId = 0;
 
             // Reset every file marker to non-selected 
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER],
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER],
                 sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_A].oamFileMarkerId);
 
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER],
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER],
                 sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_B].oamFileMarkerId);
 
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER],
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER],
                 sFileSelectCursorOamData[FILE_SELECT_CURSOR_POSITION_FILE_C].oamFileMarkerId);
             break;
 
         case CURSOR_ERASE_POSE_SELECTING_FILE:
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], oamId + 2);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], oamId + 2);
             break;
     }
 }
@@ -800,21 +800,21 @@ static void OptionsUpdateCursor(CursorOptionsPose cursorPose)
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].yPosition = sOptionsCursorPosition[gOptionsOptionSelected][1];
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].boundBackground = 2;
 
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].oamID != OPTIONS_OAM_ID_CURSOR)
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR], OPTIONS_OAM_ID_CURSOR);
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].oamId != OPTIONS_OAM_ID_CURSOR)
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR], OPTIONS_OAM_ID_CURSOR);
             break;
 
         case CURSOR_OPTIONS_POSE_DESELECTING:
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].oamID != OPTIONS_OAM_ID_CURSOR)
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR], OPTIONS_OAM_ID_CURSOR);
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].oamId != OPTIONS_OAM_ID_CURSOR)
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR], OPTIONS_OAM_ID_CURSOR);
             break;
 
         case CURSOR_OPTIONS_POSE_SELECTING:
             SoundPlay(SOUND_ACCEPT_CONFIRM_MENU);
 
         case 4:
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].oamID != OPTIONS_OAM_ID_CURSOR_SELECTED)
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR], OPTIONS_OAM_ID_CURSOR_SELECTED);
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].oamId != OPTIONS_OAM_ID_CURSOR_SELECTED)
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR], OPTIONS_OAM_ID_CURSOR_SELECTED);
     }
 
     FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_CURSOR].priority = BGCNT_LOW_MID_PRIORITY;
@@ -836,7 +836,7 @@ static void OptionsUpdateStereoOam(StereoUpdateFlags flags)
         else
             offset = 3;
 
-        UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SPEAKER], sStereoOamData[gStereoFlag][offset]);
+        UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SPEAKER], sStereoOamData[gStereoFlag][offset]);
 
         FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SPEAKER].xPosition = sStereoOamData[gStereoFlag][0];
         FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SPEAKER].yPosition = sStereoOamData[gStereoFlag][1];
@@ -1164,7 +1164,7 @@ static void FileSelectFileCopyChooseBaseDestinationFile(void)
 }
 
 #ifdef NON_MATCHING
-static u32 FileSelectCopyFileMainLoop(void)
+static u32 FileSelectCopyFileHandler(void)
 {
     // https://decomp.me/scratch/Rz4bp
 
@@ -1448,7 +1448,7 @@ static u32 FileSelectCopyFileMainLoop(void)
 }
 #else
 NAKED_FUNCTION
-static u32 FileSelectCopyFileMainLoop(void)
+static u32 FileSelectCopyFileHandler(void)
 {
     asm(" \n\
     push {r4, r5, r6, r7, lr} \n\
@@ -2125,7 +2125,7 @@ lbl_08079794: \n\
  * 
  * @return u32 bool, ended
  */
-static u32 FileSelectEraseFileMainLoop(void)
+static u32 FileSelectEraseFileHandler(void)
 {
     u32 ended;
     u32 action;
@@ -2323,7 +2323,7 @@ static u32 FileSelectEraseFileMainLoop(void)
  * 
  * @return u32 bool, ended
  */
-static u32 FileSelectCorruptedFileMainLoop(void)
+static u32 FileSelectCorruptedFileHandler(void)
 {
     u8 done;
 
@@ -2996,31 +2996,31 @@ static struct OptionsSubMenuInfo sOptionsSubMenuInfo[OPTION_COUNT + 1] = {
         .gameMode = 0
     },
     [OPTION_STEREO_SELECT] = {
-        .pFunction = OptionsStereoMainLoop,
+        .pFunction = OptionsStereoHandler,
         .gameMode = 0
     },
     [OPTION_SOUND_TEST] = {
-        .pFunction = OptionsSoundTestMainLoop,
+        .pFunction = OptionsSoundTestHandler,
         .gameMode = 0
     },
     [OPTION_TIME_ATTACK] = {
-        .pFunction = OptionsTimeAttackRecordsMainLoop,
+        .pFunction = OptionsTimeAttackRecordsHandler,
         .gameMode = 0
     },
     [OPTION_GALLERY] = {
-        .pFunction = OptionsGalleryMainLoop,
+        .pFunction = OptionsGalleryHandler,
         .gameMode = 5
     },
     [OPTION_FUSION_GALLERY] = {
-        .pFunction = OptionsMetroidFusionLinkMainLoop,
+        .pFunction = OptionsMetroidFusionLinkHandler,
         .gameMode = 4
     },
     [OPTION_FUSION_LINK] = {
-        .pFunction = OptionsMetroidFusionLinkMainLoop,
+        .pFunction = OptionsMetroidFusionLinkHandler,
         .gameMode = 0
     },
     [OPTION_NES_METROID] = {
-        .pFunction = OptionsNesMetroidMainLoop,
+        .pFunction = OptionsNesMetroidHandler,
         .gameMode = 0
     },
     [8] = {
@@ -3034,7 +3034,7 @@ static struct OptionsSubMenuInfo sOptionsSubMenuInfo[OPTION_COUNT + 1] = {
  * 
  * @return u8 bool, leaving
  */
-static u8 OptionsMainLoop(void)
+static u8 OptionsHandler(void)
 {
     u8 result;
 
@@ -3167,7 +3167,7 @@ static void FileSelectResetIOTransferInfo(void)
         case OPTION_FUSION_GALLERY:
         case OPTION_FUSION_LINK:
             gIoTransferInfo = sIoTransferInfo_Empty;
-            gIoTransferInfo.pFunction = FileSelectProcessOAM;
+            gIoTransferInfo.pFunction = FileSelectProcessOam;
     }
 }
 
@@ -3176,7 +3176,7 @@ static void FileSelectResetIOTransferInfo(void)
  * 
  * @return u8 bool, leaving
  */
-static u8 OptionsNesMetroidMainLoop(void)
+static u8 OptionsNesMetroidHandler(void)
 {
     u8 i;
     NesEmuFunc_T func;
@@ -3277,7 +3277,7 @@ static u8 OptionsSubMenu_Empty(void)
  * 
  * @return u8 bool, leaving
  */
-static u8 OptionsGalleryMainLoop(void)
+static u8 OptionsGalleryHandler(void)
 {
     APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subMenuTimer);
 
@@ -3303,7 +3303,7 @@ static u8 OptionsGalleryMainLoop(void)
  * 
  * @return u8 bool, leaving
  */
-static u8 OptionsStereoMainLoop(void)
+static u8 OptionsStereoHandler(void)
 {
     u8 updatedStereo;
 
@@ -3377,7 +3377,7 @@ static u8 OptionsStereoMainLoop(void)
  * 
  * @return u8 bool, leaving
  */
-static u8 OptionsSoundTestMainLoop(void)
+static u8 OptionsSoundTestHandler(void)
 {
     s32 action;
 
@@ -3394,7 +3394,7 @@ static u8 OptionsSoundTestMainLoop(void)
             SoundPlay(SOUND_OPEN_SUB_MENU);
             
             // Spawn panel
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL], OPTIONS_OAM_ID_SMALL_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL], OPTIONS_OAM_ID_SMALL_PANEL_OPEN);
 
             // Sync position
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].xPosition =
@@ -3415,11 +3415,11 @@ static u8 OptionsSoundTestMainLoop(void)
             if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].ended)
             {
                 // Spawn the arrows and the numbers
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID],
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID],
                     OPTIONS_OAM_ID_SOUND_TEST_ID);
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW],
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW],
                     OPTIONS_OAM_ID_LEFT_ARROW_IDLE);
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW],
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW],
                     OPTIONS_OAM_ID_RIGHT_ARROW_IDLE);
                 FILE_SELECT_DATA.subMenuStage++;
             }
@@ -3451,7 +3451,7 @@ static u8 OptionsSoundTestMainLoop(void)
                         FILE_SELECT_DATA.soundTestId = 1;
 
                     // Set right arrow to move
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW],
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW],
                         OPTIONS_OAM_ID_RIGHT_ARROW_MOVING);
                     FILE_SELECT_DATA.subMenuStage = 3;
                     action = 1;
@@ -3465,7 +3465,7 @@ static u8 OptionsSoundTestMainLoop(void)
                         FILE_SELECT_DATA.soundTestId = ARRAY_SIZE(sSoundTestSoundIds) - 1;
 
                     // Set left arrow to move
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW],
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW],
                         OPTIONS_OAM_ID_LEFT_ARROW_MOVING);
                     FILE_SELECT_DATA.subMenuStage = 4;
                     action = -1;
@@ -3483,7 +3483,7 @@ static u8 OptionsSoundTestMainLoop(void)
 
         case 3:
             // Wait for moving animation to end
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].oamID != OPTIONS_OAM_ID_RIGHT_ARROW_MOVING)
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].oamId != OPTIONS_OAM_ID_RIGHT_ARROW_MOVING)
             {
                 // Sync with other arrow (makes them blink at the same time)
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW].animationDurationCounter =
@@ -3497,7 +3497,7 @@ static u8 OptionsSoundTestMainLoop(void)
 
         case 4:
             // Wait for moving animation to end
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW].oamID != OPTIONS_OAM_ID_LEFT_ARROW_MOVING)
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW].oamId != OPTIONS_OAM_ID_LEFT_ARROW_MOVING)
             {
                 // Sync with other arrow (makes them blink at the same time)
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW].animationDurationCounter =
@@ -3518,12 +3518,12 @@ static u8 OptionsSoundTestMainLoop(void)
             SoundPlay(SOUND_CLOSE_SUB_MENU);
 
             // Kill number and arrows
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID], 0);
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW], 0);
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW], 0);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_ID], 0);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_LEFT_ARROW], 0);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_RIGHT_ARROW], 0);
 
             // Start panel disappearing animation
-            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].oamID++;
+            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_SOUND_TEST_PANEL].oamId++;
             FILE_SELECT_DATA.subMenuStage++;
             break;
 
@@ -3598,7 +3598,7 @@ static void OptionsSoundTestUpdateIdGfx(void)
  * 
  * @return u8 bool, ended
  */
-static u8 OptionsTimeAttackRecordsMainLoop(void)
+static u8 OptionsTimeAttackRecordsHandler(void)
 {
     u32 action;
 
@@ -3640,13 +3640,13 @@ static u8 OptionsTimeAttackRecordsMainLoop(void)
             #ifndef REGION_US_BETA
             if (FILE_SELECT_DATA.timeAttackRecordFlags & 1 && FILE_SELECT_DATA.timeAttackRecordFlags & 2)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW], OPTIONS_OAM_ID_LEFT_ARROW_IDLE);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW], OPTIONS_OAM_ID_LEFT_ARROW_IDLE);
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].boundBackground = 0;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].xPosition = BLOCK_SIZE + 0x1C;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].yPosition = BLOCK_SIZE + HALF_BLOCK_SIZE;
 
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW], OPTIONS_OAM_ID_RIGHT_ARROW_IDLE);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW], OPTIONS_OAM_ID_RIGHT_ARROW_IDLE);
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].boundBackground = 0;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].priority = BGCNT_HIGH_PRIORITY;
                 FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].xPosition = BLOCK_SIZE * 6 + HALF_BLOCK_SIZE + 4;
@@ -3654,8 +3654,8 @@ static u8 OptionsTimeAttackRecordsMainLoop(void)
             }
             else
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW], 0);
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW], 0);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW], 0);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW], 0);
             }
 
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_LEFT_ARROW].notDrawn = TRUE;
@@ -3707,8 +3707,8 @@ static u8 OptionsTimeAttackRecordsMainLoop(void)
             #ifndef REGION_US_BETA
             OptionsTimeAttackLoadBestTimeMessage();
             #endif // !REGION_US_BETA
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL], OPTIONS_OAM_ID_HUGE_PANEL_OPEN);
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL], OPTIONS_OAM_ID_LARGE_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL], OPTIONS_OAM_ID_HUGE_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL], OPTIONS_OAM_ID_LARGE_PANEL_OPEN);
 
             SoundPlay(SOUND_OPEN_SUB_MENU);
             #ifdef REGION_US_BETA
@@ -3853,8 +3853,8 @@ static u8 OptionsTimeAttackRecordsMainLoop(void)
             FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_TIME_ATTACK_RIGHT_ARROW].notDrawn = TRUE;
             #endif // !REGION_US_BETA
 
-            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamID++;
-            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID++;
+            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamId++;
+            FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId++;
 
             FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1);
 
@@ -4049,7 +4049,7 @@ static void OptionsTimeAttackLoadPassword(u8 part)
  * 
  * @return u8 bool, ended
  */
-static u8 OptionsMetroidFusionLinkMainLoop(void)
+static u8 OptionsMetroidFusionLinkHandler(void)
 {
     APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.subMenuTimer);
 
@@ -4092,8 +4092,8 @@ static u8 OptionsMetroidFusionLinkMainLoop(void)
                 FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_DO_NOT_TURN_POWER_OFF);
                 FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_LINKING_PLEASE_WAIT);
 
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL], OPTIONS_OAM_ID_HUGE_PANEL_OPEN);
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL], OPTIONS_OAM_ID_LARGE_PANEL_OPEN);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL], OPTIONS_OAM_ID_HUGE_PANEL_OPEN);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL], OPTIONS_OAM_ID_LARGE_PANEL_OPEN);
 
                 gBg1HOFS_NonGameplay = 0x6D8;
                 gBg1VOFS_NonGameplay = 0x6F8;
@@ -4138,7 +4138,7 @@ static u8 OptionsMetroidFusionLinkMainLoop(void)
                     FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_1C;
                     FILE_SELECT_DATA.dispcnt |= DCNT_BG1;
 
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], OPTIONS_OAM_ID_GBA_LINKING);
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], OPTIONS_OAM_ID_GBA_LINKING);
                 }
             }
 
@@ -4187,10 +4187,10 @@ static u8 OptionsMetroidFusionLinkMainLoop(void)
             FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_LINKING_ERROR);
             FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_TURN_OFF_CONFIRM_LINK);
 
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
 
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID == 0)
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL], OPTIONS_OAM_ID_LARGE_PANEL_OPEN);
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId == 0)
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL], OPTIONS_OAM_ID_LARGE_PANEL_OPEN);
 
             FILE_SELECT_DATA.subMenuStage++;
             break;
@@ -4226,10 +4226,10 @@ static u8 OptionsMetroidFusionLinkMainLoop(void)
         case 8:
             FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1);
 
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
 
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID != 0)
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID++;
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId != 0)
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId++;
 
             FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_DATA_UPLOAD_COMPLETE);
             FILE_SELECT_DATA.subMenuStage++;
@@ -4253,13 +4253,13 @@ static u8 OptionsMetroidFusionLinkMainLoop(void)
             if (gChangedInput & (KEY_A | KEY_START))
             {
                 FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1);
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamID++;
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamId++;
                 FILE_SELECT_DATA.subMenuStage++;
             }
             break;
 
         case 12:
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamID == 0)
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamId == 0)
             {
                 FILE_SELECT_DATA.subMenuStage++;
                 FILE_SELECT_DATA.subMenuTimer = 0;
@@ -4276,12 +4276,12 @@ static u8 OptionsMetroidFusionLinkMainLoop(void)
             break;
 
         case 14:
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
             FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1);
             FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_UNABLE_TO_DETECT_FUSION);
 
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID != 0)
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID++;
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId != 0)
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId++;
 
             FILE_SELECT_DATA.subMenuStage++;
             break;
@@ -4315,10 +4315,10 @@ static u8 OptionsMetroidFusionLinkMainLoop(void)
 
         case 18:
             FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1);
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
 
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID != 0)
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID++;
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId != 0)
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId++;
 
             FileScreenUpdateMessageInfoIdQueue(0, FILE_SCREEN_MESSAGE_INFO_ID_LINKING_ERROR_CHECK_CONNECTION);
             FILE_SELECT_DATA.subMenuStage++;
@@ -4339,21 +4339,21 @@ static u8 OptionsMetroidFusionLinkMainLoop(void)
 
         case 21:
             FILE_SELECT_DATA.dispcnt &= ~(DCNT_BG0 | DCNT_BG1);
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_FUSION_LINK_GBAS], 0);
 
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamID != 0)
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamID++;
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamId != 0)
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamId++;
 
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID != 0)
-                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID++;
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId != 0)
+                FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId++;
             FILE_SELECT_DATA.subMenuStage++;
             break;
 
         case 22:
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamID != 0)
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_HUGE_PANEL].oamId != 0)
                 break;
 
-            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamID != 0)
+            if (FILE_SELECT_DATA.optionsOam[OPTIONS_OAM_LARGE_PANEL].oamId != 0)
                 break;
 
             FILE_SELECT_DATA.subMenuStage++;
@@ -4373,17 +4373,17 @@ static u8 OptionsMetroidFusionLinkMainLoop(void)
  * 
  * @return u32 bool, leaving
  */
-u32 FileSelectMenuMainLoop(void)
+u32 FileSelectMenuHandler(void)
 {
     APPLY_DELTA_TIME_INC(FILE_SELECT_DATA.timer);
 
     switch (gSubGameMode1)
     {
-        case 0:
+        case 0: // Init
             gSubGameMode2 = 0;
             gCutsceneToSkip = 0;
-            FileSelectInit();
-            gSubGameMode1--;
+            FileSelectInit(); // Sets SubGameMode1 to 2
+            gSubGameMode1--; // Then decrease it to 1, so the next frame it will apply the fading
             break;
 
         case 1:
@@ -4408,7 +4408,7 @@ u32 FileSelectMenuMainLoop(void)
                     gSubGameMode1 = 3;
                 else
                 {
-                    FILE_SELECT_DATA.currentSubMenu = 0;
+                    FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_MAIN;
                     gSubGameMode1 = 10;
                 }
 
@@ -4421,7 +4421,7 @@ u32 FileSelectMenuMainLoop(void)
             break;
 
         case 10:
-            if (OptionsMainLoop())
+            if (OptionsHandler())
             {
                 if (gSubGameMode2)
                 {
@@ -4431,7 +4431,7 @@ u32 FileSelectMenuMainLoop(void)
                 else
                 {
                     gSubGameMode1 = 2;
-                    FILE_SELECT_DATA.currentSubMenu = 6;
+                    FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_LEAVING_OPTIONS;
                     FILE_SELECT_DATA.timer = 0;
                     FILE_SELECT_DATA.subMenuStage = 0;
                     FILE_SELECT_DATA.subMenuTimer = 0;
@@ -4473,7 +4473,7 @@ u32 FileSelectMenuMainLoop(void)
             return TRUE;
     }
 
-    FileSelectProcessOAM();
+    FileSelectProcessOam();
     return FALSE;
 }
 
@@ -4752,14 +4752,18 @@ static void FileSelectInit(void)
     FileSelectCopyTimeAttackTime();
     FileSelectDisplaySaveFileInfo();
     DmaTransfer(3, (void*)sEwramPointer + 0x800, VRAM_BASE + 0xD800, 0x800, 16);
+    #ifndef BUGFIX
     SramRead_SoundMode();
     FileSelectApplyStereo();
+    #endif // !BUGFIX
 
     gSubGameMode1 = 2;
 
-    if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].corruptionFlag || gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].corruptionFlag || gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].corruptionFlag)
+    if (gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_A].corruptionFlag ||
+        gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_B].corruptionFlag ||
+        gSaveFilesInfo[FILE_SELECT_CURSOR_POSITION_FILE_C].corruptionFlag)
     {
-        FILE_SELECT_DATA.currentSubMenu = 4;
+        FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_CORRUPTED;
     }
     else
     {
@@ -4803,18 +4807,18 @@ static void FileSelectInit(void)
     FILE_SELECT_DATA.messageInfoIdQueue[1] = UCHAR_MAX;
     FILE_SELECT_DATA.messageInfoIdQueue[2] = UCHAR_MAX;
 
-    FileSelectResetOAM();
+    FileSelectResetOam();
     FileSelectUpdateCursor(CURSOR_POSE_DEFAULT, FILE_SELECT_DATA.unk_24);
 
     if (gSubGameMode1 == 2)
     {
-        if (FILE_SELECT_DATA.currentSubMenu == 4)
+        if (FILE_SELECT_DATA.currentSubMenu == FILE_SELECT_SUB_MENU_CORRUPTED)
         {
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].notDrawn = TRUE;
 
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER].oamID = FILE_SELECT_OAM_ID_FILE_A_MARKER_IDLE;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER].oamID = FILE_SELECT_OAM_ID_FILE_B_MARKER_IDLE;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER].oamID = FILE_SELECT_OAM_ID_FILE_C_MARKER_IDLE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_A_MARKER].oamId = FILE_SELECT_OAM_ID_FILE_A_MARKER_IDLE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_B_MARKER].oamId = FILE_SELECT_OAM_ID_FILE_B_MARKER_IDLE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_FILE_C_MARKER].oamId = FILE_SELECT_OAM_ID_FILE_C_MARKER_IDLE;
         }
     }
     else
@@ -4827,7 +4831,7 @@ static void FileSelectInit(void)
         FILE_SELECT_DATA.dispcnt |= (DCNT_BG2 | DCNT_OBJ);
     }
 
-    FileSelectProcessOAM();
+    FileSelectProcessOam();
     FileSelectInitFading(FALSE);
 
     WRITE_16(REG_BLDY, gWrittenToBldy_NonGameplay = 0);
@@ -5331,7 +5335,7 @@ static u8 FileSelectUpdateSubMenu(void)
 
     switch (FILE_SELECT_DATA.currentSubMenu)
     {
-        case 0:
+        case FILE_SELECT_SUB_MENU_MAIN:
             result = 0;
             #ifdef REGION_EU
             CheckForMaintainedInput(MAINTAINED_INPUT_SPEED_FAST);
@@ -5407,10 +5411,10 @@ static u8 FileSelectUpdateSubMenu(void)
                 }
             }
 
-            if (!result)
+            if (!result) // 0 = no input
                 break;
 
-            if (result == 1)
+            if (result == 1) // 1 = moved cursor
             {
                 FileSelectUpdateCursor(CURSOR_POSE_MOVING, FILE_SELECT_DATA.fileSelectCursorPosition);
                 if (FILE_SELECT_DATA.fileSelectCursorPosition < FILE_SELECT_CURSOR_POSITION_COPY)
@@ -5418,7 +5422,7 @@ static u8 FileSelectUpdateSubMenu(void)
                 else
                     FileSelectPlayMenuSound(MENU_SOUND_REQUEST_SUB_MENU_CURSOR);
             }
-            else if (result == 2)
+            else if (result == 2) // 2 = pressed B, go back to title
             {
                 FadeMusic(0);
                 #ifdef REGION_JP
@@ -5429,10 +5433,10 @@ static u8 FileSelectUpdateSubMenu(void)
                     gLanguage = gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].language;
                 }
                 #endif // REGION_JP
-                gSubGameMode2 = 3;
+                gSubGameMode2 = 3; // Go to title screen
                 return TRUE;
             }
-            else if (result == 3)
+            else if (result == 3) // 3 = pressed A, open sub menu
             {
                 result = FALSE;
 
@@ -5444,7 +5448,7 @@ static u8 FileSelectUpdateSubMenu(void)
                         FileSelectPlayMenuSound(MENU_SOUND_REQUEST_FILE_SELECT);
                         cursorPose = CURSOR_POSE_SELECTING_FILE;
                         result = TRUE;
-                        FILE_SELECT_DATA.currentSubMenu = 1;
+                        FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_FILE;
                         break;
 
                     case FILE_SELECT_CURSOR_POSITION_COPY:
@@ -5453,7 +5457,7 @@ static u8 FileSelectUpdateSubMenu(void)
                             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_ACCEPT_CONFIRM_MENU);
                             cursorPose = CURSOR_POSE_OPENING_OPTIONS;
                             result = TRUE;
-                            FILE_SELECT_DATA.currentSubMenu = 2;
+                            FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_COPY;
                         }
                         break;
 
@@ -5463,7 +5467,7 @@ static u8 FileSelectUpdateSubMenu(void)
                             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_ACCEPT_CONFIRM_MENU);
                             cursorPose = CURSOR_POSE_OPENING_OPTIONS;
                             result = TRUE;
-                            FILE_SELECT_DATA.currentSubMenu = 3;
+                            FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_ERASE;
                         }
                         break;
 
@@ -5473,7 +5477,7 @@ static u8 FileSelectUpdateSubMenu(void)
                             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_ACCEPT_CONFIRM_MENU);
                             cursorPose = CURSOR_POSE_OPENING_OPTIONS;
                             result = TRUE;
-                            FILE_SELECT_DATA.currentSubMenu = 5;
+                            FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_ENTERING_OPTIONS;
                         }
                         break;
                 }
@@ -5487,7 +5491,7 @@ static u8 FileSelectUpdateSubMenu(void)
             }
             break;
 
-        case 1:
+        case FILE_SELECT_SUB_MENU_FILE:
             result = FileSelectProcessFileSelection();
             if (result == FALSE)
                 break;
@@ -5525,34 +5529,34 @@ static u8 FileSelectUpdateSubMenu(void)
             }
 
             FileSelectUpdateCursor(CURSOR_POSE_DESELECTING_FILE, FILE_SELECT_DATA.fileSelectCursorPosition);
-            FILE_SELECT_DATA.currentSubMenu = 0;
+            FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_MAIN;
             break;
 
-        case 2:
-            if (FileSelectCopyFileMainLoop())
+        case FILE_SELECT_SUB_MENU_COPY:
+            if (FileSelectCopyFileHandler())
             {
                 FileSelectUpdateCursor(CURSOR_POSE_DEFAULT, FILE_SELECT_DATA.fileSelectCursorPosition);
-                FILE_SELECT_DATA.currentSubMenu = 0;
+                FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_MAIN;
             }
             break;
 
-        case 3:
-            if (FileSelectEraseFileMainLoop())
+        case FILE_SELECT_SUB_MENU_ERASE:
+            if (FileSelectEraseFileHandler())
             {
                 FileSelectUpdateCursor(CURSOR_POSE_DEFAULT, FILE_SELECT_DATA.fileSelectCursorPosition);
-                FILE_SELECT_DATA.currentSubMenu = 0;
+                FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_MAIN;
             }
             break;
 
-        case 4:
-            if (FileSelectCorruptedFileMainLoop())
+        case FILE_SELECT_SUB_MENU_CORRUPTED:
+            if (FileSelectCorruptedFileHandler())
             {
                 FileSelectUpdateCursor(CURSOR_POSE_DEFAULT, FILE_SELECT_DATA.fileSelectCursorPosition);
-                FILE_SELECT_DATA.currentSubMenu = 0;
+                FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_MAIN;
             }
             break;
 
-        case 5:
+        case FILE_SELECT_SUB_MENU_ENTERING_OPTIONS:
             if (FileSelectOptionTransition(FALSE))
             {
                 gSubGameMode2 = 0;
@@ -5560,9 +5564,9 @@ static u8 FileSelectUpdateSubMenu(void)
             }
             break;
 
-        case 6:
+        case FILE_SELECT_SUB_MENU_LEAVING_OPTIONS:
             if (FileSelectOptionTransition(TRUE))
-                FILE_SELECT_DATA.currentSubMenu = 0;
+                FILE_SELECT_DATA.currentSubMenu = FILE_SELECT_SUB_MENU_MAIN;
             break;
     }
 
@@ -5624,9 +5628,9 @@ static u32 FileSelectCheckInputtingTimeAttackCode(void)
 }
 
 /**
- * @brief 7d62c | dd0 | 
+ * @brief 7d62c | dd0 | Handles sub menu when a file is selected (CurrentSubMenu = 1)
  * 
- * @return u8 Leaving, 
+ * @return u8 Leaving
  */
 static u8 FileSelectProcessFileSelection(void)
 {
@@ -5642,7 +5646,7 @@ static u8 FileSelectProcessFileSelection(void)
 
     switch (FILE_SELECT_DATA.subMenuStage)
     {
-        case 0:
+        case 0: // Initialize file sub menu
             gMostRecentSaveFile = FILE_SELECT_DATA.fileSelectCursorPosition;
 
             offset = (FILE_SELECT_DATA.fileSelectCursorPosition + 1) * 3;
@@ -5759,7 +5763,7 @@ static u8 FileSelectProcessFileSelection(void)
             FILE_SELECT_DATA.inputtedTimeAttack = FALSE;
             FILE_SELECT_DATA.subMenuStage = 7;
 
-        case 7:
+        case 7: // "start game" sub menu
             action = UCHAR_MAX;
 
             if (gChangedInput & KEY_A)
@@ -5801,7 +5805,7 @@ static u8 FileSelectProcessFileSelection(void)
                 unk_7e3fc(0, (u8)action);
             break;
 
-        case 8:
+        case 8: // Start game pressed, check if continue or new
             if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].exists || gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].introPlayed)
             {
                 if (gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].timeAttack || FILE_SELECT_DATA.inputtedTimeAttack)
@@ -6280,7 +6284,7 @@ static u8 FileSelectProcessFileSelection(void)
             break;
 
         case 38:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].oamID != sFileSelectCursorOamData[FILE_SELECT_DATA.fileSelectCursorPosition].oamIds[gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].suitType] + 3)
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_CURSOR].oamId != sFileSelectCursorOamData[FILE_SELECT_DATA.fileSelectCursorPosition].oamIds[gSaveFilesInfo[FILE_SELECT_DATA.fileSelectCursorPosition].suitType] + 3)
                 break;
 
             switch (FILE_SELECT_DATA.unk_3A)
@@ -6314,14 +6318,14 @@ static u8 FileSelectProcessFileSelection(void)
 
         case 39:
             FILE_SELECT_DATA.bldcnt = BLDCNT_BG1_FIRST_TARGET_PIXEL | BLDCNT_ALPHA_BLENDING_EFFECT | BLDCNT_SCREEN_SECOND_TARGET;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamID = FILE_SELECT_OAM_ID_SMALL_PANEL_CLOSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamId = FILE_SELECT_OAM_ID_SMALL_PANEL_CLOSE;
 
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_CLOSE_SUB_MENU);
             FILE_SELECT_DATA.subMenuStage++;
             break;
 
         case 40:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamID == 0)
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamId == 0)
             {
                 FILE_SELECT_DATA.dispcnt |= DCNT_WIN0;
                 FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_18;
@@ -6407,13 +6411,13 @@ static void unk_7e3fc(u8 param_1, u8 param_2)
         case 0:
             if (param_2 == 0x80)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
                 break;
             }
             
             if (param_2 == 0x81)
             {
-                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].oamID = 0;
+                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].oamId = 0;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].exists = FALSE;
                 break;
             }
@@ -6425,21 +6429,21 @@ static void unk_7e3fc(u8 param_1, u8 param_2)
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].xPosition = BLOCK_SIZE * 2;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].yPosition = BLOCK_SIZE * 2 - 8;
 
-                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].oamID != FILE_SELECT_OAM_ID_CURSOR_IDLE)
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], FILE_SELECT_OAM_ID_CURSOR_IDLE);
+                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR].oamId != FILE_SELECT_OAM_ID_CURSOR_IDLE)
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SUB_CURSOR], FILE_SELECT_OAM_ID_CURSOR_IDLE);
             }
             break;
 
         case 1:
             if (param_2 == 0x80)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
                 break;
             }
             
             if (param_2 == 0x81)
             {
-                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID = 0;
+                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId = 0;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].exists = FALSE;
                 break;
             }
@@ -6455,20 +6459,20 @@ static void unk_7e3fc(u8 param_1, u8 param_2)
                 else
                     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].yPosition = BLOCK_SIZE * 3 + 24;
 
-                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID != FILE_SELECT_OAM_ID_CURSOR_IDLE)
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
+                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId != FILE_SELECT_OAM_ID_CURSOR_IDLE)
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
             }
             break;
 
         case 2:
             if (param_2 == 0x80)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
             }
             
             else if (param_2 == 0x81)
             {
-                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID = 0;
+                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId = 0;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].exists = FALSE;
             }
 
@@ -6485,8 +6489,8 @@ static void unk_7e3fc(u8 param_1, u8 param_2)
                 else
                     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].yPosition = BLOCK_SIZE * 4 + 24;
 
-                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID != FILE_SELECT_OAM_ID_CURSOR_IDLE)
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
+                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId != FILE_SELECT_OAM_ID_CURSOR_IDLE)
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
             }
             break;
 
@@ -6494,12 +6498,12 @@ static void unk_7e3fc(u8 param_1, u8 param_2)
         case 4:
             if (param_2 == 0x80)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
             }
             
             else if (param_2 == 0x81)
             {
-                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID = 0;
+                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId = 0;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].exists = FALSE;
             }
 
@@ -6514,20 +6518,20 @@ static void unk_7e3fc(u8 param_1, u8 param_2)
                 else
                     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].xPosition = BLOCK_SIZE * 6 - QUARTER_BLOCK_SIZE;
 
-                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID != FILE_SELECT_OAM_ID_CURSOR_IDLE)
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
+                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId != FILE_SELECT_OAM_ID_CURSOR_IDLE)
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
             }
             break;
 
         case 5:
             if (param_2 == 0x80)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
             }
             
             else if (param_2 == 0x81)
             {
-                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID = 0;
+                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId = 0;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].exists = FALSE;
             }
 
@@ -6544,20 +6548,20 @@ static void unk_7e3fc(u8 param_1, u8 param_2)
                 else
                     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].yPosition = BLOCK_SIZE * 3 + 24;
 
-                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID != FILE_SELECT_OAM_ID_CURSOR_IDLE)
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
+                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId != FILE_SELECT_OAM_ID_CURSOR_IDLE)
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
             }
             break;
 
         case 6:
             if (param_2 == 0x80)
             {
-                UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
+                UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_SELECTED);
             }
             
             else if (param_2 == 0x81)
             {
-                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID = 0;
+                FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId = 0;
                 FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].exists = FALSE;
             }
 
@@ -6572,12 +6576,12 @@ static void unk_7e3fc(u8 param_1, u8 param_2)
                 else
                     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].xPosition = BLOCK_SIZE * 6 - QUARTER_BLOCK_SIZE;
 
-                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamID != FILE_SELECT_OAM_ID_CURSOR_IDLE)
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
+                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3].oamId != FILE_SELECT_OAM_ID_CURSOR_IDLE)
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_3], FILE_SELECT_OAM_ID_CURSOR_IDLE);
 
-                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].oamID != FILE_SELECT_OAM_ID_METROID_LOGO)
+                if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].oamId != FILE_SELECT_OAM_ID_METROID_LOGO)
                 {
-                    UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0], FILE_SELECT_OAM_ID_METROID_LOGO);
+                    UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0], FILE_SELECT_OAM_ID_METROID_LOGO);
                     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].xPosition = BLOCK_SIZE * 2 - 8;
                     FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].yPosition = BLOCK_SIZE * 3 + QUARTER_BLOCK_SIZE;
                 }
@@ -6600,7 +6604,7 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
         case TILEMAP_REQUEST_START_GAME_INIT:
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].xPosition = BLOCK_SIZE * 4;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].yPosition = BLOCK_SIZE * 2;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL], FILE_SELECT_OAM_ID_SMALL_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL], FILE_SELECT_OAM_ID_SMALL_PANEL_OPEN);
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_OPEN_SUB_MENU);
             gBg1HOFS_NonGameplay = BLOCK_SIZE * 31;
             gBg1VOFS_NonGameplay = BLOCK_SIZE * 29 + HALF_BLOCK_SIZE + 8;
@@ -6621,7 +6625,7 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
         case TILEMAP_REQUEST_2:
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].xPosition = BLOCK_SIZE * 5;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].yPosition = BLOCK_SIZE * 2 + HALF_BLOCK_SIZE;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL], FILE_SELECT_OAM_ID_MEDIUM_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL], FILE_SELECT_OAM_ID_MEDIUM_PANEL_OPEN);
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_OPEN_SUB_MENU);
             gBg0HOFS_NonGameplay = BLOCK_SIZE * 28;
             gBg0VOFS_NonGameplay = BLOCK_SIZE * 28 + HALF_BLOCK_SIZE;
@@ -6641,14 +6645,14 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
 
         case TILEMAP_REQUEST_4:
             FILE_SELECT_DATA.dispcnt &= ~DCNT_BG0;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamID = FILE_SELECT_OAM_ID_MEDIUM_PANEL_CLOSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamId = FILE_SELECT_OAM_ID_MEDIUM_PANEL_CLOSE;
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_CLOSE_SUB_MENU);
             break;
 
         case TILEMAP_REQUEST_DIFFICULTY_SPAWN_INIT:
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].xPosition = BLOCK_SIZE * 5;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].yPosition = BLOCK_SIZE * 3;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL], FILE_SELECT_OAM_ID_LARGE_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL], FILE_SELECT_OAM_ID_LARGE_PANEL_OPEN);
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_OPEN_SUB_MENU);
             gBg0HOFS_NonGameplay = BLOCK_SIZE * 28;
             gBg0VOFS_NonGameplay = BLOCK_SIZE * 28 + HALF_BLOCK_SIZE;
@@ -6668,14 +6672,14 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
 
         case TILEMAP_REQUEST_DIFFICULTY_DESPAWN_INIT:
             FILE_SELECT_DATA.dispcnt &= ~DCNT_BG0;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamID = FILE_SELECT_OAM_ID_LARGE_PANEL_CLOSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamId = FILE_SELECT_OAM_ID_LARGE_PANEL_CLOSE;
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_CLOSE_SUB_MENU);
             break;
 
         case TILEMAP_REQUEST_ERASE_SPAWN_INIT:
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].xPosition = BLOCK_SIZE * 5;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].yPosition = BLOCK_SIZE * 2 + HALF_BLOCK_SIZE;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL], FILE_SELECT_OAM_ID_MEDIUM_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL], FILE_SELECT_OAM_ID_MEDIUM_PANEL_OPEN);
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_OPEN_SUB_MENU);
 
             gBg1HOFS_NonGameplay = BLOCK_SIZE * 27 + 8;
@@ -6701,7 +6705,7 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
 
         case TILEMAP_REQUEST_ERASE_DESPAWN_INIT:
             FILE_SELECT_DATA.dispcnt &= ~DCNT_BG1;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamID = FILE_SELECT_OAM_ID_MEDIUM_PANEL_CLOSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamId = FILE_SELECT_OAM_ID_MEDIUM_PANEL_CLOSE;
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_CLOSE_SUB_MENU);
             break;
 
@@ -6731,7 +6735,7 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
         case TILEMAP_REQUEST_COPY_SPAWN_INIT:
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].xPosition = BLOCK_SIZE * 5;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].yPosition = BLOCK_SIZE * 2 + HALF_BLOCK_SIZE;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL], FILE_SELECT_OAM_ID_MEDIUM_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL], FILE_SELECT_OAM_ID_MEDIUM_PANEL_OPEN);
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_OPEN_SUB_MENU);
 
             gBg1HOFS_NonGameplay = BLOCK_SIZE * 27 + 8;
@@ -6756,13 +6760,13 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
 
         case TILEMAP_REQUEST_COPY_DESPAWN_INIT:
             FILE_SELECT_DATA.dispcnt &= ~DCNT_BG1;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamID = FILE_SELECT_OAM_ID_MEDIUM_PANEL_CLOSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamId = FILE_SELECT_OAM_ID_MEDIUM_PANEL_CLOSE;
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_CLOSE_SUB_MENU);
             break;
 
         case TILEMAP_REQUEST_ERASE_DESPAWN:
         case TILEMAP_REQUEST_COPY_DESPAWN:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamID == 0)
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_SMALL_PANEL].oamId == 0)
             {
                 FILE_SELECT_DATA.bg1cnt = FILE_SELECT_DATA.unk_18;
                 FILE_SELECT_DATA.bg2cnt = FILE_SELECT_DATA.unk_16;
@@ -6822,7 +6826,7 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
         case TILEMAP_REQUEST_29:
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].xPosition = BLOCK_SIZE * 5;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].yPosition = BLOCK_SIZE * 3;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL], FILE_SELECT_OAM_ID_LARGE_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL], FILE_SELECT_OAM_ID_LARGE_PANEL_OPEN);
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_OPEN_SUB_MENU);
 
             gBg0HOFS_NonGameplay = BLOCK_SIZE * 28;
@@ -6843,7 +6847,7 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
 
         case TILEMAP_REQUEST_31:
             FILE_SELECT_DATA.dispcnt &= ~DCNT_BG0;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamID = FILE_SELECT_OAM_ID_LARGE_PANEL_CLOSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamId = FILE_SELECT_OAM_ID_LARGE_PANEL_CLOSE;
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_CLOSE_SUB_MENU);
             break;
 
@@ -6858,15 +6862,15 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
 
         case TILEMAP_REQUEST_35:
             FILE_SELECT_DATA.dispcnt &= ~DCNT_BG0;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].oamID = 0;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].oamId = 0;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].exists = FALSE;
 
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamID = FILE_SELECT_OAM_ID_LARGE_PANEL_CLOSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamId = FILE_SELECT_OAM_ID_LARGE_PANEL_CLOSE;
             FileSelectPlayMenuSound(MENU_SOUND_REQUEST_CLOSE_SUB_MENU);
             break;
 
         case TILEMAP_REQUEST_37:
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].oamID = 0;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].oamId = 0;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_0].exists = FALSE;
 
             DmaTransfer(3, (void*)sEwramPointer + 0x3300, VRAM_BASE + 0xE000, 0x300, 16);
@@ -6877,7 +6881,7 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
 
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].xPosition = BLOCK_SIZE * 5;
             FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].yPosition = BLOCK_SIZE * 2 + HALF_BLOCK_SIZE;
-            UpdateMenuOamDataID(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL], FILE_SELECT_OAM_ID_MEDIUM_PANEL_OPEN);
+            UpdateMenuOamDataId(&FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL], FILE_SELECT_OAM_ID_MEDIUM_PANEL_OPEN);
 
             gBg0HOFS_NonGameplay = BLOCK_SIZE * 29 + HALF_BLOCK_SIZE;
             gBg0VOFS_NonGameplay = BLOCK_SIZE * 29 + HALF_BLOCK_SIZE;
@@ -6903,7 +6907,7 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
         case TILEMAP_REQUEST_40:
             SoundPlay(SOUND_CLOSE_SUB_MENU);
             FILE_SELECT_DATA.dispcnt &= ~DCNT_BG0;
-            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamID = FILE_SELECT_OAM_ID_MEDIUM_PANEL_CLOSE;
+            FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamId = FILE_SELECT_OAM_ID_MEDIUM_PANEL_CLOSE;
             break;
 
         case TILEMAP_REQUEST_5:
@@ -6911,7 +6915,7 @@ static u32 FileSelectUpdateTilemap(TilemapRequest request)
         case TILEMAP_REQUEST_32:
         case TILEMAP_REQUEST_36:
         case TILEMAP_REQUEST_41:
-            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamID != 0)
+            if (FILE_SELECT_DATA.fileScreenOam[FILE_SELECT_OAM_MEDIUM_PANEL].oamId != 0)
                 ended = FALSE;
             else
                 ended = TRUE;
@@ -7000,7 +7004,7 @@ lbl_0807e7a4: \n\
     movs r1, #0x80 \n\
     strh r1, [r0] \n\
     movs r1, #0x22 \n\
-    bl UpdateMenuOamDataID \n\
+    bl UpdateMenuOamDataId \n\
     movs r0, #5 \n\
     bl FileSelectPlayMenuSound \n\
     ldr r1, lbl_0807e7f0 @ =gBg1HOFS_NonGameplay \n\
@@ -7066,7 +7070,7 @@ lbl_0807e838: \n\
     movs r1, #0xa0 \n\
     strh r1, [r0] \n\
     movs r1, #0x26 \n\
-    bl UpdateMenuOamDataID \n\
+    bl UpdateMenuOamDataId \n\
     movs r0, #5 \n\
     bl FileSelectPlayMenuSound \n\
     ldr r1, lbl_0807e87c @ =gBg0HOFS_NonGameplay \n\
@@ -7137,7 +7141,7 @@ lbl_0807e8cc: \n\
     movs r1, #0xc0 \n\
     strh r1, [r0] \n\
     movs r1, #0x24 \n\
-    bl UpdateMenuOamDataID \n\
+    bl UpdateMenuOamDataId \n\
     movs r0, #5 \n\
     bl FileSelectPlayMenuSound \n\
     ldr r1, lbl_0807e908 @ =gBg0HOFS_NonGameplay \n\
@@ -7227,7 +7231,7 @@ lbl_0807e988: \n\
     movs r1, #0xa0 \n\
     strh r1, [r0] \n\
     movs r1, #0x26 \n\
-    bl UpdateMenuOamDataID \n\
+    bl UpdateMenuOamDataId \n\
     movs r0, #5 \n\
     bl FileSelectPlayMenuSound \n\
     ldr r1, lbl_0807e9f8 @ =gBg1HOFS_NonGameplay \n\
@@ -7372,7 +7376,7 @@ lbl_0807eabc: \n\
     movs r1, #0xa0 \n\
     strh r1, [r0] \n\
     movs r1, #0x26 \n\
-    bl UpdateMenuOamDataID \n\
+    bl UpdateMenuOamDataId \n\
     movs r0, #5 \n\
     bl FileSelectPlayMenuSound \n\
     ldr r1, lbl_0807eb2c @ =gBg1HOFS_NonGameplay \n\
@@ -7601,7 +7605,7 @@ lbl_0807eca4: \n\
     movs r1, #0xc0 \n\
     strh r1, [r0] \n\
     movs r1, #0x24 \n\
-    bl UpdateMenuOamDataID \n\
+    bl UpdateMenuOamDataId \n\
     movs r0, #5 \n\
     bl FileSelectPlayMenuSound \n\
     ldr r1, lbl_0807ece8 @ =gBg0HOFS_NonGameplay \n\
@@ -7756,7 +7760,7 @@ lbl_0807eddc: \n\
     movs r1, #0xa0 \n\
     strh r1, [r0] \n\
     movs r1, #0x26 \n\
-    bl UpdateMenuOamDataID \n\
+    bl UpdateMenuOamDataId \n\
     ldr r0, lbl_0807ee28 @ =gBg0HOFS_NonGameplay \n\
     movs r3, #0xec \n\
     lsl r3, r3, #3 \n\
