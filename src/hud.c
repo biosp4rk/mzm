@@ -62,7 +62,7 @@ void HudUpdateOam(void)
     if (!gHideHud)
     {
 #ifdef CHAOS
-        moveHud = ChaosIsEffectActive(CHAOS_FLAG_MOVE_HUD);
+        moveHud = ChaosIsEffectActive(CHAOS_EFFECT_MOVE_HUD);
 
         if (moveHud)
         {

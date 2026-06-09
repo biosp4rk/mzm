@@ -644,7 +644,7 @@ void ScrollProcessGeneral(void)
     if (gLockScreen.lock == LOCK_SCREEN_TYPE_NONE)
     {
 #ifdef CHAOS
-        if (gSlowScrollingTimer == 0 && !ChaosIsEffectActive(CHAOS_FLAG_SLOW_SCROLLING))
+        if (gSlowScrollingTimer == 0 && !ChaosIsEffectActive(CHAOS_EFFECT_SLOW_SCROLLING))
 #else // !CHAOS
         if (gSlowScrollingTimer == 0)
 #endif // CHAOS

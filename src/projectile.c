@@ -46,7 +46,7 @@ void ProjectileProcessNormalBeam(struct ProjectileData* pProj)
 
 #ifdef CHAOS
         distance = QUARTER_BLOCK_SIZE + PIXEL_SIZE;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -132,7 +132,7 @@ void ProjectileProcessLongBeam(struct ProjectileData* pProj)
 
 #ifdef CHAOS
         distance = QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -221,7 +221,7 @@ void ProjectileProcessIceBeam(struct ProjectileData* pProj)
 
 #ifdef CHAOS
         distance = QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE + PIXEL_SIZE / 2;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -422,7 +422,7 @@ void ProjectileProcessWaveBeam(struct ProjectileData* pProj)
     {
 #ifdef CHAOS
         distance = HALF_BLOCK_SIZE - PIXEL_SIZE;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -522,7 +522,7 @@ void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
     {
 #ifdef CHAOS
         distance = HALF_BLOCK_SIZE;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -645,7 +645,7 @@ void ProjectileProcessPistol(struct ProjectileData* pProj)
 
 #ifdef CHAOS
         distance = QUARTER_BLOCK_SIZE + PIXEL_SIZE + PIXEL_SIZE / 2;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -728,7 +728,7 @@ void ProjectileProcessChargedNormalBeam(struct ProjectileData* pProj)
 
 #ifdef CHAOS
         distance = QUARTER_BLOCK_SIZE + PIXEL_SIZE;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -812,7 +812,7 @@ void ProjectileProcessChargedLongBeam(struct ProjectileData* pProj)
 
 #ifdef CHAOS
         distance = QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -895,7 +895,7 @@ void ProjectileProcessChargedIceBeam(struct ProjectileData* pProj)
 
 #ifdef CHAOS
         distance = QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE + PIXEL_SIZE / 2;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -979,7 +979,7 @@ void ProjectileProcessChargedWaveBeam(struct ProjectileData* pProj)
     {
 #ifdef CHAOS
         distance = HALF_BLOCK_SIZE - PIXEL_SIZE;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -1083,7 +1083,7 @@ void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
     {
 #ifdef CHAOS
         distance = HALF_BLOCK_SIZE;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -1222,7 +1222,7 @@ void ProjectileProcessChargedPistol(struct ProjectileData* pProj)
 
 #ifdef CHAOS
         distance = QUARTER_BLOCK_SIZE + PIXEL_SIZE + PIXEL_SIZE / 2;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
             distance /= 4;
         ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -1320,7 +1320,7 @@ void ProjectileProcessMissile(struct ProjectileData* pProj)
         {
 #ifdef CHAOS
             distance = pProj->timer + EIGHTH_BLOCK_SIZE;
-            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
                 distance /= 4;
             ProjectileMove(pProj, distance);
 #else // !CHAOS
@@ -1433,7 +1433,7 @@ void ProjectileProcessSuperMissile(struct ProjectileData* pProj)
         {
 #ifdef CHAOS
             distance = pProj->timer + (QUARTER_BLOCK_SIZE - PIXEL_SIZE);
-            if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_WEAPONS))
+            if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
                 distance /= 4;
             ProjectileMove(pProj, distance);
 #else // !CHAOS

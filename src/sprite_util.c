@@ -2342,7 +2342,7 @@ boolu32 SpriteUtilCheckStopSpritesPose(void)
     }
 
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_ENEMIES) && gFrameCounter8Bit & 1 != 0)
+    if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_ENEMIES) && gFrameCounter8Bit & 1 != 0)
         return TRUE;
 #endif // CHAOS
     

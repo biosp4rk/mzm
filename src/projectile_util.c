@@ -151,9 +151,9 @@ boolu8 ProjectileInit(ProjectileType type, u16 yPosition, u16 xPosition)
         if (!(pProj->status & PROJ_STATUS_EXISTS))
         {
 #ifdef CHAOS
-            if (type < PROJ_TYPE_CHARGED_BEAM && ChaosIsEffectActive(CHAOS_FLAG_CHARGED_SHOTS))
+            if (type < PROJ_TYPE_CHARGED_BEAM && ChaosIsEffectActive(CHAOS_EFFECT_CHARGED_SHOTS))
                 type += PROJ_TYPE_CHARGED_BEAM;
-            else if (type < PROJ_TYPE_MISSILE && ChaosIsEffectActive(CHAOS_FLAG_SHOOT_BOMBS))
+            else if (type < PROJ_TYPE_MISSILE && ChaosIsEffectActive(CHAOS_EFFECT_SHOOT_BOMBS))
                 type = PROJ_TYPE_BOMB;
 #endif // CHAOS
 

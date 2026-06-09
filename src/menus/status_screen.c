@@ -1955,7 +1955,7 @@ void StatusScreenDraw(void)
     u8 previousSlots[3];
 
 #ifdef CHAOS
-    if (gEquipment.suitType == SUIT_SUITLESS && !ChaosIsEffectActive(CHAOS_FLAG_SUITLESS))
+    if (gEquipment.suitType == SUIT_SUITLESS && !ChaosIsEffectActive(CHAOS_EFFECT_SUITLESS))
 #else // !CHAOS
     if (gEquipment.suitType == SUIT_SUITLESS)
 #endif // CHAOS
@@ -3318,7 +3318,7 @@ DescriptionTextId StatusScreenGetCurrentEquipmentSelected(u8 statusSlot)
         return descriptionTextId;
 
 #ifdef CHAOS
-    if (gEquipment.suitType != SUIT_SUITLESS || ChaosIsEffectActive(CHAOS_FLAG_SUITLESS))
+    if (gEquipment.suitType != SUIT_SUITLESS || ChaosIsEffectActive(CHAOS_EFFECT_SUITLESS))
 #else // !CHAOS
     if (gEquipment.suitType != SUIT_SUITLESS)
 #endif // CHAOS

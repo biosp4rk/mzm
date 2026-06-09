@@ -2666,7 +2666,7 @@ void SamusUpdatePhysics(struct SamusData* pData)
     }
 
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_FLAG_WATER_PHYSICS))
+    if (ChaosIsEffectActive(CHAOS_EFFECT_WATER_PHYSICS))
         slowed = TRUE;
 #endif // CHAOS
 
@@ -2711,7 +2711,7 @@ void SamusUpdatePhysics(struct SamusData* pData)
     }
 
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_HORI_MOVEMENT))
+    if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_HORI_MOVEMENT))
     {
         pPhysics->xAcceleration /= 2;
         pPhysics->xVelocityCap /= 2;
@@ -2719,7 +2719,7 @@ void SamusUpdatePhysics(struct SamusData* pData)
         pPhysics->midairXAcceleration /= 2;
         pPhysics->midairMorphedXVelocityCap /= 2;
     }
-    else if (ChaosIsEffectActive(CHAOS_FLAG_FAST_HORI_MOVEMENT))
+    else if (ChaosIsEffectActive(CHAOS_EFFECT_FAST_HORI_MOVEMENT))
     {
         pPhysics->xAcceleration = pPhysics->xAcceleration * 3 / 2;
         pPhysics->xVelocityCap = pPhysics->xVelocityCap * 3 / 2;
@@ -2728,9 +2728,9 @@ void SamusUpdatePhysics(struct SamusData* pData)
         pPhysics->midairMorphedXVelocityCap = pPhysics->midairMorphedXVelocityCap * 3 / 2;
     }
 
-    if (ChaosIsEffectActive(CHAOS_FLAG_LOW_GRAVITY))
+    if (ChaosIsEffectActive(CHAOS_EFFECT_LOW_GRAVITY))
         pPhysics->yAcceleration /= 2;
-    else if (ChaosIsEffectActive(CHAOS_FLAG_HIGH_GRAVITY))
+    else if (ChaosIsEffectActive(CHAOS_EFFECT_HIGH_GRAVITY))
         pPhysics->yAcceleration = pPhysics->yAcceleration * 3 / 2;
 #endif // CHAOS
 
@@ -3433,7 +3433,7 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
 #ifdef CHAOS
     else
     {
-        if (ChaosIsEffectActive(CHAOS_FLAG_SWAP_MISSILES))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SWAP_MISSILES))
         {
             // Toggle every 16 frames
             if ((gFrameCounter8Bit & 0xF) == 0)
@@ -3470,7 +3470,7 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
 #ifdef CHAOS
             if (pEquipment->currentPowerBombs != 0)
             {
-                if (ChaosIsEffectActive(CHAOS_FLAG_ARM_WEAPON))
+                if (ChaosIsEffectActive(CHAOS_EFFECT_ARM_WEAPON))
                 {
                     // Alternate every 8 frames
                     if (gFrameCounter8Bit & 8)
@@ -3505,7 +3505,7 @@ void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeap
 
         default:
 #ifdef CHAOS
-            if (ChaosIsEffectActive(CHAOS_FLAG_ARM_WEAPON))
+            if (ChaosIsEffectActive(CHAOS_EFFECT_ARM_WEAPON))
             {
                 // Alternate every 8 frames
                 if (gFrameCounter8Bit & 8)
@@ -6598,9 +6598,9 @@ SamusPose SamusCrawling(struct SamusData* pData)
         // Move
 #ifdef CHAOS
         velocityCap = HALF_BLOCK_SIZE;
-        if (ChaosIsEffectActive(CHAOS_FLAG_SLOW_HORI_MOVEMENT))
+        if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_HORI_MOVEMENT))
             velocityCap /= 2;
-        else if (ChaosIsEffectActive(CHAOS_FLAG_FAST_HORI_MOVEMENT))
+        else if (ChaosIsEffectActive(CHAOS_EFFECT_FAST_HORI_MOVEMENT))
             velocityCap = velocityCap * 3 / 2;
 
         SamusApplyXAcceleration(gSamusPhysics.xAcceleration, velocityCap, pData);
@@ -6946,7 +6946,7 @@ void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction)
 
     // Check enable echo
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_FLAG_LONG_ECHO))
+    if (ChaosIsEffectActive(CHAOS_EFFECT_LONG_ECHO))
     {
         pEcho->active = TRUE;
         pEcho->timer = 0;
@@ -8435,7 +8435,7 @@ void SamusDraw(void)
     if (gSamusEcho.active)
     {
 #ifdef CHAOS
-        echoStart = ChaosIsEffectActive(CHAOS_FLAG_LONG_ECHO) ? 15 : 3;
+        echoStart = ChaosIsEffectActive(CHAOS_EFFECT_LONG_ECHO) ? 15 : 3;
         ppc = (s16)(gSamusEcho.previousPositionCounter - (gSamusEcho.distance * gSamusEcho.position) - echoStart);
 #else // !CHAOS
         ppc = (s16)(gSamusEcho.previousPositionCounter - (gSamusEcho.distance * gSamusEcho.position) - 3);

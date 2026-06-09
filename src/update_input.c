@@ -22,7 +22,7 @@ void UpdateInput(void)
     keys = KEY_MASK & ~READ_16(REG_KEY_INPUT);
 
 #ifdef CHAOS
-    if (gMainGameMode == GM_INGAME && ChaosIsEffectActive(CHAOS_FLAG_INVERTED_CONTROLS))
+    if (gMainGameMode == GM_INGAME && ChaosIsEffectActive(CHAOS_EFFECT_INVERTED_CONTROLS))
     {
         origKeys = keys;
         if (origKeys & KEY_RIGHT)
