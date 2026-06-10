@@ -54,16 +54,16 @@ endif
 #	ASFLAGS += --defsym REGION_CN=1
 # endif
 
-ifeq ($(DEBUG),1)
-	CPPFLAGS += -DDEBUG
-	ASFLAGS += --defsym DEBUG=1
-	TARGET := $(TARGET)_debug
-endif
-
 ifeq ($(CHAOS),1)
 	CPPFLAGS += -DCHAOS
 	ASFLAGS += --defsym CHAOS=1
 	TARGET := $(TARGET)_chaos
+endif
+
+ifeq ($(DEBUG),1)
+	CPPFLAGS += -DDEBUG
+	ASFLAGS += --defsym DEBUG=1
+	TARGET := $(TARGET)_debug
 endif
 
 BASEROM := $(TARGET)_baserom.gba
@@ -265,7 +265,7 @@ src/sram/%.s: src/sram/%.c
 
 chaos:
 	$(MAKE) REGION=us CHAOS=1
-chaos_debug
+chaos_debug:
 	$(MAKE) REGION=us CHAOS=1 DEBUG=1
 
 us:
