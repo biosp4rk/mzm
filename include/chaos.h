@@ -6,12 +6,14 @@
 
 #define CHAOS_RAND_BOOL (ChaosRandU16(0, 1))
 
+void ChaosReset(void);
 u32 ChaosIsEffectActive(u32 flags);
 u8 ChaosEmptyEffectIndex(void);
 void ChaosUpdate(void);
 void ChaosUpdateEffects(void);
 void ChaosEffectEnded(struct ChaosEffectData* pEffect);
 void ChaosEndEquipmentEffects(void);
+void ChaosWarpBack(void);
 void ChaosCreateEffect(void);
 void ChaosUpdateRng(void);
 u16 ChaosRandU16(u16 min, u16 max);
@@ -25,8 +27,10 @@ s32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect);
 s32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect);
 s32 ChaosEffectSuitless(struct ChaosEffectData* pEffect);
 void ChaosEffectMoveHud(void);
-void ChaosEffectMissileRing(void);
+void ChaosEffectWeaponRing(struct ChaosEffectData* pEffect);
 void ChaosEffectExplosions(void);
+bools32 ChaosCanWarp(void);
+bools32 ChaosEffectWarp(void);
 
 // One time effects
 s32 ChaosEffectSpawnEnemy(void);

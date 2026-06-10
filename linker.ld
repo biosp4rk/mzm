@@ -853,6 +853,10 @@ SECTIONS {
         src/ending_and_gallery.o(.data);
         src/chozodia_escape.o(.data);
         src/cable_link.o(.data);
+
+#ifdef CHAOS
+        src/chaos.o(.data);
+#endif
     } >rom
 
     nes_metroid_data __nes_metroid_load_address : ALIGN(2) {

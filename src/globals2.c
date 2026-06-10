@@ -73,11 +73,14 @@ IWRAM_DATA u8 gUnk_3005B55[11] = {};
 IWRAM_DATA struct LinkInfo gLink = {};
 
 #ifdef CHAOS
-IWRAM_DATA u32 gChaosRng;
-IWRAM_DATA u32 gActiveChaosEffects;
-IWRAM_DATA u8 gPrevOneTimeChaosEffect;
-IWRAM_DATA u8 gCrumbleCityActive;
-IWRAM_DATA struct HudPositions gHudPositions;
-IWRAM_DATA const u16* gChaosTextPointer;
-IWRAM_DATA struct ChaosEffectData gChaosEffects[MAX_NUM_CHAOS_EFFECTS];
+IWRAM_DATA u32 gChaosRng = 0;
+IWRAM_DATA u32 gActiveChaosEffects = 0;
+IWRAM_DATA u8 gPrevOneTimeChaosEffect = 0;
+IWRAM_DATA boolu8 gCrumbleCityActive = 0;
+IWRAM_DATA struct HudPositions gHudPositions = {};
+IWRAM_DATA const u16* gChaosTextPointer = NULL;
+IWRAM_DATA u8 gWarpAreaBackup = 0;
+IWRAM_DATA u8 gWarpDoorBackup = 0;
+IWRAM_DATA boolu8 gWarpBackFlag = FALSE;
+IWRAM_DATA struct ChaosEffectData gChaosEffects[MAX_NUM_CHAOS_EFFECTS] = {};
 #endif // CHAOS

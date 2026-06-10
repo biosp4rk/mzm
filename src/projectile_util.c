@@ -152,9 +152,14 @@ boolu8 ProjectileInit(ProjectileType type, u16 yPosition, u16 xPosition)
         {
 #ifdef CHAOS
             if (type < PROJ_TYPE_CHARGED_BEAM && ChaosIsEffectActive(CHAOS_EFFECT_CHARGED_SHOTS))
+            {
                 type += PROJ_TYPE_CHARGED_BEAM;
+            }
             else if (type < PROJ_TYPE_MISSILE && ChaosIsEffectActive(CHAOS_EFFECT_SHOOT_BOMBS))
+            {
                 type = PROJ_TYPE_BOMB;
+                yPosition += 16;
+            }
 #endif // CHAOS
 
             if (type > PROJ_TYPE_SUPER_MISSILE)

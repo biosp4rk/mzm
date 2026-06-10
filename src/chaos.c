@@ -14,7 +14,9 @@
 #include "sprite.h"
 #include "sprite_util.h"
 
+#include "data/generic_data.h"
 #include "data/projectile_data.h"
+#include "data/rooms_data.h"
 #include "data/text_data.h"
 
 #include "constants/audio.h"
@@ -42,12 +44,24 @@
 
 #ifdef CHAOS
 
-// Max positions where HUD elements can be drawn when moved
-#define HUD_MAX_X (SCREEN_SIZE_X - 24)
-#define HUD_MAX_Y (SCREEN_SIZE_Y - 12)
 // Gets a random position on screen
 #define RAND_SCREEN_X (ChaosRandU16(0, HUD_MAX_X))
 #define RAND_SCREEN_Y (ChaosRandU16(0, HUD_MAX_Y))
+
+extern const struct Door* sAreaDoorsPointers[AREA_ENTRY_COUNT];
+
+void ChaosReset(void)
+{
+    gActiveChaosEffects = 0;
+    gPrevOneTimeChaosEffect = 0;
+    gCrumbleCityActive = FALSE;
+    BitFill(3, 0, &gHudPositions, sizeof(gHudPositions), 32);
+    gChaosTextPointer = NULL;
+    gWarpAreaBackup = UCHAR_MAX;
+    gWarpDoorBackup = UCHAR_MAX;
+    gWarpBackFlag = FALSE;
+    BitFill(3, 0, &gChaosEffects, sizeof(gChaosEffects), 32);
+}
 
 u32 ChaosIsEffectActive(u32 id)
 {
@@ -72,6 +86,9 @@ void ChaosUpdate(void)
     // Update active effects
     ChaosUpdateEffects();
 
+    if (gWarpBackFlag)
+        ChaosWarpBack();
+
     // Check create new effect
     if (gInGameTimer.frames == 0 &&
         gInGameTimer.seconds % CHAOS_SECONDS_BETWEEN_EFFECTS == 0)
@@ -90,8 +107,8 @@ void ChaosUpdateEffects(void)
         // Check specific effects to update
         switch (gChaosEffects[i].id)
         {
-            case CHAOS_EFFECT_MISSILE_RING:
-                ChaosEffectMissileRing();
+            case CHAOS_EFFECT_WEAPON_RING:
+                ChaosEffectWeaponRing(&gChaosEffects[i]);
                 break;
             case CHAOS_EFFECT_EXPLOSIONS:
                 ChaosEffectExplosions();
@@ -126,6 +143,7 @@ void ChaosEffectEnded(struct ChaosEffectData* pEffect)
             // Play "enable" sound
             SoundPlay(SOUND_CHAOS_ITEM_ON);
             break;
+
         case CHAOS_EFFECT_GIVE_ABILITY:
             // TODO: Move to function
             flag = (u8)pEffect->data;
@@ -154,11 +172,16 @@ void ChaosEffectEnded(struct ChaosEffectData* pEffect)
             // Play "disable" sound
             SoundPlay(SOUND_CHAOS_ITEM_OFF);
             break;
+
         case CHAOS_EFFECT_SUITLESS:
             UpdateSuitType(pEffect->data, TRUE);
             if (gMainGameMode == GM_INGAME)
                 ProjectileLoadGraphics();
             gSamusWeaponInfo.chargeCounter = 0;
+            break;
+        
+        case CHAOS_EFFECT_WARP:
+            gWarpBackFlag = TRUE;
             break;
     }
 
@@ -193,6 +216,40 @@ void ChaosEndEquipmentEffects(void)
     }
 }
 
+static void ChaosTriggerWarp(u8 area, u8 door, u8 room)
+{
+    gEquipment.grabbedByMetroid = FALSE;
+
+    gCurrentArea = area;
+    gLastDoorUsed = door;
+
+    ColorFadingStart(COLOR_FADING_NO_TRANSITION);
+    gSubGameMode1 = SUB_GAME_MODE_LOADING_ROOM;
+
+    gAlarmTimer = 0;
+    CheckPlayRoomMusicTrack(area, room);
+}
+
+void ChaosWarpBack(void)
+{
+    if (!ChaosCanWarp())
+        return;
+
+    gWarpBackFlag = FALSE;
+
+    ChaosTriggerWarp(gWarpAreaBackup, gWarpDoorBackup,
+        sAreaDoorsPointers[gWarpAreaBackup][gWarpDoorBackup].sourceRoom);
+
+    // gEquipment.grabbedByMetroid = FALSE;
+    // gCurrentArea = gWarpAreaBackup;
+    // gLastDoorUsed = gWarpDoorBackup;
+    // ColorFadingStart(COLOR_FADING_NO_TRANSITION);
+    // gSubGameMode1 = SUB_GAME_MODE_LOADING_ROOM;
+    // gAlarmTimer = 0;
+    // CheckPlayRoomMusicTrack(gWarpAreaBackup,
+    //     sAreaDoorsPointers[gCurrentArea][gLastDoorUsed].sourceRoom);
+}
+
 void ChaosCreateEffect(void)
 {
     u8 effectIdx;
@@ -206,6 +263,11 @@ void ChaosCreateEffect(void)
     for (tries = 0; tries < 5; tries++)
     {
         id = ChaosRandU16(start, CHAOS_EFFECT_END - 1);
+
+        //
+        if (ChaosRandU16(0, 5) == 0)
+            id = CHAOS_EFFECT_WARP;
+        //
 
         // Try again if duration effect is already active
         if (id < CHAOS_EFFECT_ONE_TIME && ChaosIsEffectActive(id))
@@ -265,7 +327,7 @@ void ChaosCreateEffect(void)
                 break;
 
             case CHAOS_EFFECT_SLOW_WEAPONS:
-                if (ChaosIsEffectActive(CHAOS_EFFECT_MISSILE_RING))
+                if (ChaosIsEffectActive(CHAOS_EFFECT_WEAPON_RING))
                     continue;
                 break;
 
@@ -291,9 +353,11 @@ void ChaosCreateEffect(void)
                     continue;
                 break;
 
-            case CHAOS_EFFECT_MISSILE_RING:
+            case CHAOS_EFFECT_WEAPON_RING:
                 if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
                     continue;
+                // Choose a random weapon ring type
+                gChaosEffects[effectIdx].data = ChaosRandU16(0, WEAPON_RING_COUNT - 1);
                 break;
 
             case CHAOS_EFFECT_MOVE_HUD:
@@ -305,6 +369,11 @@ void ChaosCreateEffect(void)
 
             case CHAOS_EFFECT_EXPLOSIONS:
                 break; // No extra checks or setup required
+
+            case CHAOS_EFFECT_WARP:
+                if (!ChaosEffectWarp())
+                    continue;
+                break;
 
             // One time effects
 
@@ -657,56 +726,69 @@ void ChaosEffectMoveHud(void)
     gHudPositions.minimapY = RAND_SCREEN_Y;
 }
 
-void ChaosEffectMissileRing(void)
+void ChaosEffectWeaponRing(struct ChaosEffectData* pEffect)
 {
+    // Missiles
     u8 direction;
-    u8 right;
-    struct ProjectileData* pProj;
+    bools32 right;
     u16 status;
+    // Bombs
+    s16 angle;
+    u16 xPos;
+    u16 yPos;
+    // Both
+    u32 state;
+    struct ProjectileData* pProj;
 
     if (gFrameCounter8Bit % 8 != 0)
         return;
 
-    switch ((gFrameCounter8Bit / 8) & 7)
-    {
-        case 0:
-            direction = ACD_UP;
-            right = FALSE;
-            break;
-        case 1:
-            direction = ACD_DIAGONALLY_UP;
-            right = TRUE;
-            break;
-        case 2:
-            direction = ACD_FORWARD;
-            right = TRUE;
-            break;
-        case 3:
-            direction = ACD_DIAGONALLY_DOWN;
-            right = TRUE;
-            break;
-        case 4:
-            direction = ACD_DOWN;
-            right = FALSE;
-            break;
-        case 5:
-            direction = ACD_DIAGONALLY_DOWN;
-            right = FALSE;
-            break;
-        case 6:
-            direction = ACD_FORWARD;
-            right = FALSE;
-            break;
-        case 7:
-            direction = ACD_DIAGONALLY_UP;
-            right = FALSE;
-            break;
-    }
+    // 8 possible states
+    state = (gFrameCounter8Bit / 8) & 7;
 
-    for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
+    if (pEffect->data == WEAPON_RING_MISSILES)
     {
-        if (!(pProj->status & PROJ_STATUS_EXISTS))
+        switch (state)
         {
+            case 0:
+                direction = ACD_UP;
+                right = FALSE;
+                break;
+            case 1:
+                direction = ACD_DIAGONALLY_UP;
+                right = TRUE;
+                break;
+            case 2:
+                direction = ACD_FORWARD;
+                right = TRUE;
+                break;
+            case 3:
+                direction = ACD_DIAGONALLY_DOWN;
+                right = TRUE;
+                break;
+            case 4:
+                direction = ACD_DOWN;
+                right = FALSE;
+                break;
+            case 5:
+                direction = ACD_DIAGONALLY_DOWN;
+                right = FALSE;
+                break;
+            case 6:
+                direction = ACD_FORWARD;
+                right = FALSE;
+                break;
+            case 7:
+                direction = ACD_DIAGONALLY_UP;
+                right = FALSE;
+                break;
+        }
+
+        for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
+        {
+            if (pProj->status & PROJ_STATUS_EXISTS)
+                continue;
+
             status = PROJ_STATUS_EXISTS | PROJ_STATUS_ON_SCREEN | PROJ_STATUS_CAN_AFFECT_ENVIRONMENT;
 
             if (right)
@@ -734,13 +816,13 @@ void ChaosEffectMissileRing(void)
                 case ACD_DIAGONALLY_UP:
                     pProj->pOam = sMissileOam_Diagonal;
                     break;
-    
+
                 case ACD_DOWN:
                     pProj->status |= PROJ_STATUS_Y_FLIP;
                 case ACD_UP:
                     pProj->pOam = sMissileOam_Vertical;
                     break;
-    
+
                 default:
                 case ACD_FORWARD:
                     pProj->pOam = sMissileOam_Horizontal;
@@ -753,7 +835,43 @@ void ChaosEffectMissileRing(void)
             SoundPlay(SOUND_MISSILE_SHOT);
             SoundPlay(SOUND_MISSILE_THRUST);
 
-            return;
+            break;
+        }
+    }
+    else if (pEffect->data == WEAPON_RING_BOMBS)
+    {
+        for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
+        {
+            if (pProj->status & PROJ_STATUS_EXISTS)
+                continue;
+
+            pProj->status = PROJ_STATUS_EXISTS | PROJ_STATUS_ON_SCREEN | PROJ_STATUS_ABOVE_BG1;
+            pProj->type = PROJ_TYPE_BOMB;
+
+            pProj->yPosition = gSamusData.yPosition +
+                (gSamusPhysics.hitboxTop / 2) + PIXEL_TO_SUB_PIXEL(4);
+            pProj->xPosition = gSamusData.xPosition;
+            // Get an angle in Q8.8 format
+            angle = state * (256 / 8);
+            pProj->xPosition += Q_8_8_TO_S16_DIV(COS(angle) * BOMB_RING_RADIUS);
+            pProj->yPosition += Q_8_8_TO_S16_DIV(SIN(angle) * BOMB_RING_RADIUS);
+
+            pProj->pOam = sBombOam_Slow;
+            pProj->animationDurationCounter = 0;
+            pProj->currentAnimationFrame = 0;
+            pProj->drawDistanceOffset = HALF_BLOCK_SIZE;
+
+            pProj->hitboxTop = -(BLOCK_SIZE - PIXEL_SIZE);
+            pProj->hitboxBottom = THREE_QUARTER_BLOCK_SIZE;
+            pProj->hitboxLeft = -THREE_QUARTER_BLOCK_SIZE;
+            pProj->hitboxRight = THREE_QUARTER_BLOCK_SIZE;
+
+            pProj->timer = CONVERT_SECONDS(.25f) + 1 * DELTA_TIME;
+            pProj->movementStage = BOMB_STAGE_FIRST_SPIN;
+
+            SoundPlay(SOUND_BOMB_SET);
+
+            break;
         }
     }
 }
@@ -823,6 +941,101 @@ void ChaosEffectExplosions(void)
 
     ParticleSet(ChaosPositionNearSamusY(), ChaosPositionNearSamusX(), pe);
     SoundPlayNotAlreadyPlaying(sound);
+}
+
+bools32 ChaosCanWarp(void)
+{
+    if (gPreventMovementTimer > 0)
+        return FALSE;
+
+    switch (gSamusData.pose)
+    {
+        case SPOSE_USING_AN_ELEVATOR:
+        case SPOSE_GRABBED_BY_CHOZO_STATUE:
+        case SPOSE_SAVING_LOADING_GAME:
+        case SPOSE_DOWNLOADING_MAP_DATA:
+        case SPOSE_TURNING_AROUND_TO_DOWNLOAD_MAP_DATA:
+        case SPOSE_DYING:
+        case SPOSE_FACING_THE_BACKGROUND_SUITLESS:
+        case SPOSE_TURNING_FROM_FACING_THE_BACKGROUND_SUITLESS:
+        case SPOSE_ACTIVATING_ZIPLINES:
+        case SPOSE_IN_ESCAPE_SHIP:
+        case SPOSE_TURNING_TO_ENTER_ESCAPE_SHIP:
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
+static u8 sDoorCounts[AREA_NORMAL_COUNT - 1] = {
+    [AREA_BRINSTAR] = ARRAY_SIZE(sBrinstarDoors),
+    [AREA_KRAID] = ARRAY_SIZE(sKraidDoors),
+    [AREA_NORFAIR] = ARRAY_SIZE(sNorfairDoors),
+    [AREA_RIDLEY] = ARRAY_SIZE(sRidleyDoors),
+    [AREA_TOURIAN] = ARRAY_SIZE(sTourianDoors),
+    [AREA_CRATERIA] = ARRAY_SIZE(sCrateriaDoors)
+};
+
+static u32 sTotalDoorCount = ARRAY_SIZE(sBrinstarDoors) + ARRAY_SIZE(sKraidDoors) +
+    ARRAY_SIZE(sNorfairDoors) + ARRAY_SIZE(sRidleyDoors) + ARRAY_SIZE(sTourianDoors) +
+    ARRAY_SIZE(sCrateriaDoors);
+
+bools32 ChaosEffectWarp(void)
+{
+    u32 door;
+    s32 i;
+    u8 area;
+    const struct Door* pDoor;
+
+    // Don't warp if haven't finished previous warp
+    if (gWarpBackFlag)
+        return FALSE;
+
+    if (!ChaosCanWarp())
+        return FALSE;
+
+    // Don't warp if the previous door is 1 block high
+    // (includes morph tunnels and vertical transitions)
+    pDoor = &sAreaDoorsPointers[gCurrentArea][gLastDoorUsed];
+    if (pDoor->yEnd - pDoor->yStart == 0)
+        return FALSE;
+
+    // Pick a random door
+    door = ChaosRandU16(0, sTotalDoorCount);
+    pDoor = NULL;
+
+    for (i = 0; i < AREA_CHOZODIA; i++)
+    {
+        if (door < sDoorCounts[i])
+        {
+            area = i;
+            pDoor = &sAreaDoorsPointers[i][door];
+            break;
+        }
+
+        door -= sDoorCounts[i];
+    }
+    
+    // Sanity check that a door was found
+    if (pDoor == NULL)
+        return FALSE;
+
+    // Don't warp to the current room
+    if (gCurrentArea == area && gCurrentRoom == pDoor->sourceRoom)
+        return FALSE;
+
+    // Don't warp if the chosen door is 1 block high
+    if (pDoor->yEnd - pDoor->yStart == 0)
+        return FALSE;
+
+    // Backup area and door
+    gWarpAreaBackup = gCurrentArea;
+    gWarpDoorBackup = gLastDoorUsed;
+
+    // Trigger the warp
+    ChaosTriggerWarp(area, door, pDoor->sourceRoom);
+
+    return TRUE;
 }
 
 // One time effects

@@ -35,7 +35,7 @@ void PauseDebugDrawEventName(u16 event, u16* dst);
 #endif
 
 #ifdef CHAOS
-void UpdateSuitType(SuitType newSuit, u8 chaos);
+void UpdateSuitType(SuitType newSuit, bools32 chaos);
 #else // !CHAOS
 void UpdateSuitType(SuitType newSuit);
 #endif // CHAOS

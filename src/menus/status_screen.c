@@ -776,7 +776,11 @@ void PauseDebugStatusScreen(void)
 
                 if (work2)
                 {
+#ifdef CHAOS
+                    UpdateSuitType(yPos, FALSE);
+#else // !CHAOS
                     UpdateSuitType(yPos);
+#endif // CHAOS
                     PauseDebugActivateAbilities();
                     PAUSE_SCREEN_DATA.samusIconOam[0].oamID = gEquipment.suitType != SUIT_SUITLESS ? 1 : 2;
                     work1 |= (1 << PAUSE_DEBUG_GROUP_BEAM) | (1 << PAUSE_DEBUG_GROUP_SUIT) | (1 << PAUSE_DEBUG_GROUP_MISC) |
@@ -1440,7 +1444,11 @@ void PauseDebugEquipTank(u8 tankOrEquip)
 
     if (change != 0)
     {
+#ifdef CHAOS
+        UpdateSuitType(gEquipment.suitType, FALSE);
+#else // !CHAOS
         UpdateSuitType(gEquipment.suitType);
+#endif // CHAOS
         PauseDebugActivateAbilities();
     }
 
@@ -1754,7 +1762,7 @@ void PauseDebugDrawEventName(u16 event, u16* dst)
  * @param chaos bool, changed via chaos code
  */
 #ifdef CHAOS
-void UpdateSuitType(SuitType newSuit, u8 chaos)
+void UpdateSuitType(SuitType newSuit, bools32 chaos)
 #else // !CHAOS
 void UpdateSuitType(SuitType newSuit)
 #endif // CHAOS

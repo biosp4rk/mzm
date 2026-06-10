@@ -2,6 +2,7 @@
 #include "gba.h"
 #include "sprites_ai/message_banner.h"
 #include "event.h"
+#include "chaos.h"
 
 #include "data/sprites/gunship.h"
 
@@ -12,6 +13,7 @@
 #include "constants/event.h"
 #include "constants/samus.h"
 #include "constants/text.h"
+#include "constants/chaos.h"
 
 #include "structs/connection.h"
 #include "structs/display.h"
@@ -195,6 +197,15 @@ static u8 GunshipCheckSamusEnter(void)
 static void GunshipInit(void)
 {
     u8 introCutscene;
+
+#ifdef CHAOS
+    // Don't allow saving while warped
+    if (ChaosIsEffectActive(CHAOS_EFFECT_WARP))
+    {
+        gCurrentSprite.status = 0;
+        return;
+    }
+#endif // CHAOS
 
     introCutscene = FALSE;
 

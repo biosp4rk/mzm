@@ -12,6 +12,12 @@
 // The maximum Y distance something should spawn from Samus
 #define CHAOS_NEAR_SAMUS_MAX_Y (4 * BLOCK_SIZE)
 
+// Max positions where HUD elements can be drawn when moved
+#define HUD_MAX_X (SCREEN_SIZE_X - 24)
+#define HUD_MAX_Y (SCREEN_SIZE_Y - 12)
+
+#define BOMB_RING_RADIUS (3 * BLOCK_SIZE)
+
 enum ChaosEffect {
     // # Duration effects
 
@@ -55,8 +61,8 @@ enum ChaosEffect {
     CHAOS_EFFECT_CHARGED_SHOTS,
     // Shooting a beam spawns a bomb
     CHAOS_EFFECT_SHOOT_BOMBS,
-    // Shoots missiles in a ring around Samus
-    CHAOS_EFFECT_MISSILE_RING,
+    // Shoots missiles or lays bombs in a ring around Samus
+    CHAOS_EFFECT_WEAPON_RING,
 
     // ## Misc
 
@@ -66,6 +72,8 @@ enum ChaosEffect {
     CHAOS_EFFECT_SLOW_SCROLLING,
     // Spawns explosion particles around Samus
     CHAOS_EFFECT_EXPLOSIONS,
+    // Warps to a random room, then warps back
+    CHAOS_EFFECT_WARP,
 
     // # One time effects
 
@@ -104,6 +112,13 @@ enum ChaosEffect {
 
     // Marks the end of all effects
     CHAOS_EFFECT_END
+};
+
+enum WeaponRing {
+    WEAPON_RING_MISSILES,
+    WEAPON_RING_BOMBS,
+
+    WEAPON_RING_COUNT
 };
 
 #endif // CHAOS_CONSTANTS_H

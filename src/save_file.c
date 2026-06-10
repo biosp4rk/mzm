@@ -2123,6 +2123,10 @@ void unk_7584c(u8 param_1)
     gPauseScreenFlag = PAUSE_SCREEN_NONE;
     gDisablePause = FALSE;
     gSamusDoorPositionOffset = 0;
+
+#ifdef CHAOS
+    ChaosReset();
+#endif // CHAOS
 }
 
 /**

@@ -1,6 +1,7 @@
 #include "sprites_ai/save_platform_chozodia.h"
 #include "sprites_ai/message_banner.h"
 #include "gba.h"
+#include "chaos.h"
 
 #include "data/sprites/save_platform_chozodia.h"
 
@@ -9,6 +10,7 @@
 #include "constants/sprite.h"
 #include "constants/samus.h"
 #include "constants/text.h"
+#include "constants/chaos.h"
 
 #include "structs/game_state.h"
 #include "structs/hud.h"
@@ -78,6 +80,12 @@ static void SavePlatformChozodiaInit(void)
         gCurrentSprite.work2 = TRUE;
     else
         gCurrentSprite.work2 = FALSE;
+
+#ifdef CHAOS
+    // Don't allow saving while warped
+    if (ChaosIsEffectActive(CHAOS_EFFECT_WARP))
+        gCurrentSprite.work2 = TRUE;
+#endif // CHAOS
 
     gCurrentSprite.animationDurationCounter = 0;
     gCurrentSprite.currentAnimationFrame = 0;

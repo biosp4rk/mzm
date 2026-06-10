@@ -1,5 +1,5 @@
-local ADDR_PREV_ONE_TIME_EFFECT = 0x3006008
-local ADDR_CHAOS_EFFECTS = 0x300601C
+local ADDR_PREV_ONE_TIME_EFFECT = 0x3005D0C
+local ADDR_CHAOS_EFFECTS = 0x3005D24
 local MAX_NUM_CHAOS_EFFECTS = 5
 local CHAOS_EFFECT_SIZE = 8
 local OFF_CHAOS_EXISTS = 0
@@ -16,23 +16,27 @@ local EFFECT_NAMES = {
     "low gravity",
     "high gravity",
     "long echo",
+    "slow enemies",
     "deactivate ability",
     "give ability",
     "suitless",
     "slow weapons",
-    "arm missiles",
+    "arm weapon",
     "swap missiles",
     "charged shots",
     "shoot bombs",
+    "weapon ring",
     "move hud",
     "slow scrolling",
     "explosions",
+    "random warp",
     -- One time effects
     "spawn enemy",
     "message box",
     "spawn power bomb",
     "shot block",
     "wet ground",
+    "crumble city",
     "freeze enemies",
     "screen shake",
     "knockback",
@@ -40,7 +44,8 @@ local EFFECT_NAMES = {
     "change energy or ammo",
     "pause game",
     "play sound",
-    "color effect"
+    "color effect",
+    "cutscene"
 }
 
 event.onexit(function()

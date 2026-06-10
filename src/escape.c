@@ -28,7 +28,10 @@ Escape EscapeDetermineTimer(void)
             return ESCAPE_MOTHER_BRAIN;
         }
     }
+// Check both events since Tourian escape can be skipped
+#ifndef CHAOS
     else
+#endif // !CHAOS
     {
         if (!CHECK_EVENT(EVENT_ESCAPED_CHOZODIA) && CHECK_EVENT(EVENT_MECHA_RIDLEY_KILLED))
         {
