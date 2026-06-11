@@ -44,11 +44,17 @@
 
 #ifdef CHAOS
 
+#define CHAOS_RAND_BOOL (ChaosRandU16(0, 1))
+
 // Gets a random position on screen
-#define RAND_SCREEN_X (ChaosRandU16(0, HUD_MAX_X))
-#define RAND_SCREEN_Y (ChaosRandU16(0, HUD_MAX_Y))
+#define RAND_SCREEN_X() (ChaosRandU16(0, HUD_MAX_X))
+#define RAND_SCREEN_Y() (ChaosRandU16(0, HUD_MAX_Y))
 
 extern const struct Door* sAreaDoorsPointers[AREA_ENTRY_COUNT];
+
+/* -------------------------------- */
+/* Utility functions */
+/* -------------------------------- */
 
 void ChaosReset(void)
 {
@@ -63,157 +69,67 @@ void ChaosReset(void)
     BitFill(3, 0, &gChaosEffects, sizeof(gChaosEffects), 32);
 }
 
-u32 ChaosIsEffectActive(u32 id)
+bools32 ChaosIsEffectActive(u32 id)
 {
     return (gActiveChaosEffects & (1 << id)) != 0;
 }
 
-u8 ChaosEmptyEffectIndex(void)
+static void ChaosUpdateRng(void)
 {
-    u8 i;
-
-    for (i = 0; i < MAX_NUM_CHAOS_EFFECTS; i++)
-    {
-        if (!gChaosEffects[i].exists)
-            return i;
-    }
-
-    return UCHAR_MAX;
+    gChaosRng = (gChaosRng * 0x41C64E6D) + 0x3039;
 }
 
-void ChaosUpdate(void)
+static u16 ChaosRandU16(u16 min, u16 max)
 {
-    // Update active effects
-    ChaosUpdateEffects();
+    u16 seed;
+    u16 mod;
 
-    if (gWarpBackFlag)
-        ChaosWarpBack();
-
-    // Check create new effect
-    if (gInGameTimer.frames == 0 &&
-        gInGameTimer.seconds % CHAOS_SECONDS_BETWEEN_EFFECTS == 0)
-        ChaosCreateEffect();
+    ChaosUpdateRng();
+    seed = gChaosRng >> 16;
+    mod = max - min + 1;
+    return (seed % mod) + min;
 }
 
-void ChaosUpdateEffects(void)
+static u16 ChaosPositionNearSamus(u16 samusPos, u16 max)
 {
-    s32 i;
+    u16 pos;
 
-    for (i = 0; i < MAX_NUM_CHAOS_EFFECTS; i++)
-    {
-        if (!gChaosEffects[i].exists)
-            continue;
-        
-        // Check specific effects to update
-        switch (gChaosEffects[i].id)
-        {
-            case CHAOS_EFFECT_WEAPON_RING:
-                ChaosEffectWeaponRing(&gChaosEffects[i]);
-                break;
-            case CHAOS_EFFECT_EXPLOSIONS:
-                ChaosEffectExplosions();
-                break;
-        }
+    pos = ChaosRandU16(CHAOS_NEAR_SAMUS_MIN, max);
 
-        gChaosEffects[i].timer--;
-        if (gChaosEffects[i].timer == 0)
-            ChaosEffectEnded(&gChaosEffects[i]);
-    }
+    // TODO: Check if out of bounds?
+    if (CHAOS_RAND_BOOL)
+        return (u16)(samusPos + pos);
+    else
+        return (u16)(samusPos - pos);
 }
 
-void ChaosEffectEnded(struct ChaosEffectData* pEffect)
+static u16 ChaosPositionNearSamusX(void)
 {
-    u8 flag;
-
-    switch (pEffect->id)
-    {
-        case CHAOS_EFFECT_DEACTIVATE_ABILITY:
-            // TODO: Move to function
-            flag = (u8)pEffect->data;
-            if ((pEffect->data >> 8) == 0)
-            {
-                gEquipment.beamBombsActivation |= flag;
-                if (gMainGameMode == GM_INGAME)
-                    ProjectileLoadGraphics();
-            }
-            else
-            {
-                gEquipment.suitMiscActivation |= flag;
-            }
-            // Play "enable" sound
-            SoundPlay(SOUND_CHAOS_ITEM_ON);
-            break;
-
-        case CHAOS_EFFECT_GIVE_ABILITY:
-            // TODO: Move to function
-            flag = (u8)pEffect->data;
-            if ((pEffect->data >> 8) == 0)
-            {
-                // Only deactivate the ability if it wasn't obtained while the effect was active,
-                // or if it's an unknown item (plasma beam)
-                if (!(gEquipment.beamBombs & flag) ||
-                    (gEquipment.suitType != SUIT_FULLY_POWERED && flag == BBF_PLASMA_BEAM))
-                {
-                    gEquipment.beamBombsActivation &= ~flag;
-                    if (gMainGameMode == GM_INGAME)
-                        ProjectileLoadGraphics();   
-                }
-            }
-            else
-            {
-                // Only deactivate the ability if it wasn't obtained while the effect was active,
-                // or if it's an unknown item (space jump or gravity suit)
-                if (!(gEquipment.suitMisc & flag) ||
-                    (gEquipment.suitType != SUIT_FULLY_POWERED && flag & (SMF_SPACE_JUMP | SMF_GRAVITY_SUIT)))
-                {
-                    gEquipment.suitMiscActivation &= ~flag;
-                }
-            }
-            // Play "disable" sound
-            SoundPlay(SOUND_CHAOS_ITEM_OFF);
-            break;
-
-        case CHAOS_EFFECT_SUITLESS:
-            UpdateSuitType(pEffect->data, TRUE);
-            if (gMainGameMode == GM_INGAME)
-                ProjectileLoadGraphics();
-            gSamusWeaponInfo.chargeCounter = 0;
-            break;
-        
-        case CHAOS_EFFECT_WARP:
-            gWarpBackFlag = TRUE;
-            break;
-    }
-
-    // Clear effect data
-    gActiveChaosEffects &= ~(1 << pEffect->id);
-    pEffect->exists = FALSE;
-    pEffect->id = 0;
-    pEffect->timer = 0;
-    pEffect->data = 0;
+    return ChaosPositionNearSamus(gSamusData.xPosition, CHAOS_NEAR_SAMUS_MAX_X);
 }
 
-/**
- * @brief Ends any chaos effects that modify equipment
- */
-void ChaosEndEquipmentEffects(void)
+static u16 ChaosPositionNearSamusY(void)
 {
-    s32 i;
+    return ChaosPositionNearSamus(gSamusData.yPosition, CHAOS_NEAR_SAMUS_MAX_Y);
+}
 
-    for (i = 0; i < MAX_NUM_CHAOS_EFFECTS; i++)
+static s32 ChaosIsInMetroidRoom(void)
+{
+    if (gCurrentArea != AREA_TOURIAN)
+        return FALSE;
+    
+    switch (gCurrentRoom)
     {
-        if (!gChaosEffects[i].exists)
-            continue;
-
-        switch (gChaosEffects[i].id)
-        {
-            case CHAOS_EFFECT_DEACTIVATE_ABILITY:
-            case CHAOS_EFFECT_GIVE_ABILITY:
-            case CHAOS_EFFECT_SUITLESS:
-                ChaosEffectEnded(&gChaosEffects[i]);
-                break;
-        }
+        case 0x01:
+        case 0x02:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x13:
+            return TRUE;
     }
+
+    return FALSE;
 }
 
 static void ChaosTriggerWarp(u8 area, u8 door, u8 room)
@@ -230,27 +146,1025 @@ static void ChaosTriggerWarp(u8 area, u8 door, u8 room)
     CheckPlayRoomMusicTrack(area, room);
 }
 
-void ChaosWarpBack(void)
+/* -------------------------------- */
+/* Duration effects */
+/* -------------------------------- */
+
+static bools32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect)
 {
-    if (!ChaosCanWarp())
-        return;
+    s32 i;
+    u8 beamBombsFlags[6];
+    u8 beamBombsCount;
+    u8 suitMiscFlags[8];
+    u8 suitMiscCount;
+    u8 itemIdx;
 
-    gWarpBackFlag = FALSE;
+    if (ChaosIsEffectActive(CHAOS_EFFECT_GIVE_ABILITY) || gEquipment.suitType == SUIT_SUITLESS)
+        return FALSE;
 
-    ChaosTriggerWarp(gWarpAreaBackup, gWarpDoorBackup,
-        sAreaDoorsPointers[gWarpAreaBackup][gWarpDoorBackup].sourceRoom);
+    // Count active abilities
+    beamBombsFlags[0] = BBF_LONG_BEAM;
+    beamBombsFlags[1] = BBF_ICE_BEAM;
+    beamBombsFlags[2] = BBF_WAVE_BEAM;
+    beamBombsFlags[3] = BBF_PLASMA_BEAM;
+    beamBombsFlags[4] = BBF_CHARGE_BEAM;
+    beamBombsFlags[5] = BBF_BOMBS;
 
-    // gEquipment.grabbedByMetroid = FALSE;
-    // gCurrentArea = gWarpAreaBackup;
-    // gLastDoorUsed = gWarpDoorBackup;
-    // ColorFadingStart(COLOR_FADING_NO_TRANSITION);
-    // gSubGameMode1 = SUB_GAME_MODE_LOADING_ROOM;
-    // gAlarmTimer = 0;
-    // CheckPlayRoomMusicTrack(gWarpAreaBackup,
-    //     sAreaDoorsPointers[gCurrentArea][gLastDoorUsed].sourceRoom);
+    beamBombsCount = 0;
+    for (i = 0; i < 6; i++)
+    {
+        if (gEquipment.beamBombsActivation & beamBombsFlags[i])
+            beamBombsCount++;
+    }
+    
+    suitMiscFlags[0] = SMF_HIGH_JUMP;
+    suitMiscFlags[1] = SMF_SPEEDBOOSTER;
+    suitMiscFlags[2] = SMF_SPACE_JUMP;
+    suitMiscFlags[3] = SMF_SCREW_ATTACK;
+    suitMiscFlags[4] = SMF_VARIA_SUIT;
+    suitMiscFlags[5] = SMF_GRAVITY_SUIT;
+    suitMiscFlags[6] = SMF_MORPH_BALL;
+    suitMiscFlags[7] = SMF_POWER_GRIP;
+
+    suitMiscCount = 0;
+    for (i = 0; i < 8; i++)
+    {
+        if (gEquipment.suitMiscActivation & suitMiscFlags[i])
+            suitMiscCount++;
+    }
+
+    if (beamBombsCount + suitMiscCount == 0)
+        return FALSE;
+
+    // Get ability to deactivate
+    itemIdx = ChaosRandU16(0, beamBombsCount + suitMiscCount - 1);
+    if (itemIdx < beamBombsCount)
+    {
+        beamBombsCount = 0;
+        for (i = 0; i < 6; i++)
+        {
+            if (gEquipment.beamBombsActivation & beamBombsFlags[i])
+            {
+                if (beamBombsCount == itemIdx)
+                    break;
+                beamBombsCount++;
+            }
+        }
+        pEffect->data = beamBombsFlags[i];
+        gEquipment.beamBombsActivation &= ~beamBombsFlags[i];
+        ProjectileLoadGraphics();
+    }
+    else
+    {
+        itemIdx -= beamBombsCount;
+        suitMiscCount = 0;
+        for (i = 0; i < 8; i++)
+        {
+            if (gEquipment.suitMiscActivation & suitMiscFlags[i])
+            {
+                if (suitMiscCount == itemIdx)
+                    break;
+                suitMiscCount++;
+            }
+        }
+        pEffect->data = suitMiscFlags[i] | 0x100;
+        gEquipment.suitMiscActivation &= ~suitMiscFlags[i];
+    }
+
+    // Play "disable" sound
+    SoundPlay(SOUND_CHAOS_ITEM_OFF);
+    return TRUE;
 }
 
-void ChaosCreateEffect(void)
+static bools32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect)
+{
+    s32 i;
+    u8 beamBombsFlags[6];
+    u8 beamBombsCount;
+    u8 suitMiscFlags[8];
+    u8 suitMiscCount;
+    u8 itemIdx;
+
+    if (ChaosIsEffectActive(CHAOS_EFFECT_DEACTIVATE_ABILITY) || gEquipment.suitType == SUIT_SUITLESS)
+        return FALSE;
+
+    // Count inactive abilities
+    beamBombsFlags[0] = BBF_LONG_BEAM;
+    beamBombsFlags[1] = BBF_ICE_BEAM;
+    beamBombsFlags[2] = BBF_WAVE_BEAM;
+    beamBombsFlags[3] = BBF_PLASMA_BEAM;
+    beamBombsFlags[4] = BBF_CHARGE_BEAM;
+    beamBombsFlags[5] = BBF_BOMBS;
+
+    beamBombsCount = 0;
+    for (i = 0; i < 6; i++)
+    {
+        if (!(gEquipment.beamBombsActivation & beamBombsFlags[i]))
+            beamBombsCount++;
+    }
+    
+    suitMiscFlags[0] = SMF_HIGH_JUMP;
+    suitMiscFlags[1] = SMF_SPEEDBOOSTER;
+    suitMiscFlags[2] = SMF_SPACE_JUMP;
+    suitMiscFlags[3] = SMF_SCREW_ATTACK;
+    suitMiscFlags[4] = SMF_VARIA_SUIT;
+    suitMiscFlags[5] = SMF_GRAVITY_SUIT;
+    suitMiscFlags[6] = SMF_MORPH_BALL;
+    suitMiscFlags[7] = SMF_POWER_GRIP;
+
+    suitMiscCount = 0;
+    for (i = 0; i < 8; i++)
+    {
+        if (!(gEquipment.suitMiscActivation & suitMiscFlags[i]))
+            suitMiscCount++;
+    }
+
+    if (beamBombsCount + suitMiscCount == 0)
+        return FALSE;
+
+    // Get ability to give
+    itemIdx = ChaosRandU16(0, beamBombsCount + suitMiscCount - 1);
+    if (itemIdx < beamBombsCount)
+    {
+        beamBombsCount = 0;
+        for (i = 0; i < 6; i++)
+        {
+            if (!(gEquipment.beamBombsActivation & beamBombsFlags[i]))
+            {
+                if (beamBombsCount == itemIdx)
+                    break;
+                beamBombsCount++;
+            }
+        }
+        pEffect->data = beamBombsFlags[i];
+        gEquipment.beamBombsActivation |= beamBombsFlags[i];
+        ProjectileLoadGraphics();
+    }
+    else
+    {
+        itemIdx -= beamBombsCount;
+        suitMiscCount = 0;
+        for (i = 0; i < 8; i++)
+        {
+            if (!(gEquipment.suitMiscActivation & suitMiscFlags[i]))
+            {
+                if (suitMiscCount == itemIdx)
+                    break;
+                suitMiscCount++;
+            }
+        }
+        pEffect->data = suitMiscFlags[i] | 0x100;
+        gEquipment.suitMiscActivation |= suitMiscFlags[i];
+    }
+
+    // Play "enable" sound
+    SoundPlay(SOUND_CHAOS_ITEM_ON);
+    return TRUE;
+}
+
+static bools32 ChaosEffectSuitless(struct ChaosEffectData* pEffect)
+{
+    if (gEquipment.suitType == SUIT_SUITLESS)
+        return FALSE;
+
+    pEffect->data = gEquipment.suitType;
+    UpdateSuitType(SUIT_SUITLESS, TRUE);
+    ProjectileLoadGraphics();
+    gSamusWeaponInfo.chargeCounter = 0;
+    return TRUE;
+}
+
+static void ChaosEffectMoveHud(void)
+{
+    gHudPositions.energyX = RAND_SCREEN_X();
+    gHudPositions.energyY = RAND_SCREEN_Y();
+    gHudPositions.chargeBarX = RAND_SCREEN_X();
+    gHudPositions.chargeBarY = RAND_SCREEN_Y();
+    gHudPositions.missileX = RAND_SCREEN_X();
+    gHudPositions.missileY = RAND_SCREEN_Y();
+    gHudPositions.superMissileX = RAND_SCREEN_X();
+    gHudPositions.superMissileY = RAND_SCREEN_Y();
+    gHudPositions.powerBombX = RAND_SCREEN_X();
+    gHudPositions.powerBombY = RAND_SCREEN_Y();
+    gHudPositions.minimapX = RAND_SCREEN_X();
+    gHudPositions.minimapY = RAND_SCREEN_Y();
+}
+
+static void ChaosEffectWeaponRing(struct ChaosEffectData* pEffect)
+{
+    // Missiles
+    u8 direction;
+    bools32 right;
+    u16 status;
+    // Bombs
+    s16 angle;
+    u16 xPos;
+    u16 yPos;
+    // Both
+    u32 state;
+    struct ProjectileData* pProj;
+
+    if (gFrameCounter8Bit % 8 != 0)
+        return;
+
+    // 8 possible states
+    state = (gFrameCounter8Bit / 8) & 7;
+
+    if (pEffect->data == WEAPON_RING_MISSILES)
+    {
+        switch (state)
+        {
+            case 0:
+                direction = ACD_UP;
+                right = FALSE;
+                break;
+            case 1:
+                direction = ACD_DIAGONALLY_UP;
+                right = TRUE;
+                break;
+            case 2:
+                direction = ACD_FORWARD;
+                right = TRUE;
+                break;
+            case 3:
+                direction = ACD_DIAGONALLY_DOWN;
+                right = TRUE;
+                break;
+            case 4:
+                direction = ACD_DOWN;
+                right = FALSE;
+                break;
+            case 5:
+                direction = ACD_DIAGONALLY_DOWN;
+                right = FALSE;
+                break;
+            case 6:
+                direction = ACD_FORWARD;
+                right = FALSE;
+                break;
+            case 7:
+                direction = ACD_DIAGONALLY_UP;
+                right = FALSE;
+                break;
+        }
+
+        for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
+        {
+            if (pProj->status & PROJ_STATUS_EXISTS)
+                continue;
+
+            status = PROJ_STATUS_EXISTS | PROJ_STATUS_ON_SCREEN | PROJ_STATUS_CAN_AFFECT_ENVIRONMENT;
+
+            if (right)
+                status |= PROJ_STATUS_X_FLIP;
+
+            pProj->status = status;
+            pProj->type = PROJ_TYPE_MISSILE;
+
+            pProj->yPosition = gSamusData.yPosition + gSamusPhysics.hitboxTop;
+            pProj->xPosition = gSamusData.xPosition;
+
+            pProj->hitboxTop = -EIGHTH_BLOCK_SIZE;
+            pProj->hitboxBottom = EIGHTH_BLOCK_SIZE;
+            pProj->hitboxLeft = -EIGHTH_BLOCK_SIZE;
+            pProj->hitboxRight = EIGHTH_BLOCK_SIZE;
+
+            pProj->movementStage = PROJECTILE_STAGE_SPAWNING;
+            pProj->timer = 0;
+            pProj->direction = direction;
+
+            switch (direction)
+            {
+                case ACD_DIAGONALLY_DOWN:
+                    pProj->status |= PROJ_STATUS_Y_FLIP;
+                case ACD_DIAGONALLY_UP:
+                    pProj->pOam = sMissileOam_Diagonal;
+                    break;
+
+                case ACD_DOWN:
+                    pProj->status |= PROJ_STATUS_Y_FLIP;
+                case ACD_UP:
+                    pProj->pOam = sMissileOam_Vertical;
+                    break;
+
+                default:
+                case ACD_FORWARD:
+                    pProj->pOam = sMissileOam_Horizontal;
+                    break;
+            }
+
+            pProj->animationDurationCounter = 0;
+            pProj->currentAnimationFrame = 0;
+
+            SoundPlay(SOUND_MISSILE_SHOT);
+            SoundPlay(SOUND_MISSILE_THRUST);
+
+            break;
+        }
+    }
+    else if (pEffect->data == WEAPON_RING_BOMBS)
+    {
+        for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
+        {
+            if (pProj->status & PROJ_STATUS_EXISTS)
+                continue;
+
+            pProj->status = PROJ_STATUS_EXISTS | PROJ_STATUS_ON_SCREEN | PROJ_STATUS_ABOVE_BG1;
+            pProj->type = PROJ_TYPE_BOMB;
+
+            pProj->yPosition = gSamusData.yPosition +
+                (gSamusPhysics.hitboxTop / 2) + PIXEL_TO_SUB_PIXEL(4);
+            pProj->xPosition = gSamusData.xPosition;
+            // Get an angle in Q8.8 format
+            angle = state * (256 / 8);
+            pProj->xPosition += Q_8_8_TO_S16_DIV(COS(angle) * BOMB_RING_RADIUS);
+            pProj->yPosition += Q_8_8_TO_S16_DIV(SIN(angle) * BOMB_RING_RADIUS);
+
+            pProj->pOam = sBombOam_Slow;
+            pProj->animationDurationCounter = 0;
+            pProj->currentAnimationFrame = 0;
+            pProj->drawDistanceOffset = HALF_BLOCK_SIZE;
+
+            pProj->hitboxTop = -(BLOCK_SIZE - PIXEL_SIZE);
+            pProj->hitboxBottom = THREE_QUARTER_BLOCK_SIZE;
+            pProj->hitboxLeft = -THREE_QUARTER_BLOCK_SIZE;
+            pProj->hitboxRight = THREE_QUARTER_BLOCK_SIZE;
+
+            pProj->timer = CONVERT_SECONDS(.25f) + 1 * DELTA_TIME;
+            pProj->movementStage = BOMB_STAGE_FIRST_SPIN;
+
+            SoundPlay(SOUND_BOMB_SET);
+
+            break;
+        }
+    }
+}
+
+static void ChaosEffectExplosions(void)
+{
+    u8 pe;
+    u16 sound;
+
+    if (ChaosRandU16(0, 11) != 0)
+        return;
+
+    switch (ChaosRandU16(0, 8))
+    {
+        case 0:
+            pe = PE_SPRITE_EXPLOSION_HUGE;
+            break;
+        case 1:
+            pe = PE_SPRITE_EXPLOSION_MEDIUM;
+            break;
+        case 2:
+            pe = PE_SPRITE_EXPLOSION_BIG;
+            break;
+        case 3:
+            pe = PE_SPRITE_EXPLOSION_SINGLE_THEN_BIG;
+            break;
+        case 4:
+            pe = PE_SCREW_ATTACK_DESTROYED;
+            break;
+        case 5:
+            pe = PE_SHINESPARK_DESTROYED;
+            break;
+        case 6:
+            pe = PE_PSEUDO_SCREW_DESTROYED;
+            break;
+        case 7:
+            pe = PE_SPEEDBOOSTER_DESTROYED;
+            break;
+        case 8:
+            pe = PE_MAIN_BOSS_DEATH;
+            break;
+    }
+
+    switch (ChaosRandU16(0, 4))
+    {
+        // 301-303
+        // 312
+        // 403
+        // 457: Kraid
+        // 496: Ridley death
+        case 0:
+            sound = 253;
+            break;
+        case 1:
+            sound = 630;
+            break;
+        case 2:
+            sound = 705;
+            break;
+        case 3:
+            sound = 706;
+            break;
+        case 4:
+            sound = 707;
+            break;
+    }
+
+    ParticleSet(ChaosPositionNearSamusY(), ChaosPositionNearSamusX(), pe);
+    SoundPlayNotAlreadyPlaying(sound);
+}
+
+static bools32 ChaosCanWarp(void)
+{
+    if (gPreventMovementTimer > 0)
+        return FALSE;
+
+    switch (gSamusData.pose)
+    {
+        case SPOSE_USING_AN_ELEVATOR:
+        case SPOSE_GRABBED_BY_CHOZO_STATUE:
+        case SPOSE_SAVING_LOADING_GAME:
+        case SPOSE_DOWNLOADING_MAP_DATA:
+        case SPOSE_TURNING_AROUND_TO_DOWNLOAD_MAP_DATA:
+        case SPOSE_DYING:
+        case SPOSE_FACING_THE_BACKGROUND_SUITLESS:
+        case SPOSE_TURNING_FROM_FACING_THE_BACKGROUND_SUITLESS:
+        case SPOSE_ACTIVATING_ZIPLINES:
+        case SPOSE_IN_ESCAPE_SHIP:
+        case SPOSE_TURNING_TO_ENTER_ESCAPE_SHIP:
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
+static u8 sDoorCounts[AREA_NORMAL_COUNT - 1] = {
+    [AREA_BRINSTAR] = ARRAY_SIZE(sBrinstarDoors),
+    [AREA_KRAID] = ARRAY_SIZE(sKraidDoors),
+    [AREA_NORFAIR] = ARRAY_SIZE(sNorfairDoors),
+    [AREA_RIDLEY] = ARRAY_SIZE(sRidleyDoors),
+    [AREA_TOURIAN] = ARRAY_SIZE(sTourianDoors),
+    [AREA_CRATERIA] = ARRAY_SIZE(sCrateriaDoors)
+};
+
+static u32 sTotalDoorCount = ARRAY_SIZE(sBrinstarDoors) + ARRAY_SIZE(sKraidDoors) +
+    ARRAY_SIZE(sNorfairDoors) + ARRAY_SIZE(sRidleyDoors) + ARRAY_SIZE(sTourianDoors) +
+    ARRAY_SIZE(sCrateriaDoors);
+
+static bools32 ChaosEffectWarp(void)
+{
+    u32 door;
+    s32 i;
+    u8 area;
+    const struct Door* pDoor;
+
+    // Don't warp if haven't finished previous warp
+    if (gWarpBackFlag)
+        return FALSE;
+
+    if (!ChaosCanWarp())
+        return FALSE;
+
+    // Don't warp if the previous door is 1 block high
+    // (includes morph tunnels and vertical transitions)
+    pDoor = &sAreaDoorsPointers[gCurrentArea][gLastDoorUsed];
+    if (pDoor->yEnd - pDoor->yStart == 0)
+        return FALSE;
+
+    // Pick a random door
+    door = ChaosRandU16(0, sTotalDoorCount);
+    pDoor = NULL;
+
+    for (i = 0; i < AREA_CHOZODIA; i++)
+    {
+        if (door < sDoorCounts[i])
+        {
+            area = i;
+            pDoor = &sAreaDoorsPointers[i][door];
+            break;
+        }
+
+        door -= sDoorCounts[i];
+    }
+    
+    // Sanity check that a door was found
+    if (pDoor == NULL)
+        return FALSE;
+
+    // Don't warp to the current room
+    if (gCurrentArea == area && gCurrentRoom == pDoor->sourceRoom)
+        return FALSE;
+
+    // Don't warp if the chosen door is 1 block high
+    if (pDoor->yEnd - pDoor->yStart == 0)
+        return FALSE;
+
+    // Backup area and door
+    gWarpAreaBackup = gCurrentArea;
+    gWarpDoorBackup = gLastDoorUsed;
+
+    // Trigger the warp
+    ChaosTriggerWarp(area, door, pDoor->sourceRoom);
+
+    return TRUE;
+}
+
+/* -------------------------------- */
+/* One time effects */
+/* -------------------------------- */
+
+static s32 ChaosEffectSpawnEnemy(void)
+{
+    u8 spriteCount;
+    struct SpriteData* pSprite;
+    u8 idCount;
+    u8 spritesetStartIdx;
+    u8 i;
+    u8 spritesetIdx;
+    u8 spriteId;
+    u16 spriteX;
+    u16 spriteY;
+    u8 spriteSlot;
+
+    // Don't spawn any sprites in Metroid rooms
+    if (ChaosIsInMetroidRoom())
+        return FALSE;
+
+    // Count number of active sprites
+    spriteCount = 0;
+    for (pSprite = gSpriteData; pSprite < gSpriteData + MAX_AMOUNT_OF_SPRITES; pSprite++)
+    {
+        if (pSprite->status & SPRITE_STATUS_EXISTS)
+            spriteCount++;
+    }
+
+    // Only spawn a sprite if there are at least 4 slots open
+    if (spriteCount > MAX_AMOUNT_OF_SPRITES - 4)
+        return FALSE;
+
+    // Count number of sprite IDs in spriteset
+    idCount = 0;
+    while (idCount < MAX_AMOUNT_OF_SPRITE_TYPES)
+    {
+        if (gSpritesetSpritesID[idCount] <= 0x10)
+            break;
+        idCount++;
+    }
+
+    if (idCount == 0)
+        return FALSE;
+    
+    // Pick a random starting index
+    spritesetStartIdx = ChaosRandU16(0, idCount - 1);
+
+    // Try each sprite ID until one can spawn
+    for (i = 0; i < idCount; i++)
+    {
+        spritesetIdx = (spritesetStartIdx + i) % idCount;
+        spriteId = gSpritesetSpritesID[spritesetIdx];
+
+        // Check if this sprite ID is excluded
+        switch (spriteId)
+        {
+            case PSPRITE_MESSAGE_BANNER:
+            case PSPRITE_LARGE_ENERGY_DROP:
+            case PSPRITE_SMALL_ENERGY_DROP:
+            case PSPRITE_MISSILE_DROP:
+            case PSPRITE_SUPER_MISSILE_DROP:
+            case PSPRITE_POWER_BOMB_DROP:
+            case PSPRITE_CHOZO_STATUE_LONG_HINT:
+            case PSPRITE_CHOZO_STATUE_LONG:
+            case PSPRITE_CHOZO_STATUE_ICE_HINT:
+            case PSPRITE_CHOZO_STATUE_ICE:
+            case PSPRITE_CHOZO_STATUE_WAVE_HINT:
+            case PSPRITE_CHOZO_STATUE_WAVE:
+            case PSPRITE_CHOZO_STATUE_BOMB_HINT:
+            case PSPRITE_CHOZO_STATUE_BOMB:
+            case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER_HINT:
+            case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER:
+            case PSPRITE_CHOZO_STATUE_HIGH_JUMP_HINT:
+            case PSPRITE_CHOZO_STATUE_HIGH_JUMP:
+            case PSPRITE_CHOZO_STATUE_SCREW_HINT:
+            case PSPRITE_CHOZO_STATUE_SCREW:
+            case PSPRITE_CHOZO_STATUE_VARIA_HINT:
+            case PSPRITE_CHOZO_STATUE_VARIA:
+            case PSPRITE_MULTIPLE_LARGE_ENERGY:
+            case PSPRITE_GUNSHIP:
+            case PSPRITE_DEOREM_FIRST_LOCATION:
+            case PSPRITE_DEOREM_SECOND_LOCATION:
+            case PSPRITE_IMAGO_LARVA_RIGHT:
+            case PSPRITE_IMAGO_COCOON:
+            case PSPRITE_CHOZO_STATUE_GRAVITY:
+            case PSPRITE_CHOZO_STATUE_SPACE_JUMP:
+            case PSPRITE_RIDLEY:
+            case PSPRITE_FROZEN_METROID:
+            case PSPRITE_GEKITAI_MACHINE:
+            case PSPRITE_RUINS_TEST:
+            case PSPRITE_KRAID:
+            case PSPRITE_AREA_BANNER:
+            case PSPRITE_MOTHER_BRAIN:
+            case PSPRITE_FAKE_POWER_BOMB_EVENT_TRIGGER:
+            case PSPRITE_ACID_WORM:
+            case PSPRITE_ESCAPE_SHIP:
+            case PSPRITE_IMAGO_LARVA_RIGHT_SIDE:
+            case PSPRITE_IMAGO:
+            case PSPRITE_CROCOMIRE:
+            case PSPRITE_IMAGO_LARVA_LEFT:
+            case PSPRITE_CHOZO_STATUE_PLASMA_BEAM:
+            case PSPRITE_LOCK_UNLOCK_METROID_DOORS_UNUSED:
+            case PSPRITE_MAYBE_SEARCHLIGHT_TRIGGER:
+            case PSPRITE_DISCOVERED_IMAGO_PASSAGE_EVENT_TRIGGER:
+            case PSPRITE_FALLING_CHOZO_PILLAR:
+            case PSPRITE_MECHA_RIDLEY:
+            case PSPRITE_EXPLOSION_ZEBES_ESCAPE:
+                continue;
+        }
+
+        // Get X and Y positions on a block boundary
+        spriteX = ChaosPositionNearSamusX() / BLOCK_SIZE * BLOCK_SIZE;
+        spriteY = ChaosPositionNearSamusY() / BLOCK_SIZE * BLOCK_SIZE;
+
+        // Try spawning sprite (on bottom middle of block)
+        spriteSlot = SpriteSpawnPrimary(spriteId, 0, gSpritesetGfxSlots[spritesetIdx],
+            spriteY + BLOCK_SIZE, spriteX + HALF_BLOCK_SIZE, 0);
+
+        // Spawning should always succeed, but check just in case
+        if (spriteSlot == UCHAR_MAX)
+            return FALSE;
+        
+        gSpriteData[spriteSlot].status &= ~SPRITE_STATUS_NOT_DRAWN;
+        return TRUE;
+    }
+
+    // None of the sprite IDs worked
+    return FALSE;
+}
+
+static const u16* ChaosRandomTextPointer(void)
+{
+    s32 total;
+    u16 index;
+
+    total = STORY_TEXT_COUNT + DESCRIPTION_TEXT_COUNT + LT_UNUSED_7 + MESSAGE_COUNT + FILE_SCREEN_TEXT_COUNT;
+    index = ChaosRandU16(0, total - 1);
+
+    if (index < STORY_TEXT_COUNT)
+        return sEnglishTextPointers_Story[index];
+    index -= STORY_TEXT_COUNT;
+
+    if (index < DESCRIPTION_TEXT_COUNT)
+        return sEnglishTextPointers_Description[index];
+    index -= DESCRIPTION_TEXT_COUNT;
+
+    if (index < LT_UNUSED_7)
+        return sEnglishTextPointers_Location[index];
+    index -= LT_UNUSED_7;
+
+    if (index < MESSAGE_COUNT)
+        return sEnglishTextPointers_Message[index];
+    index -= MESSAGE_COUNT;
+
+    return sEnglishTextPointers_FileScreen[index];
+}
+
+static s32 ChaosEffectMessageBox(void)
+{
+    u8 slot;
+
+    // Don't display message if spriteset uses last 2 graphics rows
+    switch (gSpriteset)
+    {
+        case 0x03:
+        case 0x07:
+        case 0x23:
+        case 0x25:
+        case 0x36:
+        case 0x37:
+        case 0x43:
+        case 0x49:
+        case 0x4D:
+        case 0x51:
+        case 0x56:
+        case 0x58:
+        case 0x5D:
+        case 0x61:
+        case 0x64:
+        case 0x65:
+        case 0x67:
+            return FALSE;
+    }
+
+    if (SpriteUtilCountPrimarySprites(PSPRITE_MESSAGE_BANNER) > 0)
+        return FALSE;
+
+    slot = SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_CHAOS, 6,
+        gSamusData.yPosition, gSamusData.xPosition, 0);
+    if (slot == UCHAR_MAX)
+        return FALSE;
+
+    gChaosTextPointer = ChaosRandomTextPointer();
+    return TRUE;
+}
+
+static bools32 ChaosEffectSpawnPB(void)
+{
+    if (ProjectileCheckNumberOfProjectiles(PROJ_TYPE_POWER_BOMB, 1) &&
+        gCurrentPowerBomb.animationState == PB_STATE_NONE &&
+        ProjectileInit(PROJ_TYPE_POWER_BOMB, ChaosPositionNearSamusY(), ChaosPositionNearSamusX()))
+    {
+        // Don't decrement power bombs if Samus has any
+        if (gEquipment.currentPowerBombs > 0)
+            gEquipment.currentPowerBombs++;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static void ChaosEffectShotBlock(void)
+{
+    u16 xPos;
+    u16 yPos;
+
+    xPos = (ChaosPositionNearSamusX() + HALF_BLOCK_SIZE) / BLOCK_SIZE;
+    yPos = (ChaosPositionNearSamusY() + HALF_BLOCK_SIZE) / BLOCK_SIZE;
+
+    BgClipSetClipdataBlockValue(CLIPDATA_SHOT_BLOCK_REFORM, yPos, xPos);
+    BgClipSetBg1BlockValue(0x46, yPos, xPos);
+}
+
+static bools32 ChaosEffectReplaceSolidBlocks(u16 value)
+{
+    s32 size;
+    u16* pClipStart;
+    u16* pClip;
+
+    if (gCrumbleCityActive)
+        return FALSE;
+
+    size = gBgPointersAndDimensions.clipdataWidth * gBgPointersAndDimensions.clipdataHeight;
+    pClipStart = gBgPointersAndDimensions.pClipDecomp;
+
+    for (pClip = pClipStart; pClip < pClipStart + size; pClip++)
+    {
+        switch (*pClip)
+        {
+            case CLIPDATA_SOLID:
+            case CLIPDATA_WET_GROUND:
+            case CLIPDATA_DUSTY_GROUND:
+            case CLIPDATA_BUBBLY_GROUND:
+            case CLIPDATA_VERY_DUSTY_GROUND:
+                *pClip = value;
+                break;
+        }
+    }
+
+    return TRUE;
+}
+
+static bools32 ChaosEffectCrumbleCity(void)
+{
+    u16 width;
+    u16* pClip;
+    u16* pClipEnd;
+
+    if (gCrumbleCityActive)
+        return FALSE;
+
+    width = gBgPointersAndDimensions.clipdataWidth;
+    // Skip top 2 and bottom 2 rows
+    pClip = gBgPointersAndDimensions.pClipDecomp + width * 2;
+    pClipEnd = pClip + width * (gBgPointersAndDimensions.clipdataHeight - 4);
+
+    for (; pClip < pClipEnd; pClip++)
+    {
+        switch (*pClip)
+        {
+            case CLIPDATA_SOLID:
+            case CLIPDATA_WET_GROUND:
+            case CLIPDATA_DUSTY_GROUND:
+            case CLIPDATA_BUBBLY_GROUND:
+            case CLIPDATA_VERY_DUSTY_GROUND:
+                // Require 2 air blocks above and 1 solid block below
+                if (gClipdataCollisionTypes[*(pClip - 2 * width)] == CLIPDATA_TYPE_AIR &&
+                    gClipdataCollisionTypes[*(pClip - width)] == CLIPDATA_TYPE_AIR &&
+                    gClipdataCollisionTypes[*(pClip + width)] == CLIPDATA_TYPE_SOLID)
+                {
+                    *pClip = CLIPDATA_SLOW_CRUMBLE;
+                }
+                break;
+        }
+    }
+
+    gCrumbleCityActive = TRUE;
+    return TRUE;
+}
+
+static bools32 ChaosEffectFreezeEnemies(void)
+{
+    s32 success;
+    u8 i;
+
+    // Don't freeze sprites in Metroid rooms
+    if (ChaosIsInMetroidRoom())
+        return FALSE;
+
+    success = FALSE;
+
+    for (i = 0; i < MAX_AMOUNT_OF_SPRITES; i++)
+    {
+        if (gSpriteData[i].status & SPRITE_STATUS_EXISTS &&
+            !(gSpriteData[i].properties & SP_SECONDARY_SPRITE) &&
+            ProjectileGetSpriteWeakness(&gSpriteData[i]) & WEAKNESS_CAN_BE_FROZEN)
+        {
+            ProjectileFreezeSprite(&gSpriteData[i], 0xF0);
+            success = TRUE;
+        }
+    }
+
+    return success;
+}
+
+static void ChaosEffectScreenShake(void)
+{
+    if (CHAOS_RAND_BOOL)
+        ScreenShakeStartHorizontal(240, 1);
+    else
+        ScreenShakeStartVertical(240, 1);
+}
+
+static bools32 ChaosEffectKnockback(void)
+{
+    if (gSamusData.pose == SPOSE_USING_AN_ELEVATOR)
+        return FALSE;
+
+    SamusSetPose(SPOSE_KNOCKBACK_REQUEST);
+
+    if (gSamusData.direction & KEY_RIGHT)
+        gSamusData.xVelocity = -SUB_PIXEL_TO_VELOCITY(EIGHTH_BLOCK_SIZE);
+    else
+        gSamusData.xVelocity = SUB_PIXEL_TO_VELOCITY(EIGHTH_BLOCK_SIZE);
+    
+    return TRUE;
+}
+
+static void ChaosEffectChangeEnergyAmmo(void)
+{
+    u8 max;
+    s32 missileIdx;
+    s32 superIdx;
+    u16 rand;
+
+    max = 0;
+    missileIdx = -1;
+    superIdx = -1;
+
+    if (gEquipment.maxMissiles > 0)
+        missileIdx = ++max;
+    if (gEquipment.maxSuperMissiles > 0)
+        superIdx = ++max;
+    if (gEquipment.maxPowerBombs > 0)
+        ++max;
+
+    rand = ChaosRandU16(0, max);
+
+    if (rand == 0)
+        gEquipment.currentEnergy = ChaosRandU16(1, gEquipment.maxEnergy);
+    else if (rand == missileIdx)
+        gEquipment.currentMissiles = ChaosRandU16(1, gEquipment.maxMissiles);
+    else if (rand == superIdx)
+        gEquipment.currentSuperMissiles = ChaosRandU16(1, gEquipment.maxSuperMissiles);
+    else
+        gEquipment.currentPowerBombs = ChaosRandU16(1, gEquipment.maxPowerBombs);
+}
+
+static void ChaosEffectRandSound(void)
+{
+    switch (ChaosRandU16(0, 3))
+    {
+        case 0:
+            SoundPlay(SOUND_THUNDER);
+            break;
+        case 1:
+            SoundPlay(SOUND_KRAID_RISING);
+            break;
+        case 2:
+            SoundPlay(SOUND_RIDLEY_SPAWN_ROAR);
+            break;
+        case 3:
+            SoundPlay(SOUND_MECHA_RIDLEY_ENTRANCE_CRAWL);
+            break;
+    }
+}
+
+static void ChaosEffectColorEffect(void)
+{
+    u8 effect;
+    u16* pPalette;
+    s32 i;
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 result;
+
+    effect = ChaosRandU16(0, 5);
+    pPalette = (u16*)PALRAM_BASE;
+
+    for (i = 0; i < 256; i++, pPalette++)
+    {
+        if (i % 16 == 0)
+            continue;
+
+        r = RED(*pPalette);
+        g = GREEN(*pPalette);
+        b = BLUE(*pPalette);
+
+        switch (effect)
+        {
+            case 0:
+                // Lower brightness
+                r /= 2;
+                g /= 2;
+                b /= 2;
+                break;
+            case 1:
+                // Raise brightness
+                r = r * 3 / 2;
+                g = g * 3 / 2;
+                b = b * 3 / 2;
+                if (r > COLOR_MAX)
+                    r = COLOR_MAX;
+                if (g > COLOR_MAX)
+                    g = COLOR_MAX;
+                if (b > COLOR_MAX)
+                    b = COLOR_MAX;
+                break;
+            case 2:
+                // Monochrome
+                result = (r + g + b) / 3;
+                r = result;
+                g = result;
+                b = result;
+                break;
+            case 3:
+                // Red
+                r = r * 3 / 2;
+                g = g * 3 / 4;
+                b = b * 3 / 4;
+                if (r > COLOR_MAX)
+                    r = COLOR_MAX;
+            case 4:
+                // Green
+                r = r * 3 / 4;
+                g = g * 3 / 2;
+                b = b * 3 / 4;
+                if (g > COLOR_MAX)
+                    g = COLOR_MAX;
+            case 5:
+                // Blue
+                r = r * 3 / 4;
+                g = g * 3 / 4;
+                b = b * 3 / 2;
+                if (b > COLOR_MAX)
+                    b = COLOR_MAX;
+        }
+
+        *pPalette = COLOR(r, g, b);
+    }
+}
+
+static s32 ChaosEffectCutscene(void)
+{
+    if (gPreventMovementTimer > 0)
+        return FALSE;
+    
+    switch (ChaosRandU16(0, 2))
+    {
+        case 0:
+            StartEffectForCutscene(EFFECT_CUTSCENE_RIDLEY_SPAWN);
+            break;
+        case 1:
+            StartEffectForCutscene(EFFECT_CUTSCENE_STATUE_OPENING);
+            break;
+        case 2:
+            StartEffectForCutscene(EFFECT_CUTSCENE_SAMUS_IN_BLUE_SHIP);
+            break;
+    }
+
+    return TRUE;
+}
+
+/* -------------------------------- */
+/* Effect creation */
+/* -------------------------------- */
+
+static u8 ChaosEmptyEffectIndex(void)
+{
+    u8 i;
+
+    for (i = 0; i < MAX_NUM_CHAOS_EFFECTS; i++)
+    {
+        if (!gChaosEffects[i].exists)
+            return i;
+    }
+
+    return UCHAR_MAX;
+}
+
+static void ChaosCreateEffect(void)
 {
     u8 effectIdx;
     u8 start;
@@ -262,12 +1176,7 @@ void ChaosCreateEffect(void)
 
     for (tries = 0; tries < 5; tries++)
     {
-        id = ChaosRandU16(start, CHAOS_EFFECT_END - 1);
-
-        //
-        if (ChaosRandU16(0, 5) == 0)
-            id = CHAOS_EFFECT_WARP;
-        //
+        id = ChaosRandU16(start, CHAOS_EFFECT_COUNT - 1);
 
         // Try again if duration effect is already active
         if (id < CHAOS_EFFECT_ONE_TIME && ChaosIsEffectActive(id))
@@ -466,1059 +1375,158 @@ void ChaosCreateEffect(void)
     }
 }
 
-void ChaosUpdateRng(void)
+/* -------------------------------- */
+/* Effect ending */
+/* -------------------------------- */
+
+static void ChaosWarpBack(void)
 {
-    gChaosRng = (gChaosRng * 0x41C64E6D) + 0x3039;
-}
-
-u16 ChaosRandU16(u16 min, u16 max)
-{
-    u16 seed;
-    u16 mod;
-
-    ChaosUpdateRng();
-    seed = gChaosRng >> 16;
-    mod = max - min + 1;
-    return (seed % mod) + min;
-}
-
-u16 ChaosPositionNearSamus(u16 samusPos, u16 max)
-{
-    u16 pos;
-
-    pos = ChaosRandU16(CHAOS_NEAR_SAMUS_MIN, max);
-
-    // TODO: Check if out of bounds?
-    if (CHAOS_RAND_BOOL)
-        return (u16)(samusPos + pos);
-    else
-        return (u16)(samusPos - pos);
-}
-
-u16 ChaosPositionNearSamusX(void)
-{
-    return ChaosPositionNearSamus(gSamusData.xPosition, CHAOS_NEAR_SAMUS_MAX_X);
-}
-
-u16 ChaosPositionNearSamusY(void)
-{
-    return ChaosPositionNearSamus(gSamusData.yPosition, CHAOS_NEAR_SAMUS_MAX_Y);
-}
-
-s32 ChaosIsInMetroidRoom(void)
-{
-    if (gCurrentArea != AREA_TOURIAN)
-        return FALSE;
-    
-    switch (gCurrentRoom)
-    {
-        case 0x01:
-        case 0x02:
-        case 0x0E:
-        case 0x0F:
-        case 0x10:
-        case 0x13:
-            return TRUE;
-    }
-
-    return FALSE;
-}
-
-// Duration effects
-
-s32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect)
-{
-    s32 i;
-    u8 beamBombsFlags[6];
-    u8 beamBombsCount;
-    u8 suitMiscFlags[8];
-    u8 suitMiscCount;
-    u8 itemIdx;
-
-    if (ChaosIsEffectActive(CHAOS_EFFECT_GIVE_ABILITY) || gEquipment.suitType == SUIT_SUITLESS)
-        return FALSE;
-
-    // Count active abilities
-    beamBombsFlags[0] = BBF_LONG_BEAM;
-    beamBombsFlags[1] = BBF_ICE_BEAM;
-    beamBombsFlags[2] = BBF_WAVE_BEAM;
-    beamBombsFlags[3] = BBF_PLASMA_BEAM;
-    beamBombsFlags[4] = BBF_CHARGE_BEAM;
-    beamBombsFlags[5] = BBF_BOMBS;
-
-    beamBombsCount = 0;
-    for (i = 0; i < 6; i++)
-    {
-        if (gEquipment.beamBombsActivation & beamBombsFlags[i])
-            beamBombsCount++;
-    }
-    
-    suitMiscFlags[0] = SMF_HIGH_JUMP;
-    suitMiscFlags[1] = SMF_SPEEDBOOSTER;
-    suitMiscFlags[2] = SMF_SPACE_JUMP;
-    suitMiscFlags[3] = SMF_SCREW_ATTACK;
-    suitMiscFlags[4] = SMF_VARIA_SUIT;
-    suitMiscFlags[5] = SMF_GRAVITY_SUIT;
-    suitMiscFlags[6] = SMF_MORPH_BALL;
-    suitMiscFlags[7] = SMF_POWER_GRIP;
-
-    suitMiscCount = 0;
-    for (i = 0; i < 8; i++)
-    {
-        if (gEquipment.suitMiscActivation & suitMiscFlags[i])
-            suitMiscCount++;
-    }
-
-    if (beamBombsCount + suitMiscCount == 0)
-        return FALSE;
-
-    // Get ability to deactivate
-    itemIdx = ChaosRandU16(0, beamBombsCount + suitMiscCount - 1);
-    if (itemIdx < beamBombsCount)
-    {
-        beamBombsCount = 0;
-        for (i = 0; i < 6; i++)
-        {
-            if (gEquipment.beamBombsActivation & beamBombsFlags[i])
-            {
-                if (beamBombsCount == itemIdx)
-                    break;
-                beamBombsCount++;
-            }
-        }
-        pEffect->data = beamBombsFlags[i];
-        gEquipment.beamBombsActivation &= ~beamBombsFlags[i];
-        ProjectileLoadGraphics();
-    }
-    else
-    {
-        itemIdx -= beamBombsCount;
-        suitMiscCount = 0;
-        for (i = 0; i < 8; i++)
-        {
-            if (gEquipment.suitMiscActivation & suitMiscFlags[i])
-            {
-                if (suitMiscCount == itemIdx)
-                    break;
-                suitMiscCount++;
-            }
-        }
-        pEffect->data = suitMiscFlags[i] | 0x100;
-        gEquipment.suitMiscActivation &= ~suitMiscFlags[i];
-    }
-
-    // Play "disable" sound
-    SoundPlay(SOUND_CHAOS_ITEM_OFF);
-    return TRUE;
-}
-
-s32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect)
-{
-    s32 i;
-    u8 beamBombsFlags[6];
-    u8 beamBombsCount;
-    u8 suitMiscFlags[8];
-    u8 suitMiscCount;
-    u8 itemIdx;
-
-    if (ChaosIsEffectActive(CHAOS_EFFECT_DEACTIVATE_ABILITY) || gEquipment.suitType == SUIT_SUITLESS)
-        return FALSE;
-
-    // Count inactive abilities
-    beamBombsFlags[0] = BBF_LONG_BEAM;
-    beamBombsFlags[1] = BBF_ICE_BEAM;
-    beamBombsFlags[2] = BBF_WAVE_BEAM;
-    beamBombsFlags[3] = BBF_PLASMA_BEAM;
-    beamBombsFlags[4] = BBF_CHARGE_BEAM;
-    beamBombsFlags[5] = BBF_BOMBS;
-
-    beamBombsCount = 0;
-    for (i = 0; i < 6; i++)
-    {
-        if (!(gEquipment.beamBombsActivation & beamBombsFlags[i]))
-            beamBombsCount++;
-    }
-    
-    suitMiscFlags[0] = SMF_HIGH_JUMP;
-    suitMiscFlags[1] = SMF_SPEEDBOOSTER;
-    suitMiscFlags[2] = SMF_SPACE_JUMP;
-    suitMiscFlags[3] = SMF_SCREW_ATTACK;
-    suitMiscFlags[4] = SMF_VARIA_SUIT;
-    suitMiscFlags[5] = SMF_GRAVITY_SUIT;
-    suitMiscFlags[6] = SMF_MORPH_BALL;
-    suitMiscFlags[7] = SMF_POWER_GRIP;
-
-    suitMiscCount = 0;
-    for (i = 0; i < 8; i++)
-    {
-        if (!(gEquipment.suitMiscActivation & suitMiscFlags[i]))
-            suitMiscCount++;
-    }
-
-    if (beamBombsCount + suitMiscCount == 0)
-        return FALSE;
-
-    // Get ability to give
-    itemIdx = ChaosRandU16(0, beamBombsCount + suitMiscCount - 1);
-    if (itemIdx < beamBombsCount)
-    {
-        beamBombsCount = 0;
-        for (i = 0; i < 6; i++)
-        {
-            if (!(gEquipment.beamBombsActivation & beamBombsFlags[i]))
-            {
-                if (beamBombsCount == itemIdx)
-                    break;
-                beamBombsCount++;
-            }
-        }
-        pEffect->data = beamBombsFlags[i];
-        gEquipment.beamBombsActivation |= beamBombsFlags[i];
-        ProjectileLoadGraphics();
-    }
-    else
-    {
-        itemIdx -= beamBombsCount;
-        suitMiscCount = 0;
-        for (i = 0; i < 8; i++)
-        {
-            if (!(gEquipment.suitMiscActivation & suitMiscFlags[i]))
-            {
-                if (suitMiscCount == itemIdx)
-                    break;
-                suitMiscCount++;
-            }
-        }
-        pEffect->data = suitMiscFlags[i] | 0x100;
-        gEquipment.suitMiscActivation |= suitMiscFlags[i];
-    }
-
-    // Play "enable" sound
-    SoundPlay(SOUND_CHAOS_ITEM_ON);
-    return TRUE;
-}
-
-s32 ChaosEffectSuitless(struct ChaosEffectData* pEffect)
-{
-    if (gEquipment.suitType == SUIT_SUITLESS)
-        return FALSE;
-
-    pEffect->data = gEquipment.suitType;
-    UpdateSuitType(SUIT_SUITLESS, TRUE);
-    ProjectileLoadGraphics();
-    gSamusWeaponInfo.chargeCounter = 0;
-    return TRUE;
-}
-
-void ChaosEffectMoveHud(void)
-{
-    gHudPositions.energyX = RAND_SCREEN_X;
-    gHudPositions.energyY = RAND_SCREEN_Y;
-    gHudPositions.chargeBarX = RAND_SCREEN_X;
-    gHudPositions.chargeBarY = RAND_SCREEN_Y;
-    gHudPositions.missileX = RAND_SCREEN_X;
-    gHudPositions.missileY = RAND_SCREEN_Y;
-    gHudPositions.superMissileX = RAND_SCREEN_X;
-    gHudPositions.superMissileY = RAND_SCREEN_Y;
-    gHudPositions.powerBombX = RAND_SCREEN_X;
-    gHudPositions.powerBombY = RAND_SCREEN_Y;
-    gHudPositions.minimapX = RAND_SCREEN_X;
-    gHudPositions.minimapY = RAND_SCREEN_Y;
-}
-
-void ChaosEffectWeaponRing(struct ChaosEffectData* pEffect)
-{
-    // Missiles
-    u8 direction;
-    bools32 right;
-    u16 status;
-    // Bombs
-    s16 angle;
-    u16 xPos;
-    u16 yPos;
-    // Both
-    u32 state;
-    struct ProjectileData* pProj;
-
-    if (gFrameCounter8Bit % 8 != 0)
-        return;
-
-    // 8 possible states
-    state = (gFrameCounter8Bit / 8) & 7;
-
-    if (pEffect->data == WEAPON_RING_MISSILES)
-    {
-        switch (state)
-        {
-            case 0:
-                direction = ACD_UP;
-                right = FALSE;
-                break;
-            case 1:
-                direction = ACD_DIAGONALLY_UP;
-                right = TRUE;
-                break;
-            case 2:
-                direction = ACD_FORWARD;
-                right = TRUE;
-                break;
-            case 3:
-                direction = ACD_DIAGONALLY_DOWN;
-                right = TRUE;
-                break;
-            case 4:
-                direction = ACD_DOWN;
-                right = FALSE;
-                break;
-            case 5:
-                direction = ACD_DIAGONALLY_DOWN;
-                right = FALSE;
-                break;
-            case 6:
-                direction = ACD_FORWARD;
-                right = FALSE;
-                break;
-            case 7:
-                direction = ACD_DIAGONALLY_UP;
-                right = FALSE;
-                break;
-        }
-
-        for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
-        {
-            if (pProj->status & PROJ_STATUS_EXISTS)
-                continue;
-
-            status = PROJ_STATUS_EXISTS | PROJ_STATUS_ON_SCREEN | PROJ_STATUS_CAN_AFFECT_ENVIRONMENT;
-
-            if (right)
-                status |= PROJ_STATUS_X_FLIP;
-
-            pProj->status = status;
-            pProj->type = PROJ_TYPE_MISSILE;
-
-            pProj->yPosition = gSamusData.yPosition + gSamusPhysics.hitboxTop;
-            pProj->xPosition = gSamusData.xPosition;
-
-            pProj->hitboxTop = -EIGHTH_BLOCK_SIZE;
-            pProj->hitboxBottom = EIGHTH_BLOCK_SIZE;
-            pProj->hitboxLeft = -EIGHTH_BLOCK_SIZE;
-            pProj->hitboxRight = EIGHTH_BLOCK_SIZE;
-
-            pProj->movementStage = PROJECTILE_STAGE_SPAWNING;
-            pProj->timer = 0;
-            pProj->direction = direction;
-
-            switch (direction)
-            {
-                case ACD_DIAGONALLY_DOWN:
-                    pProj->status |= PROJ_STATUS_Y_FLIP;
-                case ACD_DIAGONALLY_UP:
-                    pProj->pOam = sMissileOam_Diagonal;
-                    break;
-
-                case ACD_DOWN:
-                    pProj->status |= PROJ_STATUS_Y_FLIP;
-                case ACD_UP:
-                    pProj->pOam = sMissileOam_Vertical;
-                    break;
-
-                default:
-                case ACD_FORWARD:
-                    pProj->pOam = sMissileOam_Horizontal;
-                    break;
-            }
-
-            pProj->animationDurationCounter = 0;
-            pProj->currentAnimationFrame = 0;
-
-            SoundPlay(SOUND_MISSILE_SHOT);
-            SoundPlay(SOUND_MISSILE_THRUST);
-
-            break;
-        }
-    }
-    else if (pEffect->data == WEAPON_RING_BOMBS)
-    {
-        for (pProj = gProjectileData; pProj < gProjectileData + MAX_AMOUNT_OF_PROJECTILES; pProj++)
-        {
-            if (pProj->status & PROJ_STATUS_EXISTS)
-                continue;
-
-            pProj->status = PROJ_STATUS_EXISTS | PROJ_STATUS_ON_SCREEN | PROJ_STATUS_ABOVE_BG1;
-            pProj->type = PROJ_TYPE_BOMB;
-
-            pProj->yPosition = gSamusData.yPosition +
-                (gSamusPhysics.hitboxTop / 2) + PIXEL_TO_SUB_PIXEL(4);
-            pProj->xPosition = gSamusData.xPosition;
-            // Get an angle in Q8.8 format
-            angle = state * (256 / 8);
-            pProj->xPosition += Q_8_8_TO_S16_DIV(COS(angle) * BOMB_RING_RADIUS);
-            pProj->yPosition += Q_8_8_TO_S16_DIV(SIN(angle) * BOMB_RING_RADIUS);
-
-            pProj->pOam = sBombOam_Slow;
-            pProj->animationDurationCounter = 0;
-            pProj->currentAnimationFrame = 0;
-            pProj->drawDistanceOffset = HALF_BLOCK_SIZE;
-
-            pProj->hitboxTop = -(BLOCK_SIZE - PIXEL_SIZE);
-            pProj->hitboxBottom = THREE_QUARTER_BLOCK_SIZE;
-            pProj->hitboxLeft = -THREE_QUARTER_BLOCK_SIZE;
-            pProj->hitboxRight = THREE_QUARTER_BLOCK_SIZE;
-
-            pProj->timer = CONVERT_SECONDS(.25f) + 1 * DELTA_TIME;
-            pProj->movementStage = BOMB_STAGE_FIRST_SPIN;
-
-            SoundPlay(SOUND_BOMB_SET);
-
-            break;
-        }
-    }
-}
-
-void ChaosEffectExplosions(void)
-{
-    u8 pe;
-    u16 sound;
-
-    if (ChaosRandU16(0, 11) != 0)
-        return;
-
-    switch (ChaosRandU16(0, 8))
-    {
-        case 0:
-            pe = PE_SPRITE_EXPLOSION_HUGE;
-            break;
-        case 1:
-            pe = PE_SPRITE_EXPLOSION_MEDIUM;
-            break;
-        case 2:
-            pe = PE_SPRITE_EXPLOSION_BIG;
-            break;
-        case 3:
-            pe = PE_SPRITE_EXPLOSION_SINGLE_THEN_BIG;
-            break;
-        case 4:
-            pe = PE_SCREW_ATTACK_DESTROYED;
-            break;
-        case 5:
-            pe = PE_SHINESPARK_DESTROYED;
-            break;
-        case 6:
-            pe = PE_PSEUDO_SCREW_DESTROYED;
-            break;
-        case 7:
-            pe = PE_SPEEDBOOSTER_DESTROYED;
-            break;
-        case 8:
-            pe = PE_MAIN_BOSS_DEATH;
-            break;
-    }
-
-    switch (ChaosRandU16(0, 4))
-    {
-        // 301-303
-        // 312
-        // 403
-        // 457: Kraid
-        // 496: Ridley death
-        case 0:
-            sound = 253;
-            break;
-        case 1:
-            sound = 630;
-            break;
-        case 2:
-            sound = 705;
-            break;
-        case 3:
-            sound = 706;
-            break;
-        case 4:
-            sound = 707;
-            break;
-    }
-
-    ParticleSet(ChaosPositionNearSamusY(), ChaosPositionNearSamusX(), pe);
-    SoundPlayNotAlreadyPlaying(sound);
-}
-
-bools32 ChaosCanWarp(void)
-{
-    if (gPreventMovementTimer > 0)
-        return FALSE;
-
-    switch (gSamusData.pose)
-    {
-        case SPOSE_USING_AN_ELEVATOR:
-        case SPOSE_GRABBED_BY_CHOZO_STATUE:
-        case SPOSE_SAVING_LOADING_GAME:
-        case SPOSE_DOWNLOADING_MAP_DATA:
-        case SPOSE_TURNING_AROUND_TO_DOWNLOAD_MAP_DATA:
-        case SPOSE_DYING:
-        case SPOSE_FACING_THE_BACKGROUND_SUITLESS:
-        case SPOSE_TURNING_FROM_FACING_THE_BACKGROUND_SUITLESS:
-        case SPOSE_ACTIVATING_ZIPLINES:
-        case SPOSE_IN_ESCAPE_SHIP:
-        case SPOSE_TURNING_TO_ENTER_ESCAPE_SHIP:
-            return FALSE;
-    }
-
-    return TRUE;
-}
-
-static u8 sDoorCounts[AREA_NORMAL_COUNT - 1] = {
-    [AREA_BRINSTAR] = ARRAY_SIZE(sBrinstarDoors),
-    [AREA_KRAID] = ARRAY_SIZE(sKraidDoors),
-    [AREA_NORFAIR] = ARRAY_SIZE(sNorfairDoors),
-    [AREA_RIDLEY] = ARRAY_SIZE(sRidleyDoors),
-    [AREA_TOURIAN] = ARRAY_SIZE(sTourianDoors),
-    [AREA_CRATERIA] = ARRAY_SIZE(sCrateriaDoors)
-};
-
-static u32 sTotalDoorCount = ARRAY_SIZE(sBrinstarDoors) + ARRAY_SIZE(sKraidDoors) +
-    ARRAY_SIZE(sNorfairDoors) + ARRAY_SIZE(sRidleyDoors) + ARRAY_SIZE(sTourianDoors) +
-    ARRAY_SIZE(sCrateriaDoors);
-
-bools32 ChaosEffectWarp(void)
-{
-    u32 door;
-    s32 i;
-    u8 area;
-    const struct Door* pDoor;
-
-    // Don't warp if haven't finished previous warp
-    if (gWarpBackFlag)
-        return FALSE;
-
     if (!ChaosCanWarp())
-        return FALSE;
+        return;
 
-    // Don't warp if the previous door is 1 block high
-    // (includes morph tunnels and vertical transitions)
-    pDoor = &sAreaDoorsPointers[gCurrentArea][gLastDoorUsed];
-    if (pDoor->yEnd - pDoor->yStart == 0)
-        return FALSE;
+    gWarpBackFlag = FALSE;
 
-    // Pick a random door
-    door = ChaosRandU16(0, sTotalDoorCount);
-    pDoor = NULL;
+    ChaosTriggerWarp(gWarpAreaBackup, gWarpDoorBackup,
+        sAreaDoorsPointers[gWarpAreaBackup][gWarpDoorBackup].sourceRoom);
+}
 
-    for (i = 0; i < AREA_CHOZODIA; i++)
+static void ChaosEffectEnded(struct ChaosEffectData* pEffect)
+{
+    u8 flag;
+
+    switch (pEffect->id)
     {
-        if (door < sDoorCounts[i])
-        {
-            area = i;
-            pDoor = &sAreaDoorsPointers[i][door];
+        case CHAOS_EFFECT_DEACTIVATE_ABILITY:
+            // TODO: Move to function
+            flag = (u8)pEffect->data;
+            if ((pEffect->data >> 8) == 0)
+            {
+                gEquipment.beamBombsActivation |= flag;
+                if (gMainGameMode == GM_INGAME)
+                    ProjectileLoadGraphics();
+            }
+            else
+            {
+                gEquipment.suitMiscActivation |= flag;
+            }
+            // Play "enable" sound
+            SoundPlay(SOUND_CHAOS_ITEM_ON);
             break;
-        }
 
-        door -= sDoorCounts[i];
-    }
-    
-    // Sanity check that a door was found
-    if (pDoor == NULL)
-        return FALSE;
-
-    // Don't warp to the current room
-    if (gCurrentArea == area && gCurrentRoom == pDoor->sourceRoom)
-        return FALSE;
-
-    // Don't warp if the chosen door is 1 block high
-    if (pDoor->yEnd - pDoor->yStart == 0)
-        return FALSE;
-
-    // Backup area and door
-    gWarpAreaBackup = gCurrentArea;
-    gWarpDoorBackup = gLastDoorUsed;
-
-    // Trigger the warp
-    ChaosTriggerWarp(area, door, pDoor->sourceRoom);
-
-    return TRUE;
-}
-
-// One time effects
-
-s32 ChaosEffectSpawnEnemy(void)
-{
-    u8 spriteCount;
-    struct SpriteData* pSprite;
-    u8 idCount;
-    u8 spritesetStartIdx;
-    u8 i;
-    u8 spritesetIdx;
-    u8 spriteId;
-    u16 spriteX;
-    u16 spriteY;
-    u8 spriteSlot;
-
-    // Don't spawn any sprites in Metroid rooms
-    if (ChaosIsInMetroidRoom())
-        return FALSE;
-
-    // Count number of active sprites
-    spriteCount = 0;
-    for (pSprite = gSpriteData; pSprite < gSpriteData + MAX_AMOUNT_OF_SPRITES; pSprite++)
-    {
-        if (pSprite->status & SPRITE_STATUS_EXISTS)
-            spriteCount++;
-    }
-
-    // Only spawn a sprite if there are at least 4 slots open
-    if (spriteCount > MAX_AMOUNT_OF_SPRITES - 4)
-        return FALSE;
-
-    // Count number of sprite IDs in spriteset
-    idCount = 0;
-    while (idCount < MAX_AMOUNT_OF_SPRITE_TYPES)
-    {
-        if (gSpritesetSpritesID[idCount] <= 0x10)
-            break;
-        idCount++;
-    }
-
-    if (idCount == 0)
-        return FALSE;
-    
-    // Pick a random starting index
-    spritesetStartIdx = ChaosRandU16(0, idCount - 1);
-
-    // Try each sprite ID until one can spawn
-    for (i = 0; i < idCount; i++)
-    {
-        spritesetIdx = (spritesetStartIdx + i) % idCount;
-        spriteId = gSpritesetSpritesID[spritesetIdx];
-
-        // Check if this sprite ID is excluded
-        switch (spriteId)
-        {
-            case PSPRITE_MESSAGE_BANNER:
-            case PSPRITE_LARGE_ENERGY_DROP:
-            case PSPRITE_SMALL_ENERGY_DROP:
-            case PSPRITE_MISSILE_DROP:
-            case PSPRITE_SUPER_MISSILE_DROP:
-            case PSPRITE_POWER_BOMB_DROP:
-            case PSPRITE_CHOZO_STATUE_LONG_HINT:
-            case PSPRITE_CHOZO_STATUE_LONG:
-            case PSPRITE_CHOZO_STATUE_ICE_HINT:
-            case PSPRITE_CHOZO_STATUE_ICE:
-            case PSPRITE_CHOZO_STATUE_WAVE_HINT:
-            case PSPRITE_CHOZO_STATUE_WAVE:
-            case PSPRITE_CHOZO_STATUE_BOMB_HINT:
-            case PSPRITE_CHOZO_STATUE_BOMB:
-            case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER_HINT:
-            case PSPRITE_CHOZO_STATUE_SPEEDBOOSTER:
-            case PSPRITE_CHOZO_STATUE_HIGH_JUMP_HINT:
-            case PSPRITE_CHOZO_STATUE_HIGH_JUMP:
-            case PSPRITE_CHOZO_STATUE_SCREW_HINT:
-            case PSPRITE_CHOZO_STATUE_SCREW:
-            case PSPRITE_CHOZO_STATUE_VARIA_HINT:
-            case PSPRITE_CHOZO_STATUE_VARIA:
-            case PSPRITE_MULTIPLE_LARGE_ENERGY:
-            case PSPRITE_GUNSHIP:
-            case PSPRITE_DEOREM_FIRST_LOCATION:
-            case PSPRITE_DEOREM_SECOND_LOCATION:
-            case PSPRITE_IMAGO_LARVA_RIGHT:
-            case PSPRITE_IMAGO_COCOON:
-            case PSPRITE_CHOZO_STATUE_GRAVITY:
-            case PSPRITE_CHOZO_STATUE_SPACE_JUMP:
-            case PSPRITE_RIDLEY:
-            case PSPRITE_FROZEN_METROID:
-            case PSPRITE_GEKITAI_MACHINE:
-            case PSPRITE_RUINS_TEST:
-            case PSPRITE_KRAID:
-            case PSPRITE_AREA_BANNER:
-            case PSPRITE_MOTHER_BRAIN:
-            case PSPRITE_FAKE_POWER_BOMB_EVENT_TRIGGER:
-            case PSPRITE_ACID_WORM:
-            case PSPRITE_ESCAPE_SHIP:
-            case PSPRITE_IMAGO_LARVA_RIGHT_SIDE:
-            case PSPRITE_IMAGO:
-            case PSPRITE_CROCOMIRE:
-            case PSPRITE_IMAGO_LARVA_LEFT:
-            case PSPRITE_CHOZO_STATUE_PLASMA_BEAM:
-            case PSPRITE_LOCK_UNLOCK_METROID_DOORS_UNUSED:
-            case PSPRITE_MAYBE_SEARCHLIGHT_TRIGGER:
-            case PSPRITE_DISCOVERED_IMAGO_PASSAGE_EVENT_TRIGGER:
-            case PSPRITE_FALLING_CHOZO_PILLAR:
-            case PSPRITE_MECHA_RIDLEY:
-            case PSPRITE_EXPLOSION_ZEBES_ESCAPE:
-                continue;
-        }
-
-        // Get X and Y positions on a block boundary
-        spriteX = ChaosPositionNearSamusX() / BLOCK_SIZE * BLOCK_SIZE;
-        spriteY = ChaosPositionNearSamusY() / BLOCK_SIZE * BLOCK_SIZE;
-
-        // Try spawning sprite (on bottom middle of block)
-        spriteSlot = SpriteSpawnPrimary(spriteId, 0, gSpritesetGfxSlots[spritesetIdx],
-            spriteY + BLOCK_SIZE, spriteX + HALF_BLOCK_SIZE, 0);
-
-        // Spawning should always succeed, but check just in case
-        if (spriteSlot == UCHAR_MAX)
-            return FALSE;
-        
-        gSpriteData[spriteSlot].status &= ~SPRITE_STATUS_NOT_DRAWN;
-        return TRUE;
-    }
-
-    // None of the sprite IDs worked
-    return FALSE;
-}
-
-s32 ChaosEffectMessageBox(void)
-{
-    u8 slot;
-
-    // Don't display message if spriteset uses last 2 graphics rows
-    switch (gSpriteset)
-    {
-        case 0x03:
-        case 0x07:
-        case 0x23:
-        case 0x25:
-        case 0x36:
-        case 0x37:
-        case 0x43:
-        case 0x49:
-        case 0x4D:
-        case 0x51:
-        case 0x56:
-        case 0x58:
-        case 0x5D:
-        case 0x61:
-        case 0x64:
-        case 0x65:
-        case 0x67:
-            return FALSE;
-    }
-
-    if (SpriteUtilCountPrimarySprites(PSPRITE_MESSAGE_BANNER) > 0)
-        return FALSE;
-
-    slot = SpriteSpawnPrimary(PSPRITE_MESSAGE_BANNER, MESSAGE_CHAOS, 6,
-        gSamusData.yPosition, gSamusData.xPosition, 0);
-    if (slot == UCHAR_MAX)
-        return FALSE;
-
-    gChaosTextPointer = ChaosRandomTextPointer();
-    return TRUE;
-}
-
-const u16* ChaosRandomTextPointer(void)
-{
-    s32 total;
-    u16 index;
-
-    total = STORY_TEXT_COUNT + DESCRIPTION_TEXT_COUNT + LT_UNUSED_7 + MESSAGE_COUNT + FILE_SCREEN_TEXT_COUNT;
-    index = ChaosRandU16(0, total - 1);
-
-    if (index < STORY_TEXT_COUNT)
-        return sEnglishTextPointers_Story[index];
-    index -= STORY_TEXT_COUNT;
-
-    if (index < DESCRIPTION_TEXT_COUNT)
-        return sEnglishTextPointers_Description[index];
-    index -= DESCRIPTION_TEXT_COUNT;
-
-    if (index < LT_UNUSED_7)
-        return sEnglishTextPointers_Location[index];
-    index -= LT_UNUSED_7;
-
-    if (index < MESSAGE_COUNT)
-        return sEnglishTextPointers_Message[index];
-    index -= MESSAGE_COUNT;
-
-    return sEnglishTextPointers_FileScreen[index];
-}
-
-s32 ChaosEffectSpawnPB(void)
-{
-    if (ProjectileCheckNumberOfProjectiles(PROJ_TYPE_POWER_BOMB, 1) &&
-        gCurrentPowerBomb.animationState == PB_STATE_NONE &&
-        ProjectileInit(PROJ_TYPE_POWER_BOMB, ChaosPositionNearSamusY(), ChaosPositionNearSamusX()))
-    {
-        // Don't decrement power bombs if Samus has any
-        if (gEquipment.currentPowerBombs > 0)
-            gEquipment.currentPowerBombs++;
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-void ChaosEffectShotBlock(void)
-{
-    u16 xPos;
-    u16 yPos;
-
-    xPos = (ChaosPositionNearSamusX() + HALF_BLOCK_SIZE) / BLOCK_SIZE;
-    yPos = (ChaosPositionNearSamusY() + HALF_BLOCK_SIZE) / BLOCK_SIZE;
-
-    BgClipSetClipdataBlockValue(CLIPDATA_SHOT_BLOCK_REFORM, yPos, xPos);
-    BgClipSetBg1BlockValue(0x46, yPos, xPos);
-}
-
-s32 ChaosEffectReplaceSolidBlocks(u16 value)
-{
-    s32 size;
-    u16* pClipStart;
-    u16* pClip;
-
-    if (gCrumbleCityActive)
-        return FALSE;
-
-    size = gBgPointersAndDimensions.clipdataWidth * gBgPointersAndDimensions.clipdataHeight;
-    pClipStart = gBgPointersAndDimensions.pClipDecomp;
-
-    for (pClip = pClipStart; pClip < pClipStart + size; pClip++)
-    {
-        switch (*pClip)
-        {
-            case CLIPDATA_SOLID:
-            case CLIPDATA_WET_GROUND:
-            case CLIPDATA_DUSTY_GROUND:
-            case CLIPDATA_BUBBLY_GROUND:
-            case CLIPDATA_VERY_DUSTY_GROUND:
-                *pClip = value;
-                break;
-        }
-    }
-
-    return TRUE;
-}
-
-s32 ChaosEffectCrumbleCity(void)
-{
-    u16 width;
-    u16* pClip;
-    u16* pClipEnd;
-
-    if (gCrumbleCityActive)
-        return FALSE;
-
-    width = gBgPointersAndDimensions.clipdataWidth;
-    // Skip top 2 and bottom 2 rows
-    pClip = gBgPointersAndDimensions.pClipDecomp + width * 2;
-    pClipEnd = pClip + width * (gBgPointersAndDimensions.clipdataHeight - 4);
-
-    for (; pClip < pClipEnd; pClip++)
-    {
-        switch (*pClip)
-        {
-            case CLIPDATA_SOLID:
-            case CLIPDATA_WET_GROUND:
-            case CLIPDATA_DUSTY_GROUND:
-            case CLIPDATA_BUBBLY_GROUND:
-            case CLIPDATA_VERY_DUSTY_GROUND:
-                // Require 2 air blocks above and 1 solid block below
-                if (gClipdataCollisionTypes[*(pClip - 2 * width)] == CLIPDATA_TYPE_AIR &&
-                    gClipdataCollisionTypes[*(pClip - width)] == CLIPDATA_TYPE_AIR &&
-                    gClipdataCollisionTypes[*(pClip + width)] == CLIPDATA_TYPE_SOLID)
+        case CHAOS_EFFECT_GIVE_ABILITY:
+            // TODO: Move to function
+            flag = (u8)pEffect->data;
+            if ((pEffect->data >> 8) == 0)
+            {
+                // Only deactivate the ability if it wasn't obtained while the effect was active,
+                // or if it's an unknown item (plasma beam)
+                if (!(gEquipment.beamBombs & flag) ||
+                    (gEquipment.suitType != SUIT_FULLY_POWERED && flag == BBF_PLASMA_BEAM))
                 {
-                    *pClip = CLIPDATA_SLOW_CRUMBLE;
+                    gEquipment.beamBombsActivation &= ~flag;
+                    if (gMainGameMode == GM_INGAME)
+                        ProjectileLoadGraphics();   
                 }
-                break;
-        }
-    }
-
-    gCrumbleCityActive = TRUE;
-    return TRUE;
-}
-
-s32 ChaosEffectFreezeEnemies(void)
-{
-    s32 success;
-    u8 i;
-
-    // Don't freeze sprites in Metroid rooms
-    if (ChaosIsInMetroidRoom())
-        return FALSE;
-
-    success = FALSE;
-
-    for (i = 0; i < MAX_AMOUNT_OF_SPRITES; i++)
-    {
-        if (gSpriteData[i].status & SPRITE_STATUS_EXISTS &&
-            !(gSpriteData[i].properties & SP_SECONDARY_SPRITE) &&
-            ProjectileGetSpriteWeakness(&gSpriteData[i]) & WEAKNESS_CAN_BE_FROZEN)
-        {
-            ProjectileFreezeSprite(&gSpriteData[i], 0xF0);
-            success = TRUE;
-        }
-    }
-
-    return success;
-}
-
-void ChaosEffectScreenShake(void)
-{
-    if (CHAOS_RAND_BOOL)
-        ScreenShakeStartHorizontal(240, 1);
-    else
-        ScreenShakeStartVertical(240, 1);
-}
-
-s32 ChaosEffectKnockback(void)
-{
-    if (gSamusData.pose == SPOSE_USING_AN_ELEVATOR)
-        return FALSE;
-
-    SamusSetPose(SPOSE_KNOCKBACK_REQUEST);
-
-    if (gSamusData.direction & KEY_RIGHT)
-        gSamusData.xVelocity = -SUB_PIXEL_TO_VELOCITY(EIGHTH_BLOCK_SIZE);
-    else
-        gSamusData.xVelocity = SUB_PIXEL_TO_VELOCITY(EIGHTH_BLOCK_SIZE);
-    
-    return TRUE;
-}
-
-void ChaosEffectChangeEnergyAmmo(void)
-{
-    u8 max;
-    s32 missileIdx;
-    s32 superIdx;
-    u16 rand;
-
-    max = 0;
-    missileIdx = -1;
-    superIdx = -1;
-
-    if (gEquipment.maxMissiles > 0)
-        missileIdx = ++max;
-    if (gEquipment.maxSuperMissiles > 0)
-        superIdx = ++max;
-    if (gEquipment.maxPowerBombs > 0)
-        ++max;
-
-    rand = ChaosRandU16(0, max);
-
-    if (rand == 0)
-        gEquipment.currentEnergy = ChaosRandU16(1, gEquipment.maxEnergy);
-    else if (rand == missileIdx)
-        gEquipment.currentMissiles = ChaosRandU16(1, gEquipment.maxMissiles);
-    else if (rand == superIdx)
-        gEquipment.currentSuperMissiles = ChaosRandU16(1, gEquipment.maxSuperMissiles);
-    else
-        gEquipment.currentPowerBombs = ChaosRandU16(1, gEquipment.maxPowerBombs);
-}
-
-void ChaosEffectRandSound(void)
-{
-    switch (ChaosRandU16(0, 3))
-    {
-        case 0:
-            SoundPlay(SOUND_THUNDER);
+            }
+            else
+            {
+                // Only deactivate the ability if it wasn't obtained while the effect was active,
+                // or if it's an unknown item (space jump or gravity suit)
+                if (!(gEquipment.suitMisc & flag) ||
+                    (gEquipment.suitType != SUIT_FULLY_POWERED && flag & (SMF_SPACE_JUMP | SMF_GRAVITY_SUIT)))
+                {
+                    gEquipment.suitMiscActivation &= ~flag;
+                }
+            }
+            // Play "disable" sound
+            SoundPlay(SOUND_CHAOS_ITEM_OFF);
             break;
-        case 1:
-            SoundPlay(SOUND_KRAID_RISING);
+
+        case CHAOS_EFFECT_SUITLESS:
+            UpdateSuitType(pEffect->data, TRUE);
+            if (gMainGameMode == GM_INGAME)
+                ProjectileLoadGraphics();
+            gSamusWeaponInfo.chargeCounter = 0;
             break;
-        case 2:
-            SoundPlay(SOUND_RIDLEY_SPAWN_ROAR);
-            break;
-        case 3:
-            SoundPlay(SOUND_MECHA_RIDLEY_ENTRANCE_CRAWL);
+        
+        case CHAOS_EFFECT_WARP:
+            gWarpBackFlag = TRUE;
             break;
     }
+
+    // Clear effect data
+    gActiveChaosEffects &= ~(1 << pEffect->id);
+    pEffect->exists = FALSE;
+    pEffect->id = 0;
+    pEffect->timer = 0;
+    pEffect->data = 0;
 }
 
-void ChaosEffectColorEffect(void)
+/**
+ * @brief Ends any chaos effects that modify equipment
+ */
+void ChaosEndEquipmentEffects(void)
 {
-    u8 effect;
-    u16* pPalette;
     s32 i;
-    u8 r;
-    u8 g;
-    u8 b;
-    u8 result;
 
-    effect = ChaosRandU16(0, 5);
-    pPalette = (u16*)PALRAM_BASE;
-
-    for (i = 0; i < 256; i++, pPalette++)
+    for (i = 0; i < MAX_NUM_CHAOS_EFFECTS; i++)
     {
-        if (i % 16 == 0)
+        if (!gChaosEffects[i].exists)
             continue;
 
-        r = RED(*pPalette);
-        g = GREEN(*pPalette);
-        b = BLUE(*pPalette);
-
-        switch (effect)
+        switch (gChaosEffects[i].id)
         {
-            case 0:
-                // Lower brightness
-                r /= 2;
-                g /= 2;
-                b /= 2;
+            case CHAOS_EFFECT_DEACTIVATE_ABILITY:
+            case CHAOS_EFFECT_GIVE_ABILITY:
+            case CHAOS_EFFECT_SUITLESS:
+                ChaosEffectEnded(&gChaosEffects[i]);
                 break;
-            case 1:
-                // Raise brightness
-                r = r * 3 / 2;
-                g = g * 3 / 2;
-                b = b * 3 / 2;
-                if (r > COLOR_MAX)
-                    r = COLOR_MAX;
-                if (g > COLOR_MAX)
-                    g = COLOR_MAX;
-                if (b > COLOR_MAX)
-                    b = COLOR_MAX;
-                break;
-            case 2:
-                // Monochrome
-                result = (r + g + b) / 3;
-                r = result;
-                g = result;
-                b = result;
-                break;
-            case 3:
-                // Red
-                r = r * 3 / 2;
-                g = g * 3 / 4;
-                b = b * 3 / 4;
-                if (r > COLOR_MAX)
-                    r = COLOR_MAX;
-            case 4:
-                // Green
-                r = r * 3 / 4;
-                g = g * 3 / 2;
-                b = b * 3 / 4;
-                if (g > COLOR_MAX)
-                    g = COLOR_MAX;
-            case 5:
-                // Blue
-                r = r * 3 / 4;
-                g = g * 3 / 4;
-                b = b * 3 / 2;
-                if (b > COLOR_MAX)
-                    b = COLOR_MAX;
         }
-
-        *pPalette = COLOR(r, g, b);
     }
 }
 
-s32 ChaosEffectCutscene(void)
-{
-    if (gPreventMovementTimer > 0)
-        return FALSE;
-    
-    switch (ChaosRandU16(0, 2))
-    {
-        case 0:
-            StartEffectForCutscene(EFFECT_CUTSCENE_RIDLEY_SPAWN);
-            break;
-        case 1:
-            StartEffectForCutscene(EFFECT_CUTSCENE_STATUE_OPENING);
-            break;
-        case 2:
-            StartEffectForCutscene(EFFECT_CUTSCENE_SAMUS_IN_BLUE_SHIP);
-            break;
-    }
+/* -------------------------------- */
+/* Effect updating */
+/* -------------------------------- */
 
-    return TRUE;
+static void ChaosUpdateEffects(void)
+{
+    s32 i;
+
+    for (i = 0; i < MAX_NUM_CHAOS_EFFECTS; i++)
+    {
+        if (!gChaosEffects[i].exists)
+            continue;
+        
+        // Check specific effects to update
+        switch (gChaosEffects[i].id)
+        {
+            case CHAOS_EFFECT_WEAPON_RING:
+                ChaosEffectWeaponRing(&gChaosEffects[i]);
+                break;
+            case CHAOS_EFFECT_EXPLOSIONS:
+                ChaosEffectExplosions();
+                break;
+        }
+
+        gChaosEffects[i].timer--;
+        if (gChaosEffects[i].timer == 0)
+            ChaosEffectEnded(&gChaosEffects[i]);
+    }
+}
+
+void ChaosUpdate(void)
+{
+    // Update active effects
+    ChaosUpdateEffects();
+
+    if (gWarpBackFlag)
+        ChaosWarpBack();
+
+    // Check create new effect
+    if (gInGameTimer.frames == 0 &&
+        gInGameTimer.seconds % CHAOS_SECONDS_BETWEEN_EFFECTS == 0)
+        ChaosCreateEffect();
 }
 
 #endif // CHAOS

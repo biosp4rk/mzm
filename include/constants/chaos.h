@@ -110,8 +110,7 @@ enum ChaosEffect {
     // Plays a random cutscene
     CHAOS_EFFECT_CUTSCENE,
 
-    // Marks the end of all effects
-    CHAOS_EFFECT_END
+    CHAOS_EFFECT_COUNT
 };
 
 enum WeaponRing {

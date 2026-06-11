@@ -4,48 +4,11 @@
 #include "types.h"
 #include "structs/chaos.h"
 
-#define CHAOS_RAND_BOOL (ChaosRandU16(0, 1))
+typedef bools32 (*ChaosFunc_T)(struct ChaosEffectData* pEffect);
 
 void ChaosReset(void);
-u32 ChaosIsEffectActive(u32 flags);
-u8 ChaosEmptyEffectIndex(void);
-void ChaosUpdate(void);
-void ChaosUpdateEffects(void);
-void ChaosEffectEnded(struct ChaosEffectData* pEffect);
+bools32 ChaosIsEffectActive(u32 flags);
 void ChaosEndEquipmentEffects(void);
-void ChaosWarpBack(void);
-void ChaosCreateEffect(void);
-void ChaosUpdateRng(void);
-u16 ChaosRandU16(u16 min, u16 max);
-u16 ChaosPositionNearSamus(u16 samusPos, u16 max);
-u16 ChaosPositionNearSamusX(void);
-u16 ChaosPositionNearSamusY(void);
-s32 ChaosIsInMetroidRoom(void);
-
-// Duration effects
-s32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect);
-s32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect);
-s32 ChaosEffectSuitless(struct ChaosEffectData* pEffect);
-void ChaosEffectMoveHud(void);
-void ChaosEffectWeaponRing(struct ChaosEffectData* pEffect);
-void ChaosEffectExplosions(void);
-bools32 ChaosCanWarp(void);
-bools32 ChaosEffectWarp(void);
-
-// One time effects
-s32 ChaosEffectSpawnEnemy(void);
-s32 ChaosEffectMessageBox(void);
-const u16* ChaosRandomTextPointer(void);
-s32 ChaosEffectSpawnPB(void);
-void ChaosEffectShotBlock(void);
-s32 ChaosEffectReplaceSolidBlocks(u16 value);
-s32 ChaosEffectCrumbleCity(void);
-s32 ChaosEffectFreezeEnemies(void);
-s32 ChaosEffectKnockback(void);
-void ChaosEffectScreenShake(void);
-void ChaosEffectChangeEnergyAmmo(void);
-void ChaosEffectRandSound(void);
-void ChaosEffectColorEffect(void);
-s32 ChaosEffectCutscene(void);
+void ChaosUpdate(void);
 
 #endif /* CHAOS_H */
