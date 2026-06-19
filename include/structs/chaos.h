@@ -36,6 +36,7 @@ extern const u16* gChaosTextPointer;
 extern u8 gWarpAreaBackup;
 extern u8 gWarpDoorBackup;
 extern boolu8 gWarpBackFlag;
+extern struct ChaosEffectData* gCurrChaosEffect;
 extern struct ChaosEffectData gChaosEffects[MAX_NUM_CHAOS_EFFECTS];
 
 #endif /* CHAOS_STRUCT_H */

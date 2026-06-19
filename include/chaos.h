@@ -4,7 +4,7 @@
 #include "types.h"
 #include "structs/chaos.h"
 
-typedef bools32 (*ChaosFunc_T)(struct ChaosEffectData* pEffect);
+typedef bools32 (*ChaosFunc_T)(void);
 
 void ChaosReset(void);
 bools32 ChaosIsEffectActive(u32 flags);

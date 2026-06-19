@@ -82,5 +82,6 @@ IWRAM_DATA const u16* gChaosTextPointer = NULL;
 IWRAM_DATA u8 gWarpAreaBackup = 0;
 IWRAM_DATA u8 gWarpDoorBackup = 0;
 IWRAM_DATA boolu8 gWarpBackFlag = FALSE;
+IWRAM_DATA struct ChaosEffectData* gCurrChaosEffect = NULL;
 IWRAM_DATA struct ChaosEffectData gChaosEffects[MAX_NUM_CHAOS_EFFECTS] = {};
 #endif // CHAOS

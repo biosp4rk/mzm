@@ -44,7 +44,7 @@
 
 #ifdef CHAOS
 
-#define CHAOS_RAND_BOOL (ChaosRandU16(0, 1))
+#define CHAOS_RAND_BOOL() (ChaosRandU16(0, 1))
 
 // Gets a random position on screen
 #define RAND_SCREEN_X() (ChaosRandU16(0, HUD_MAX_X))
@@ -97,7 +97,7 @@ static u16 ChaosPositionNearSamus(u16 samusPos, u16 max)
     pos = ChaosRandU16(CHAOS_NEAR_SAMUS_MIN, max);
 
     // TODO: Check if out of bounds?
-    if (CHAOS_RAND_BOOL)
+    if (CHAOS_RAND_BOOL())
         return (u16)(samusPos + pos);
     else
         return (u16)(samusPos - pos);
@@ -150,7 +150,44 @@ static void ChaosTriggerWarp(u8 area, u8 door, u8 room)
 /* Duration effects */
 /* -------------------------------- */
 
-static bools32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect)
+static bools32 ChaosEffectSlowHoriMovement(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_FAST_HORI_MOVEMENT);
+}
+
+static bools32 ChaosEffectFastHoriMovement(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_SLOW_HORI_MOVEMENT);
+}
+
+static bools32 ChaosEffectLowGravity(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_HIGH_GRAVITY);
+}
+
+static bools32 ChaosEffectHighGravity(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_LOW_GRAVITY);
+}
+
+static bools32 ChaosEffectSlowEnemies(void)
+{
+    return !SpriteUtilCheckStopSpritesPose();
+}
+
+static bools32 ChaosEffectArmWeapon(void)
+{
+    return gEquipment.suitType != SUIT_SUITLESS &&
+        (gEquipment.currentMissiles > 0 || gEquipment.currentSuperMissiles > 0);
+}
+
+static bools32 ChaosEffectSwapMissiles(void)
+{
+    return gEquipment.suitType != SUIT_SUITLESS &&
+        gEquipment.currentMissiles > 0 && gEquipment.currentSuperMissiles > 0;
+}
+
+static bools32 ChaosEffectDeactivateAbility(void)
 {
     s32 i;
     u8 beamBombsFlags[6];
@@ -210,7 +247,7 @@ static bools32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect)
                 beamBombsCount++;
             }
         }
-        pEffect->data = beamBombsFlags[i];
+        gCurrChaosEffect->data = beamBombsFlags[i];
         gEquipment.beamBombsActivation &= ~beamBombsFlags[i];
         ProjectileLoadGraphics();
     }
@@ -227,7 +264,7 @@ static bools32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect)
                 suitMiscCount++;
             }
         }
-        pEffect->data = suitMiscFlags[i] | 0x100;
+        gCurrChaosEffect->data = suitMiscFlags[i] | 0x100;
         gEquipment.suitMiscActivation &= ~suitMiscFlags[i];
     }
 
@@ -236,7 +273,7 @@ static bools32 ChaosEffectDeactivateAbility(struct ChaosEffectData* pEffect)
     return TRUE;
 }
 
-static bools32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect)
+static bools32 ChaosEffectGiveAbility(void)
 {
     s32 i;
     u8 beamBombsFlags[6];
@@ -296,7 +333,7 @@ static bools32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect)
                 beamBombsCount++;
             }
         }
-        pEffect->data = beamBombsFlags[i];
+        gCurrChaosEffect->data = beamBombsFlags[i];
         gEquipment.beamBombsActivation |= beamBombsFlags[i];
         ProjectileLoadGraphics();
     }
@@ -313,7 +350,7 @@ static bools32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect)
                 suitMiscCount++;
             }
         }
-        pEffect->data = suitMiscFlags[i] | 0x100;
+        gCurrChaosEffect->data = suitMiscFlags[i] | 0x100;
         gEquipment.suitMiscActivation |= suitMiscFlags[i];
     }
 
@@ -322,35 +359,45 @@ static bools32 ChaosEffectGiveAbility(struct ChaosEffectData* pEffect)
     return TRUE;
 }
 
-static bools32 ChaosEffectSuitless(struct ChaosEffectData* pEffect)
+static bools32 ChaosEffectSuitless(void)
 {
     if (gEquipment.suitType == SUIT_SUITLESS)
         return FALSE;
 
-    pEffect->data = gEquipment.suitType;
+    gCurrChaosEffect->data = gEquipment.suitType;
     UpdateSuitType(SUIT_SUITLESS, TRUE);
     ProjectileLoadGraphics();
     gSamusWeaponInfo.chargeCounter = 0;
     return TRUE;
 }
 
-static void ChaosEffectMoveHud(void)
+static bools32 ChaosEffectSlowWeapons(void)
 {
-    gHudPositions.energyX = RAND_SCREEN_X();
-    gHudPositions.energyY = RAND_SCREEN_Y();
-    gHudPositions.chargeBarX = RAND_SCREEN_X();
-    gHudPositions.chargeBarY = RAND_SCREEN_Y();
-    gHudPositions.missileX = RAND_SCREEN_X();
-    gHudPositions.missileY = RAND_SCREEN_Y();
-    gHudPositions.superMissileX = RAND_SCREEN_X();
-    gHudPositions.superMissileY = RAND_SCREEN_Y();
-    gHudPositions.powerBombX = RAND_SCREEN_X();
-    gHudPositions.powerBombY = RAND_SCREEN_Y();
-    gHudPositions.minimapX = RAND_SCREEN_X();
-    gHudPositions.minimapY = RAND_SCREEN_Y();
+    return !ChaosIsEffectActive(CHAOS_EFFECT_WEAPON_RING);
 }
 
-static void ChaosEffectWeaponRing(struct ChaosEffectData* pEffect)
+static bools32 ChaosEffectChargedShots(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_SHOOT_BOMBS);
+}
+
+static bools32 ChaosEffectShootBombs(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_CHARGED_SHOTS);
+}
+
+static bools32 ChaosEffectWeaponRing(void)
+{
+    if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
+        return FALSE;
+
+    // Choose a random weapon ring type
+    gCurrChaosEffect->data = ChaosRandU16(0, WEAPON_RING_COUNT - 1);
+
+    return TRUE;
+}
+
+static void ChaosEffectUpdateWeaponRing(struct ChaosEffectData* pEffect)
 {
     // Missiles
     u8 direction;
@@ -500,7 +547,25 @@ static void ChaosEffectWeaponRing(struct ChaosEffectData* pEffect)
     }
 }
 
-static void ChaosEffectExplosions(void)
+static bools32 ChaosEffectMoveHud(void)
+{
+    gHudPositions.energyX = RAND_SCREEN_X();
+    gHudPositions.energyY = RAND_SCREEN_Y();
+    gHudPositions.chargeBarX = RAND_SCREEN_X();
+    gHudPositions.chargeBarY = RAND_SCREEN_Y();
+    gHudPositions.missileX = RAND_SCREEN_X();
+    gHudPositions.missileY = RAND_SCREEN_Y();
+    gHudPositions.superMissileX = RAND_SCREEN_X();
+    gHudPositions.superMissileY = RAND_SCREEN_Y();
+    gHudPositions.powerBombX = RAND_SCREEN_X();
+    gHudPositions.powerBombY = RAND_SCREEN_Y();
+    gHudPositions.minimapX = RAND_SCREEN_X();
+    gHudPositions.minimapY = RAND_SCREEN_Y();
+
+    return TRUE;
+}
+
+static void ChaosEffectUpdateExplosions(void)
 {
     u8 pe;
     u16 sound;
@@ -604,7 +669,7 @@ static u32 sTotalDoorCount = ARRAY_SIZE(sBrinstarDoors) + ARRAY_SIZE(sKraidDoors
     ARRAY_SIZE(sNorfairDoors) + ARRAY_SIZE(sRidleyDoors) + ARRAY_SIZE(sTourianDoors) +
     ARRAY_SIZE(sCrateriaDoors);
 
-static bools32 ChaosEffectWarp(void)
+static bools32 ChaosEffectWarp()
 {
     u32 door;
     s32 i;
@@ -666,7 +731,7 @@ static bools32 ChaosEffectWarp(void)
 /* One time effects */
 /* -------------------------------- */
 
-static s32 ChaosEffectSpawnEnemy(void)
+static bools32 ChaosEffectSpawnEnemy(void)
 {
     u8 spriteCount;
     struct SpriteData* pSprite;
@@ -820,7 +885,7 @@ static const u16* ChaosRandomTextPointer(void)
     return sEnglishTextPointers_FileScreen[index];
 }
 
-static s32 ChaosEffectMessageBox(void)
+static bools32 ChaosEffectMessageBox(void)
 {
     u8 slot;
 
@@ -859,7 +924,7 @@ static s32 ChaosEffectMessageBox(void)
     return TRUE;
 }
 
-static bools32 ChaosEffectSpawnPB(void)
+static bools32 ChaosEffectSpawnPowerBomb(void)
 {
     if (ProjectileCheckNumberOfProjectiles(PROJ_TYPE_POWER_BOMB, 1) &&
         gCurrentPowerBomb.animationState == PB_STATE_NONE &&
@@ -874,7 +939,7 @@ static bools32 ChaosEffectSpawnPB(void)
     return FALSE;
 }
 
-static void ChaosEffectShotBlock(void)
+static bools32 ChaosEffectShotBlock(void)
 {
     u16 xPos;
     u16 yPos;
@@ -884,16 +949,15 @@ static void ChaosEffectShotBlock(void)
 
     BgClipSetClipdataBlockValue(CLIPDATA_SHOT_BLOCK_REFORM, yPos, xPos);
     BgClipSetBg1BlockValue(0x46, yPos, xPos);
+
+    return TRUE;
 }
 
-static bools32 ChaosEffectReplaceSolidBlocks(u16 value)
+static void ChaosReplaceSolidBlocks(u16 value)
 {
     s32 size;
     u16* pClipStart;
     u16* pClip;
-
-    if (gCrumbleCityActive)
-        return FALSE;
 
     size = gBgPointersAndDimensions.clipdataWidth * gBgPointersAndDimensions.clipdataHeight;
     pClipStart = gBgPointersAndDimensions.pClipDecomp;
@@ -911,6 +975,14 @@ static bools32 ChaosEffectReplaceSolidBlocks(u16 value)
                 break;
         }
     }
+}
+
+static bools32 ChaosEffectWetGround(void)
+{
+    if (gCrumbleCityActive)
+        return FALSE;
+
+    ChaosReplaceSolidBlocks(CLIPDATA_WET_GROUND);
 
     return TRUE;
 }
@@ -978,12 +1050,14 @@ static bools32 ChaosEffectFreezeEnemies(void)
     return success;
 }
 
-static void ChaosEffectScreenShake(void)
+static bools32 ChaosEffectScreenShake(void)
 {
-    if (CHAOS_RAND_BOOL)
+    if (CHAOS_RAND_BOOL())
         ScreenShakeStartHorizontal(240, 1);
     else
         ScreenShakeStartVertical(240, 1);
+    
+    return TRUE;
 }
 
 static bools32 ChaosEffectKnockback(void)
@@ -1001,7 +1075,14 @@ static bools32 ChaosEffectKnockback(void)
     return TRUE;
 }
 
-static void ChaosEffectChangeEnergyAmmo(void)
+static bools32 ChaosEffectShineTimer(void)
+{
+    gSamusData.shinesparkTimer = 240;
+
+    return TRUE;
+}
+
+static bools32 ChaosEffectChangeEnergyAmmo(void)
 {
     u8 max;
     s32 missileIdx;
@@ -1029,9 +1110,21 @@ static void ChaosEffectChangeEnergyAmmo(void)
         gEquipment.currentSuperMissiles = ChaosRandU16(1, gEquipment.maxSuperMissiles);
     else
         gEquipment.currentPowerBombs = ChaosRandU16(1, gEquipment.maxPowerBombs);
+    
+    return TRUE;
 }
 
-static void ChaosEffectRandSound(void)
+static bools32 ChaosEffectPauseGame(void)
+{
+    if (!ProcessPauseButtonPress())
+        return FALSE;
+
+    gSubGameMode1++;
+
+    return TRUE;
+}
+
+static bools32 ChaosEffectRandSound(void)
 {
     switch (ChaosRandU16(0, 3))
     {
@@ -1048,9 +1141,11 @@ static void ChaosEffectRandSound(void)
             SoundPlay(SOUND_MECHA_RIDLEY_ENTRANCE_CRAWL);
             break;
     }
+
+    return TRUE;
 }
 
-static void ChaosEffectColorEffect(void)
+static bools32 ChaosEffectColorEffect(void)
 {
     u8 effect;
     u16* pPalette;
@@ -1124,9 +1219,11 @@ static void ChaosEffectColorEffect(void)
 
         *pPalette = COLOR(r, g, b);
     }
+
+    return TRUE;
 }
 
-static s32 ChaosEffectCutscene(void)
+static bools32 ChaosEffectCutscene(void)
 {
     if (gPreventMovementTimer > 0)
         return FALSE;
@@ -1151,6 +1248,14 @@ static s32 ChaosEffectCutscene(void)
 /* Effect creation */
 /* -------------------------------- */
 
+/**
+ * @brief Used for effects with no other requirements or setup
+ */
+static bools32 ChaosEffectTrivial(void)
+{
+    return TRUE;
+}
+
 static u8 ChaosEmptyEffectIndex(void)
 {
     u8 i;
@@ -1164,6 +1269,47 @@ static u8 ChaosEmptyEffectIndex(void)
     return UCHAR_MAX;
 }
 
+static ChaosFunc_T sChaosEffectFuncs[CHAOS_EFFECT_COUNT] = {
+    // Duration effects
+    [CHAOS_EFFECT_INVERTED_CONTROLS] = ChaosEffectTrivial,
+    [CHAOS_EFFECT_WATER_PHYSICS] = ChaosEffectTrivial,
+    [CHAOS_EFFECT_SLOW_HORI_MOVEMENT] = ChaosEffectSlowHoriMovement,
+    [CHAOS_EFFECT_FAST_HORI_MOVEMENT] = ChaosEffectFastHoriMovement,
+    [CHAOS_EFFECT_LOW_GRAVITY] = ChaosEffectLowGravity,
+    [CHAOS_EFFECT_HIGH_GRAVITY] = ChaosEffectHighGravity,
+    [CHAOS_EFFECT_LONG_ECHO] = ChaosEffectTrivial,
+    [CHAOS_EFFECT_SLOW_ENEMIES] = ChaosEffectSlowEnemies,
+    [CHAOS_EFFECT_DEACTIVATE_ABILITY] = ChaosEffectDeactivateAbility,
+    [CHAOS_EFFECT_GIVE_ABILITY] = ChaosEffectGiveAbility,
+    [CHAOS_EFFECT_SUITLESS] = ChaosEffectSuitless,
+    [CHAOS_EFFECT_SLOW_WEAPONS] = ChaosEffectSlowWeapons,
+    [CHAOS_EFFECT_ARM_WEAPON] = ChaosEffectArmWeapon,
+    [CHAOS_EFFECT_SWAP_MISSILES] = ChaosEffectSwapMissiles,
+    [CHAOS_EFFECT_CHARGED_SHOTS] = ChaosEffectChargedShots,
+    [CHAOS_EFFECT_SHOOT_BOMBS] = ChaosEffectShootBombs,
+    [CHAOS_EFFECT_WEAPON_RING] = ChaosEffectWeaponRing,
+    [CHAOS_EFFECT_MOVE_HUD] = ChaosEffectMoveHud,
+    [CHAOS_EFFECT_SLOW_SCROLLING] = ChaosEffectTrivial,
+    [CHAOS_EFFECT_EXPLOSIONS] = ChaosEffectTrivial,
+    [CHAOS_EFFECT_WARP] = ChaosEffectWarp,
+    // One time effects
+    [CHAOS_EFFECT_SPAWN_ENEMY] = ChaosEffectSpawnEnemy,
+    [CHAOS_EFFECT_MESSAGE_BOX] = ChaosEffectMessageBox,
+    [CHAOS_EFFECT_SPAWN_PB] = ChaosEffectSpawnPowerBomb,
+    [CHAOS_EFFECT_SHOT_BLOCK] = ChaosEffectShotBlock,
+    [CHAOS_EFFECT_WET_GROUND] = ChaosEffectWetGround,
+    [CHAOS_EFFECT_CRUMBLE_CITY] = ChaosEffectCrumbleCity,
+    [CHAOS_EFFECT_FREEZE_ENEMIES] = ChaosEffectFreezeEnemies,
+    [CHAOS_EFFECT_SCREEN_SHAKE] = ChaosEffectScreenShake,
+    [CHAOS_EFFECT_KNOCKBACK_SAMUS] = ChaosEffectKnockback,
+    [CHAOS_EFFECT_SHINE_TIMER] = ChaosEffectShineTimer,
+    [CHAOS_EFFECT_CHANGE_ENERGY_AMMO] = ChaosEffectChangeEnergyAmmo,
+    [CHAOS_EFFECT_PAUSE_GAME] = ChaosEffectPauseGame,
+    [CHAOS_EFFECT_RAND_SOUND] = ChaosEffectRandSound,
+    [CHAOS_EFFECT_COLOR_EFFECT] = ChaosEffectColorEffect,
+    [CHAOS_EFFECT_CUTSCENE] = ChaosEffectCutscene,
+};
+
 static void ChaosCreateEffect(void)
 {
     u8 effectIdx;
@@ -1172,7 +1318,16 @@ static void ChaosCreateEffect(void)
     u8 id;
 
     effectIdx = ChaosEmptyEffectIndex();
-    start = effectIdx != UCHAR_MAX ? 0 : CHAOS_EFFECT_ONE_TIME;
+    if (effectIdx != UCHAR_MAX)
+    {
+        start = 0;
+        gCurrChaosEffect = &gChaosEffects[effectIdx];
+    }
+    else
+    {
+        start = CHAOS_EFFECT_ONE_TIME;
+        gCurrChaosEffect = NULL;
+    }
 
     for (tries = 0; tries < 5; tries++)
     {
@@ -1182,188 +1337,16 @@ static void ChaosCreateEffect(void)
         if (id < CHAOS_EFFECT_ONE_TIME && ChaosIsEffectActive(id))
             continue;
 
-        switch (id)
-        {
-            // Duration effects
-
-            case CHAOS_EFFECT_INVERTED_CONTROLS:
-                break; // No extra checks or setup required
-
-            case CHAOS_EFFECT_WATER_PHYSICS:
-                break; // No extra checks or setup required
-
-            case CHAOS_EFFECT_SLOW_HORI_MOVEMENT:
-                if (ChaosIsEffectActive(CHAOS_EFFECT_FAST_HORI_MOVEMENT))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_FAST_HORI_MOVEMENT:
-                if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_HORI_MOVEMENT))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_LOW_GRAVITY:
-                if (ChaosIsEffectActive(CHAOS_EFFECT_HIGH_GRAVITY))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_HIGH_GRAVITY:
-                if (ChaosIsEffectActive(CHAOS_EFFECT_LOW_GRAVITY))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_LONG_ECHO:
-                break; // No extra checks or setup required
-
-            case CHAOS_EFFECT_SLOW_ENEMIES:
-                if (SpriteUtilCheckStopSpritesPose())
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_DEACTIVATE_ABILITY:
-                if (!ChaosEffectDeactivateAbility(&gChaosEffects[effectIdx]))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_GIVE_ABILITY:
-                if (!ChaosEffectGiveAbility(&gChaosEffects[effectIdx]))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_SUITLESS:
-                if (!ChaosEffectSuitless(&gChaosEffects[effectIdx]))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_SLOW_WEAPONS:
-                if (ChaosIsEffectActive(CHAOS_EFFECT_WEAPON_RING))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_ARM_WEAPON:
-                if (gEquipment.suitType == SUIT_SUITLESS ||
-                    (gEquipment.currentMissiles == 0 && gEquipment.currentSuperMissiles == 0))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_SWAP_MISSILES:
-                if (gEquipment.suitType == SUIT_SUITLESS ||
-                    gEquipment.currentMissiles == 0 || gEquipment.currentSuperMissiles == 0)
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_CHARGED_SHOTS:
-                if (ChaosIsEffectActive(CHAOS_EFFECT_SHOOT_BOMBS))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_SHOOT_BOMBS:
-                if (ChaosIsEffectActive(CHAOS_EFFECT_CHARGED_SHOTS))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_WEAPON_RING:
-                if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
-                    continue;
-                // Choose a random weapon ring type
-                gChaosEffects[effectIdx].data = ChaosRandU16(0, WEAPON_RING_COUNT - 1);
-                break;
-
-            case CHAOS_EFFECT_MOVE_HUD:
-                ChaosEffectMoveHud();
-                break;
-
-            case CHAOS_EFFECT_SLOW_SCROLLING:
-                break; // No extra checks or setup required
-
-            case CHAOS_EFFECT_EXPLOSIONS:
-                break; // No extra checks or setup required
-
-            case CHAOS_EFFECT_WARP:
-                if (!ChaosEffectWarp())
-                    continue;
-                break;
-
-            // One time effects
-
-            case CHAOS_EFFECT_SPAWN_ENEMY:
-                if (!ChaosEffectSpawnEnemy())
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_MESSAGE_BOX:
-                if (!ChaosEffectMessageBox())
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_SPAWN_PB:
-                if (!ChaosEffectSpawnPB())
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_SHOT_BLOCK:
-                ChaosEffectShotBlock();
-                break;
-
-            case CHAOS_EFFECT_WET_GROUND:
-                if (!ChaosEffectReplaceSolidBlocks(CLIPDATA_WET_GROUND))
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_CRUMBLE_CITY:
-                if (!ChaosEffectCrumbleCity())
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_FREEZE_ENEMIES:
-                if (!ChaosEffectFreezeEnemies())
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_SCREEN_SHAKE:
-                ChaosEffectScreenShake();
-                break;
-
-            case CHAOS_EFFECT_KNOCKBACK_SAMUS:
-                if (!ChaosEffectKnockback())
-                    continue;
-                break;
-
-            case CHAOS_EFFECT_SHINE_TIMER:
-                gSamusData.shinesparkTimer = 180;
-                break;
-
-            case CHAOS_EFFECT_CHANGE_ENERGY_AMMO:
-                ChaosEffectChangeEnergyAmmo();
-                break;
-
-            case CHAOS_EFFECT_PAUSE_GAME:
-                if (!ProcessPauseButtonPress())
-                    continue;
-                gSubGameMode1++;
-                break;
-
-            case CHAOS_EFFECT_RAND_SOUND:
-                ChaosEffectRandSound();
-                break;
-
-            case CHAOS_EFFECT_COLOR_EFFECT:
-                ChaosEffectColorEffect();
-                break;
-
-            case CHAOS_EFFECT_CUTSCENE:
-                if (!ChaosEffectCutscene())
-                    continue;
-                break;
-        }
+        if (!sChaosEffectFuncs[id]())
+            continue;
 
         if (id < CHAOS_EFFECT_ONE_TIME)
         {
             // Setup new duration effect
             gActiveChaosEffects |= 1 << id;
-            gChaosEffects[effectIdx].exists = TRUE;
-            gChaosEffects[effectIdx].id = id;
-            gChaosEffects[effectIdx].timer = ChaosRandU16(CHAOS_EFFECT_FRAMES_MIN, CHAOS_EFFECT_FRAMES_MAX);
+            gCurrChaosEffect->exists = TRUE;
+            gCurrChaosEffect->id = id;
+            gCurrChaosEffect->timer = ChaosRandU16(CHAOS_EFFECT_FRAMES_MIN, CHAOS_EFFECT_FRAMES_MAX);
         }
         else
         {
@@ -1397,7 +1380,6 @@ static void ChaosEffectEnded(struct ChaosEffectData* pEffect)
     switch (pEffect->id)
     {
         case CHAOS_EFFECT_DEACTIVATE_ABILITY:
-            // TODO: Move to function
             flag = (u8)pEffect->data;
             if ((pEffect->data >> 8) == 0)
             {
@@ -1414,7 +1396,6 @@ static void ChaosEffectEnded(struct ChaosEffectData* pEffect)
             break;
 
         case CHAOS_EFFECT_GIVE_ABILITY:
-            // TODO: Move to function
             flag = (u8)pEffect->data;
             if ((pEffect->data >> 8) == 0)
             {
@@ -1502,10 +1483,10 @@ static void ChaosUpdateEffects(void)
         switch (gChaosEffects[i].id)
         {
             case CHAOS_EFFECT_WEAPON_RING:
-                ChaosEffectWeaponRing(&gChaosEffects[i]);
+                ChaosEffectUpdateWeaponRing(&gChaosEffects[i]);
                 break;
             case CHAOS_EFFECT_EXPLOSIONS:
-                ChaosEffectExplosions();
+                ChaosEffectUpdateExplosions();
                 break;
         }
 
