@@ -42,10 +42,11 @@ local EFFECT_NAMES = {
     "screen shake",
     "knockback",
     "shine timer",
-    "change energy or ammo",
+    "change energy/ammo",
     "pause game",
     "play sound",
     "color effect",
+    "music tempo/pitch",
     "cutscene"
 }
 

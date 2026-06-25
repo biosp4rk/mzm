@@ -109,6 +109,8 @@ enum ChaosEffect {
     CHAOS_EFFECT_RAND_SOUND,
     // Changes the background colors (brightness, monochrome)
     CHAOS_EFFECT_COLOR_EFFECT,
+    // Increases or decreases the music tempo or pitch
+    CHAOS_EFFECT_MUSIC_TEMPO_PITCH,
     // Plays a random cutscene
     CHAOS_EFFECT_CUTSCENE,
 

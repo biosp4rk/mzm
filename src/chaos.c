@@ -34,6 +34,7 @@
 #include "constants/sprite.h"
 #include "constants/text.h"
 
+#include "structs/audio.h"
 #include "structs/bg_clip.h"
 #include "structs/chaos.h"
 #include "structs/game_state.h"
@@ -1224,6 +1225,58 @@ static bools32 ChaosEffectColorEffect(void)
     return TRUE;
 }
 
+static bools32 ChaosEffectMusicTempoPitch(void)
+{
+    s32 i;
+    struct TrackVariables* pVariables;
+
+    if (gTrackData0.flags == 0)
+        return FALSE;
+
+    switch (ChaosRandU16(0, 3))
+    {
+        case 0:
+            // Decrease tempo
+            gTrackData0.unk_C = gTrackData0.unk_C * 2 / 3;
+            break;
+
+        case 1:
+            // Increase tempo
+            gTrackData0.unk_C = gTrackData0.unk_C * 3 / 2;
+            break;
+
+        case 2:
+            // Decrease pitch
+            for (i = 0, pVariables = gTrackData0.pVariables; i < gTrackData0.amountOfTracks; i++, pVariables++)
+            {
+                if (pVariables->unk_0 == 0)
+                    continue;
+
+                pVariables->bendRange = 11;
+                pVariables->pitchBend -= 16;
+                if (pVariables->pitchBend < -64)
+                    pVariables->pitchBend = -64;
+            }
+            break;
+
+        case 3:
+            // Increase pitch
+            for (i = 0, pVariables = gTrackData0.pVariables; i < gTrackData0.amountOfTracks; i++, pVariables++)
+            {
+                if (pVariables->unk_0 == 0)
+                    continue;
+
+                pVariables->bendRange = 11;
+                pVariables->pitchBend += 16;
+                if (pVariables->pitchBend > 63)
+                    pVariables->pitchBend = 63;
+            }
+            break;
+    }
+
+    return TRUE;
+}
+
 static bools32 ChaosEffectCutscene(void)
 {
     if (gPreventMovementTimer > 0)
@@ -1309,6 +1362,7 @@ static ChaosFunc_T sChaosEffectFuncs[CHAOS_EFFECT_COUNT] = {
     [CHAOS_EFFECT_PAUSE_GAME] = ChaosEffectPauseGame,
     [CHAOS_EFFECT_RAND_SOUND] = ChaosEffectRandSound,
     [CHAOS_EFFECT_COLOR_EFFECT] = ChaosEffectColorEffect,
+    [CHAOS_EFFECT_MUSIC_TEMPO_PITCH] = ChaosEffectMusicTempoPitch,
     [CHAOS_EFFECT_CUTSCENE] = ChaosEffectCutscene,
 };
 
