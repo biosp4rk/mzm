@@ -32,6 +32,7 @@
 #include "structs/sprite.h"
 #include "structs/connection.h"
 #include "structs/chaos.h"
+#include "structs/in_game_timer.h"
 
 /**
  * @brief c4b4 | 244 | Main loop in game
@@ -61,7 +62,8 @@ u32 InGameMainLoop(void)
 
 #ifdef CHAOS
             // Set initial seed for chaos RNG
-            gChaosRng = gFrameCounter16Bit;
+            gChaosRng = gFrameCounter16Bit | (gInGameTimer.frames << 16) |
+                (gInGameTimer.seconds << 22) | (gInGameTimer.minutes << 28);
 #endif // CHAOS
 
             if (gSubGameMode3 == 0)
