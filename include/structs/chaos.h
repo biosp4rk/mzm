@@ -12,26 +12,31 @@ struct ChaosEffectData {
     u16 data;
 };
 
-struct HudPositions {
-    u8 energyX;
-    u8 energyY;
-    u8 chargeBarX;
-    u8 chargeBarY;
-    u8 missileX;
-    u8 missileY;
-    u8 superMissileX;
-    u8 superMissileY;
-    u8 powerBombX;
-    u8 powerBombY;
-    u8 minimapX;
-    u8 minimapY;
+union HudPositions {
+    struct {
+        u8 energyX;
+        u8 energyY;
+        u8 chargeBarX;
+        u8 chargeBarY;
+        u8 missileX;
+        u8 missileY;
+        u8 superMissileX;
+        u8 superMissileY;
+        u8 powerBombX;
+        u8 powerBombY;
+        u8 minimapX;
+        u8 minimapY;
+    } split;
+
+    u8 all[6][2];
 };
 
 extern u32 gChaosRng;
 extern u32 gActiveChaosEffects;
 extern u8 gPrevOneTimeChaosEffect;
 extern boolu8 gCrumbleCityActive;
-extern struct HudPositions gHudPositions;
+extern union HudPositions gHudPositions;
+extern union HudPositions gHudSpeeds;
 extern const u16* gChaosTextPointer;
 extern u8 gWarpAreaBackup;
 extern u8 gWarpDoorBackup;

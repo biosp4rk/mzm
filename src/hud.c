@@ -66,8 +66,8 @@ void HudUpdateOam(void)
 
         if (moveHud)
         {
-            energyX = gHudPositions.energyX;
-            energyY = gHudPositions.energyY;
+            energyX = gHudPositions.split.energyX;
+            energyY = gHudPositions.split.energyY;
         }
         else
         {
@@ -131,8 +131,8 @@ void HudUpdateOam(void)
 #ifdef CHAOS
             if (moveHud)
             {
-                chargeBarX = gHudPositions.chargeBarX;
-                chargeBarY = gHudPositions.chargeBarY;
+                chargeBarX = gHudPositions.split.chargeBarX;
+                chargeBarY = gHudPositions.split.chargeBarY;
             }
             else
             {
@@ -197,7 +197,7 @@ void HudUpdateOam(void)
                 
                 *dst++ = 0;
 #ifdef CHAOS
-                gOamData[oamSlot].split.y = moveHud ? gHudPositions.missileY : HUD_MISSILES_Y;
+                gOamData[oamSlot].split.y = moveHud ? gHudPositions.split.missileY : HUD_MISSILES_Y;
 #else // !CHAOS
                 gOamData[oamSlot].split.y = HUD_MISSILES_Y;
 #endif // CHAOS
@@ -205,7 +205,7 @@ void HudUpdateOam(void)
 
                 *dst++ = 0;
 #ifdef CHAOS
-                gOamData[oamSlot].split.x = moveHud ? gHudPositions.missileX : HUD_MISSILES_X;
+                gOamData[oamSlot].split.x = moveHud ? gHudPositions.split.missileX : HUD_MISSILES_X;
 #else // !CHAOS
                 gOamData[oamSlot].split.x = HUD_MISSILES_X;
 #endif // CHAOS
@@ -225,7 +225,7 @@ void HudUpdateOam(void)
 
                 *dst++ = 0;
 #ifdef CHAOS
-                gOamData[oamSlot].split.y = moveHud ? gHudPositions.superMissileY : HUD_SUPER_MISSILES_Y;
+                gOamData[oamSlot].split.y = moveHud ? gHudPositions.split.superMissileY : HUD_SUPER_MISSILES_Y;
 #else // !CHAOS
                 gOamData[oamSlot].split.y = HUD_SUPER_MISSILES_Y;
 #endif // CHAOS
@@ -233,7 +233,7 @@ void HudUpdateOam(void)
 
                 *dst++ = 0;
 #ifdef CHAOS
-                gOamData[oamSlot].split.x = moveHud ? gHudPositions.superMissileX : HUD_SUPER_MISSILES_X;
+                gOamData[oamSlot].split.x = moveHud ? gHudPositions.split.superMissileX : HUD_SUPER_MISSILES_X;
 #else // !CHAOS
                 gOamData[oamSlot].split.x = HUD_SUPER_MISSILES_X;
 #endif // CHAOS
@@ -253,7 +253,7 @@ void HudUpdateOam(void)
 
                 *dst++ = 0;
 #ifdef CHAOS
-                gOamData[oamSlot].split.y = moveHud ? gHudPositions.powerBombY : HUD_POWER_BOMBS_Y;
+                gOamData[oamSlot].split.y = moveHud ? gHudPositions.split.powerBombY : HUD_POWER_BOMBS_Y;
 #else // !CHAOS
                 gOamData[oamSlot].split.y = HUD_POWER_BOMBS_Y;
 #endif // CHAOS
@@ -261,7 +261,7 @@ void HudUpdateOam(void)
 
                 *dst++ = 0;
 #ifdef CHAOS
-                gOamData[oamSlot].split.x = moveHud ? gHudPositions.powerBombX : HUD_POWER_BOMBS_X;
+                gOamData[oamSlot].split.x = moveHud ? gHudPositions.split.powerBombX : HUD_POWER_BOMBS_X;
 #else // !CHAOS
                 gOamData[oamSlot].split.x = HUD_POWER_BOMBS_X;
 #endif // CHAOS
@@ -279,8 +279,8 @@ void HudUpdateOam(void)
 #ifdef CHAOS
         if (moveHud)
         {
-            minimapX = gHudPositions.minimapX;
-            minimapY = gHudPositions.minimapY;
+            minimapX = gHudPositions.split.minimapX;
+            minimapY = gHudPositions.split.minimapY;
         }
         else
         {

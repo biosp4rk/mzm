@@ -551,20 +551,67 @@ static void ChaosEffectUpdateWeaponRing(struct ChaosEffectData* pEffect)
 
 static bools32 ChaosEffectMoveHud(void)
 {
-    gHudPositions.energyX = RAND_SCREEN_X();
-    gHudPositions.energyY = RAND_SCREEN_Y();
-    gHudPositions.chargeBarX = RAND_SCREEN_X();
-    gHudPositions.chargeBarY = RAND_SCREEN_Y();
-    gHudPositions.missileX = RAND_SCREEN_X();
-    gHudPositions.missileY = RAND_SCREEN_Y();
-    gHudPositions.superMissileX = RAND_SCREEN_X();
-    gHudPositions.superMissileY = RAND_SCREEN_Y();
-    gHudPositions.powerBombX = RAND_SCREEN_X();
-    gHudPositions.powerBombY = RAND_SCREEN_Y();
-    gHudPositions.minimapX = RAND_SCREEN_X();
-    gHudPositions.minimapY = RAND_SCREEN_Y();
+    s32 i;
+
+    for (i = 0; i < ARRAY_SIZE(gHudPositions.all); i++)
+    {
+        gHudPositions.all[i][0] = RAND_SCREEN_X();
+        gHudPositions.all[i][1] = RAND_SCREEN_Y();
+
+        // HUD elements should move every 1, 2, 4, or 8 frames and start with a random direction
+        gHudSpeeds.all[i][0] = ((1 << ChaosRandU16(0, 3)) - 1) | (CHAOS_RAND_BOOL() << 7);
+        gHudSpeeds.all[i][1] = ((1 << ChaosRandU16(0, 3)) - 1) | (CHAOS_RAND_BOOL() << 7);
+    }
 
     return TRUE;
+}
+
+static void ChaosEffectUpdateMoveHud(void)
+{
+    u8 frame;
+    s32 i;
+    s32 j;
+    u32 hudMax;
+    
+    frame = gFrameCounter8Bit & 0x7F;
+
+    for (i = 0; i < ARRAY_SIZE(gHudPositions.all); i++)
+    {
+        for (j = 0; j < 2; j++)
+        {
+            hudMax = j == 0 ? HUD_MAX_X : HUD_MAX_Y;
+
+            if ((frame & gHudSpeeds.all[i][j]) != 0)
+                continue;
+            
+            if (gHudSpeeds.all[i][j] & 0x80)
+            {
+                // Moving left/up
+                if (gHudPositions.all[i][j] == 0)
+                {
+                    gHudPositions.all[i][j] = 1;
+                    gHudSpeeds.all[i][j] &= ~0x80;
+                }
+                else
+                {
+                    gHudPositions.all[i][j]--;
+                }
+            }
+            else
+            {
+                // Moving right/down
+                if (gHudPositions.all[i][j] == hudMax)
+                {
+                    gHudPositions.all[i][j] = hudMax - 1;
+                    gHudSpeeds.all[i][j] |= 0x80;
+                }
+                else
+                {
+                    gHudPositions.all[i][j]++;
+                }
+            }
+        }
+    }
 }
 
 static void ChaosEffectUpdateExplosions(void)
@@ -1549,6 +1596,11 @@ static void ChaosUpdateEffects(void)
             case CHAOS_EFFECT_WEAPON_RING:
                 ChaosEffectUpdateWeaponRing(&gChaosEffects[i]);
                 break;
+            
+            case CHAOS_EFFECT_MOVE_HUD:
+                ChaosEffectUpdateMoveHud();
+                break;
+
             case CHAOS_EFFECT_EXPLOSIONS:
                 ChaosEffectUpdateExplosions();
                 break;

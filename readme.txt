@@ -17,6 +17,7 @@ Version history:
 WIP - 1.2.0
 - Added 7 new effects
 - Fixed potential softlocks in Tourian rooms with Metroids
+- Fixed an issue with the color effect
 
 2024-09-05 - 1.1.0
 - Added 6 new effects
