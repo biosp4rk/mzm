@@ -1177,6 +1177,7 @@ static bools32 ChaosEffectColorEffect(void)
                 g /= 2;
                 b /= 2;
                 break;
+
             case 1:
                 // Raise brightness
                 r = r * 3 / 2;
@@ -1189,6 +1190,7 @@ static bools32 ChaosEffectColorEffect(void)
                 if (b > COLOR_MAX)
                     b = COLOR_MAX;
                 break;
+
             case 2:
                 // Monochrome
                 result = (r + g + b) / 3;
@@ -1196,6 +1198,7 @@ static bools32 ChaosEffectColorEffect(void)
                 g = result;
                 b = result;
                 break;
+
             case 3:
                 // Red
                 r = r * 3 / 2;
@@ -1203,6 +1206,8 @@ static bools32 ChaosEffectColorEffect(void)
                 b = b * 3 / 4;
                 if (r > COLOR_MAX)
                     r = COLOR_MAX;
+                break;
+
             case 4:
                 // Green
                 r = r * 3 / 4;
@@ -1210,6 +1215,8 @@ static bools32 ChaosEffectColorEffect(void)
                 b = b * 3 / 4;
                 if (g > COLOR_MAX)
                     g = COLOR_MAX;
+                break;
+
             case 5:
                 // Blue
                 r = r * 3 / 4;
@@ -1217,6 +1224,7 @@ static bools32 ChaosEffectColorEffect(void)
                 b = b * 3 / 2;
                 if (b > COLOR_MAX)
                     b = COLOR_MAX;
+                break;
         }
 
         *pPalette = COLOR(r, g, b);
