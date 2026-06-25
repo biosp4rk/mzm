@@ -6,6 +6,7 @@
 #include "location_text.h"
 #include "macros.h"
 #include "menus/status_screen.h"
+#include "oam.h"
 #include "particle.h"
 #include "projectile.h"
 #include "projectile_util.h"
@@ -1289,6 +1290,7 @@ static ChaosFunc_T sChaosEffectFuncs[CHAOS_EFFECT_COUNT] = {
     [CHAOS_EFFECT_SHOOT_BOMBS] = ChaosEffectShootBombs,
     [CHAOS_EFFECT_WEAPON_RING] = ChaosEffectWeaponRing,
     [CHAOS_EFFECT_MOVE_HUD] = ChaosEffectMoveHud,
+    [CHAOS_EFFECT_JUMBLED_SPRITES] = ChaosEffectTrivial,
     [CHAOS_EFFECT_SLOW_SCROLLING] = ChaosEffectTrivial,
     [CHAOS_EFFECT_EXPLOSIONS] = ChaosEffectTrivial,
     [CHAOS_EFFECT_WARP] = ChaosEffectWarp,

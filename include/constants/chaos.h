@@ -68,6 +68,8 @@ enum ChaosEffect {
 
     // Draws HUD elements in random positions
     CHAOS_EFFECT_MOVE_HUD,
+    // Flips all OAM horizontally and vertically
+    CHAOS_EFFECT_JUMBLED_SPRITES,
     // Makes scrolling slow
     CHAOS_EFFECT_SLOW_SCROLLING,
     // Spawns explosion particles around Samus

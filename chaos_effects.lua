@@ -27,6 +27,7 @@ local EFFECT_NAMES = {
     "shoot bombs",
     "weapon ring",
     "move hud",
+    "jumbled sprites",
     "slow scrolling",
     "explosions",
     "random warp",

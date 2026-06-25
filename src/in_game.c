@@ -17,6 +17,7 @@
 
 #include "data/hud_data.h"
 
+#include "constants/chaos.h"
 #include "constants/demo.h"
 #include "constants/haze.h"
 #include "constants/game_state.h"
@@ -40,6 +41,9 @@
 u32 InGameMainLoop(void)
 {
     u32 changing;
+#ifdef CHAOS
+    s32 i;
+#endif // CHAOS
 
     #ifdef DEBUG
     gDebugVCount_InGameStart = READ_16(REG_VCOUNT);
@@ -192,6 +196,17 @@ u32 InGameMainLoop(void)
         if (gSubGameMode1 == SUB_GAME_MODE_PLAYING)
             SamusCallCheckLowHealth();
     }
+
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_JUMBLED_SPRITES))
+    {
+        for (i = 0; i < ARRAY_SIZE(gOamData); i++)
+        {
+            gOamData[i].split.xFlip ^= TRUE;
+            gOamData[i].split.yFlip ^= TRUE;
+        }
+    }
+#endif // CHAOS
 
     #ifdef DEBUG
     if (gDebugMode == 1)
