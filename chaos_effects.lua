@@ -11,6 +11,7 @@ local EFFECT_NAMES = {
     -- Duration effects
     "inverted controls",
     "water physics",
+    "ice physics",
     "slow x movement",
     "fast x movement",
     "low gravity",

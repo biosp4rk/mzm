@@ -166,6 +166,35 @@ static SamusFunc_T sSamusPoseGfxFunctionPointers[SPOSE_COUNT] = {
     [SPOSE_TURNING_TO_ENTER_ESCAPE_SHIP] = SamusTurningToEnterEscapeShipGfx
 };
 
+#ifdef CHAOS
+#define ICE_DECEL 3
+static void SamusIceDecelerate(void)
+{
+    s16 xVelocity;
+
+    xVelocity = gSamusData.xVelocity;
+
+    if (xVelocity > 0)
+    {
+        xVelocity -= ICE_DECEL;
+        if (xVelocity < 0)
+            xVelocity = 0;
+    }
+    else if (xVelocity < 0)
+    {
+        xVelocity += ICE_DECEL;
+        if (xVelocity > 0)
+            xVelocity = 0;
+    }
+    else
+    {
+        return;
+    }
+
+    gSamusData.xVelocity = xVelocity;
+}
+#endif // CHAOS
+
 /**
  * @brief 5368 | 10c | Checks for screw attack and speedbooster damage to the environment
  * 
@@ -2072,6 +2101,14 @@ void SamusSetLandingPose(struct SamusData* pData, struct SamusData* pCopy, struc
 
     // Check effect
     SamusCheckSetEnvironmentalEffect(pData, 0, WANTING_LANDING_EFFECT);
+
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+    {
+        if (pCopy->pose != SPOSE_SHINESPARKING && pCopy->pose != SPOSE_BALLSPARKING)
+            pData->xVelocity = pCopy->xVelocity;
+    }
+#endif // CHAOS
 }
 
 void SamusChangeToHurtPose(struct SamusData* pData, struct SamusData* pCopy, struct WeaponInfo* pWeapon)
@@ -2232,6 +2269,11 @@ void SamusCheckCarryFromCopy(struct SamusData* pData, struct SamusData* pCopy, s
     switch (pData->pose)
     {
         case SPOSE_RUNNING:
+#ifdef CHAOS
+            if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+                pData->xVelocity = pCopy->xVelocity;
+#endif // CHAOS
+
             // Carry aim if diagonal or weapon is armed, otherwise default to none
             if (gButtonInput & gButtonAssignments.diagonalAim || gButtonInput & gButtonAssignments.armWeapon)
                 pData->armCannonDirection = pCopy->armCannonDirection;
@@ -2240,6 +2282,11 @@ void SamusCheckCarryFromCopy(struct SamusData* pData, struct SamusData* pCopy, s
             break;
 
         case SPOSE_STANDING:
+#ifdef CHAOS
+            if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+                pData->xVelocity = pCopy->xVelocity;
+#endif // CHAOS
+
             pData->armCannonDirection = pCopy->armCannonDirection;
             if (pCopy->pose == SPOSE_CROUCHING || pCopy->pose == SPOSE_SHOOTING_AND_CROUCHING)
             {
@@ -2249,6 +2296,11 @@ void SamusCheckCarryFromCopy(struct SamusData* pData, struct SamusData* pCopy, s
             break;
 
         case SPOSE_CROUCHING:
+#ifdef CHAOS
+            if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+                pData->xVelocity = pCopy->xVelocity;
+#endif // CHAOS
+
             // Carry ACD
             pData->armCannonDirection = pCopy->armCannonDirection;
             pData->currentAnimationFrame = 1;
@@ -2274,6 +2326,11 @@ void SamusCheckCarryFromCopy(struct SamusData* pData, struct SamusData* pCopy, s
                 SoundPlay(SOUND_SUITLESS_GRABBING_LEDGE);
             
         case SPOSE_MORPH_BALL:
+#ifdef CHAOS
+            if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+                pData->xVelocity = pCopy->xVelocity;
+#endif // CHAOS
+
             if (pCopy->speedboostingShinesparking)
             {
                 // Timer for shinespark carry
@@ -2443,6 +2500,10 @@ void SamusCheckCarryFromCopy(struct SamusData* pData, struct SamusData* pCopy, s
             break;
 
         case SPOSE_CRAWLING_STOPPED:
+#ifdef CHAOS
+            if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+                pData->xVelocity = pCopy->xVelocity;
+#endif // CHAOS
             // Check set the forced movement to have the frame of samus holding the pistol up when stopped
             if (pCopy->pose == SPOSE_SHOOTING_WHILE_CRAWLING)
                 pData->forcedMovement = FORCED_MOVEMENT_CRAWLING_ARM_CANNON_UP;
@@ -2462,11 +2523,21 @@ void SamusCheckCarryFromCopy(struct SamusData* pData, struct SamusData* pCopy, s
             // Carry Y velocity
             pData->yVelocity = pCopy->yVelocity;
 
+#ifdef CHAOS
+        case SPOSE_TURNING_AROUND:
+        case SPOSE_TURNING_AROUND_AND_CROUCHING:
+        case SPOSE_TURNING_AROUND_WHILE_CRAWLING:
+            if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+                pData->xVelocity = pCopy->xVelocity;
+        case SPOSE_TURNING_ON_ZIPLINE:
+        case SPOSE_TURNING_AROUND_TO_DOWNLOAD_MAP_DATA:
+#else // !CHAOS
         case SPOSE_TURNING_AROUND:
         case SPOSE_TURNING_AROUND_AND_CROUCHING:
         case SPOSE_TURNING_ON_ZIPLINE:
         case SPOSE_TURNING_AROUND_TO_DOWNLOAD_MAP_DATA:
         case SPOSE_TURNING_AROUND_WHILE_CRAWLING:
+#endif // CHAOS
             // Set turning
             pData->turning = TRUE;
 
@@ -2476,7 +2547,19 @@ void SamusCheckCarryFromCopy(struct SamusData* pData, struct SamusData* pCopy, s
 
         case SPOSE_IN_ESCAPE_SHIP:
             break;
-        
+
+#ifdef CHAOS
+        case SPOSE_SHOOTING:
+        case SPOSE_SHOOTING_AND_CROUCHING:
+        case SPOSE_MORPHING:
+        case SPOSE_ROLLING:
+        case SPOSE_UNMORPHING:
+        case SPOSE_CROUCHING_SUITLESS:
+        case SPOSE_SHOOTING_WHILE_CRAWLING:
+            if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+                pData->xVelocity = pCopy->xVelocity;
+#endif // CHAOS
+
         default:
             // Carry arm cannon direction
             pData->armCannonDirection = pCopy->armCannonDirection;
@@ -4134,6 +4217,11 @@ SamusPose SamusStanding(struct SamusData* pData)
     if (gButtonInput & pData->direction)
         return SPOSE_RUNNING;
 
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        SamusIceDecelerate();
+#endif // CHAOS
+
     // Check shooting
     if (gSamusPhysics.hasNewProjectile)
         return SPOSE_SHOOTING;
@@ -4237,6 +4325,11 @@ SamusPose SamusTurningAround(struct SamusData* pData)
     if (SamusCheckJumping(pData))
         return SPOSE_MID_AIR_REQUEST;
 
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        SamusIceDecelerate();
+#endif // CHAOS
+
     if (gChangedInput & KEY_DOWN && (gSamusWeaponInfo.diagonalAim == DIAG_AIM_NONE || pData->armCannonDirection == ACD_DIAGONALLY_DOWN))
     {
         // Don't return the value to smootly transition between the 2 turning around animations
@@ -4319,6 +4412,11 @@ SamusPose SamusCrouching(struct SamusData* pData)
             return SPOSE_DELAY_BEFORE_SHINESPARKING;
         }
     }
+
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        SamusIceDecelerate();
+#endif // CHAOS
 
     collision = SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]);
 
@@ -4443,6 +4541,11 @@ SamusPose SamusTurningAroundAndCrouching(struct SamusData* pData)
             return SPOSE_DELAY_BEFORE_SHINESPARKING;
         }
     }
+
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        SamusIceDecelerate();
+#endif // CHAOS
 
     collision = SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]);
 
@@ -4569,13 +4672,33 @@ SamusPose SamusSkidding(struct SamusData* pData)
     // Handle velocity decrease
     if (pData->direction & KEY_RIGHT)
     {
-        pData->xVelocity -= SUB_PIXEL_TO_VELOCITY(ONE_SUB_PIXEL + ONE_SUB_PIXEL / 4.f);
+#ifdef CHAOS
+        if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        {
+            pData->xVelocity -= ICE_DECEL;
+        }
+        else
+#endif // CHAOS
+        {
+            pData->xVelocity -= SUB_PIXEL_TO_VELOCITY(ONE_SUB_PIXEL + ONE_SUB_PIXEL / 4.f);
+        }
+
         if (pData->xVelocity <= 0)
             return SPOSE_STANDING;
     }
     else
     {
-        pData->xVelocity += SUB_PIXEL_TO_VELOCITY(ONE_SUB_PIXEL + ONE_SUB_PIXEL / 4.f);
+#ifdef CHAOS
+        if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        {
+            pData->xVelocity += ICE_DECEL;
+        }
+        else
+#endif // CHAOS
+        {
+            pData->xVelocity += SUB_PIXEL_TO_VELOCITY(ONE_SUB_PIXEL + ONE_SUB_PIXEL / 4.f);
+        }
+
         if (pData->xVelocity >= 0)
             return SPOSE_STANDING;
     }
@@ -5028,6 +5151,11 @@ SamusPose SamusScrewAttackingGfx(struct SamusData* pData)
  */
 SamusPose SamusMorphing(struct SamusData* pData)
 {
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        SamusIceDecelerate();
+#endif // CHAOS
+
     // Check cancel morphing
     if (gChangedInput & KEY_UP)
         pData->pose = SPOSE_UNMORPHING;
@@ -5095,6 +5223,11 @@ SamusPose SamusMorphball(struct SamusData* pData)
 
         pData->forcedMovement = 0;
     }
+
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        SamusIceDecelerate();
+#endif // CHAOS
 
     // Check start rolling
     if (gButtonInput & (KEY_RIGHT | KEY_LEFT))
@@ -5182,6 +5315,11 @@ SamusPose SamusRolling(struct SamusData* pData)
         return SPOSE_MID_AIR_REQUEST;
     }
 
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        SamusIceDecelerate();
+#endif // CHAOS
+
     // Check unmorph, no block above
     if (SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]) == SAMUS_COLLISION_DETECTION_NONE)
     {
@@ -5254,6 +5392,11 @@ SamusPose SamusRollingGfx(struct SamusData* pData)
  */
 SamusPose SamusUnmorphing(struct SamusData* pData)
 {
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        SamusIceDecelerate();
+#endif // CHAOS
+
     if (SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]) == SAMUS_COLLISION_DETECTION_NONE)
     {
         // Check force jump
@@ -6533,8 +6676,17 @@ SamusPose SamusCrouchingToCrawlGfx(struct SamusData* pData)
  */
 SamusPose SamusCrawlingStopped(struct SamusData* pData)
 {
-    // Keep x velocity at 0
-    pData->xVelocity = 0;
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+    {
+        SamusIceDecelerate();
+    }
+    else
+#endif // CHAOS
+    {
+        // Keep x velocity at 0
+        pData->xVelocity = 0;
+    }
 
     if (SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]) == 0)
     {
@@ -6654,6 +6806,11 @@ SamusPose SamusCrawlingGfx(struct SamusData* pData)
  */
 SamusPose SamusTurningAroundWhileCrawling(struct SamusData* pData)
 {
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+        SamusIceDecelerate();
+#endif // CHAOS
+
     if (gSamusPhysics.hasNewProjectile)
         return SPOSE_SHOOTING_WHILE_CRAWLING;
 
@@ -6894,17 +7051,22 @@ void SamusUpdateVelocityPosition(struct SamusData* pData)
     {
         velocity = DIV_SHIFT(SamusChangeVelocityOnSlope(pData), 8);
 
-        if (pData->pose == SPOSE_RUNNING)
+#ifdef CHAOS
+        if (!ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
+#endif // CHAOS
         {
-            if (pData->direction & KEY_RIGHT)
+            if (pData->pose == SPOSE_RUNNING)
             {
-                if (velocity < 0)
-                    velocity = 0;
-            }
-            else
-            {
-                if (velocity > 0)
-                    velocity = 0;
+                if (pData->direction & KEY_RIGHT)
+                {
+                    if (velocity < 0)
+                        velocity = 0;
+                }
+                else
+                {
+                    if (velocity > 0)
+                        velocity = 0;
+                }
             }
         }
     }

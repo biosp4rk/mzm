@@ -7,7 +7,7 @@
 typedef bools32 (*ChaosFunc_T)(void);
 
 void ChaosReset(void);
-bools32 ChaosIsEffectActive(u32 flags);
+bools32 ChaosIsEffectActive(u32 id);
 void ChaosEndEquipmentEffects(void);
 void ChaosUpdate(void);
 

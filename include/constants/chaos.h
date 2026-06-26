@@ -27,6 +27,8 @@ enum ChaosEffect {
     CHAOS_EFFECT_INVERTED_CONTROLS,
     // Sets the water movement flag
     CHAOS_EFFECT_WATER_PHYSICS,
+    // Makes ground movement slippery like ice
+    CHAOS_EFFECT_ICE_PHYSICS,
     // Cuts horizontal movement speed in half
     CHAOS_EFFECT_SLOW_HORI_MOVEMENT,
     // Doubles horizontal movement speed

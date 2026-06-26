@@ -152,6 +152,16 @@ static void ChaosTriggerWarp(u8 area, u8 door, u8 room)
 /* Duration effects */
 /* -------------------------------- */
 
+static bools32 ChaosEffectWaterPhysics(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS);
+}
+
+static bools32 ChaosEffectIcePhysics(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_WATER_PHYSICS);
+}
+
 static bools32 ChaosEffectSlowHoriMovement(void)
 {
     return !ChaosIsEffectActive(CHAOS_EFFECT_FAST_HORI_MOVEMENT);
@@ -1381,7 +1391,8 @@ static u8 ChaosEmptyEffectIndex(void)
 static ChaosFunc_T sChaosEffectFuncs[CHAOS_EFFECT_COUNT] = {
     // Duration effects
     [CHAOS_EFFECT_INVERTED_CONTROLS] = ChaosEffectTrivial,
-    [CHAOS_EFFECT_WATER_PHYSICS] = ChaosEffectTrivial,
+    [CHAOS_EFFECT_WATER_PHYSICS] = ChaosEffectWaterPhysics,
+    [CHAOS_EFFECT_ICE_PHYSICS] = ChaosEffectIcePhysics,
     [CHAOS_EFFECT_SLOW_HORI_MOVEMENT] = ChaosEffectSlowHoriMovement,
     [CHAOS_EFFECT_FAST_HORI_MOVEMENT] = ChaosEffectFastHoriMovement,
     [CHAOS_EFFECT_LOW_GRAVITY] = ChaosEffectLowGravity,
