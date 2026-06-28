@@ -167,7 +167,7 @@ static SamusFunc_T sSamusPoseGfxFunctionPointers[SPOSE_COUNT] = {
 };
 
 #ifdef CHAOS
-#define ICE_DECEL 3
+#define ICE_ACCEL 3
 static void SamusIceDecelerate(void)
 {
     s16 xVelocity;
@@ -176,13 +176,13 @@ static void SamusIceDecelerate(void)
 
     if (xVelocity > 0)
     {
-        xVelocity -= ICE_DECEL;
+        xVelocity -= ICE_ACCEL;
         if (xVelocity < 0)
             xVelocity = 0;
     }
     else if (xVelocity < 0)
     {
-        xVelocity += ICE_DECEL;
+        xVelocity += ICE_ACCEL;
         if (xVelocity > 0)
             xVelocity = 0;
     }
@@ -4025,6 +4025,9 @@ SamusPose SamusRunning(struct SamusData* pData)
 {
     s32 xVelocityCap;
     u16 currVelocity;
+#ifdef CHAOS
+    s32 xAccel;
+#endif // CHAOS
 
     // Check jumping
     if (gChangedInput & KEY_A)
@@ -4064,7 +4067,12 @@ SamusPose SamusRunning(struct SamusData* pData)
     if (gButtonInput & pData->direction)
     {
         // Move
+#ifdef CHAOS
+        xAccel = ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS) ? ICE_ACCEL : gSamusPhysics.xAcceleration;
+        SamusApplyXAcceleration(xAccel, xVelocityCap, pData);
+#else // !CHAOS
         SamusApplyXAcceleration(gSamusPhysics.xAcceleration, xVelocityCap, pData);
+#endif // CHAOS
 
         // Update aim
         SamusAimCannon(pData);
@@ -4218,8 +4226,7 @@ SamusPose SamusStanding(struct SamusData* pData)
         return SPOSE_RUNNING;
 
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
-        SamusIceDecelerate();
+    SamusIceDecelerate();
 #endif // CHAOS
 
     // Check shooting
@@ -4326,8 +4333,7 @@ SamusPose SamusTurningAround(struct SamusData* pData)
         return SPOSE_MID_AIR_REQUEST;
 
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
-        SamusIceDecelerate();
+    SamusIceDecelerate();
 #endif // CHAOS
 
     if (gChangedInput & KEY_DOWN && (gSamusWeaponInfo.diagonalAim == DIAG_AIM_NONE || pData->armCannonDirection == ACD_DIAGONALLY_DOWN))
@@ -4414,8 +4420,7 @@ SamusPose SamusCrouching(struct SamusData* pData)
     }
 
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
-        SamusIceDecelerate();
+    SamusIceDecelerate();
 #endif // CHAOS
 
     collision = SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]);
@@ -4543,8 +4548,7 @@ SamusPose SamusTurningAroundAndCrouching(struct SamusData* pData)
     }
 
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
-        SamusIceDecelerate();
+    SamusIceDecelerate();
 #endif // CHAOS
 
     collision = SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]);
@@ -4675,7 +4679,7 @@ SamusPose SamusSkidding(struct SamusData* pData)
 #ifdef CHAOS
         if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
         {
-            pData->xVelocity -= ICE_DECEL;
+            pData->xVelocity -= ICE_ACCEL;
         }
         else
 #endif // CHAOS
@@ -4691,7 +4695,7 @@ SamusPose SamusSkidding(struct SamusData* pData)
 #ifdef CHAOS
         if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
         {
-            pData->xVelocity += ICE_DECEL;
+            pData->xVelocity += ICE_ACCEL;
         }
         else
 #endif // CHAOS
@@ -5152,8 +5156,7 @@ SamusPose SamusScrewAttackingGfx(struct SamusData* pData)
 SamusPose SamusMorphing(struct SamusData* pData)
 {
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
-        SamusIceDecelerate();
+    SamusIceDecelerate();
 #endif // CHAOS
 
     // Check cancel morphing
@@ -5225,8 +5228,7 @@ SamusPose SamusMorphball(struct SamusData* pData)
     }
 
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
-        SamusIceDecelerate();
+    SamusIceDecelerate();
 #endif // CHAOS
 
     // Check start rolling
@@ -5306,6 +5308,9 @@ SamusPose SamusMorphball(struct SamusData* pData)
 SamusPose SamusRolling(struct SamusData* pData)
 {
     s32 velocityCap;
+#ifdef CHAOS
+    s32 xAccel;
+#endif // CHAOS
 
     // Check jumping
     if (gChangedInput & KEY_A && gEquipment.suitMiscActivation & SMF_HIGH_JUMP)
@@ -5314,11 +5319,6 @@ SamusPose SamusRolling(struct SamusData* pData)
         pData->forcedMovement = FORCED_MOVEMENT_MID_AIR_JUMP;
         return SPOSE_MID_AIR_REQUEST;
     }
-
-#ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
-        SamusIceDecelerate();
-#endif // CHAOS
 
     // Check unmorph, no block above
     if (SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]) == SAMUS_COLLISION_DETECTION_NONE)
@@ -5347,7 +5347,13 @@ SamusPose SamusRolling(struct SamusData* pData)
             pData->shinesparkTimer = 6;
         }
 
+#ifdef CHAOS
+        xAccel = ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS) ? ICE_ACCEL : gSamusPhysics.xAcceleration;
+        SamusApplyXAcceleration(xAccel, velocityCap, pData);
+#else // !CHAOS
         SamusApplyXAcceleration(gSamusPhysics.xAcceleration, velocityCap, pData);
+#endif // CHAOS
+
         return SPOSE_NONE;
     }
 
@@ -5393,8 +5399,7 @@ SamusPose SamusRollingGfx(struct SamusData* pData)
 SamusPose SamusUnmorphing(struct SamusData* pData)
 {
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
-        SamusIceDecelerate();
+    SamusIceDecelerate();
 #endif // CHAOS
 
     if (SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]) == SAMUS_COLLISION_DETECTION_NONE)
@@ -6734,6 +6739,7 @@ SamusPose SamusCrawling(struct SamusData* pData)
 {
 #ifdef CHAOS
     s32 velocityCap;
+    s32 xAccel;
 #endif // CHAOS
 
     if (SamusCheckCollisionAbove(pData, sSamusBlockHitboxData[SAMUS_HITBOX_TYPE_STANDING][SAMUS_BLOCK_HITBOX_TOP]) == SAMUS_COLLISION_DETECTION_NONE)
@@ -6749,13 +6755,15 @@ SamusPose SamusCrawling(struct SamusData* pData)
     {
         // Move
 #ifdef CHAOS
+        xAccel = ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS) ? ICE_ACCEL : gSamusPhysics.xAcceleration;
+        
         velocityCap = HALF_BLOCK_SIZE;
         if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_HORI_MOVEMENT))
             velocityCap /= 2;
         else if (ChaosIsEffectActive(CHAOS_EFFECT_FAST_HORI_MOVEMENT))
             velocityCap = velocityCap * 3 / 2;
 
-        SamusApplyXAcceleration(gSamusPhysics.xAcceleration, velocityCap, pData);
+        SamusApplyXAcceleration(xAccel, velocityCap, pData);
 #else // !CHAOS
         SamusApplyXAcceleration(gSamusPhysics.xAcceleration, HALF_BLOCK_SIZE, pData);
 #endif // CHAOS
@@ -6807,8 +6815,7 @@ SamusPose SamusCrawlingGfx(struct SamusData* pData)
 SamusPose SamusTurningAroundWhileCrawling(struct SamusData* pData)
 {
 #ifdef CHAOS
-    if (ChaosIsEffectActive(CHAOS_EFFECT_ICE_PHYSICS))
-        SamusIceDecelerate();
+    SamusIceDecelerate();
 #endif // CHAOS
 
     if (gSamusPhysics.hasNewProjectile)

@@ -57,6 +57,8 @@ end)
 
 while true do
 
+    gui.clearGraphics()
+
     -- Display previous one time effect
     local prevEffect = memory.read_u8(ADDR_PREV_ONE_TIME_EFFECT)
     if prevEffect ~= 0 then
