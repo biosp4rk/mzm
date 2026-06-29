@@ -15,7 +15,7 @@ Source code: https://github.com/biosp4rk/mzm/tree/chaos
 
 Version history:
 WIP - 1.2.0
-- Added 8 new effects
+- Added 9 new effects
 - Fixed potential softlocks in Tourian rooms with Metroids
 - Fixed an issue with the color effect
 

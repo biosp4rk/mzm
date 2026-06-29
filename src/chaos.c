@@ -1397,6 +1397,7 @@ static ChaosFunc_T sChaosEffectFuncs[CHAOS_EFFECT_COUNT] = {
     [CHAOS_EFFECT_FAST_HORI_MOVEMENT] = ChaosEffectFastHoriMovement,
     [CHAOS_EFFECT_LOW_GRAVITY] = ChaosEffectLowGravity,
     [CHAOS_EFFECT_HIGH_GRAVITY] = ChaosEffectHighGravity,
+    [CHAOS_EFFECT_DISABLE_SPIN_JUMP] = ChaosEffectTrivial,
     [CHAOS_EFFECT_LONG_ECHO] = ChaosEffectTrivial,
     [CHAOS_EFFECT_SLOW_ENEMIES] = ChaosEffectSlowEnemies,
     [CHAOS_EFFECT_DEACTIVATE_ABILITY] = ChaosEffectDeactivateAbility,

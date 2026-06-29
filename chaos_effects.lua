@@ -16,6 +16,7 @@ local EFFECT_NAMES = {
     "fast x movement",
     "low gravity",
     "high gravity",
+    "disable spin jump",
     "long echo",
     "slow enemies",
     "deactivate ability",

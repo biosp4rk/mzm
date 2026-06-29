@@ -1729,7 +1729,11 @@ void SamusSetMidAir(struct SamusData* pData, struct SamusData* pCopy, struct Wea
             }
 
             // Starting a jump, always a spin jump because running implies a direction was held
+#ifdef CHAOS
+            pData->pose = ChaosIsEffectActive(CHAOS_EFFECT_DISABLE_SPIN_JUMP) ? SPOSE_MIDAIR : SPOSE_STARTING_SPIN_JUMP;
+#else // !CHAOS
             pData->pose = SPOSE_STARTING_SPIN_JUMP;
+#endif // CHAOS
 
             // Set jump velocity
             if (pEquipment->suitType == SUIT_SUITLESS)
@@ -1894,7 +1898,11 @@ void SamusSetMidAir(struct SamusData* pData, struct SamusData* pCopy, struct Wea
             if (pCopy->forcedMovement == FORCED_MOVEMENT_MID_AIR_JUMP)
             {
                 // Set mid air pose, spinning if holding a sideways direction
+#ifdef CHAOS
+                if ((gButtonInput & (KEY_RIGHT | KEY_LEFT)) && !ChaosIsEffectActive(CHAOS_EFFECT_DISABLE_SPIN_JUMP))
+#else // !CHAOS
                 if (gButtonInput & (KEY_RIGHT | KEY_LEFT))
+#endif // CHAOS
                     pData->pose = SPOSE_STARTING_SPIN_JUMP;
                 else
                     pData->pose = SPOSE_MIDAIR;
@@ -4741,11 +4749,16 @@ SamusPose SamusMidAir(struct SamusData* pData)
 
         if (!(gButtonInput & (KEY_UP | KEY_DOWN)))
         {
-            // Set spinning
-            pData->pose = SPOSE_SPINNING;
-            pData->currentAnimationFrame = 0;
-            pData->animationDurationCounter = 0;
-            return SPOSE_NONE;
+#ifdef CHAOS
+            if (!ChaosIsEffectActive(CHAOS_EFFECT_DISABLE_SPIN_JUMP))
+#endif // CHAOS
+            {
+                // Set spinning
+                pData->pose = SPOSE_SPINNING;
+                pData->currentAnimationFrame = 0;
+                pData->animationDurationCounter = 0;
+                return SPOSE_NONE;
+            }
         }
     }
 
@@ -4842,12 +4855,17 @@ SamusPose SamusTurningAroundMidAir(struct SamusData* pData)
 
         if (!(gButtonInput & (KEY_UP | KEY_DOWN)))
         {
-            pData->pose = SPOSE_SPINNING;
-            pData->direction ^= KEY_RIGHT | KEY_LEFT;
-            pData->currentAnimationFrame = 0;
-            pData->animationDurationCounter = 0;
-            pData->turning = FALSE;
-            return SPOSE_NONE;
+#ifdef CHAOS
+            if (!ChaosIsEffectActive(CHAOS_EFFECT_DISABLE_SPIN_JUMP))
+#endif // CHAOS
+            {
+                pData->pose = SPOSE_SPINNING;
+                pData->direction ^= KEY_RIGHT | KEY_LEFT;
+                pData->currentAnimationFrame = 0;
+                pData->animationDurationCounter = 0;
+                pData->turning = FALSE;
+                return SPOSE_NONE;
+            }
         }
     }
 

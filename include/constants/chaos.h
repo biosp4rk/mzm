@@ -37,6 +37,8 @@ enum ChaosEffect {
     CHAOS_EFFECT_LOW_GRAVITY,
     // Raises Y movement deceleration
     CHAOS_EFFECT_HIGH_GRAVITY,
+    // Disable spin jump and spinning midair
+    CHAOS_EFFECT_DISABLE_SPIN_JUMP,
     // Draws long Samus echoes at all times
     CHAOS_EFFECT_LONG_ECHO,
     // Runs enemy code every other frame
