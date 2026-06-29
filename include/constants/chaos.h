@@ -55,8 +55,10 @@ enum ChaosEffect {
 
     // ## Weapon related
 
-    // Makes beams and missiles move slowly
+    // Beams and missiles move slowly
     CHAOS_EFFECT_SLOW_WEAPONS,
+    // Beams and missiles move at an offset angle
+    CHAOS_EFFECT_SKEWED_AIM,
     // Alternates arming and unarming weapon
     CHAOS_EFFECT_ARM_WEAPON,
     // Swaps missile types back and forth

@@ -23,6 +23,7 @@ local EFFECT_NAMES = {
     "give ability",
     "suitless",
     "slow weapons",
+    "skewed aim",
     "arm weapon",
     "swap missiles",
     "charged shots",

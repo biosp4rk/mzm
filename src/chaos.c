@@ -46,8 +46,6 @@
 
 #ifdef CHAOS
 
-#define CHAOS_RAND_BOOL() (ChaosRandU16(0, 1))
-
 // Gets a random position on screen
 #define RAND_SCREEN_X() (ChaosRandU16(0, HUD_MAX_X))
 #define RAND_SCREEN_Y() (ChaosRandU16(0, HUD_MAX_Y))
@@ -81,7 +79,7 @@ static void ChaosUpdateRng(void)
     gChaosRng = (gChaosRng * 0x41C64E6D) + 0x3039;
 }
 
-static u16 ChaosRandU16(u16 min, u16 max)
+u16 ChaosRandU16(u16 min, u16 max)
 {
     u16 seed;
     u16 mod;
@@ -388,6 +386,12 @@ static bools32 ChaosEffectSlowWeapons(void)
     return !ChaosIsEffectActive(CHAOS_EFFECT_WEAPON_RING);
 }
 
+static bools32 ChaosEffectSkewedAim(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_SHOOT_BOMBS) &&
+        !ChaosIsEffectActive(CHAOS_EFFECT_WEAPON_RING);
+}
+
 static bools32 ChaosEffectChargedShots(void)
 {
     return !ChaosIsEffectActive(CHAOS_EFFECT_SHOOT_BOMBS);
@@ -395,13 +399,17 @@ static bools32 ChaosEffectChargedShots(void)
 
 static bools32 ChaosEffectShootBombs(void)
 {
-    return !ChaosIsEffectActive(CHAOS_EFFECT_CHARGED_SHOTS);
+    return !ChaosIsEffectActive(CHAOS_EFFECT_SKEWED_AIM) &&
+        !ChaosIsEffectActive(CHAOS_EFFECT_CHARGED_SHOTS);
 }
 
 static bools32 ChaosEffectWeaponRing(void)
 {
-    if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS))
+    if (ChaosIsEffectActive(CHAOS_EFFECT_SLOW_WEAPONS) ||
+        ChaosIsEffectActive(CHAOS_EFFECT_SKEWED_AIM))
+    {
         return FALSE;
+    }
 
     // Choose a random weapon ring type
     gCurrChaosEffect->data = ChaosRandU16(0, WEAPON_RING_COUNT - 1);
@@ -1404,6 +1412,7 @@ static ChaosFunc_T sChaosEffectFuncs[CHAOS_EFFECT_COUNT] = {
     [CHAOS_EFFECT_GIVE_ABILITY] = ChaosEffectGiveAbility,
     [CHAOS_EFFECT_SUITLESS] = ChaosEffectSuitless,
     [CHAOS_EFFECT_SLOW_WEAPONS] = ChaosEffectSlowWeapons,
+    [CHAOS_EFFECT_SKEWED_AIM] = ChaosEffectSkewedAim,
     [CHAOS_EFFECT_ARM_WEAPON] = ChaosEffectArmWeapon,
     [CHAOS_EFFECT_SWAP_MISSILES] = ChaosEffectSwapMissiles,
     [CHAOS_EFFECT_CHARGED_SHOTS] = ChaosEffectChargedShots,

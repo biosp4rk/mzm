@@ -90,6 +90,9 @@ void ProjectileProcessNormalBeam(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
         pProj->animationDurationCounter = 0;
         pProj->currentAnimationFrame = 0;
@@ -176,6 +179,9 @@ void ProjectileProcessLongBeam(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
 
         pProj->animationDurationCounter = 0;
@@ -269,6 +275,9 @@ void ProjectileProcessIceBeam(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
         pProj->animationDurationCounter = 0;
         pProj->currentAnimationFrame = 0;
@@ -476,6 +485,9 @@ void ProjectileProcessWaveBeam(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE * 2 + HALF_BLOCK_SIZE;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
 
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
         pProj->status |= PROJ_STATUS_ABOVE_BG1;
@@ -599,11 +611,17 @@ void ProjectileProcessPlasmaBeam(struct ProjectileData* pProj)
         if (hasWave)
         {
             pProj->drawDistanceOffset = BLOCK_SIZE * 2 + HALF_BLOCK_SIZE;
+#ifdef CHAOS
+            pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
             pProj->status |= PROJ_STATUS_ABOVE_BG1;
         }
         else
         {
             pProj->drawDistanceOffset = BLOCK_SIZE + QUARTER_BLOCK_SIZE;
+#ifdef CHAOS
+            pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
             pProj->hitboxTop = -(QUARTER_BLOCK_SIZE + PIXEL_SIZE);
             pProj->hitboxBottom = (QUARTER_BLOCK_SIZE + PIXEL_SIZE);
             pProj->hitboxLeft = -(QUARTER_BLOCK_SIZE + PIXEL_SIZE);
@@ -689,6 +707,9 @@ void ProjectileProcessPistol(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
         pProj->animationDurationCounter = 0;
         pProj->currentAnimationFrame = 0;
@@ -771,6 +792,9 @@ void ProjectileProcessChargedNormalBeam(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE + HALF_BLOCK_SIZE;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
         pProj->animationDurationCounter = 0;
         pProj->currentAnimationFrame = 0;
@@ -856,6 +880,9 @@ void ProjectileProcessChargedLongBeam(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE * 2;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
         pProj->animationDurationCounter = 0;
         pProj->currentAnimationFrame = 0;
@@ -944,6 +971,9 @@ void ProjectileProcessChargedIceBeam(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE * 2;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
         pProj->animationDurationCounter = 0;
         pProj->currentAnimationFrame = 0;
@@ -1038,6 +1068,9 @@ void ProjectileProcessChargedWaveBeam(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE * 3;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
         pProj->status |= PROJ_STATUS_ABOVE_BG1;
 
@@ -1180,11 +1213,17 @@ void ProjectileProcessChargedPlasmaBeam(struct ProjectileData* pProj)
         if (hasWave)
         {
             pProj->drawDistanceOffset = BLOCK_SIZE * 3 + HALF_BLOCK_SIZE;
+#ifdef CHAOS
+            pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
             pProj->status |= PROJ_STATUS_ABOVE_BG1;
         }
         else
         {
             pProj->drawDistanceOffset = BLOCK_SIZE * 3;
+#ifdef CHAOS
+            pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
 
             pProj->hitboxTop = -(QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE);
             pProj->hitboxBottom = (QUARTER_BLOCK_SIZE + EIGHTH_BLOCK_SIZE);
@@ -1267,6 +1306,9 @@ void ProjectileProcessChargedPistol(struct ProjectileData* pProj)
         }
 
         pProj->drawDistanceOffset = BLOCK_SIZE * 2;
+#ifdef CHAOS
+        pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
         pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
         pProj->animationDurationCounter = 0;
         pProj->currentAnimationFrame = 0;
@@ -1298,6 +1340,9 @@ void ProjectileDecrementMissileCounter(struct ProjectileData* pProj)
     }
 
     pProj->drawDistanceOffset = BLOCK_SIZE;
+#ifdef CHAOS
+    pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
     pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
 }
 
@@ -1411,6 +1456,9 @@ void ProjectileDecrementSuperMissileCounter(struct ProjectileData* pProj)
     }
 
     pProj->drawDistanceOffset = BLOCK_SIZE;
+#ifdef CHAOS
+    pProj->drawDistanceOffset += CHAOS_RAND_BOOL();
+#endif // CHAOS
     pProj->status &= ~PROJ_STATUS_NOT_DRAWN;
 }
 

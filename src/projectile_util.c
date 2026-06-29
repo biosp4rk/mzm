@@ -849,6 +849,14 @@ void ProjectileCallLoadGraphicsAndClearProjectiles(void)
     }
 }
 
+#ifdef CHAOS
+    // 15 degree skew
+    #define PROJ_ORTH_MAX_SKEW(dist) Q_8_8_TO_S32((dist) * Q_8_8(0.966)) // cos(15)
+    #define PROJ_ORTH_MIN_SKEW(dist) Q_8_8_TO_S32((dist) * Q_8_8(0.259)) // sin(15)
+    #define PROJ_DIAG_MAX_SKEW(dist) Q_8_8_TO_S32((dist) * Q_8_8(0.866)) // cos(30)
+    #define PROJ_DIAG_MIN_SKEW(dist) Q_8_8_TO_S32((dist) * Q_8_8(0.5))   // sin(30)
+#endif // CHAOS
+
 /**
  * @brief 4f954 | c4 | Moves a projectile
  * 
@@ -861,43 +869,151 @@ void ProjectileMove(struct ProjectileData* pProj, u8 distance)
     s32 leftVelocity;
     s32 rightVelocity;
 
-    switch (pProj->direction)
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_SKEWED_AIM))
     {
-        case ACD_UP:
-            pProj->yPosition -= distance;
-            return;
+        // Angle away by 15 degrees
+        // drawDistanceOffset & 1 indicates clockwise rotation
+        switch (pProj->direction)
+        {
+            case ACD_UP:
+                pProj->yPosition -= PROJ_ORTH_MAX_SKEW(distance);
+                if (pProj->drawDistanceOffset & 1)
+                    pProj->xPosition += PROJ_ORTH_MIN_SKEW(distance);
+                else
+                    pProj->xPosition -= PROJ_ORTH_MIN_SKEW(distance);
+                return;
 
-        case ACD_DOWN:
-            pProj->yPosition += distance;
-            return;
+            case ACD_DOWN:
+                pProj->yPosition += PROJ_ORTH_MAX_SKEW(distance);
+                if (pProj->drawDistanceOffset & 1)
+                    pProj->xPosition -= PROJ_ORTH_MIN_SKEW(distance);
+                else
+                    pProj->xPosition += PROJ_ORTH_MIN_SKEW(distance);
+                return;
 
-        case ACD_DIAGONALLY_UP:
-            distance = FLOAT_MUL(distance, .7f);
+            case ACD_DIAGONALLY_UP:
+                if (pProj->drawDistanceOffset & 1)
+                {
+                    if (pProj->status & PROJ_STATUS_X_FLIP)
+                    {
+                        pProj->yPosition -= PROJ_DIAG_MIN_SKEW(distance);
+                        pProj->xPosition += PROJ_DIAG_MAX_SKEW(distance);
+                    }
+                    else
+                    {
+                        pProj->yPosition -= PROJ_DIAG_MAX_SKEW(distance);
+                        pProj->xPosition -= PROJ_DIAG_MIN_SKEW(distance);
+                    }
+                }
+                else
+                {
+                    if (pProj->status & PROJ_STATUS_X_FLIP)
+                    {
+                        pProj->yPosition -= PROJ_DIAG_MAX_SKEW(distance);
+                        pProj->xPosition += PROJ_DIAG_MIN_SKEW(distance);
+                    }
+                    else
+                    {
+                        pProj->yPosition -= PROJ_DIAG_MIN_SKEW(distance);
+                        pProj->xPosition -= PROJ_DIAG_MAX_SKEW(distance);
+                    }
+                }
+                break;
 
-            pProj->yPosition -= distance;
+            case ACD_DIAGONALLY_DOWN:
+                if (pProj->drawDistanceOffset & 1)
+                {
+                    if (pProj->status & PROJ_STATUS_X_FLIP)
+                    {
+                        pProj->yPosition += PROJ_DIAG_MAX_SKEW(distance);
+                        pProj->xPosition += PROJ_DIAG_MIN_SKEW(distance);
+                    }
+                    else
+                    {
+                        pProj->yPosition += PROJ_DIAG_MIN_SKEW(distance);
+                        pProj->xPosition -= PROJ_DIAG_MAX_SKEW(distance);
+                    }
+                }
+                else
+                {
+                    if (pProj->status & PROJ_STATUS_X_FLIP)
+                    {
+                        pProj->yPosition += PROJ_DIAG_MIN_SKEW(distance);
+                        pProj->xPosition += PROJ_DIAG_MAX_SKEW(distance);
+                    }
+                    else
+                    {
+                        pProj->yPosition += PROJ_DIAG_MAX_SKEW(distance);
+                        pProj->xPosition -= PROJ_DIAG_MIN_SKEW(distance);
+                    }
+                }
+                break;
 
-            if (pProj->status & PROJ_STATUS_X_FLIP)
-                pProj->xPosition += distance;
-            else
-                pProj->xPosition -= distance;
-            break;
+            default:
+                if (pProj->status & PROJ_STATUS_X_FLIP)
+                {
+                    if (pProj->drawDistanceOffset & 1)
+                        pProj->yPosition += PROJ_ORTH_MIN_SKEW(distance);
+                    else
+                        pProj->yPosition -= PROJ_ORTH_MIN_SKEW(distance);
 
-        case ACD_DIAGONALLY_DOWN:
-            distance = FLOAT_MUL(distance, .7f);
+                    pProj->xPosition += PROJ_ORTH_MAX_SKEW(distance);
+                }
+                else
+                {
+                    if (pProj->drawDistanceOffset & 1)
+                        pProj->yPosition -= PROJ_ORTH_MIN_SKEW(distance);
+                    else
+                        pProj->yPosition += PROJ_ORTH_MIN_SKEW(distance);
 
-            pProj->yPosition += distance;
+                    pProj->xPosition -= PROJ_ORTH_MAX_SKEW(distance);
+                }
+                break;
+        }
+    }
+    else
+#endif // CHAOS
+    {
+        switch (pProj->direction)
+        {
+            case ACD_UP:
+                pProj->yPosition -= distance;
+                return;
 
-            if (pProj->status & PROJ_STATUS_X_FLIP)
-                pProj->xPosition += distance;
-            else
-                pProj->xPosition -= distance;
-            break;
+            case ACD_DOWN:
+                pProj->yPosition += distance;
+                return;
 
-        default:
-            if (pProj->status & PROJ_STATUS_X_FLIP)
-                pProj->xPosition += distance;
-            else
-                pProj->xPosition -= distance;
+            case ACD_DIAGONALLY_UP:
+                distance = FLOAT_MUL(distance, .7f);
+
+                pProj->yPosition -= distance;
+
+                if (pProj->status & PROJ_STATUS_X_FLIP)
+                    pProj->xPosition += distance;
+                else
+                    pProj->xPosition -= distance;
+                break;
+
+            case ACD_DIAGONALLY_DOWN:
+                distance = FLOAT_MUL(distance, .7f);
+
+                pProj->yPosition += distance;
+
+                if (pProj->status & PROJ_STATUS_X_FLIP)
+                    pProj->xPosition += distance;
+                else
+                    pProj->xPosition -= distance;
+                break;
+
+            default:
+                if (pProj->status & PROJ_STATUS_X_FLIP)
+                    pProj->xPosition += distance;
+                else
+                    pProj->xPosition -= distance;
+                break;
+        }
     }
 
     // Check add Samus's velocity if moving in the same direction
