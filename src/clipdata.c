@@ -148,7 +148,7 @@ ClipdataType ClipdataConvertToCollision(struct CollisionData* pCollision)
 
     result = CLIPDATA_TYPE_AIR;
 
-    #ifdef BUGFIX
+    #if defined(BUGFIX) || defined(CHAOS)
 
     // This function is copied to RAM, presumably for performance reasons, because it is often
     // called many times per frame and code runs faster in RAM. However, the switch statement gets

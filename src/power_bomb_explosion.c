@@ -71,7 +71,7 @@ static void PowerBombExplosion(void)
     
     verticalAxis = gCurrentPowerBomb.semiMinorAxis * 4;
     horizontalAxis = gCurrentPowerBomb.semiMinorAxis * 8;
-    #ifdef BUGFIX
+    #if defined(BUGFIX) || defined(CHAOS)
     verticalAxis = FixedMultiplication(verticalAxis, Q_8_8(0.95));
     horizontalAxis = FixedMultiplication(horizontalAxis, Q_8_8(0.95));
     #else // !BUGFIX
