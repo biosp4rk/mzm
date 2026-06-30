@@ -599,6 +599,10 @@ u8 ColorFadingProcess_DoorTransition(void)
                 gBackgroundPositions.doorTransition.x = BLOCK_SIZE * 9 - QUARTER_BLOCK_SIZE;
 
             offset = BLOCK_TO_SUB_PIXEL(gDoorPositionStart.y) - gBg1YPosition;
+#ifdef CHAOS
+            if (offset > SCREEN_SIZE_Y_SUB_PIXEL)
+                offset = BLOCK_SIZE * 3;
+#endif // CHAOS
             gBackgroundPositions.doorTransition.y = SUB_PIXEL_TO_PIXEL_(BLOCK_SIZE * 16 - offset);
 
             WRITE_16(REG_BG3HOFS, gBackgroundPositions.doorTransition.x);
