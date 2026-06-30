@@ -7572,8 +7572,17 @@ void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction)
             break;
     }
 
-    // Offset by current frame
-    pAnim = &pAnim[pData->currentAnimationFrame];
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_NO_SPRITE_ANIM))
+    {
+        pAnim = &pAnim[0];
+    }
+    else
+#endif // CHAOS
+    {
+        // Offset by current frame
+        pAnim = &pAnim[pData->currentAnimationFrame];
+    }
 
     pPhysics->pBodyOam = pAnim->pOam;
 
@@ -7605,8 +7614,17 @@ void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction)
         pPhysics->armCannonGfxLowerSize = 2 * SAMUS_GFX_PART_SIZE;
     }
 
-    // Update arm cannon OAM
-    pArmCannonAnim = &pArmCannonAnim[pData->currentAnimationFrame];
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_NO_SPRITE_ANIM))
+    {
+        pAnim = &pAnim[0];
+    }
+    else
+#endif // CHAOS
+    {
+        // Update arm cannon OAM
+        pArmCannonAnim = &pArmCannonAnim[pData->currentAnimationFrame];
+    }
 
     pPhysics->pArmCannonOam = pArmCannonAnim->pOam;
     pPhysics->unk_22 = *pPhysics->pArmCannonOam;
@@ -7782,8 +7800,17 @@ void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction)
             break;
     }
 
-    // Offset by current frame
-    pEffectAnim = &pEffectAnim[pScrew->currentAnimationFrame];
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_NO_SPRITE_ANIM))
+    {
+        pEffectAnim = &pEffectAnim[0];
+    }
+    else
+#endif // CHAOS
+    {
+        // Offset by current frame
+        pEffectAnim = &pEffectAnim[pScrew->currentAnimationFrame];
+    }
 
     // Update OAM
     pPhysics->pScrewSpeedOam = pEffectAnim->pOam;
@@ -7979,7 +8006,11 @@ void SamusUpdatePalette(struct SamusData* pData)
     
     if (pData->pose == SPOSE_SCREW_ATTACKING)
     {
+#ifdef CHAOS
+        if ((pData->currentAnimationFrame & 1) && !ChaosIsEffectActive(CHAOS_EFFECT_NO_SPRITE_ANIM))
+#else // CHAOS
         if (pData->currentAnimationFrame & 1)
+#endif // CHAOS
             pBufferPal = pFlashingPal + 16;
         else
             pBufferPal = pDefaultPal;

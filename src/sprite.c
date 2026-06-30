@@ -5,6 +5,7 @@
 #include "macros.h"
 #include "fixed_point.h"
 #include "sprites_ai/sprites.h"
+#include "chaos.h"
 
 #include "data/generic_data.h"
 #include "data/sprite_data.h"
@@ -95,6 +96,7 @@
 #include "constants/connection.h"
 #include "constants/sprite.h"
 #include "constants/particle.h"
+#include "constants/chaos.h"
 
 #include "structs/bg_clip.h"
 #include "structs/game_state.h"
@@ -1321,7 +1323,16 @@ void SpriteDraw(struct SpriteData* pSprite, s32 slot)
     u8 offset;
 
     prevSlot = gNextOamSlot;
-    src = pSprite->pOam[pSprite->currentAnimationFrame].pFrame;
+#ifdef CHAOS
+    if (ChaosIsEffectActive(CHAOS_EFFECT_NO_SPRITE_ANIM))
+    {
+        src = pSprite->pOam[0].pFrame;
+    }
+    else
+#endif // CHAOS
+    {
+        src = pSprite->pOam[pSprite->currentAnimationFrame].pFrame;
+    }
     partCount = *src++;
 
     if (partCount + prevSlot >= OAM_BUFFER_DATA_SIZE)

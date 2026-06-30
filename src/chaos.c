@@ -632,6 +632,16 @@ static void ChaosEffectUpdateMoveHud(void)
     }
 }
 
+static bools32 ChaosEffectNoSpriteAnim(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_JUMBLED_SPRITES);
+}
+
+static bools32 ChaosEffectJumbledSprites(void)
+{
+    return !ChaosIsEffectActive(CHAOS_EFFECT_NO_SPRITE_ANIM);
+}
+
 static void ChaosEffectUpdateExplosions(void)
 {
     u8 pe;
@@ -1436,7 +1446,8 @@ static ChaosFunc_T sChaosEffectFuncs[CHAOS_EFFECT_COUNT] = {
     [CHAOS_EFFECT_SHOOT_BOMBS] = ChaosEffectShootBombs,
     [CHAOS_EFFECT_WEAPON_RING] = ChaosEffectWeaponRing,
     [CHAOS_EFFECT_MOVE_HUD] = ChaosEffectMoveHud,
-    [CHAOS_EFFECT_JUMBLED_SPRITES] = ChaosEffectTrivial,
+    [CHAOS_EFFECT_NO_SPRITE_ANIM] = ChaosEffectNoSpriteAnim,
+    [CHAOS_EFFECT_JUMBLED_SPRITES] = ChaosEffectJumbledSprites,
     [CHAOS_EFFECT_SLOW_SCROLLING] = ChaosEffectTrivial,
     [CHAOS_EFFECT_EXPLOSIONS] = ChaosEffectTrivial,
     [CHAOS_EFFECT_WARP] = ChaosEffectWarp,
