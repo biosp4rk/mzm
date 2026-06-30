@@ -1077,13 +1077,30 @@ static bools32 ChaosEffectCrumbleCity(void)
             case CLIPDATA_DUSTY_GROUND:
             case CLIPDATA_BUBBLY_GROUND:
             case CLIPDATA_VERY_DUSTY_GROUND:
-                // Require 2 air blocks above and 1 solid block below
-                if (gClipdataCollisionTypes[*(pClip - 2 * width)] == CLIPDATA_TYPE_AIR &&
-                    gClipdataCollisionTypes[*(pClip - width)] == CLIPDATA_TYPE_AIR &&
-                    gClipdataCollisionTypes[*(pClip + width)] == CLIPDATA_TYPE_SOLID)
+                // Can't be next to slopes
+                if (gClipdataCollisionTypes[*(pClip + 1)] >= CLIPDATA_TYPE_LEFT_STEEP_FLOOR_SLOPE &&
+                    gClipdataCollisionTypes[*(pClip + 1)] <= CLIPDATA_TYPE_RIGHT_UPPER_SLIGHT_FLOOR_SLOPE)
                 {
-                    *pClip = CLIPDATA_SLOW_CRUMBLE;
+                    // Skip next 2 blocks
+                    pClip += 2;
+                    continue;
                 }
+
+                if (gClipdataCollisionTypes[*(pClip - 1)] >= CLIPDATA_TYPE_LEFT_STEEP_FLOOR_SLOPE &&
+                    gClipdataCollisionTypes[*(pClip - 1)] <= CLIPDATA_TYPE_RIGHT_UPPER_SLIGHT_FLOOR_SLOPE)
+                {
+                    continue;
+                }
+
+                // Require 2 air blocks above and 1 solid block below
+                if (gClipdataCollisionTypes[*(pClip - 2 * width)] != CLIPDATA_TYPE_AIR ||
+                    gClipdataCollisionTypes[*(pClip - width)] != CLIPDATA_TYPE_AIR ||
+                    gClipdataCollisionTypes[*(pClip + width)] != CLIPDATA_TYPE_SOLID)
+                {
+                    continue;
+                }
+
+                *pClip = CLIPDATA_SLOW_CRUMBLE;
                 break;
         }
     }
