@@ -18,6 +18,7 @@
 #include "constants/game_state.h"
 #include "constants/room.h"
 #include "constants/samus.h"
+#include "constants/chaos.h"
 
 #include "structs/audio.h"
 #include "structs/bg_clip.h"
@@ -31,6 +32,7 @@
 #include "structs/sprite.h"
 #include "structs/visual_effects.h"
 #include "structs/room.h"
+#include "structs/chaos.h"
 
 extern u8 sHazeData[EFFECT_HAZE_COUNT][4];
 
@@ -955,7 +957,15 @@ u8 ColorFadingProcess_StatueOpening(void)
 
         case 1:
             if (gCurrentArea == AREA_KRAID || gCurrentArea == AREA_RIDLEY)
-                FadeCurrentInsertMusicQueueCurrent(CONVERT_SECONDS(1.f), MUSIC_STATUE_ROOM_OPENED, 0);
+            {
+#ifdef CHAOS
+                // Not a perfect solution, but it should prevent music stopping
+                if (gPrevOneTimeChaosEffect != CHAOS_EFFECT_CUTSCENE)
+#endif // CHAOS
+                {
+                    FadeCurrentInsertMusicQueueCurrent(CONVERT_SECONDS(1.f), MUSIC_STATUE_ROOM_OPENED, 0);
+                }
+            }
 
             if (gAnimatedGraphicsEntry.palette != ANIMATED_PALETTE_ID_NONE)
                 gAnimatedGraphicsEntry.palette = ANIMATED_PALETTE_ID_NONE;
