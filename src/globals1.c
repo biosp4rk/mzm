@@ -463,3 +463,8 @@ IWRAM_DATA u8 gHandshakePlayerCount = 0;
 IWRAM_DATA u8 gChecksumAvailable = 0;
 IWRAM_DATA u16 gSendNonzeroCheck = 0;
 IWRAM_DATA u16 gRecvNonzeroCheck = 0;
+
+IWRAM_DATA s16 gMinimapHudPixelX = 0;
+IWRAM_DATA s16 gMinimapHudPixelY = 0;
+IWRAM_DATA boolu8 gMinimapHudGfxChanged = 0;
+IWRAM_DATA u32 gMinimapHudSourceTilesGfx[MINIMAP_HUD_SOURCE_TILES][MINIMAP_HUD_SOURCE_TILES * 8] = {};

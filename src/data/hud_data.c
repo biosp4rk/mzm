@@ -6,8 +6,11 @@
 const u16 sCommonSpritesPal[96] = {
     #include "extracted/data/hud/common.pal.inc"
 };
+
+// Modified copy of the extracted graphics: the HUD minimap square (tile 127,
+// OAM tile 0xBF) is a 2x2 square in the center of the tile instead of a full 8x8
 const u32 sCommonSpritesGfx[3584] = {
-    #include "extracted/data/hud/common.gfx.inc"
+    #include "modified/data/hud/common.gfx.inc"
 };
 
 const u8 sMissileDigitsGfx[2304] = {

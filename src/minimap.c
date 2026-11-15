@@ -377,11 +377,125 @@ static MinimapFunc_T sMinimapTilesCopyGfxFunctionPointers[4] = {
     MinimapCopyTileXYFlippedGfx
 };
 
+void MinimapDraw(void)
+{
+    u32* dst;
+    const u32* pLeft;
+    const u32* pRight;
+    s32 mapRoomPixelX, mapRoomPixelY;
+    s32 mapCornerPixelX, mapCornerPixelY;
+    s32 baseMapTileX, baseMapTileY;
+    s32 pixelOffsetX, pixelOffsetY;
+    s32 shiftLeft, shiftRight;
+    s32 mx, my;
+    s32 i, j, r;
+    u16 tile;
+    u16 gfx;
+    s32 flip;
+    s32 palette;
+
+    // Calculate Samus's pixel position within the room, in minimap pixels
+    mapRoomPixelX = gSamusData.xPosition - SCREEN_X_BLOCK_PADDING;
+    if (mapRoomPixelX < 0)
+        mapRoomPixelX = 0;
+    mapRoomPixelY = gSamusData.yPosition - SCREEN_Y_BLOCK_PADDING;
+    if (mapRoomPixelY < 0)
+        mapRoomPixelY = 0;
+    mapRoomPixelX = ((u32)mapRoomPixelX * 34953u) >> 22; // Optimization to divide by 120
+    mapRoomPixelY = ((u32)mapRoomPixelY * 52429u) >> 22; // Optimization to divide by 80
+
+    // Get minimap pixel position at top left of HUD minimap
+    mapCornerPixelX = (gCurrentRoomEntry.mapX * 8 + mapRoomPixelX) - 12;
+    mapCornerPixelY = (gCurrentRoomEntry.mapY * 8 + mapRoomPixelY) - 12;
+
+    // Check if nothing moved and a redraw isn't forced
+    if (mapCornerPixelX == gMinimapHudPixelX && mapCornerPixelY == gMinimapHudPixelY &&
+        gUpdateMinimapFlag == MINIMAP_UPDATE_FLAG_NONE)
+    {
+        return;
+    }
+
+    // Get map tile position and pixel offset within the tile
+    baseMapTileX = mapCornerPixelX >> 3;
+    baseMapTileY = mapCornerPixelY >> 3;
+    pixelOffsetX = mapCornerPixelX & 7;
+    pixelOffsetY = mapCornerPixelY & 7;
+
+    // Copy the 4x4 tiles used by the HUD to gMinimapHudSourceTilesGfx when a new tile has been
+    // entered or when the tilemap may have changed
+    if (baseMapTileX != (gMinimapHudPixelX >> 3) || baseMapTileY != (gMinimapHudPixelY >> 3) ||
+        gUpdateMinimapFlag != MINIMAP_UPDATE_FLAG_NONE)
+    {
+        for (i = 0; i < MINIMAP_HUD_SOURCE_TILES; i++)
+        {
+            mx = baseMapTileX + i;
+
+            for (j = 0; j < MINIMAP_HUD_SOURCE_TILES; j++)
+            {
+                my = baseMapTileY + j;
+
+                if ((u32)mx >= MINIMAP_SIZE || (u32)my >= MINIMAP_SIZE)
+                    tile = MINIMAP_TILE_BACKGROUND;
+                else
+                    tile = gDecompressedMinimapVisitedTiles[my * MINIMAP_SIZE + mx];
+
+                gfx = (tile & 0x3FF) * 32;
+                flip = (tile >> 10) & 3;
+                palette = tile >> 12;
+                sMinimapTilesCopyGfxFunctionPointers[flip](&gMinimapHudSourceTilesGfx[i][j * 8],
+                    &gfx, palette);
+            }
+        }
+    }
+
+    gMinimapHudPixelX = mapCornerPixelX;
+    gMinimapHudPixelY = mapCornerPixelY;
+
+    // Build the 3x3 HUD tiles one column at a time. Each source column holds contiguous
+    // pixel rows, so the 24 rows of a HUD column start at row pixelOffsetY
+    if (pixelOffsetX == 0)
+    {
+        // Tile aligned horizontally, plain copy
+        for (i = 0; i < 3; i++)
+        {
+            pLeft = &gMinimapHudSourceTilesGfx[i][pixelOffsetY];
+            dst = gMinimapTilesGfx + i * 8;
+
+            for (j = 0; j < 3; j++, pLeft += 8, dst += 3 * 8)
+            {
+                for (r = 0; r < 8; r++)
+                    dst[r] = pLeft[r];
+            }
+        }
+    }
+    else
+    {
+        // Get bit positions based on pixel offset
+        shiftLeft = pixelOffsetX * 4;
+        shiftRight = 32 - shiftLeft;
+
+        for (i = 0; i < 3; i++)
+        {
+            pLeft = &gMinimapHudSourceTilesGfx[i][pixelOffsetY];
+            pRight = &gMinimapHudSourceTilesGfx[i + 1][pixelOffsetY];
+            dst = gMinimapTilesGfx + i * 8;
+
+            for (j = 0; j < 3; j++, pLeft += 8, pRight += 8, dst += 3 * 8)
+            {
+                for (r = 0; r < 8; r++)
+                    dst[r] = (pLeft[r] >> shiftLeft) | (pRight[r] << shiftRight);
+            }
+        }
+    }
+
+    gMinimapHudGfxChanged = TRUE;
+}
+
 /**
  * @brief 6c5b4 | 100 | To document
  * 
  */
-void MinimapDraw(void)
+void MinimapDraw_OLD(void)
 {
     s32 yOffset;
     s32 xOffset;

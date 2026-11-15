@@ -10,6 +10,9 @@
 #define MINIMAP_SIZE 32
 #define MINIMAP_CENTER ((MINIMAP_SIZE * HALF_BLOCK_SIZE) / 2 + PIXEL_SIZE)
 
+// Number of map tiles (per axis) decoded around the HUD minimap window
+#define MINIMAP_HUD_SOURCE_TILES 4
+
 typedef void (*MinimapFunc_T)(u32*, u16*, u8);
 
 struct LastAreaName {
@@ -23,6 +26,11 @@ extern struct LastAreaName gLastAreaNameVisited;
 extern u8 gMinimapX;
 extern u8 gMinimapY;
 extern MinimapUpdateFlag gUpdateMinimapFlag;
+
+extern s16 gMinimapHudPixelX;
+extern s16 gMinimapHudPixelY;
+extern boolu8 gMinimapHudGfxChanged;
+extern u32 gMinimapHudSourceTilesGfx[MINIMAP_HUD_SOURCE_TILES][MINIMAP_HUD_SOURCE_TILES * 8];
 
 #ifdef USE_EWRAM_SYMBOLS
 extern u32 gMinimapTilesWithObtainedItems[MAX_AMOUNT_OF_AREAS * MINIMAP_SIZE];

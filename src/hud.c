@@ -1219,11 +1219,21 @@ void HudUpdateGfx(void)
     }
 
     // Update minimap Gfx
-    if (gUpdateMinimapFlag != MINIMAP_UPDATE_FLAG_NONE)
+    if (gMinimapHudGfxChanged || gUpdateMinimapFlag != MINIMAP_UPDATE_FLAG_NONE)
     {
-        gUpdateMinimapFlag--;
-        DMA3_COPY_16((gMinimapTilesGfx + gUpdateMinimapFlag * 24), (VRAM_BASE + 0x11F80) + (gUpdateMinimapFlag * 1024), 24 * sizeof(u32) / 2);
+        DMA3_COPY_32((gMinimapTilesGfx + 0 * 24), (VRAM_BASE + 0x11F80) + (0 * 1024), 24);
+        DMA3_COPY_32((gMinimapTilesGfx + 1 * 24), (VRAM_BASE + 0x11F80) + (1 * 1024), 24);
+        DMA3_COPY_32((gMinimapTilesGfx + 2 * 24), (VRAM_BASE + 0x11F80) + (2 * 1024), 24);
+
+        gMinimapHudGfxChanged = FALSE;
+        gUpdateMinimapFlag = MINIMAP_UPDATE_FLAG_NONE;
     }
+
+    // if (gUpdateMinimapFlag != MINIMAP_UPDATE_FLAG_NONE)
+    // {
+    //     gUpdateMinimapFlag--;
+    //     DMA3_COPY_16((gMinimapTilesGfx + gUpdateMinimapFlag * 24), (VRAM_BASE + 0x11F80) + (gUpdateMinimapFlag * 1024), 24 * sizeof(u32) / 2);
+    // }
 }
 
 /**
